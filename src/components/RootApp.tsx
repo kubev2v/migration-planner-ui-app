@@ -1,19 +1,15 @@
-import { Bullseye, Spinner } from '@patternfly/react-core';
-import React, { Suspense } from 'react';
+import '@patternfly/react-core/dist/styles/base.css';
 
-function RootApp() {
+import React from 'react';
+import { router } from './Router';
+import { RouterProvider } from 'react-router-dom';
+import { Spinner } from '@patternfly/react-core';
+
+function RootApp(): JSX.Element {
   return (
-    <Suspense
-      fallback={
-        <Bullseye>
-          <Spinner />
-        </Bullseye>
-      }
-    >
-      <label>
-        Search albums
-      </label>
-    </Suspense>
+    <React.Suspense fallback={<Spinner />}>
+      <RouterProvider router={router} />
+    </React.Suspense>
   );
 }
 
