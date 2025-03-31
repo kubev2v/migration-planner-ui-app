@@ -11,7 +11,7 @@ module.exports = {
    * If the dash character is present, you will have add a camelCase version of it to the sassPrefix.
    * If it does not contain the dash character, remove this configuration.
    */
-  sassPrefix: '.migration-assessment, .migrationAssessment',
+  sassPrefix: '.assisted-migration-app, .assistedMigrationApp',
   /**
    * Change to false after your app is registered in configuration files
    */
