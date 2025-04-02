@@ -22,9 +22,6 @@ module.exports = {
   plugins: [],
   hotReload: process.env.HOT === 'true',
   moduleFederation: {
-    exposes: {
-      './RootApp': path.resolve(__dirname, './src/components/RootApp.tsx'),
-    },
     exclude: ['react-router-dom'],
     shared: [
       {
