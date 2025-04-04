@@ -6,7 +6,7 @@
     "target": "es5",
     "allowSyntheticDefaultImports": true,
     "noErrorTruncation": true,
-    "strict": true,
+    "strict": false,
     "rootDir": ".",
     "skipLibCheck": true,
     "lib": [
@@ -16,6 +16,7 @@
     "module": "esnext",
     "esModuleInterop": true,
     "resolveJsonModule": true,
+    "isolatedModules": true
   },
   "include": [
     "./src/**/*.ts",

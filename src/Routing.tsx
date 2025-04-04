@@ -1,25 +1,24 @@
-import React, { Suspense, lazy, useMemo } from 'react';
-import { Route as RouterRoute, Routes as RouterRoutes } from 'react-router-dom';
-import { InvalidObject } from '@redhat-cloud-services/frontend-components/InvalidObject';
-import { Bullseye, Spinner } from '@patternfly/react-core';
+import "@patternfly/react-core/dist/styles/base.css";
 
-const MigrationAssessmentPage = lazy(
-  () =>
-    import(
-      /* webpackChunkName: "SamplePage" */ './pages/MigrationAssessmentPage'
-    )
-);
+import React, { Suspense, lazy, useMemo } from "react";
+import { Route as RouterRoute, Routes as RouterRoutes } from "react-router-dom";
+import { InvalidObject } from "@redhat-cloud-services/frontend-components/InvalidObject";
+import { Bullseye, Spinner } from "@patternfly/react-core";
+import MigrationAssessmentPage from "./pages/MigrationAssessmentPage";
+import MigrationWizardPage from "./pages/MigrationWizardPage";
+
 
 const routes = [
   {
-    path: '/',
+    path: "/",
     element: MigrationAssessmentPage,
   },
-  /* Catch all unmatched routes */
   {
-    route: {
-      path: '*',
-    },
+    path: "/migrate/wizard",
+    element: MigrationWizardPage,
+  },
+  {
+    path: "*",
     element: InvalidObject,
   },
 ];

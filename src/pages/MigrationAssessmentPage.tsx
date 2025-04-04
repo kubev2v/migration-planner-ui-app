@@ -15,7 +15,7 @@ import {
   TextContent,
 } from '@patternfly/react-core';
 import { ClusterIcon, MigrationIcon } from '@patternfly/react-icons';
-import globalActiveColor300 from '@patternfly/react-tokens/dist/js/global_active_color_300';
+import { global_active_color_300 as globalActiveColor300 } from '@patternfly/react-tokens/dist/js/global_active_color_300';
 import { AppPage } from '../components/AppPage';
 import { CustomEnterpriseIcon } from '../components/CustomEnterpriseIcon';
 
@@ -106,7 +106,7 @@ const MigrationAssessmentPage: React.FC = () => (
           </Flex>
         </StackItem>
         <StackItem style={{ alignSelf: 'center' }}>
-          <Link to="/migrate/wizard">
+          <Link to="migrate/wizard">
             <Button>Start your migration journey</Button>
           </Link>
         </StackItem>

@@ -9,7 +9,7 @@ import {
   EmptyStateIcon,
 } from "@patternfly/react-core";
 import { ExclamationCircleIcon, SearchIcon } from "@patternfly/react-icons";
-import globalDangerColor200 from "@patternfly/react-tokens/dist/esm/global_danger_color_200";
+import { global_danger_color_200 as globalDangerColor200 } from '@patternfly/react-tokens/dist/js/global_danger_color_200';
 import { DiscoverySourceSetupModal } from "./DiscoverySourceSetupModal";
 import { useDiscoverySources } from "../../../../contexts/discovery-sources/Context";
 

@@ -15,7 +15,7 @@ import {
   Button,
   AlertActionLink,
 } from '@patternfly/react-core';
-import { chart_color_blue_300 as blueColor } from '@patternfly/react-tokens/dist/esm/chart_color_blue_300';
+import { chart_color_blue_300 as blueColor } from '@patternfly/react-tokens/dist/js/chart_color_blue_300';
 import { ClusterIcon, PlusCircleIcon } from '@patternfly/react-icons';
 import { DiscoverySourceSetupModal } from './sources-table/empty-state/DiscoverySourceSetupModal';
 import { Source } from '@migration-planner-ui/api-client/models';

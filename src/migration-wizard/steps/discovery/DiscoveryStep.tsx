@@ -24,8 +24,8 @@ import {
   NetworkIcon,
   VirtualMachineIcon,
 } from "@patternfly/react-icons";
-import globalWarningColor100 from "@patternfly/react-tokens/dist/js/global_warning_color_100";
-import globalDangerColor100 from "@patternfly/react-tokens/dist/js/global_danger_color_100";
+import { global_warning_color_100 as globalWarningColor100 } from '@patternfly/react-tokens/dist/js/global_warning_color_100';
+import { global_danger_color_100 as globalDangerColor100 } from '@patternfly/react-tokens/dist/js/global_danger_color_100';
 import type {
   InfraDatastoresInner,
   InfraNetworksInner,
@@ -48,7 +48,7 @@ export const DiscoveryStep: React.FC = () => {
   const { cpuCores, ramGB, diskCount, diskGB, os } = vms;
   const operatingSystems = Object.entries(os).map(([name, count]) => ({
     name,
-    count,
+    count: count as number,
   })); 
 
   const infrastructureViewData: TreeViewDataItem = {

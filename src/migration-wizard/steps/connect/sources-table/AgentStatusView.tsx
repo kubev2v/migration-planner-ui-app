@@ -16,9 +16,9 @@ import {
   CheckCircleIcon,
   InfoCircleIcon,
 } from "@patternfly/react-icons";
-import globalDangerColor200 from "@patternfly/react-tokens/dist/esm/global_danger_color_200";
-import globalInfoColor100 from "@patternfly/react-tokens/dist/esm/global_info_color_100";
-import globalSuccessColor100 from "@patternfly/react-tokens/dist/esm/global_success_color_100";
+import { global_danger_color_200 as globalDangerColor200 } from '@patternfly/react-tokens/dist/js/global_danger_color_200';
+import { global_info_color_100 as globalInfoColor100 } from '@patternfly/react-tokens/dist/js/global_info_color_100';
+import { global_success_color_100 as globalSuccessColor100 } from '@patternfly/react-tokens/dist/js/global_success_color_100';
 import { Link } from "react-router-dom";
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
