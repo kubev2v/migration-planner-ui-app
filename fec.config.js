@@ -45,8 +45,11 @@ module.exports = {
       './Infra': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/Infra.js'),
       './Event': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/Event.js'),
       './AgentApi': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/apis/AgentApi.js'),
+      './SourceApi': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/apis/SourceApi.js'),
+      './ImageApi': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/apis/ImageApi.js'),
       '../models/index': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/index.js'),
       '../runtime': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/runtime.js'),
+      './HealthApi': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/apis/HealthApi.js')
     }, 
   },
   customizeWebpackConfig: (config) => {
