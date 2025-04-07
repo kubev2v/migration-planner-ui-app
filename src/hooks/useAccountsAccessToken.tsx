@@ -11,9 +11,6 @@ declare global {
   }
 }
 
-const getBaseUrl = (): string =>
-  window.ocmConfig?.configData?.apiGateway || 'https://api.stage.openshift.com';
-
 export type AccountsAccessToken = {
   auths: {
     [domain: string]: {
@@ -50,14 +47,7 @@ export function useAccountsAccessToken(): {
     async function getToken(): Promise<void> {
       try {
         const bearerToken = await auth.getToken(); // Get Bearer Token
-        if (bearerToken) {
-          const result = await fetchAccessToken(bearerToken);
-          if (objectIsAccessToken(result)) {
-            // If response is ok, get the token
-            const firstDomain = Object.keys(result.auths)[0];
-            setAccessToken(result.auths[firstDomain].auth);
-          }
-        }
+        setAccessToken(bearerToken);
       } catch (error) {
         console.error('Error fetching access token:', error);
         setAccessToken('test token');
@@ -68,21 +58,4 @@ export function useAccountsAccessToken(): {
   }, [auth]);
 
   return { accessToken };
-}
-
-// Function to get the token from OpenShift API
-async function fetchAccessToken(
-  bearerToken: string,
-): Promise<AccountsAccessToken | OCMErrorResponse> {
-  const response = await fetch(
-    `${getBaseUrl()}/api/accounts_mgmt/v1/access_token`,
-    {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${bearerToken}`,
-      },
-    },
-  );
-
-  return response.json() as Promise<AccountsAccessToken | OCMErrorResponse>;
 }
