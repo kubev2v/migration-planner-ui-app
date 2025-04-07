@@ -12,7 +12,7 @@ declare global {
 }
 
 const getBaseUrl = (): string =>
-  window.ocmConfig?.configData?.apiGateway || 'https://api.stage.openshift.com';
+  window.ocmConfig?.configData?.apiGateway || 'https://console.stage.redhat.com';
 
 export type AccountsAccessToken = {
   auths: {
