@@ -47,7 +47,22 @@ export const Provider: React.FC<PropsWithChildren> = (props) => {
     async (name: string, sshPublicKey: string) => {
       //TODO: Remove the proxy
       try {
-        return await sourceApi.createSource({ sourceCreate: { name, sshPublicKey } });
+        return await sourceApi.createSource(
+          {
+            sourceCreate: {
+              name,
+              sshPublicKey,
+              proxy: { httpsUrl: 'http://squid.corp.redhat.com:3128' },
+            },
+          },
+          {
+            headers: {
+              'Content-type': 'application/json',
+              Authorization: `Bearer ${accessToken}`,
+            },
+          },
+        );
+  
       } catch (error: unknown) {
         console.error("Error creating source:", error);
   
