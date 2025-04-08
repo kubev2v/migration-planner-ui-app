@@ -12,10 +12,11 @@ import {
   Source,
   SourceUpdateOnPremFromJSON,
 } from '@migration-planner-ui/api-client/models';
-
+import { useAccountsAccessToken } from '../../../hooks/useAccountsAccessToken';
 
 export const Provider: React.FC<PropsWithChildren> = (props) => {
   const { children } = props;
+  const { accessToken } = useAccountsAccessToken();
   const [sourceSelected, setSourceSelected] = useState<Source | null>(null);
 
   const [agentSelected, setAgentSelected] = useState<Agent | null>(null);
@@ -45,21 +46,29 @@ export const Provider: React.FC<PropsWithChildren> = (props) => {
   const [createSourceState, createSource] = useAsyncFn(
     async (name: string, sshPublicKey: string) => {
       //TODO: Remove the proxy
-      const createdSource = await sourceApi.createSource(
-        {
-          sourceCreate: {
-            name,
-            sshPublicKey,
-            proxy: { httpsUrl: 'http://squid.corp.redhat.com:3128' },
-          },
-        },
-        {
-          headers: {
-            'Content-type': 'application/json',
-          },
-        },
-      );
-      return createdSource;
+      try {
+        return await sourceApi.createSource({ sourceCreate: { name, sshPublicKey } });
+      } catch (error: unknown) {
+        console.error("Error creating source:", error);
+  
+        if (typeof error === "object" && error !== null && "response" in error) {
+          const response = (error as { response: Response }).response;
+  
+          try {
+            const errorText = await response.text(); // Read as text first
+            try {
+              const errorData = JSON.parse(errorText); // Attempt to parse JSON
+              return errorData?.message || "API error occurred.";
+            } catch {
+              return errorText || "Failed to parse API error response.";
+            }
+          } catch {
+            return "Error response could not be read.";
+          }
+        }
+  
+        return "Unexpected error occurred while creating the source.";
+      }
     },
   );
 
@@ -69,10 +78,15 @@ export const Provider: React.FC<PropsWithChildren> = (props) => {
       anchor.download = sourceName + '.ova';
 
       const newSource = await createSource(sourceName, sourceSshKey);
-      const imageUrl = `/planner/api/v1/sources/${newSource.id}/image`;
-      const imageUrlGen = `/planner/api/v1/sources/${newSource.id}/image-url`;
+      const imageUrl = `https://migration-planner-assisted-migration-stage.apps.crcs02ue1.urby.p1.openshiftapps.com/planner/api/v1/sources/${newSource.id}/image`;
+      const imageUrlGen = `https://migration-planner-assisted-migration-stage.apps.crcs02ue1.urby.p1.openshiftapps.com/planner/api/v1/sources/${newSource.id}/image-url`;
 
-      const response = await fetch(imageUrl, { method: 'HEAD' });
+      const response = await fetch(imageUrl, {
+        method: 'HEAD',
+        headers: {
+          Authorization: `Bearer ${accessToken}`, // Use access token here
+        },
+      });
 
       if (!response.ok) {
         const error: Error = new Error(
@@ -87,6 +101,9 @@ export const Provider: React.FC<PropsWithChildren> = (props) => {
 
       const responseGen = await fetch(imageUrlGen, {
         method: 'GET',
+        headers: {
+          Authorization: `Bearer ${accessToken}`, // Use access token here
+        },
       });
 
       if (!responseGen.ok) {
