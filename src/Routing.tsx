@@ -13,7 +13,11 @@ interface RouteType {
   elementProps?: Record<string, unknown>;
 }
 
-const Routing: React.FC = () => {
+interface RoutingProps {
+  token: string;
+}
+
+const Routing: React.FC<RoutingProps> = ({ token }) => {
   const routes: RouteType[] = [
     {
       path: "/",
@@ -22,6 +26,7 @@ const Routing: React.FC = () => {
     {
       path: "/migrate/wizard",
       element: MigrationWizardPage,
+      elementProps: { token },
     },
     {
       path: "*",
