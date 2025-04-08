@@ -9,7 +9,7 @@ import { Configuration } from "@migration-planner-ui/api-client/runtime";
 import { AgentApi } from "@migration-planner-ui/agent-client/apis";
 import Routing from "./Routing";
 import { Symbols } from "./main/Symbols";
-import { SourceApi } from "@migration-planner-ui/api-client/apis";
+import { ImageApi, SourceApi } from "@migration-planner-ui/api-client/apis";
 import { useAccountsAccessToken } from "./hooks/useAccountsAccessToken";
 
 function getConfiguredContainer(accessToken: string): Container {
@@ -22,6 +22,7 @@ function getConfiguredContainer(accessToken: string): Container {
 
   const container = new Container();
   
+  container.register(Symbols.ImageApi, new ImageApi(plannerApiConfig));
   container.register(Symbols.SourceApi, new SourceApi(plannerApiConfig));
   container.register(Symbols.AgentApi, new AgentApi(plannerApiConfig));
 

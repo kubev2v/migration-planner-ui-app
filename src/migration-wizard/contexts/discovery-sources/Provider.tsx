@@ -1,6 +1,7 @@
 import React, { type PropsWithChildren, useCallback, useState } from 'react';
 import { useAsyncFn, useInterval } from 'react-use';
 import {
+  type ImageApiInterface,
   type AgentApiInterface,
   type SourceApiInterface,
 } from '@migration-planner-ui/api-client/apis';
@@ -25,6 +26,7 @@ export const Provider: React.FC<PropsWithChildren> = (props) => {
 
   const sourceApi = useInjection<SourceApiInterface>(Symbols.SourceApi);
   const agentsApi = useInjection<AgentApiInterface>(Symbols.AgentApi);
+  const imageApi = useInjection<ImageApiInterface>(Symbols.ImageApi);
 
   const [listAgentsState, listAgents] = useAsyncFn(async () => {
     if (!sourcesLoaded) return;
@@ -45,45 +47,10 @@ export const Provider: React.FC<PropsWithChildren> = (props) => {
 
   const [createSourceState, createSource] = useAsyncFn(
     async (name: string, sshPublicKey: string) => {
-      //TODO: Remove the proxy
-      try {
-        return await sourceApi.createSource(
-          {
-            sourceCreate: {
-              name,
-              sshPublicKey,
-              proxy: { httpsUrl: 'http://squid.corp.redhat.com:3128' },
-            },
-          },
-          {
-            headers: {
-              'Content-type': 'application/json',
-              Authorization: `Bearer ${accessToken}`,
-            },
-          },
-        );
-  
-      } catch (error: unknown) {
-        console.error("Error creating source:", error);
-  
-        if (typeof error === "object" && error !== null && "response" in error) {
-          const response = (error as { response: Response }).response;
-  
-          try {
-            const errorText = await response.text(); // Read as text first
-            try {
-              const errorData = JSON.parse(errorText); // Attempt to parse JSON
-              return errorData?.message || "API error occurred.";
-            } catch {
-              return errorText || "Failed to parse API error response.";
-            }
-          } catch {
-            return "Error response could not be read.";
-          }
-        }
-  
-        return "Unexpected error occurred while creating the source.";
-      }
+      const createdSource = await sourceApi.createSource({
+        sourceCreate: { name, sshPublicKey, proxy: { httpsUrl: 'http://squid.corp.redhat.com:3128' }}
+      });
+      return createdSource;
     },
   );
 
@@ -93,47 +60,11 @@ export const Provider: React.FC<PropsWithChildren> = (props) => {
       anchor.download = sourceName + '.ova';
 
       const newSource = await createSource(sourceName, sourceSshKey);
-      const imageUrl = `https://migration-planner-assisted-migration-stage.apps.crcs02ue1.urby.p1.openshiftapps.com/planner/api/v1/sources/${newSource.id}/image`;
-      const imageUrlGen = `https://migration-planner-assisted-migration-stage.apps.crcs02ue1.urby.p1.openshiftapps.com/planner/api/v1/sources/${newSource.id}/image-url`;
+      await imageApi.headImage({ id: newSource.id });
+      const imageUrl = await imageApi.getSourceDownloadURL({ id: newSource.id })
+      downloadSourceState.loading = true;
 
-      const response = await fetch(imageUrl, {
-        method: 'HEAD',
-        headers: {
-          Authorization: `Bearer ${accessToken}`, // Use access token here
-        },
-      });
-
-      if (!response.ok) {
-        const error: Error = new Error(
-          `Error downloading source: ${response.status} ${response.statusText}`,
-        );
-        downloadSourceState.error = error;
-        console.error('Error downloading source:', error);
-        throw error;
-      } else {
-        downloadSourceState.loading = true;
-      }
-
-      const responseGen = await fetch(imageUrlGen, {
-        method: 'GET',
-        headers: {
-          Authorization: `Bearer ${accessToken}`, // Use access token here
-        },
-      });
-
-      if (!responseGen.ok) {
-        const error: Error = new Error(
-          `Error downloading source: ${responseGen.status} ${responseGen.statusText}`,
-        );
-        downloadSourceState.error = error;
-        console.error('Error downloading source:', error);
-        throw error;
-      } else {
-        downloadSourceState.loading = true;
-      }
-
-      const responseGenJson = await responseGen.json();
-      anchor.href = responseGenJson.url;
+      anchor.href = imageUrl.url;
       anchor.click();
       anchor.remove();
     },
