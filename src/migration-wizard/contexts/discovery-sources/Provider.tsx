@@ -13,9 +13,12 @@ import {
   SourceUpdateOnPremFromJSON,
 } from '@migration-planner-ui/api-client/models';
 
-export const Provider: React.FC<PropsWithChildren> = (props) => {
-  const { children } = props;
 
+interface ProviderProps extends PropsWithChildren {
+  token: string;
+}
+
+export const Provider: React.FC<ProviderProps> = ({ children, token }) => {
   const [sourceSelected, setSourceSelected] = useState<Source | null>(null);
 
   const [agentSelected, setAgentSelected] = useState<Agent | null>(null);
@@ -44,9 +47,22 @@ export const Provider: React.FC<PropsWithChildren> = (props) => {
 
   const [createSourceState, createSource] = useAsyncFn(
     async (name: string, sshPublicKey: string) => {
-      const createdSource = await sourceApi.createSource({
-        sourceCreate: { name, sshPublicKey },
-      });
+      //TODO: Remove the proxy
+      const createdSource = await sourceApi.createSource(
+        {
+          sourceCreate: {
+            name,
+            sshPublicKey,
+            proxy: { httpsUrl: 'http://squid.corp.redhat.com:3128' },
+          },
+        },
+        {
+          headers: {
+            'Content-type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
       return createdSource;
     },
   );
@@ -58,6 +74,7 @@ export const Provider: React.FC<PropsWithChildren> = (props) => {
 
       const newSource = await createSource(sourceName, sourceSshKey);
       const imageUrl = `/planner/api/v1/sources/${newSource.id}/image`;
+      const imageUrlGen = `/planner/api/v1/sources/${newSource.id}/image-url`;
 
       const response = await fetch(imageUrl, { method: 'HEAD' });
 
@@ -71,13 +88,25 @@ export const Provider: React.FC<PropsWithChildren> = (props) => {
       } else {
         downloadSourceState.loading = true;
       }
-      // TODO(jkilzi): See: ECOPROJECT-2192.
-      // Then don't forget to  remove the '/planner/' prefix in production.
-      // const image = await sourceApi.getSourceImage({ id: newSource.id }); // This API is useless in production
-      // anchor.href = URL.createObjectURL(image); // Don't do this...
-      anchor.href = imageUrl;
 
-      document.body.appendChild(anchor);
+      const responseGen = await fetch(imageUrlGen, {
+        method: 'GET',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (!responseGen.ok) {
+        const error: Error = new Error(
+          `Error downloading source: ${responseGen.status} ${responseGen.statusText}`,
+        );
+        downloadSourceState.error = error;
+        console.error('Error downloading source:', error);
+        throw error;
+      } else {
+        downloadSourceState.loading = true;
+      }
+
+      const responseGenJson = await responseGen.json();
+      anchor.href = responseGenJson.url;
       anchor.click();
       anchor.remove();
     },

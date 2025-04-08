@@ -46,7 +46,7 @@ const App = () => {
     <Fragment>
       <DependencyInjectionProvider container={container}>
         <React.Suspense fallback={<Spinner />}>
-          <Routing />
+          <Routing token={accessToken}/>
         </React.Suspense>
       </DependencyInjectionProvider>
     </Fragment>
