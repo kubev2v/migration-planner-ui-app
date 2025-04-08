@@ -14,11 +14,8 @@ import {
 } from '@migration-planner-ui/api-client/models';
 
 
-interface ProviderProps extends PropsWithChildren {
-  token: string;
-}
-
-export const Provider: React.FC<ProviderProps> = ({ children, token }) => {
+export const Provider: React.FC<PropsWithChildren> = (props) => {
+  const { children } = props;
   const [sourceSelected, setSourceSelected] = useState<Source | null>(null);
 
   const [agentSelected, setAgentSelected] = useState<Agent | null>(null);
@@ -59,7 +56,6 @@ export const Provider: React.FC<ProviderProps> = ({ children, token }) => {
         {
           headers: {
             'Content-type': 'application/json',
-            Authorization: `Bearer ${token}`,
           },
         },
       );
@@ -91,7 +87,6 @@ export const Provider: React.FC<ProviderProps> = ({ children, token }) => {
 
       const responseGen = await fetch(imageUrlGen, {
         method: 'GET',
-        headers: { Authorization: `Bearer ${token}` },
       });
 
       if (!responseGen.ok) {
