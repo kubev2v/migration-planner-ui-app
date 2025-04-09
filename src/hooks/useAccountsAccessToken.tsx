@@ -55,7 +55,7 @@ export function useAccountsAccessToken(): {
     }
 
     getToken();
-  }, [auth]);
+  }, []);
 
   return { accessToken };
 }

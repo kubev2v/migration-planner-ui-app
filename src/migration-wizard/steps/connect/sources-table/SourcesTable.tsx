@@ -32,7 +32,8 @@ export const SourcesTable: React.FC = () => {
         : [];
     }
     return prevSourcesRef.current;
-  }, [discoverySourcesContext]);
+   // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [discoverySourcesContext.sources]);
 
   const [firstSource, ..._otherSources] = memoizedSources ?? [];  
   const hasSources = memoizedSources && memoizedSources.length>0;
