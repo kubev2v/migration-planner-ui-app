@@ -10,14 +10,10 @@ import { AgentApi } from "@migration-planner-ui/agent-client/apis";
 import Routing from "./Routing";
 import { Symbols } from "./main/Symbols";
 import { ImageApi, SourceApi } from "@migration-planner-ui/api-client/apis";
-import { useAccountsAccessToken } from "./hooks/useAccountsAccessToken";
 
-function getConfiguredContainer(accessToken: string): Container {
+function getConfiguredContainer(): Container {
   const plannerApiConfig = new Configuration({
     basePath: "/planner",
-    headers: {
-      Authorization: `Bearer ${accessToken}`, // Use access token here
-    },
   });
 
   const container = new Container();
@@ -35,13 +31,12 @@ function getConfiguredContainer(accessToken: string): Container {
 
 const App = () => {
   const { updateDocumentTitle } = useChrome();
-  const { accessToken } = useAccountsAccessToken();
  
   useEffect(() => {
     updateDocumentTitle("Migration assessment");
   }, []);
 
-  const container = getConfiguredContainer(accessToken);
+  const container = getConfiguredContainer();
 
   return (
     <Fragment>
