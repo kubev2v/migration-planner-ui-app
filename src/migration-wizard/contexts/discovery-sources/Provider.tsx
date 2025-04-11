@@ -13,11 +13,9 @@ import {
   Source,
   SourceUpdateOnPremFromJSON,
 } from '@migration-planner-ui/api-client/models';
-import { useAccountsAccessToken } from '../../../hooks/useAccountsAccessToken';
 
 export const Provider: React.FC<PropsWithChildren> = (props) => {
   const { children } = props;
-  const { accessToken } = useAccountsAccessToken();
   const [sourceSelected, setSourceSelected] = useState<Source | null>(null);
 
   const [agentSelected, setAgentSelected] = useState<Agent | null>(null);
@@ -35,9 +33,10 @@ export const Provider: React.FC<PropsWithChildren> = (props) => {
   }, [sourcesLoaded]);
 
   const [listSourcesState, listSources] = useAsyncFn(async () => {
-    const sources = await sourceApi.listSources({ includeDefault: true });
-    setSourcesLoaded(true);
-    return sources;
+      const sources = await sourceApi.listSources({
+        includeDefault: true,
+      });
+      return sources;
   });
 
   const [deleteSourceState, deleteSource] = useAsyncFn(async (id: string) => {
@@ -48,7 +47,7 @@ export const Provider: React.FC<PropsWithChildren> = (props) => {
   const [createSourceState, createSource] = useAsyncFn(
     async (name: string, sshPublicKey: string) => {
       const createdSource = await sourceApi.createSource({
-        sourceCreate: { name, sshPublicKey, proxy: { httpsUrl: 'http://squid.corp.redhat.com:3128' }}
+        sourceCreate: { name, sshPublicKey, proxy: { httpsUrl: 'http://squid.corp.redhat.com:3128' }},
       });
       return createdSource;
     },
