@@ -1,47 +1,42 @@
-import React, { Fragment, useEffect } from "react";
+import React, { Fragment, useEffect, useMemo } from "react";
 import { useChrome } from "@redhat-cloud-services/frontend-components/useChrome";
 import { Spinner } from "@patternfly/react-core";
-import {
-  Container  
-} from "@migration-planner-ui/ioc";
+import { Container } from "@migration-planner-ui/ioc";
 import { Provider as DependencyInjectionProvider } from "@migration-planner-ui/ioc";
 import { Configuration } from "@migration-planner-ui/api-client/runtime";
 import { AgentApi } from "@migration-planner-ui/agent-client/apis";
+import { ImageApi, SourceApi } from "@migration-planner-ui/api-client/apis";
 import Routing from "./Routing";
 import { Symbols } from "./main/Symbols";
-import { ImageApi, SourceApi } from "@migration-planner-ui/api-client/apis";
-import { useAccountsAccessToken } from "./hooks/useAccountsAccessToken";
-
-function getConfiguredContainer(accessToken: string): Container {
-  const plannerApiConfig = new Configuration({
-    basePath: "/planner",
-    headers: {
-      Authorization: `Bearer ${accessToken}`, // Use access token here
-    },
-  });
-
-  const container = new Container();
-  
-  container.register(Symbols.ImageApi, new ImageApi(plannerApiConfig));
-  container.register(Symbols.SourceApi, new SourceApi(plannerApiConfig));
-  container.register(Symbols.AgentApi, new AgentApi(plannerApiConfig));
-
-  //For UI testing we can use the mock Apis
-  //container.register(Symbols.SourceApi, new MockSourceApi(plannerApiConfig));
-  //container.register(Symbols.AgentApi, new MockAgentApi(plannerApiConfig));
-
-  return container;
-}
+import { createAuthFetch } from "./utils/authFetch";
 
 const App = () => {
-  const { updateDocumentTitle } = useChrome();
-  const { accessToken } = useAccountsAccessToken();
- 
-  useEffect(() => {
-    updateDocumentTitle("Migration assessment");
-  }, []);
+  const chrome = useChrome(); // useChrome SÍ puede usarse acá
+  const [container, setContainer] = React.useState<Container>();
 
-  const container = getConfiguredContainer(accessToken);
+  useEffect(() => {
+    const configure = () => {
+      const authFetch = createAuthFetch(chrome); // pasamos chrome
+
+      const plannerApiConfig = new Configuration({
+        basePath: '/planner',
+        fetchApi: authFetch,
+      });
+
+      const c = new Container();
+      c.register(Symbols.ImageApi, new ImageApi(plannerApiConfig));
+      c.register(Symbols.SourceApi, new SourceApi(plannerApiConfig));
+      c.register(Symbols.AgentApi, new AgentApi(plannerApiConfig));
+
+      setContainer(c);
+    };
+
+    configure();
+  }, [chrome]);
+
+  if (!container) {
+    return <Spinner />;
+  }
 
   return (
     <Fragment>

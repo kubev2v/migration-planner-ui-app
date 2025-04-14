@@ -13,11 +13,9 @@ import {
   Source,
   SourceUpdateOnPremFromJSON,
 } from '@migration-planner-ui/api-client/models';
-import { useAccountsAccessToken } from '../../../hooks/useAccountsAccessToken';
 
 export const Provider: React.FC<PropsWithChildren> = (props) => {
   const { children } = props;
-  const { accessToken } = useAccountsAccessToken();
   const [sourceSelected, setSourceSelected] = useState<Source | null>(null);
 
   const [agentSelected, setAgentSelected] = useState<Agent | null>(null);
