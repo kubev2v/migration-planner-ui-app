@@ -44,9 +44,13 @@ export const Provider: React.FC<PropsWithChildren> = (props) => {
   });
 
   const [createSourceState, createSource] = useAsyncFn(
-    async (name: string, sshPublicKey: string) => {
+    async (name: string, sshPublicKey: string, httpProxy:string, httpsProxy:string, noProxy: string) => {
       try {
-        return await sourceApi.createSource({ sourceCreate: { name, sshPublicKey } });
+        return await sourceApi.createSource({ sourceCreate: { name, sshPublicKey, proxy: {
+          httpUrl: httpProxy,
+          httpsUrl: httpsProxy,
+          noProxy: noProxy          
+        } } });
       } catch (error: unknown) {
         console.error("Error creating source:", error);
   
@@ -72,11 +76,11 @@ export const Provider: React.FC<PropsWithChildren> = (props) => {
   );
 
   const [downloadSourceState, downloadSource] = useAsyncFn(
-    async (sourceName: string, sourceSshKey: string): Promise<void> => {
+    async (sourceName: string, sourceSshKey: string, httpProxy:string, httpsProxy:string, noProxy: string): Promise<void> => {
       const anchor = document.createElement('a');
       anchor.download = sourceName + '.ova';
 
-      const newSource = await createSource(sourceName, sourceSshKey);
+      const newSource = await createSource(sourceName, sourceSshKey, httpProxy, httpsProxy, noProxy);
 
       if (!newSource?.id) {
         throw new Error(

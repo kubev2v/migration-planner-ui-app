@@ -131,9 +131,15 @@ export const ConnectStep: React.FC = () => {
               const environmentName = form['discoveryEnvironmentName']
                 .value as string;
               const sshKey = form['discoverySourceSshKey'].value as string;
+              const httpProxy = form['httpProxy']? form['httpProxy'].value as string:'';
+              const httpsProxy =  form['httpsProxy'] ? form['httpsProxy'].value as string:'';
+              const noProxy = form['noProxy'] ? form['noProxy'].value as string:'';
               await discoverySourcesContext.downloadSource(
                 environmentName,
                 sshKey,
+                httpProxy,
+                httpsProxy,
+                noProxy,
               );
               toggleDiscoverySourceSetupModal();
               await discoverySourcesContext.listSources();

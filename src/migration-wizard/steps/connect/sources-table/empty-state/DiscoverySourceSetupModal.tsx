@@ -15,6 +15,7 @@ import {
   ModalFooter,
   ModalHeader,
 } from "@patternfly/react-core/next";
+import ProxyFields from "./ProxyFields";
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace DiscoverySourceSetupModal {
@@ -139,6 +140,7 @@ export const DiscoverySourceSetupModal: React.FC<
               </HelperText>
             </FormHelperText>
           </FormGroup>
+          <ProxyFields/>
         </Form>
       </ModalBody>
       <ModalFooter>

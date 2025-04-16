@@ -13,7 +13,7 @@ declare namespace DiscoverySources {
     sourceSelected: Source;
     listSources: () => Promise<Source[]>;
     deleteSource: (id: string) => Promise<Source>;
-    downloadSource: (envName: string, sourceSshKey: string) => Promise<void>;
+    downloadSource: (envName: string, sourceSshKey: string, httpProxy:string, httpsProxy:string, noProxy: string) => Promise<void>;
     startPolling: (delay: number) => void;
     stopPolling: () => void;
     selectSource: (source: Source) => void;
