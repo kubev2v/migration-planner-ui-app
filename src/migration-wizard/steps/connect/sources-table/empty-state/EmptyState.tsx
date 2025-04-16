@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useState } from 'react';
 import {
   Button,
   EmptyState as PFEmptyState,
@@ -12,8 +12,8 @@ import {
 } from "@patternfly/react-core";
 import { ExclamationCircleIcon, SearchIcon } from "@patternfly/react-icons";
 import { global_danger_color_200 as globalDangerColor200 } from '@patternfly/react-tokens/dist/js/global_danger_color_200';
-import { DiscoverySourceSetupModal } from "./DiscoverySourceSetupModal";
-import { useDiscoverySources } from "../../../../contexts/discovery-sources/Context";
+import { DiscoverySourceSetupModal } from './DiscoverySourceSetupModal';
+import { useDiscoverySources } from '../../../../contexts/discovery-sources/Context';
 
 export const EmptyState: React.FC = () => {
   const discoverySourcesContext = useDiscoverySources();
@@ -43,16 +43,13 @@ export const EmptyState: React.FC = () => {
         icon={<EmptyStateIcon icon={SearchIcon} />}
       />
       <EmptyStateBody>
-        Begin by creating a discovery environment. Then download and import the OVA
-        file into your VMware environment.
+        Begin by creating a discovery environment. Then download and import the
+        OVA file into your VMware environment.
       </EmptyStateBody>
       
       <EmptyStateFooter>
         <EmptyStateActions>
-          <Button
-            variant="secondary"
-            onClick={toggleDiscoverySourceSetupModal}
-          >
+          <Button variant="secondary" onClick={toggleDiscoverySourceSetupModal}>
             Create
           </Button>
         </EmptyStateActions>
@@ -105,10 +102,19 @@ export const EmptyState: React.FC = () => {
           isDisabled={discoverySourcesContext.isDownloadingSource}
           onSubmit={async (event) => {
             const form = event.currentTarget;
-            const environmentName = form["discoveryEnvironmentName"].value as string;
-            const sshKey = form["discoverySourceSshKey"].value as string;
-            setIsOvaDownloading(true); // Start showing the alert
-            await discoverySourcesContext.downloadSource(environmentName,sshKey);
+            const environmentName = form['discoveryEnvironmentName'].value as string;
+            const sshKey = form['discoverySourceSshKey'].value as string;
+            const httpProxy = form['httpProxy']? form['httpProxy'].value as string:'';
+            const httpsProxy =  form['httpsProxy'] ? form['httpsProxy'].value as string:'';
+            const noProxy = form['noProxy'] ? form['noProxy'].value as string:'';
+            setIsOvaDownloading(true); // Start showing the alert          
+            await discoverySourcesContext.downloadSource(
+              environmentName,
+              sshKey,
+              httpProxy,
+              httpsProxy,
+              noProxy,
+            );
             toggleDiscoverySourceSetupModal();
             await discoverySourcesContext.listSources();
             setIsOvaDownloading(false); // Hide alert after everything is done
@@ -119,4 +125,4 @@ export const EmptyState: React.FC = () => {
   );
 };
 
-EmptyState.displayName = "SourcesTableEmptyState";
+EmptyState.displayName = 'SourcesTableEmptyState';

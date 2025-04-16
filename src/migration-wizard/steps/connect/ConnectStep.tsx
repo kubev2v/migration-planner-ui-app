@@ -133,9 +133,15 @@ export const ConnectStep: React.FC = () => {
                 .value as string;
               const sshKey = form['discoverySourceSshKey'].value as string;
               setIsOvaDownloading(true); // Start showing the alert
+              const httpProxy = form['httpProxy']? form['httpProxy'].value as string:'';
+              const httpsProxy =  form['httpsProxy'] ? form['httpsProxy'].value as string:'';
+              const noProxy = form['noProxy'] ? form['noProxy'].value as string:'';
               await discoverySourcesContext.downloadSource(
                 environmentName,
                 sshKey,
+                httpProxy,
+                httpsProxy,
+                noProxy,
               );
               toggleDiscoverySourceSetupModal();
               await discoverySourcesContext.listSources();
