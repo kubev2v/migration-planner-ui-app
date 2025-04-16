@@ -38,6 +38,7 @@ export const ConnectStep: React.FC = () => {
     discoverySourcesContext.sources.length > 0;
   const [firstSource, ..._otherSources] = discoverySourcesContext.sources ?? [];
   const [sourceSelected, setSourceSelected] = React.useState<Source>();
+  const [isOvaDownloading, setIsOvaDownloading] = useState(false);
 
   useEffect(() => {
     if (discoverySourcesContext.sourceSelected) {
@@ -131,18 +132,20 @@ export const ConnectStep: React.FC = () => {
               const environmentName = form['discoveryEnvironmentName']
                 .value as string;
               const sshKey = form['discoverySourceSshKey'].value as string;
+              setIsOvaDownloading(true); // Start showing the alert
               await discoverySourcesContext.downloadSource(
                 environmentName,
                 sshKey,
               );
               toggleDiscoverySourceSetupModal();
               await discoverySourcesContext.listSources();
+              setIsOvaDownloading(false); // Hide alert after everything is done
             }}
           />
         )}
       </StackItem>
       <StackItem>
-        {discoverySourcesContext.isDownloadingSource && (
+        {isOvaDownloading && (
           <Alert isInline variant="info" title="Download OVA image">
             The OVA image is downloading
           </Alert>
@@ -183,7 +186,7 @@ export const ConnectStep: React.FC = () => {
           )}
       </StackItem>
       <StackItem>
-        {!sourceSelected?.agent && sourceSelected?.name !== 'Example' && (
+        {hasSources && !sourceSelected?.agent && sourceSelected?.name !== 'Example' && (
           <Alert isInline variant="custom" title="Environment not connected">
             <TextContent>
               <Text>
