@@ -6,7 +6,7 @@ export const createAuthFetch = (chrome: ChromeAPI): typeof fetch => {
 
     // Nos aseguramos de crear headers a partir de init.headers o un objeto vacío
     const headers = new Headers(init.headers || {});
-    headers.set('Authorization', `Bearer ${token}`);
+    headers.set('X-Authorization', `Bearer ${token}`);
 
     return fetch(input, {
       ...init,
