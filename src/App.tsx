@@ -19,7 +19,7 @@ const App = () => {
       const authFetch = createAuthFetch(chrome); // pasamos chrome
 
       const plannerApiConfig = new Configuration({
-        basePath: 'https://migration-planner-assisted-migration-stage.apps.crcs02ue1.urby.p1.openshiftapps.com',
+        basePath: '/api/migration-assessment',
         fetchApi: authFetch,
       });
 
