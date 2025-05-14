@@ -27,7 +27,7 @@ import {
 import { global_warning_color_100 as globalWarningColor100 } from '@patternfly/react-tokens/dist/js/global_warning_color_100';
 import { global_danger_color_100 as globalDangerColor100 } from '@patternfly/react-tokens/dist/js/global_danger_color_100';
 import type {
-  InfraDatastoresInner,
+  Datastore,
   InfraNetworksInner,
   MigrationIssuesInner,
   Source,
@@ -280,7 +280,7 @@ export const DiscoveryStep: React.FC = () => {
         title: "Datastores",
         name: (
           <ReportTable<
-            InfraDatastoresInner & {
+            Datastore & {
               usage: JSX.Element;
             }
           >
@@ -295,8 +295,9 @@ export const DiscoveryStep: React.FC = () => {
                 </div>
               ),
             }))}
-            columns={["Total", "Free", "Type", "Usage %"]}
-            fields={["totalCapacityGB", "freeCapacityGB", "type", "usage"]}
+            columns={[ "Type", "Vendor", "Total capacity", "Usage %"]}
+            fields={["type", "vendor", "totalCapacityGB", , "usage"]}
+            style={{ width: "50rem" }}
           />
         ),
         id: "datastores",
