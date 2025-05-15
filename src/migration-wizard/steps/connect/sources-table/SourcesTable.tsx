@@ -1,18 +1,21 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
-import { useMount, useUnmount } from "react-use";
-import { Table, Thead, Tr, Th, Tbody, Td } from "@patternfly/react-table";
-import { EmptyState } from "./empty-state/EmptyState";
-import { RemoveSourceAction } from "./actions/RemoveSourceAction";
-import { Columns } from "./Columns";
-import { DEFAULT_POLLING_DELAY, VALUE_NOT_AVAILABLE } from "./Constants";
-import { Radio, Spinner } from "@patternfly/react-core";
-import { Link } from "react-router-dom";
-import { Source } from "@migration-planner-ui/api-client/models";
-import { AgentStatusView } from "./AgentStatusView";
-import { UploadInventoryAction } from "./actions/UploadInventoryAction";
-import { useDiscoverySources } from "../../../contexts/discovery-sources/Context";
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { useMount, useUnmount } from 'react-use';
+import { Table, Thead, Tr, Th, Tbody, Td } from '@patternfly/react-table';
+import { EmptyState } from './empty-state/EmptyState';
+import { RemoveSourceAction } from './actions/RemoveSourceAction';
+import { Columns } from './Columns';
+import { DEFAULT_POLLING_DELAY, VALUE_NOT_AVAILABLE } from './Constants';
+import { Radio, Spinner } from '@patternfly/react-core';
+import { Link } from 'react-router-dom';
+import { Source } from '@migration-planner-ui/api-client/models';
+import { AgentStatusView } from './AgentStatusView';
+import { UploadInventoryAction } from './actions/UploadInventoryAction';
+import { useDiscoverySources } from '../../../contexts/discovery-sources/Context';
 
-export const SourcesTable:  React.FC<{ onUploadResult?: (message: string, isError?: boolean) => void; onUploadSuccess?: () => void; }> = ({ onUploadResult,onUploadSuccess }) => {
+export const SourcesTable: React.FC<{
+  onUploadResult?: (message: string, isError?: boolean) => void;
+  onUploadSuccess?: () => void;
+}> = ({ onUploadResult, onUploadSuccess }) => {
   const discoverySourcesContext = useDiscoverySources();
   const prevSourcesRef = useRef<typeof discoverySourcesContext.sources>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -20,32 +23,43 @@ export const SourcesTable:  React.FC<{ onUploadResult?: (message: string, isErro
 
   // Memorize ordered agents
   const memoizedSources = useMemo(() => {
-    const areSourcesEquals = (prevSources: typeof discoverySourcesContext.sources, newSources: typeof discoverySourcesContext.sources): boolean => {
-      if (!prevSources || !newSources || prevSources.length !== newSources.length) return false;
-      return prevSources.every((agent, index) => agent.id === newSources[index].id);
+    const areSourcesEquals = (
+      prevSources: typeof discoverySourcesContext.sources,
+      newSources: typeof discoverySourcesContext.sources,
+    ): boolean => {
+      if (
+        !prevSources ||
+        !newSources ||
+        prevSources.length !== newSources.length
+      )
+        return false;
+      return prevSources.every(
+        (agent, index) => agent.id === newSources[index].id,
+      );
     };
 
-    if (!areSourcesEquals(prevSourcesRef.current, discoverySourcesContext.sources)) {
+    if (
+      !areSourcesEquals(prevSourcesRef.current, discoverySourcesContext.sources)
+    ) {
       prevSourcesRef.current = discoverySourcesContext.sources;
       return discoverySourcesContext.sources
-        ? discoverySourcesContext.sources.sort((a: Source, b: Source) => a.id.localeCompare(b.id))
+        ? discoverySourcesContext.sources.sort((a: Source, b: Source) =>
+            a.id.localeCompare(b.id),
+          )
         : [];
     }
     return prevSourcesRef.current;
-   // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [discoverySourcesContext.sources]);
 
-  const [firstSource, ..._otherSources] = memoizedSources ?? [];  
-  const hasSources = memoizedSources && memoizedSources.length>0;
+  const [firstSource, ..._otherSources] = memoizedSources ?? [];
+  const hasSources = memoizedSources && memoizedSources.length > 0;
 
   useMount(async () => {
-    discoverySourcesContext.startPolling(DEFAULT_POLLING_DELAY); 
+    discoverySourcesContext.startPolling(DEFAULT_POLLING_DELAY);
     if (!discoverySourcesContext.isPolling) {
-        await Promise.all([
-          discoverySourcesContext.listSources()
-        ]);       
-      }
-      
+      await Promise.all([discoverySourcesContext.listSources()]);
+    }
   });
 
   useUnmount(() => {
@@ -55,14 +69,18 @@ export const SourcesTable:  React.FC<{ onUploadResult?: (message: string, isErro
   useEffect(() => {
     if (!discoverySourcesContext.sourceSelected && firstSource) {
       discoverySourcesContext.selectSource(firstSource);
-    }   
-  }, [discoverySourcesContext, firstSource, discoverySourcesContext.sourceSelected]);
+    }
+  }, [
+    discoverySourcesContext,
+    firstSource,
+    discoverySourcesContext.sourceSelected,
+  ]);
 
   useEffect(() => {
     // Use timeout to verify memoizedSources variable
     timeoutRef.current = setTimeout(() => {
       if (memoizedSources && memoizedSources.length === 0) {
-       setIsLoading(false);
+        setIsLoading(false);
       }
     }, 3000); // Timeout in milisecons (3 seconds here)
 
@@ -76,7 +94,7 @@ export const SourcesTable:  React.FC<{ onUploadResult?: (message: string, isErro
   }, [memoizedSources]);
 
   // Show spinner until all data is loaded
-  if ((isLoading && !hasSources) ) {
+  if (isLoading && !hasSources) {
     return (
       <Table aria-label="Loading table" variant="compact" borders={false}>
         <Tbody>
@@ -88,112 +106,154 @@ export const SourcesTable:  React.FC<{ onUploadResult?: (message: string, isErro
         </Tbody>
       </Table>
     );
-  }
-  else {
+  } else {
     return (
-      <div style={{ maxHeight: "300px", overflowY: "auto", overflowX: "auto" }}>
-      <Table aria-label="Sources table" variant="compact" borders={false}>
-        {memoizedSources && memoizedSources.length>0 && (
-          <Thead>
-            <Tr>
-              <Th style={{ whiteSpace: 'normal', wordBreak: 'break-word' }}>{Columns.Name}</Th>
-              <Th style={{ whiteSpace: 'normal', wordBreak: 'break-word' }}>{Columns.CredentialsUrl}</Th>
-              <Th style={{ whiteSpace: 'normal', wordBreak: 'break-word' }}>{Columns.Status}</Th>
-              <Th style={{ whiteSpace: 'normal', wordBreak: 'break-word' }}>{Columns.Hosts}</Th>
-              <Th style={{ whiteSpace: 'normal', wordBreak: 'break-word' }}>{Columns.VMs}</Th>
-              <Th style={{ whiteSpace: 'normal', wordBreak: 'break-word' }}>{Columns.Networks}</Th>
-              <Th style={{ whiteSpace: 'normal', wordBreak: 'break-word' }}>{Columns.Datastores}</Th>
-              <Th style={{ whiteSpace: 'normal', wordBreak: 'break-word' }}>{Columns.Actions}</Th>
-            </Tr>
-          </Thead>
-        )}
-        <Tbody>
-          {memoizedSources && memoizedSources.length>0 ? (
-            memoizedSources.map((source) => { 
-              // Get the agent related to this source
-              const agent = source.agent;
-              return (
-                <Tr key={source.id}>
-                   <Td dataLabel={Columns.Name}>
-                    <Radio
-                      id={source.id}
-                      name="source-selection"
-                      label={source.name}
-                      isChecked={
-                        discoverySourcesContext.sourceSelected
-                          ? discoverySourcesContext.sourceSelected.id === source.id
-                          : false
-                      }
-                      onChange={() => discoverySourcesContext.selectSource(source)}
-                    />
-                  </Td>
-                  <Td dataLabel={Columns.CredentialsUrl}>
-                     {agent!==undefined && !source.onPremises ? (
-                          <Link to={agent.credentialUrl} target="_blank">
-                            {agent.credentialUrl}
-                          </Link>
-                        ) : (
-                          '-'
-                        )
-                      }
-                  </Td>
-                  <Td dataLabel={Columns.Status}>
-                    <AgentStatusView status={agent ? agent.status : 'not-connected'} statusInfo={agent ? agent.statusInfo: 'Not connected'} credentialUrl={agent ? agent.credentialUrl:''} uploadedManually={source?.onPremises && source?.inventory!==undefined}/>
-                  </Td>
-                  <Td dataLabel={Columns.Hosts}>
-                    {(source?.inventory?.infra.totalHosts ?? VALUE_NOT_AVAILABLE)}
-                  </Td>
-                  <Td dataLabel={Columns.VMs}>
-                    {(source?.inventory?.vms.total ?? VALUE_NOT_AVAILABLE)}
-                  </Td>
-                  <Td dataLabel={Columns.Networks}>
-                    {(source?.inventory?.infra.networks?.length ?? VALUE_NOT_AVAILABLE)}
-                  </Td>
-                  <Td dataLabel={Columns.Datastores}>
-                    {(source?.inventory?.infra.datastores?.length ?? VALUE_NOT_AVAILABLE)}
-                  </Td>
-                  <Td dataLabel={Columns.Actions}>
-                    {source.name !== "Example" && (
-                      <RemoveSourceAction
-                        sourceId={source.id}
-                        sourceName={source.name}
-                        isDisabled={discoverySourcesContext.isDeletingSource}
-                        onConfirm={async (event) => {
-                          event.stopPropagation();
-                          await discoverySourcesContext.deleteSource(source.id);
-                          event.dismissConfirmationModal();
-                          await Promise.all([
-                            discoverySourcesContext.listSources(),
-                            firstSource && discoverySourcesContext.selectSource(firstSource)
-                          ]);
-                        }}
-                      />
-                    )}
-                     {(!source?.agent || source?.onPremises) && source?.name !== "Example"   && (
-                      <UploadInventoryAction
-                      sourceId={source.id}
-                      discoverySourcesContext={discoverySourcesContext}
-                      onUploadResult={(message, isError) => {
-                        onUploadResult?.(message, isError);
-                      }}
-                      onUploadSuccess={onUploadSuccess}
-                    />
-                     )}
-                  </Td>
-                </Tr>
-              );
-            })
-          ) : (
-            <Tr>
-              <Td colSpan={12}>
-                <EmptyState />
-              </Td>
-            </Tr>
+      <div style={{ maxHeight: '300px', overflowY: 'auto', overflowX: 'auto' }}>
+        <Table aria-label="Sources table" variant="compact" borders={false}>
+          {memoizedSources && memoizedSources.length > 0 && (
+            <Thead>
+              <Tr>
+                <Th style={{ whiteSpace: 'normal' }}>{Columns.Name}</Th>
+                <Th style={{ whiteSpace: 'normal' }}>
+                  {Columns.CredentialsUrl}
+                </Th>
+                <Th style={{ whiteSpace: 'normal' }}>{Columns.Status}</Th>
+                <Th style={{ whiteSpace: 'normal' }}>{Columns.Hosts}</Th>
+                <Th style={{ whiteSpace: 'normal' }}>{Columns.VMs}</Th>
+                <Th
+                  style={{
+                    whiteSpace: 'normal',
+                    minWidth: '120px',
+                    maxWidth: '200px',
+                  }}
+                >
+                  {Columns.Networks}
+                </Th>
+                <Th
+                  style={{
+                    whiteSpace: 'normal',
+                    minWidth: '120px',
+                    maxWidth: '200px',
+                  }}
+                >
+                  {Columns.Datastores}
+                </Th>
+                <Th
+                  style={{
+                    whiteSpace: 'normal',
+                    minWidth: '120px',
+                    maxWidth: '200px',
+                  }}
+                >
+                  {Columns.Actions}
+                </Th>
+              </Tr>
+            </Thead>
           )}
-        </Tbody>
-      </Table>
+          <Tbody>
+            {memoizedSources && memoizedSources.length > 0 ? (
+              memoizedSources.map((source) => {
+                // Get the agent related to this source
+                const agent = source.agent;
+                return (
+                  <Tr key={source.id}>
+                    <Td dataLabel={Columns.Name}>
+                      <Radio
+                        id={source.id}
+                        name="source-selection"
+                        label={source.name}
+                        isChecked={
+                          discoverySourcesContext.sourceSelected
+                            ? discoverySourcesContext.sourceSelected.id ===
+                              source.id
+                            : false
+                        }
+                        onChange={() =>
+                          discoverySourcesContext.selectSource(source)
+                        }
+                      />
+                    </Td>
+                    <Td dataLabel={Columns.CredentialsUrl}>
+                      {agent !== undefined && !source.onPremises ? (
+                        <Link to={agent.credentialUrl} target="_blank">
+                          {agent.credentialUrl}
+                        </Link>
+                      ) : (
+                        '-'
+                      )}
+                    </Td>
+                    <Td dataLabel={Columns.Status}>
+                      <AgentStatusView
+                        status={agent ? agent.status : 'not-connected'}
+                        statusInfo={agent ? agent.statusInfo : 'Not connected'}
+                        credentialUrl={agent ? agent.credentialUrl : ''}
+                        uploadedManually={
+                          source?.onPremises && source?.inventory !== undefined
+                        }
+                      />
+                    </Td>
+                    <Td dataLabel={Columns.Hosts}>
+                      {source?.inventory?.infra.totalHosts ??
+                        VALUE_NOT_AVAILABLE}
+                    </Td>
+                    <Td dataLabel={Columns.VMs}>
+                      {source?.inventory?.vms.total ?? VALUE_NOT_AVAILABLE}
+                    </Td>
+                    <Td dataLabel={Columns.Networks}>
+                      {source?.inventory?.infra.networks?.length ??
+                        VALUE_NOT_AVAILABLE}
+                    </Td>
+                    <Td dataLabel={Columns.Datastores}>
+                      {source?.inventory?.infra.datastores?.length ??
+                        VALUE_NOT_AVAILABLE}
+                    </Td>
+                    <Td dataLabel={Columns.Actions}>
+                      {source.name !== 'Example' && (
+                        <RemoveSourceAction
+                          sourceId={source.id}
+                          sourceName={source.name}
+                          isDisabled={discoverySourcesContext.isDeletingSource}
+                          onConfirm={async (event) => {
+                            event.stopPropagation();
+                            await discoverySourcesContext.deleteSource(
+                              source.id,
+                            );
+                            event.dismissConfirmationModal();
+                            await Promise.all([
+                              discoverySourcesContext.listSources(),
+                              firstSource &&
+                                discoverySourcesContext.selectSource(
+                                  firstSource,
+                                ),
+                            ]);
+                          }}
+                        />
+                      )}
+                      {(!source?.agent || source?.onPremises) &&
+                        source?.name !== 'Example' && (
+                          <UploadInventoryAction
+                            sourceId={source.id}
+                            discoverySourcesContext={discoverySourcesContext}
+                            onUploadResult={(message, isError) => {
+                              onUploadResult?.(message, isError);
+                            }}
+                            onUploadSuccess={onUploadSuccess}
+                          />
+                        )}
+                    </Td>
+                  </Tr>
+                );
+              })
+            ) : (
+              <Tr>
+                <Td colSpan={12}>
+                  <EmptyState />
+                </Td>
+              </Tr>
+            )}
+          </Tbody>
+        </Table>
       </div>
     );
   }
- 
 };
