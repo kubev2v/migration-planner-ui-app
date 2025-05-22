@@ -36,6 +36,7 @@ import { useDiscoverySources } from "../../contexts/discovery-sources/Context";
 import { ReportTable } from "./ReportTable";
 import { ReportPieChart } from "./ReportPieChart";
 import DownloadPDFButton from "./DownloadPDFButton";
+import { Dashboard } from "./assessment-report/Dashboard";
 
 export const DiscoveryStep: React.FC = () => {
   const discoverSourcesContext = useDiscoverySources();
@@ -145,7 +146,7 @@ export const DiscoveryStep: React.FC = () => {
     icon: <VirtualMachineIcon />,
     name: (
       <>
-        This environment consists of {vms.total} virtual machines,{" "}
+        This environment consists of {vms.totalMigratableWithWarnings } virtual machines,{" "}
         {vms.total === (vms.totalMigratableWithWarnings ?? 0)
           ? "All"
           : vms.totalMigratableWithWarnings}{" "}
@@ -356,12 +357,7 @@ export const DiscoveryStep: React.FC = () => {
         </TextContent>
       </StackItem>
       <StackItem>
-        <TreeView
-          id="discovery-tree-view"
-          aria-label="Discovery report"
-          variant="compactNoBackground"
-          data={treeViewData}
-        />
+        <Dashboard infra={infra} cpuCores={cpuCores} ramGB={ramGB} vms={vms}/>       
       </StackItem>
     </Stack>
   );
