@@ -295,8 +295,8 @@ export const DiscoveryStep: React.FC = () => {
                 </div>
               ),
             }))}
-            columns={[ "Type", "Vendor", "Storage offload support", "Total capacity", "Usage %"]}
-            fields={["type", "vendor", "hardwareAcceleratedMove", "totalCapacityGB", , "usage"]}
+            columns={[ "Type", "Vendor", "Storage offload support", "Protocol type", "Model", "Total capacity", "Usage %"]}
+            fields={["type", "vendor", "hardwareAcceleratedMove", "protocolType", "model", "totalCapacityGB", , "usage"]}
             style={{ width: "55rem" }}
           />
         ),
