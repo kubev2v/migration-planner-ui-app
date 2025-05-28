@@ -86,171 +86,183 @@ export const ConnectStep: React.FC = () => {
   }, [isOvaDownloading]);
 
   return (
-    <Stack hasGutter>
-      <StackItem>
-        <TextContent>
-          <Text component="h2">Connect your VMware environment</Text>
-        </TextContent>
-      </StackItem>
-      <StackItem>
-        <TextContent style={{ paddingBlock: '1rem' }}>
-          <Text component="h4">
-            Follow these steps to connect your environment and start the
-            discovery process
-          </Text>
-          <List
-            component="ol"
-            type={OrderType.number}
-            style={{ marginInlineStart: 0 }}
-          >
-            <ListItem>
-              To add a new environment download and import a discovery OVA file
-              to your VMware environment.
-            </ListItem>
-            <ListItem>
-              A link will appear below once the VM is running. Use this link to
-              enter credentials and connect your environment.
-              <Button
-                variant="link"
-                isInline
-                onClick={() => setIsTroubleshootingOpen(true)}
-              >
-                (VM not showing up?)
-              </Button>{' '}
-            </ListItem>
-            <ListItem>
-              When the connection is established, you will be able to proceed
-              and see the discovery report.
-            </ListItem>
-          </List>
-        </TextContent>
-      </StackItem>
-      <StackItem>
-        <Panel variant="bordered">
-          <PanelMain>
-            <PanelHeader style={{ paddingBlockEnd: 0 }}>
-              <TextContent>
-                <Text component="h3">
-                  <Icon isInline style={{ marginRight: '1rem' }}>
-                    <ClusterIcon />
-                  </Icon>
-                  Environment
-                </Text>
-              </TextContent>
-            </PanelHeader>
-            <SourcesTable
-              onUploadResult={(message, isError) => {
-                setUploadMessage(message);
-                setIsUploadError(isError ?? false);
-              }}
-              onUploadSuccess={async () => {
-                await discoverySourcesContext.listSources();
-              }}
-            />
-          </PanelMain>
-        </Panel>
-      </StackItem>
-      <StackItem>
+    <>
+      <Stack hasGutter>
+        <StackItem>
+          <TextContent>
+            <Text component="h2">Connect your VMware environment</Text>
+          </TextContent>
+        </StackItem>
+        <StackItem>
+          <TextContent style={{ paddingBlock: '1rem' }}>
+            <Text component="h4">
+              Follow these steps to connect your environment and start the
+              discovery process
+            </Text>
+            <List
+              component="ol"
+              type={OrderType.number}
+              style={{ marginInlineStart: 0 }}
+            >
+              <ListItem>
+                To add a new environment download and import a discovery OVA
+                file to your VMware environment.
+              </ListItem>
+              <ListItem>
+                A link will appear below once the VM is running. Use this link
+                to enter credentials and connect your environment.
+                <Button
+                  variant="link"
+                  isInline
+                  onClick={() => setIsTroubleshootingOpen(true)}
+                >
+                  (VM not showing up?)
+                </Button>{' '}
+              </ListItem>
+              <ListItem>
+                When the connection is established, you will be able to proceed
+                and see the discovery report.
+              </ListItem>
+            </List>
+          </TextContent>
+        </StackItem>
+        <StackItem>
+          <Panel variant="bordered">
+            <PanelMain>
+              <PanelHeader style={{ paddingBlockEnd: 0 }}>
+                <TextContent>
+                  <Text component="h3">
+                    <Icon isInline style={{ marginRight: '1rem' }}>
+                      <ClusterIcon />
+                    </Icon>
+                    Environment
+                  </Text>
+                </TextContent>
+              </PanelHeader>
+              <SourcesTable
+                onUploadResult={(message, isError) => {
+                  setUploadMessage(message);
+                  setIsUploadError(isError ?? false);
+                }}
+                onUploadSuccess={async () => {
+                  await discoverySourcesContext.listSources();
+                }}
+              />
+            </PanelMain>
+          </Panel>
+        </StackItem>
+
         {hasSources && (
-          <Button
-            variant="secondary"
-            onClick={toggleDiscoverySourceSetupModal}
-            style={{ marginTop: '1rem' }}
-            icon={<PlusCircleIcon color={blueColor.value} />}
-          >
-            Add environment
-          </Button>
+          <StackItem>
+            <Button
+              variant="secondary"
+              onClick={toggleDiscoverySourceSetupModal}
+              style={{ marginTop: '1rem' }}
+              icon={<PlusCircleIcon color={blueColor.value} />}
+            >
+              Add environment
+            </Button>
+          </StackItem>
         )}
-        {shouldShowDiscoverySourceSetupModal && (
-          <DiscoverySourceSetupModal
-            isOpen={shouldShowDiscoverySourceSetupModal}
-            onClose={toggleDiscoverySourceSetupModal}
-            isDisabled={discoverySourcesContext.isDownloadingSource}
-            onStartDownload={() => setIsOvaDownloading(true)}
-            onAfterDownload={async () => {
-              await discoverySourcesContext.listSources();
-            }}
-          />
-        )}
-      </StackItem>
-      <StackItem>
+
         {isOvaDownloading && (
-          <Alert isInline variant="info" title="Download OVA image">
-            The OVA image is downloading
-          </Alert>
+          <StackItem>
+            <Alert isInline variant="info" title="Download OVA image">
+              The OVA image is downloading
+            </Alert>
+          </StackItem>
         )}
-      </StackItem>
-      <StackItem>
+
         {discoverySourcesContext.errorDownloadingSource && (
-          <Alert isInline variant="danger" title="Download Environment error">
-            {discoverySourcesContext.errorDownloadingSource.message}
-          </Alert>
+          <StackItem>
+            <Alert isInline variant="danger" title="Download Environment error">
+              {discoverySourcesContext.errorDownloadingSource.message}
+            </Alert>
+          </StackItem>
         )}
-      </StackItem>
-      <StackItem>
+
         {sourceSelected?.agent &&
           sourceSelected?.agent.status === 'waiting-for-credentials' && (
-            <Alert
-              isInline
-              variant="custom"
-              title="Discovery VM"
-              actionLinks={
-                <AlertActionLink
-                  component="a"
-                  href={sourceSelected?.agent.credentialUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  {sourceSelected?.agent.credentialUrl}
-                </AlertActionLink>
-              }
-            >
-              <TextContent>
-                <Text>
-                  Click the link below to connect the Discovery Source to your
-                  VMware environment.
-                </Text>
-              </TextContent>
-            </Alert>
+            <StackItem>
+              <Alert
+                isInline
+                variant="custom"
+                title="Discovery VM"
+                actionLinks={
+                  <AlertActionLink
+                    component="a"
+                    href={sourceSelected?.agent.credentialUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {sourceSelected?.agent.credentialUrl}
+                  </AlertActionLink>
+                }
+              >
+                <TextContent>
+                  <Text>
+                    Click the link below to connect the Discovery Source to your
+                    VMware environment.
+                  </Text>
+                </TextContent>
+              </Alert>
+            </StackItem>
           )}
-      </StackItem>
-      <StackItem>
+
         {hasSources &&
           !sourceSelected?.agent &&
           sourceSelected?.name !== 'Example' && (
-            <Alert isInline variant="custom" title="Environment not connected">
-              <TextContent>
-                <Text>
-                  The selected environment is not connected, if you have a
-                  discovery file click the link below to upload it.
-                </Text>
-              </TextContent>
-              <UploadInventoryAction
-                discoverySourcesContext={discoverySourcesContext}
-                sourceId={sourceSelected?.id ?? ''}
-                asLink
-                onUploadResult={(message, isError) => {
-                  setUploadMessage(message ?? null);
-                  setIsUploadError(isError ?? false);
-                }}
-              />
-            </Alert>
+            <StackItem>
+              <Alert
+                isInline
+                variant="custom"
+                title="Environment not connected"
+              >
+                <TextContent>
+                  <Text>
+                    The selected environment is not connected, if you have a
+                    discovery file click the link below to upload it.
+                  </Text>
+                </TextContent>
+                <UploadInventoryAction
+                  discoverySourcesContext={discoverySourcesContext}
+                  sourceId={sourceSelected?.id ?? ''}
+                  asLink
+                  onUploadResult={(message, isError) => {
+                    setUploadMessage(message ?? null);
+                    setIsUploadError(isError ?? false);
+                  }}
+                />
+              </Alert>
+            </StackItem>
           )}
-      </StackItem>
-      <StackItem>
+
         {uploadMessage && (
-          <Alert
-            isInline
-            variant={isUploadError ? 'danger' : 'success'}
-            title={uploadMessage}
-          />
+          <StackItem>
+            <Alert
+              isInline
+              variant={isUploadError ? 'danger' : 'success'}
+              title={uploadMessage}
+            />
+          </StackItem>
         )}
-      </StackItem>
+      </Stack>
+      {shouldShowDiscoverySourceSetupModal && (
+        <DiscoverySourceSetupModal
+          isOpen={shouldShowDiscoverySourceSetupModal}
+          onClose={toggleDiscoverySourceSetupModal}
+          isDisabled={discoverySourcesContext.isDownloadingSource}
+          onStartDownload={() => setIsOvaDownloading(true)}
+          onAfterDownload={async () => {
+            await discoverySourcesContext.listSources();
+          }}
+        />
+      )}
       <TroubleshootingModal
         isOpen={isTroubleshootingOpen}
         onClose={() => setIsTroubleshootingOpen(false)}
       />
-    </Stack>
+    </>
   );
 };
 
