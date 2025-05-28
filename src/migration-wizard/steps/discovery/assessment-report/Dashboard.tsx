@@ -17,6 +17,7 @@ import { VMMigrationStatus } from './VMMigrationStatus';
 import { NetworkTopology } from './NetworkTopology';
 import { StorageOverview } from './StorageOverview';
 import { OSDistribution } from './OSDistribution';
+import { Datastores } from './Datastores';
 
 interface Props {
   infra: Infra;
@@ -24,6 +25,11 @@ interface Props {
   ramGB: VMResourceBreakdown;
   vms: VMs;
 }
+
+const cardContainerStyle: React.CSSProperties = {
+  height: '400px',       // Altura fija (ajústala según lo necesario)
+  overflow: 'auto',      // Scroll si hay overflow
+};
 
 export const Dashboard: React.FC<Props> = ({ infra, cpuCores, ramGB, vms }) => (
   <PageSection variant={PageSectionVariants.light}>
@@ -38,28 +44,41 @@ export const Dashboard: React.FC<Props> = ({ infra, cpuCores, ramGB, vms }) => (
       <GridItem span={12}>
         <Grid hasGutter>
           <GridItem span={6}>
+          <div style={cardContainerStyle}>
             <VMMigrationStatus
               data={{
                 migratable: vms.totalMigratableWithWarnings,
                 nonMigratable: vms.total - vms.totalMigratableWithWarnings,
               }}
             />
+            </div>
           </GridItem>
           <GridItem span={6}>
-            <NetworkTopology />
+          <div style={cardContainerStyle}>
+            <OSDistribution osData={vms.os} />
+            </div>
           </GridItem>
         </Grid>
       </GridItem>
       <GridItem span={12}>
-      <Grid hasGutter>
+        <Grid hasGutter>
           <GridItem span={6}>
-           <StorageOverview/>
+          <div style={cardContainerStyle}>
+            <StorageOverview data={vms.diskGB.histogram.data} minValue={vms.diskGB.histogram.minValue} step={vms.diskGB.histogram.step}/>
+            </div>
           </GridItem>
           <GridItem span={6}>
-            <OSDistribution />
+          <div style={cardContainerStyle}>
+            <Datastores datastores={infra.datastores}/>
+            </div>
           </GridItem>
         </Grid>
       </GridItem>
     </Grid>
+      {/* <Grid hasGutter>
+      <GridItem span={6}>
+        <NetworkTopology />
+      </GridItem>
+    </Grid> */}
   </PageSection>
 );

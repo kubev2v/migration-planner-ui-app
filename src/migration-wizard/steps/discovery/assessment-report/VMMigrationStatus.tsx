@@ -8,6 +8,7 @@ import {
   CardBody,
   CardTitle,
 } from '@patternfly/react-core';
+import VirtualMachineIcon from '@patternfly/react-icons/dist/esm/icons/virtual-machine-icon';
 
 interface VmMigrationStatusProps {
   data: {
@@ -26,17 +27,19 @@ export const VMMigrationStatus: React.FC<VmMigrationStatusProps> = ({
 
   return (
     <Card>
-      <CardTitle>VM Migration Status</CardTitle>
+      <CardTitle><VirtualMachineIcon/> VM Migration Status</CardTitle>
       <CardBody>
-      <div style={{ height: '60%', width: '60%', marginLeft: '20%' }}>
+      <div style={{ height: '50%', width: '50%', marginLeft: '20%' }}>
         <ChartDonut
           ariaDesc="VM Migration Status"
           ariaTitle="VM Migration"
           data={chartData}
           labels={({ datum }) => `${datum.x}: ${datum.y}`}
           colorScale={['#28a745', '#dc3545']} // Verde y rojo personalizados
-          innerRadius={80}
+          innerRadius={100}
           constrainToVisibleArea
+          title={`${data.migratable + data.nonMigratable}`}
+          subTitle="VMs"
         />
         <ChartLegend
           data={[
