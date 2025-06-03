@@ -14,7 +14,7 @@ objects:
           - v1
       envName: ${ENV_NAME}
       title: Assisted Migration
-      deploymentRepo: https://gitlab.cee.redhat.com/assisted-migration/migration-assessment-app
+      deploymentRepo: https://github.com/kubev2v/migration-planner-ui-app
       frontend:
         paths:
           - /apps/assisted-migration-app
