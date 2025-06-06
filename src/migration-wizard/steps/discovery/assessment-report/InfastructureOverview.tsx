@@ -14,25 +14,25 @@ interface Props {
 export const InfrastructureOverview: React.FC<Props> = ({ infra, cpuCores, ramGB}) => (
   <Gallery hasGutter  minWidths={{ default: '20%' }} >
     <GalleryItem>
-      <Card>
+      <Card className="dashboard-card-border">
         <CardTitle><NetworkIcon /> Clusters</CardTitle>
         <CardBody>{infra.totalClusters}</CardBody>
       </Card>
       </GalleryItem>
       <GalleryItem>
-      <Card>
+      <Card className="dashboard-card-border">
         <CardTitle><ClusterIcon /> Hosts</CardTitle>
         <CardBody>{infra.totalHosts}</CardBody>
       </Card>
       </GalleryItem>
       <GalleryItem>
-      <Card>
+      <Card className="dashboard-card-border">
         <CardTitle><i className="fas fa-microchip" /> CPU Cores</CardTitle>
         <CardBody>{cpuCores.total}</CardBody>
       </Card>
       </GalleryItem>
       <GalleryItem>
-      <Card>
+      <Card className="dashboard-card-border">
         <CardTitle><i className="fas fa-memory" />  Total Memory</CardTitle>
         <CardBody>{Humanize.fileSize(ramGB.total * 1024 ** 3, 0)}</CardBody>
       </Card>     

@@ -19,6 +19,8 @@ import { StorageOverview } from './StorageOverview';
 import { OSDistribution } from './OSDistribution';
 import { Datastores } from './Datastores';
 
+import './Dashboard.css';
+
 interface Props {
   infra: Infra;
   cpuCores: VMResourceBreakdown;
@@ -27,70 +29,66 @@ interface Props {
   isExportMode?: boolean;
 }
 
-
-
-const getCardStyle = (isExportMode?: boolean): React.CSSProperties =>
-  isExportMode
-    ? { }
-    : {
-        height: '400px',
-        overflow: 'auto',
-      };
-
-export const Dashboard: React.FC<Props> = ({ infra, cpuCores, ramGB, vms, isExportMode }) => {
-  
-  return(
-  <PageSection variant={PageSectionVariants.light}>
-    <Grid hasGutter>
-      <GridItem span={12} id='infrastructure-overview'>
-        <InfrastructureOverview
-          infra={infra}
-          cpuCores={cpuCores}
-          ramGB={ramGB}
-        />
-      </GridItem>
-      <GridItem span={12}>
-        <Grid hasGutter>
-          <GridItem span={6}>
-            <div style={getCardStyle(isExportMode)}>
+export const Dashboard: React.FC<Props> = ({
+  infra,
+  cpuCores,
+  ramGB,
+  vms,
+  isExportMode,
+}) => {
+  return (
+    <PageSection variant={PageSectionVariants.light}>
+      <Grid hasGutter>
+        <GridItem span={12} id="infrastructure-overview">
+          <InfrastructureOverview
+            infra={infra}
+            cpuCores={cpuCores}
+            ramGB={ramGB}
+          />
+        </GridItem>
+        <GridItem span={12}>
+          <Gallery hasGutter minWidths={{ default: '40%' }}>
+            <GalleryItem>
               <VMMigrationStatus
                 data={{
                   migratable: vms.totalMigratableWithWarnings,
                   nonMigratable: vms.total - vms.totalMigratableWithWarnings,
                 }}
+                isExportMode={isExportMode}
               />
-            </div>
-          </GridItem>
-          <GridItem span={6}>
-            <div style={getCardStyle(isExportMode)}>
-              <OSDistribution osData={vms.os} />
-            </div>
-          </GridItem>
-        </Grid>
-      </GridItem>
-      <GridItem span={12}>
-        <Grid hasGutter>
-          <GridItem span={6}>
-            <div style={getCardStyle(isExportMode)}>
+            </GalleryItem>
+            <GalleryItem>
+              <OSDistribution osData={vms.os}  isExportMode={isExportMode}/>
+            </GalleryItem>
+          </Gallery>
+        </GridItem>
+        <GridItem span={12}>
+          <Gallery hasGutter minWidths={{ default: '40%' }}>
+            <GalleryItem>
               <StorageOverview
                 data={vms.diskGB.histogram.data}
                 minValue={vms.diskGB.histogram.minValue}
                 step={vms.diskGB.histogram.step}
+                isExportMode={isExportMode}
               />
-            </div>
-          </GridItem>
-          <GridItem span={6}>
-            <div style={getCardStyle(isExportMode)}>
-              <Datastores datastores={infra.datastores} isExportMode={isExportMode}/>
-            </div>
-          </GridItem>
-        </Grid>
-      </GridItem>
-    </Grid>
-     <Grid hasGutter>
-      <GridItem span={6}>
-        <NetworkTopology networks={infra.networks}/>
-      </GridItem>
-    </Grid> 
-  </PageSection>)
+            </GalleryItem>
+            <GalleryItem>
+             
+                <Datastores
+                  datastores={infra.datastores}
+                  isExportMode={isExportMode}
+                />
+            </GalleryItem>
+          </Gallery>
+        </GridItem>
+        <GridItem span={12}>
+          <Gallery hasGutter minWidths={{ default: '80%' }}>
+            <GalleryItem>
+              <NetworkTopology networks={infra.networks}  isExportMode={isExportMode}/>
+            </GalleryItem>
+          </Gallery>
+        </GridItem>
+      </Grid>
+    </PageSection>
+  );
 };

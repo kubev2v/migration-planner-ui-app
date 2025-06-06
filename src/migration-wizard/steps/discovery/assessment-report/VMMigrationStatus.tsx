@@ -1,13 +1,6 @@
 import React from 'react';
-import {
-  ChartDonut,
-  ChartLegend,
-} from '@patternfly/react-charts';
-import {
-  Card,
-  CardBody,
-  CardTitle,
-} from '@patternfly/react-core';
+import { ChartDonut, ChartLegend } from '@patternfly/react-charts';
+import { Card, CardBody, CardTitle } from '@patternfly/react-core';
 import VirtualMachineIcon from '@patternfly/react-icons/dist/esm/icons/virtual-machine-icon';
 
 interface VmMigrationStatusProps {
@@ -15,10 +8,12 @@ interface VmMigrationStatusProps {
     migratable: number;
     nonMigratable: number;
   };
+  isExportMode?: boolean;
 }
 
 export const VMMigrationStatus: React.FC<VmMigrationStatusProps> = ({
   data,
+  isExportMode=false
 }) => {
   const chartData = [
     { x: 'Migratable', y: data.migratable },
@@ -26,32 +21,51 @@ export const VMMigrationStatus: React.FC<VmMigrationStatusProps> = ({
   ];
 
   return (
-    <Card>
-      <CardTitle><VirtualMachineIcon/> VM Migration Status</CardTitle>
+    <Card className={isExportMode ? "dashboard-card-print":"dashboard-card"}>
+      <CardTitle>
+        <VirtualMachineIcon /> VM Migration Status
+      </CardTitle>
       <CardBody>
-      <div style={{ height: '50%', width: '50%', marginLeft: '20%' }}>
-        <ChartDonut
-          ariaDesc="VM Migration Status"
-          ariaTitle="VM Migration"
-          data={chartData}
-          labels={({ datum }) => `${datum.x}: ${datum.y}`}
-          colorScale={['#28a745', '#dc3545']} // Verde y rojo personalizados
-          innerRadius={100}
-          constrainToVisibleArea
-          title={`${data.migratable + data.nonMigratable}`}
-          subTitle="VMs"
-        />
-        <ChartLegend
-          data={[
-            { name: 'Migratable', symbol: { fill: '#28a745' } },
-            { name: 'Non-Migratable', symbol: { fill: '#dc3545' } },
-          ]}
-          orientation="horizontal"
+        <div
           style={{
-            labels: { fontSize: 24 },
-            parent: { marginBottom: '-150px'}
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
           }}
-        />
+        >
+          <ChartDonut
+            ariaDesc="VM Migration Status"
+            ariaTitle="VM Migration"
+            data={chartData}
+            labels={({ datum }) => `${datum.x}: ${datum.y}`}
+            colorScale={['#28a745', '#dc3545']}
+            constrainToVisibleArea
+            title={`${data.migratable + data.nonMigratable}`}
+            subTitle="VMs"
+          />
+          <div
+            style={{
+              marginLeft: '20%',
+            }}
+          >
+            <ChartLegend
+              data={[
+                {
+                  name: `Migratable: ${data.migratable} VMs`,
+                  symbol: { fill: '#28a745' },
+                },
+                {
+                  name: `Non-Migratable: ${data.nonMigratable} VMs`,
+                  symbol: { fill: '#dc3545' },
+                },
+              ]}
+              orientation="horizontal"
+              style={{
+                labels: { fontSize: 14 },
+                parent: { marginTop: 8 },
+              }}
+            />
+          </div>
         </div>
       </CardBody>
     </Card>
