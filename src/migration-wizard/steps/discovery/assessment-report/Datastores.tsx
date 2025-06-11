@@ -67,10 +67,10 @@ export const Datastores: React.FC<DatastoresProps> = ({
             columns={[
               'Type',
               'Vendor',
-              'Storage offload support',
-              'Protocol type',
+              'Support',
+              'Type',
               'Model',
-              'Total capacity',
+              'Total',
               'Usage %',
             ]}
             fields={[

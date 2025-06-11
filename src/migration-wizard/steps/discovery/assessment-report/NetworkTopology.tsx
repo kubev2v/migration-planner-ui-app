@@ -20,7 +20,7 @@ export const NetworkTopology: React.FC<NetworkTopologyProps> = ({
         <NetworkIcon /> Network Topology
       </CardTitle>
       <CardBody>
-      <div style={{ maxHeight: tableHeight, overflowY: 'auto', overflowX:'auto',padding: 16 }}>
+      <div style={{ maxHeight: tableHeight, overflowY: 'auto', overflowX:'auto',padding: 2 }}>
           <ReportTable<InfraNetworksInner>
             data={networks}
             columns={['Name', 'Type', 'VlanId']}
