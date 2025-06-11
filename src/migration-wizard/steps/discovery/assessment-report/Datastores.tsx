@@ -1,7 +1,16 @@
 import React from 'react';
-import { Card, CardBody, CardTitle, Progress } from '@patternfly/react-core';
+import {
+  Card,
+  CardBody,
+  CardTitle,
+  Icon,
+  Progress,
+} from '@patternfly/react-core';
 import { Datastore } from '@migration-planner-ui/api-client/models';
 import { ReportTable } from '../ReportTable';
+import { ExclamationCircleIcon, CheckCircleIcon } from '@patternfly/react-icons';
+import { global_danger_color_100 as globalDangerColor100 } from '@patternfly/react-tokens/dist/js/global_danger_color_100';
+import { global_success_color_100 as globalSuccessColor100 } from '@patternfly/react-tokens/dist/js/global_success_color_100';
 
 interface DatastoresProps {
   datastores: Datastore[];
@@ -13,17 +22,25 @@ export const Datastores: React.FC<DatastoresProps> = ({
   isExportMode = false,
 }) => {
   const tableWidth = isExportMode ? '100%' : '55rem';
-  const tableHeight = isExportMode ? '100%': '250px';
+  const tableHeight = isExportMode ? '100%' : '250px';
   return (
-    <Card className={isExportMode ? "dashboard-card-print":"dashboard-card"}>
+    <Card className={isExportMode ? 'dashboard-card-print' : 'dashboard-card'}>
       <CardTitle>
         <i className="fas fa-database" /> Datastores
       </CardTitle>
       <CardBody>
-      <div style={{ maxHeight: tableHeight, overflowY: 'auto', overflowX:'auto',padding: 16 }}>
+        <div
+          style={{
+            maxHeight: tableHeight,
+            overflowY: 'auto',
+            overflowX: 'auto',
+            padding: 16,
+          }}
+        >
           <ReportTable<
             Datastore & {
               usage: JSX.Element;
+              hardwareAcceleratedMoveDisplay: JSX.Element;
             }
           >
             data={datastores.map((ds) => ({
@@ -36,6 +53,15 @@ export const Datastores: React.FC<DatastoresProps> = ({
                     aria-label="Disk usage"
                   />
                 </div>
+              ),
+              hardwareAcceleratedMoveDisplay: ds.hardwareAcceleratedMove ? (
+                <Icon size="md" isInline>
+                <CheckCircleIcon color={globalSuccessColor100.value} />
+              </Icon>
+              ) : (
+                <Icon size="md" isInline>
+                  <ExclamationCircleIcon  color={globalDangerColor100.value}/>
+                </Icon>
               ),
             }))}
             columns={[
@@ -50,7 +76,7 @@ export const Datastores: React.FC<DatastoresProps> = ({
             fields={[
               'type',
               'vendor',
-              'hardwareAcceleratedMove',
+              'hardwareAcceleratedMoveDisplay',
               'protocolType',
               'model',
               'totalCapacityGB',
