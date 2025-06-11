@@ -23,17 +23,15 @@ export const StorageOverview: React.FC<DiskHistogramProps> = ({
   step,
   isExportMode=false
 }) => {
-  const tableHeight = isExportMode ? '100%': '40%';
+  const tableHeight = isExportMode ? '100%': '210px';
   return (
     <Card className={isExportMode ? "dashboard-card-print":"dashboard-card"}>
       <CardTitle>
         <i className="fas fa-database" /> Disks
       </CardTitle>
       <CardBody>
-          <div>Disk Size Distribution</div>
-
-          {/* Leyenda */}
-          <div style={{ display: 'flex', gap: '1.5rem' }}>
+          <div>Disk Size Distribution
+          <div style={{ display: 'flex', gap: '1.5rem', float:'right' }}>
             <div style={{ display: 'flex', alignItems: 'center' }}>
               <span
                 style={{
@@ -44,7 +42,7 @@ export const StorageOverview: React.FC<DiskHistogramProps> = ({
                   marginRight: 6,
                 }}
               />
-              {'Easy'}
+              {'Small'}
             </div>
             <div style={{ display: 'flex', alignItems: 'center' }}>
               <span
@@ -68,9 +66,12 @@ export const StorageOverview: React.FC<DiskHistogramProps> = ({
                   marginRight: 6,
                 }}
               />
-              {'Hard'}
+              {'Large'}
             </div>
           </div>
+          </div>
+
+         
         <div
           style={{ maxHeight: tableHeight, minWidth: '60%', overflowY: 'auto', overflowX:'auto' }}
         >
@@ -120,7 +121,7 @@ export const DiskUsageHistogram: React.FC<DiskHistogramProps> = ({
           style={{
             axis: { stroke: 'none' },
             ticks: { stroke: 'none' },
-            tickLabels: { fill: 'none' },
+            tickLabels: { fill: 'none', fontSize: 10 },
           }}
         />
         <ChartAxis
@@ -129,6 +130,7 @@ export const DiskUsageHistogram: React.FC<DiskHistogramProps> = ({
             axis: { stroke: 'none' },
             ticks: { stroke: 'none' },
             grid: { stroke: 'none' },
+            tickLabels: { fontSize: 12 },
           }}
         />
         <ChartGroup horizontal>
@@ -139,7 +141,7 @@ export const DiskUsageHistogram: React.FC<DiskHistogramProps> = ({
               <ChartLabel
                 textAnchor="start"
                 dx={10} // distancia horizontal desde la barra
-                style={{ fill: '#000', fontSize: 14 }}
+                style={{ fill: '#000', fontSize: 10 }}
               />
             }
             style={{
@@ -152,6 +154,7 @@ export const DiskUsageHistogram: React.FC<DiskHistogramProps> = ({
                   return '#d9534f';
                 },
               },
+              labels:{fontSize: 10}
             }}
           />
         </ChartGroup>

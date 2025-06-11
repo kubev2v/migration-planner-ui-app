@@ -8,11 +8,13 @@ export namespace ReportTable {
     data: DataList;
     fields: Array<keyof DataList[0]>;
     style?: React.CSSProperties;
+    withoutBorder?: boolean;
   };
 }
 
 export function ReportTable<DataItem>(
   props: ReportTable.Props<DataItem[]>,
+  withoutBorder = false
 ): React.ReactNode {
   const { columns, data, fields, style } = props;
 
@@ -20,15 +22,15 @@ export function ReportTable<DataItem>(
     <Table
       variant="compact"
       borders={true}
-      style={{ border: '1px solid lightgray', borderRight: 'none', ...style }}
+      style={{  border: withoutBorder ? 'none':'1px solid lightgray', borderRight: 'none', ...style }}
     >
       <Thead>
-        <Tr>
+        <Tr style={{ border: withoutBorder ? 'none':'1px solid lightgray'}}>
           {columns.map((name, index) => (
             <Th
               key={index}
-              hasRightBorder
-              style={{ whiteSpace: 'normal', wordBreak: 'break-word' }}
+              hasRightBorder={!withoutBorder}
+              style={{ whiteSpace: 'normal', wordBreak: 'break-word', border: withoutBorder ? 'none':'1px solid lightgray'  }}
             >
               {name}
             </Th>
@@ -37,9 +39,9 @@ export function ReportTable<DataItem>(
       </Thead>
       <Tbody>
         {data.map((item, idx) => (
-          <Tr key={idx} style={{ width: 100 }}>
+          <Tr key={idx} style={{ width: 100,  border: withoutBorder ? 'none':'1px solid lightgray' }}>
             {fields.map((f, fieldIdx) => (
-              <Td key={fieldIdx} hasRightBorder>
+              <Td key={fieldIdx} hasRightBorder={!withoutBorder}>
                 {' '}
                 {item[f] === '' || item[f] === undefined
                   ? '-'

@@ -25,7 +25,8 @@ export const NetworkTopology: React.FC<NetworkTopologyProps> = ({
             data={networks}
             columns={['Name', 'Type', 'VlanId']}
             fields={['name', 'type', 'vlanId']}
-          />
+            withoutBorder          
+            />
         </div>
       </CardBody>
     </Card>

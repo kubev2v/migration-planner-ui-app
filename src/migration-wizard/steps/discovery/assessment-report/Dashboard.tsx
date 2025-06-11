@@ -73,18 +73,18 @@ export const Dashboard: React.FC<Props> = ({
               />
             </GalleryItem>
             <GalleryItem>
-             
-                <Datastores
-                  datastores={infra.datastores}
-                  isExportMode={isExportMode}
-                />
+            <NetworkTopology networks={infra.networks}  isExportMode={isExportMode}/>
+                
             </GalleryItem>
           </Gallery>
         </GridItem>
         <GridItem span={12}>
           <Gallery hasGutter minWidths={{ default: '80%' }}>
             <GalleryItem>
-              <NetworkTopology networks={infra.networks}  isExportMode={isExportMode}/>
+            <Datastores
+                  datastores={infra.datastores}
+                  isExportMode={isExportMode}
+                />
             </GalleryItem>
           </Gallery>
         </GridItem>

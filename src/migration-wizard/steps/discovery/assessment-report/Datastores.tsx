@@ -58,6 +58,7 @@ export const Datastores: React.FC<DatastoresProps> = ({
               'usage',
             ]}
             style={{ width: tableWidth }}
+            withoutBorder
           />
         </div>
       </CardBody>
