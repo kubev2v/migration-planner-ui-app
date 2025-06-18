@@ -15,7 +15,7 @@ import { Source } from '@migration-planner-ui/api-client/models';
 
 const openAssistedInstaller = (): void => {
   window.open(
-    'https://console.dev.redhat.com/openshift/assisted-installer/clusters/~new?source=assisted_migration',
+    '/openshift/assisted-installer/clusters/~new?source=assisted_migration',
     '_blank',
   );
 };
