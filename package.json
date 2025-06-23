@@ -21,7 +21,10 @@
     "postbuild": "npm run copy-static",
     "postinstall": "ts-patch install && rimraf .cache",
     "verify": "npm-run-all build lint test",
-    "prettier": "prettier --write src"
+    "prettier": "prettier --write src",
+    "start:standalone": "webpack serve --config webpack.standalone.js",
+    "build:standalone": "webpack --config webpack.standalone.js --mode production",
+    "serve:standalone": "serve dist-standalone -p 3001"
   },
   "dependencies": {
     "@emotion/css": "^11.13.0",
@@ -65,17 +68,26 @@
     "@types/redux-logger": "^3.0.13",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "@typescript-eslint/parser": "^6.21.0",
+    "css-loader": "^6.x.x",
     "eslint": "^8.57.1",
     "eslint-plugin-simple-import-sort": "^12.1.1",
+    "html-webpack-plugin": "^5.x.x",
     "identity-obj-proxy": "^3.0.0",
     "jest-environment-jsdom": "^29.7.0",
     "npm-run-all": "^4.1.5",
+    "postcss-loader": "^8.1.1",
     "rimraf": "^5.0.10",
+    "sass-loader": "^13.3.3",
+    "serve": "^14.x.x",
+    "style-loader": "^3.x.x",
     "ts-jest": "^29.2.5",
     "ts-loader": "^9.5.1",
     "ts-patch": "^3.2.1",
     "typescript": "^5.6.2",
-    "webpack-bundle-analyzer": "4.10.2"
+    "webpack": "^5.x.x",
+    "webpack-bundle-analyzer": "4.10.2",
+    "webpack-cli": "^4.x.x",
+    "webpack-dev-server": "^4.x.x"
   },
   "insights": {
     "appname": "assisted-migration-app"

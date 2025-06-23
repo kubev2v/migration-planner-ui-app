@@ -24,6 +24,8 @@
   ],
   "exclude": [
     "./src/entry.ts",
+    "./src/standalone-entry.tsx",
+    "./src/standalone-mocks/**",
     "./*.js",
     "./*.d.ts",
     "./.yalc/**"
