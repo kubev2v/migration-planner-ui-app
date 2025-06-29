@@ -26,3 +26,7 @@ coverage
 
 .yalc
 yalc.lock
+
+# Standalone build
+dist-standalone
+docker-config
