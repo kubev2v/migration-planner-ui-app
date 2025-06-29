@@ -1,0 +1,73 @@
+# Multi-stage build for Migration Planner UI standalone app
+
+# Build stage
+FROM registry.access.redhat.com/ubi9/nodejs-20-minimal AS builder
+
+# Set working directory
+WORKDIR /app
+
+# Copy package files
+COPY package.json package-lock.json yarn.lock ./
+
+# Install dependencies
+USER 0
+RUN microdnf install -y git && \
+    npm ci --no-audit
+
+# Copy source code
+COPY . .
+
+# Build the standalone application
+RUN npm run build:standalone
+
+# Runtime stage
+FROM registry.access.redhat.com/ubi8/nginx-122 AS runtime
+
+# Copy built application from builder stage
+COPY --from=builder /app/dist-standalone /usr/share/nginx/html
+
+# Copy nginx configuration for SPA
+RUN echo 'server { \
+    listen 8080; \
+    server_name localhost; \
+    root /usr/share/nginx/html; \
+    index index.html; \
+    location / { \
+        try_files $uri $uri/ /index.html; \
+    } \
+    # Enable gzip compression \
+    gzip on; \
+    gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript; \
+    # Security headers \
+    add_header X-Frame-Options "SAMEORIGIN" always; \
+    add_header X-Content-Type-Options "nosniff" always; \
+    add_header X-XSS-Protection "1; mode=block" always; \
+}' > /etc/nginx/nginx.conf && \
+echo 'events { worker_connections 1024; } \
+http { \
+    include /etc/nginx/mime.types; \
+    default_type application/octet-stream; \
+    sendfile on; \
+    keepalive_timeout 65; \
+    include /etc/nginx/conf.d/*.conf; \
+    server { \
+        listen 8080; \
+        server_name localhost; \
+        root /usr/share/nginx/html; \
+        index index.html; \
+        location / { \
+            try_files $uri $uri/ /index.html; \
+        } \
+        gzip on; \
+        gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript; \
+        add_header X-Frame-Options "SAMEORIGIN" always; \
+        add_header X-Content-Type-Options "nosniff" always; \
+        add_header X-XSS-Protection "1; mode=block" always; \
+    } \
+}' > /etc/nginx/nginx.conf
+
+# Expose port 8080 (nginx default for non-root)
+EXPOSE 8080
+
+# Start nginx
+CMD ["nginx", "-g", "daemon off;"] 

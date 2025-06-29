@@ -1,0 +1,100 @@
+---
+kind: Template
+apiVersion: template.openshift.io/v1
+metadata:
+  name: assisted-migration-ui
+parameters:
+  - name: MIGRATION_PLANNER_UI_IMAGE
+    required: true
+  - name: IMAGE_TAG
+    value: latest
+  - name: MIGRATION_PLANNER_REPLICAS
+    description: Number of replicas of the service to run.
+    value: "3"
+  - name: ROUTE_HOST
+    description: Host name for the route (optional, if not specified OpenShift will generate one)
+    value: ""
+
+objects:
+  - kind: Deployment
+    apiVersion: apps/v1
+    metadata:
+      name: migration-planner-ui
+      labels:
+        app: migration-planner-ui
+        component: frontend
+    spec:
+      replicas: ${{MIGRATION_PLANNER_REPLICAS}}
+      selector:
+        matchLabels:
+          app: migration-planner-ui
+      template:
+        metadata:
+          labels:
+            app: migration-planner-ui
+            component: frontend
+        spec:
+          containers:
+            - name: migration-planner-ui
+              image: ${MIGRATION_PLANNER_UI_IMAGE}:${IMAGE_TAG}
+              imagePullPolicy: Always
+              ports:
+                - containerPort: 8080
+                  protocol: TCP
+              livenessProbe:
+                httpGet:
+                  path: /
+                  port: 8080
+                initialDelaySeconds: 30
+                periodSeconds: 10
+                timeoutSeconds: 5
+              readinessProbe:
+                httpGet:
+                  path: /
+                  port: 8080
+                initialDelaySeconds: 5
+                periodSeconds: 5
+                timeoutSeconds: 3
+              resources:
+                requests:
+                  memory: "256Mi"
+                  cpu: "100m"
+                limits:
+                  memory: "512Mi"
+                  cpu: "500m"
+          restartPolicy: Always
+  - kind: Service
+    apiVersion: v1
+    metadata:
+      name: migration-planner-ui
+      labels:
+        app: migration-planner-ui
+        component: frontend
+    spec:
+      ports:
+        - name: http
+          port: 8080
+          targetPort: 8080
+          protocol: TCP
+      selector:
+        app: migration-planner-ui
+      type: ClusterIP
+  - kind: Route
+    apiVersion: route.openshift.io/v1
+    metadata:
+      name: planner-ui
+      labels:
+        app: migration-planner-ui
+        component: frontend
+    spec:
+      host: ${ROUTE_HOST}
+      to:
+        kind: Service
+        name: migration-planner-ui
+        weight: 100
+      port:
+        targetPort: http
+      tls:
+        termination: edge
+        insecureEdgeTerminationPolicy: Redirect
+      wildcardPolicy: None
