@@ -35,7 +35,7 @@ import type {
 import { useDiscoverySources } from '../../contexts/discovery-sources/Context';
 import { ReportTable } from './ReportTable';
 import { ReportPieChart } from './ReportPieChart';
-import DownloadPDFButton from './DownloadPDFButton';
+import EnhancedDownloadButton from './EnhancedDownloadButton';
 import { Dashboard } from './assessment-report/Dashboard';
 
 export const DiscoveryStep: React.FC = () => {
@@ -370,7 +370,7 @@ export const DiscoveryStep: React.FC = () => {
               </TextContent>
             </FlexItem>
             <FlexItem spacer={{ default: 'spacerMd' }}>
-              <DownloadPDFButton
+              <EnhancedDownloadButton
                 elementId="discovery-report"
                 componentToRender={
                   <Dashboard
@@ -381,6 +381,7 @@ export const DiscoveryStep: React.FC = () => {
                     isExportMode={true}
                   />
                 }
+                sourceData={discoverSourcesContext.sourceSelected as Source}
               />
             </FlexItem>
           </Flex>

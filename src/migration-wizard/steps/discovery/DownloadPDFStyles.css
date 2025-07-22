@@ -4,3 +4,16 @@
     color: black !important;
     border: 1px solid rgba(3, 3, 3, 0.25);
 }
+
+.dropdown-list-reset {
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+.pf-v5-c-menu__list-item {
+    background-color: #ffffff !important;
+}
+
+.pf-v5-c-menu__list-item:hover {
+    background-color: #f0f0f0 !important;
+}
