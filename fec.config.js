@@ -68,6 +68,21 @@ module.exports = {
       './Histogram': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/Histogram.js'),
       './MigrationIssue': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/MigrationIssue.js'),
       './OsInfo': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/OsInfo.js'),   
+      './UpdateInventoryRequest': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/UpdateInventoryRequest.js'),
+      './UpdateSourceRequest': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/UpdateSourceRequest.js'),
+      './MigrationIssuesInner': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/MigrationIssuesInner.js'),
+      './VMResourceBreakdownHistogram': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/VMResourceBreakdownHistogram.js'),
+      './Inventory': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/Inventory.js'),
+      './AgentProxy': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/AgentProxy.js'),
+      './Agent': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/Agent.js'),
+      './InfraDatastoresInner': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/InfraDatastoresInner.js'),
+      './InfraNetworksInner': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/InfraNetworksInner.js'),
+      './SourceUpdate': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/SourceUpdate.js'),
+      './UpdateInventory': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/UpdateInventory.js'),
+      './Assessment': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/Assessment.js'),
+      './AssessmentForm': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/AssessmentForm.js'),
+
+      
     }, 
   },
   customizeWebpackConfig: (config) => {

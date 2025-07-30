@@ -11,6 +11,7 @@ import { Context } from './Context';
 import {
   Agent,
   Source,
+  SourceUpdateFromJSON,
   SourceUpdateOnPremFromJSON,
 } from '@migration-planner-ui/api-client/models';
 
@@ -187,7 +188,7 @@ export const Provider: React.FC<PropsWithChildren> = (props) => {
     async (sourceId: string, jsonValue: string) => {
       const updatedSource = sourceApi.updateSource({
         id: sourceId,
-        sourceUpdateOnPrem: SourceUpdateOnPremFromJSON(jsonValue),
+        sourceUpdate: SourceUpdateFromJSON(jsonValue),
       });
       return updatedSource;
     },

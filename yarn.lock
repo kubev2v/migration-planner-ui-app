@@ -768,20 +768,20 @@
   resolved "https://registry.npmjs.org/@leichtgewicht/ip-codec/-/ip-codec-2.0.5.tgz"
   integrity sha512-Vo+PSpZG2/fmgmiNzYK9qWRh8h/CHrwD0mo1h1DzL4yzHNSfWYujGTYsWGreD000gcgmZ7K4Ys6Tx9TxtsKdDw==
 
-"@migration-planner-ui/agent-client@^0.0.11":
-  version "0.0.11"
-  resolved "https://registry.npmjs.org/@migration-planner-ui/agent-client/-/agent-client-0.0.11.tgz"
-  integrity sha512-8XcIoB3zzsrpk6Zq0IbA+Hyj6F4mteJhabPEktEqoq0y+VfUacgo/BMG9Y7P7WsL2jXIT3vQwBHquvIBEAVHsg==
+"@migration-planner-ui/agent-client@^0.0.14":
+  version "0.0.14"
+  resolved "https://registry.npmjs.org/@migration-planner-ui/agent-client/-/agent-client-0.0.14.tgz"
+  integrity sha512-X8DFUFCAbki0jNs0g9VWDjiSQsQ+7n7PqBZt5eP73/keaVorrHXwtyxlcCpRMnrOCW1VR5hoM2eWyYyl9CZaTg==
 
-"@migration-planner-ui/api-client@^0.0.11":
-  version "0.0.11"
-  resolved "https://registry.npmjs.org/@migration-planner-ui/api-client/-/api-client-0.0.11.tgz"
-  integrity sha512-eAsWVEwWEUdxtPTrirZ2CtVy6j2LnVDpbWB1lZtmrW/I95OM2SRfONhtphnjYPaNhpPN8qZO2FJD7ayYFrmrSw==
+"@migration-planner-ui/api-client@^0.0.14":
+  version "0.0.14"
+  resolved "https://registry.npmjs.org/@migration-planner-ui/api-client/-/api-client-0.0.14.tgz"
+  integrity sha512-8uxH4kUzeaR5aK6dfOHJ/7RoXbxfDlzvOhxkYHznXQKw7eCLkJOBjG4MxYfKOpHHyrVlJLvT7IacFs7aPwTsvQ==
 
-"@migration-planner-ui/ioc@^0.0.11":
-  version "0.0.11"
-  resolved "https://registry.npmjs.org/@migration-planner-ui/ioc/-/ioc-0.0.11.tgz"
-  integrity sha512-lCnWMLcPVpCVy2Cf+9yhsjhnmUV1Q5nKWAOFcj5NEk2ZexpmC4Uy6EwrmX2IFeJ6Wq7lKT3Hr/6DTjxtWbTf+w==
+"@migration-planner-ui/ioc@^0.0.14":
+  version "0.0.14"
+  resolved "https://registry.npmjs.org/@migration-planner-ui/ioc/-/ioc-0.0.14.tgz"
+  integrity sha512-6NSHEPbm8c7B7TmVDtZ17TmpZhsWbnr7AzUJbzANn7VHSlKZGEZPLNzxdtQIDm0Vyajcf6OzKpPn0mx03XE2MQ==
 
 "@nicolo-ribaudo/eslint-scope-5-internals@5.1.1-v1":
   version "5.1.1-v1"
@@ -1166,10 +1166,15 @@
   dependencies:
     "@sinonjs/commons" "^3.0.0"
 
-"@swc/core-darwin-arm64@1.7.28":
+"@swc/core-linux-x64-gnu@1.7.28":
   version "1.7.28"
-  resolved "https://registry.npmjs.org/@swc/core-darwin-arm64/-/core-darwin-arm64-1.7.28.tgz"
-  integrity sha512-BNkj6enHo2pdzOpCtQGKZbXT2A/qWIr0CVtbTM4WkJ3MCK/glbFsyO6X59p1r8+gfaZG4bWYnTTu+RuUAcsL5g==
+  resolved "https://registry.npmjs.org/@swc/core-linux-x64-gnu/-/core-linux-x64-gnu-1.7.28.tgz"
+  integrity sha512-HGwpWuB83Kr+V0E+zT5UwIIY9OxiS8aLd0UVMRVWuO8SrQyKm9HKJ46+zoAb8tfJrpZftfxvbn2ayZWR7gqosA==
+
+"@swc/core-linux-x64-musl@1.7.28":
+  version "1.7.28"
+  resolved "https://registry.npmjs.org/@swc/core-linux-x64-musl/-/core-linux-x64-musl-1.7.28.tgz"
+  integrity sha512-q2Y2T8y8EgFtIiRyInnAXNe94aaHX74F0ha1Bl9VdRxE0u1/So+3VLbPvtp4V3Z6pj5pOePfCQJKifnllgAQ9A==
 
 "@swc/core@^1.2.147", "@swc/core@^1.3.76":
   version "1.7.28"
@@ -4489,11 +4494,6 @@ fs.realpath@^1.0.0:
   version "1.0.0"
   resolved "https://registry.npmjs.org/fs.realpath/-/fs.realpath-1.0.0.tgz"
   integrity sha512-OO0pH2lK6a0hZnAdau5ItzHPI6pUlvI7jMVnxUQRtw4owF2wk8lOSabtGDCTP4Ggrg2MbGnWO9X8K1t4+fGMDw==
-
-fsevents@^2.3.2, fsevents@~2.3.2:
-  version "2.3.3"
-  resolved "https://registry.npmjs.org/fsevents/-/fsevents-2.3.3.tgz"
-  integrity sha512-5xoDfX+fL7faATnagmWPpbFtwh/R77WmMMqqHGS65C3vvB0YHrgF+B1YmZ3441tMj5n63k0212XNoJwzlhffQw==
 
 function-bind@^1.1.1, function-bind@^1.1.2:
   version "1.1.2"

@@ -7,7 +7,8 @@ import {
 } from '@migration-planner-ui/api-client/apis';
 import {
   GetSourceRequest,
-  UpdateSourceRequest,
+  UpdateInventoryRequest,
+  UpdateSourceRequest
 } from '@migration-planner-ui/api-client/apis';
 import {
   Source,
@@ -137,6 +138,20 @@ export class MockSourceApi implements SourceApiInterface {
     _requestParameters: unknown,
     _initOverrides?: RequestInit | InitOverrideFunction,
   ): Promise<UploadRvtoolsFile200Response> {
+    throw new Error('Method not implemented.');
+  }
+
+  async updateInventoryRaw(
+    _requestParameters: UpdateInventoryRequest,
+    _initOverrides?: RequestInit | InitOverrideFunction,
+  ): Promise<ApiResponse<Source>> {
+    throw new Error('Method not implemented.');
+  }
+
+  async updateInventory(
+    _requestParameters: UpdateInventoryRequest,
+    _initOverrides?: RequestInit | InitOverrideFunction,
+  ): Promise<Source> {
     throw new Error('Method not implemented.');
   }
 }

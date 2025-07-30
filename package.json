@@ -28,9 +28,9 @@
   },
   "dependencies": {
     "@emotion/css": "^11.13.0",
-    "@migration-planner-ui/agent-client": "^0.0.11",
-    "@migration-planner-ui/api-client": "^0.0.11",
-    "@migration-planner-ui/ioc": "^0.0.11",
+    "@migration-planner-ui/agent-client": "^0.0.14",
+    "@migration-planner-ui/api-client": "^0.0.14",
+    "@migration-planner-ui/ioc": "^0.0.14",
     "@patternfly/react-charts": "7.4.1",
     "@patternfly/react-core": "^5.4.1",
     "@patternfly/react-table": "^5.4.1",
