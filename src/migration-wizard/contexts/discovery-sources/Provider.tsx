@@ -10,6 +10,7 @@ import { Symbols } from '../../../main/Symbols';
 import { Context } from './Context';
 import {
   Agent,
+  InventoryFromJSON,
   Source,
   SourceUpdateFromJSON,
   SourceUpdateOnPremFromJSON,
@@ -47,16 +48,22 @@ export const Provider: React.FC<PropsWithChildren> = (props) => {
   });
 
   const [createSourceState, createSource] = useAsyncFn(
-    async (name: string, sshPublicKey: string, httpProxy:string, httpsProxy:string, noProxy: string) => {
+    async (
+      name: string,
+      sshPublicKey: string,
+      httpProxy: string,
+      httpsProxy: string,
+      noProxy: string,
+    ) => {
       try {
         // Build the sourceCreate object conditionally
         const sourceCreate: any = { name };
-        
+
         // Only include sshPublicKey if it has a value
         if (sshPublicKey && sshPublicKey.trim()) {
           sourceCreate.sshPublicKey = sshPublicKey;
         }
-        
+
         // Only include proxy if at least one proxy field has a value
         const proxyFields: any = {};
         if (httpProxy && httpProxy.trim()) {
@@ -68,57 +75,76 @@ export const Provider: React.FC<PropsWithChildren> = (props) => {
         if (noProxy && noProxy.trim()) {
           proxyFields.noProxy = noProxy;
         }
-        
+
         // Only add proxy object if it has at least one field
         if (Object.keys(proxyFields).length > 0) {
           sourceCreate.proxy = proxyFields;
         }
-        
+
         return await sourceApi.createSource({ sourceCreate });
       } catch (error: unknown) {
-        console.error("Error creating source:", error);
-  
-        if (typeof error === "object" && error !== null && "response" in error) {
+        console.error('Error creating source:', error);
+
+        if (
+          typeof error === 'object' &&
+          error !== null &&
+          'response' in error
+        ) {
           const response = (error as { response: Response }).response;
-  
+
           try {
             const errorText = await response.text(); // Read as text first
             try {
               const errorData = JSON.parse(errorText); // Attempt to parse JSON
-              return errorData?.message || "API error occurred.";
+              return errorData?.message || 'API error occurred.';
             } catch {
-              return errorText || "Failed to parse API error response.";
+              return errorText || 'Failed to parse API error response.';
             }
           } catch {
-            return "Error response could not be read.";
+            return 'Error response could not be read.';
           }
         }
-  
-        return "Unexpected error occurred while creating the source.";
+
+        return 'Unexpected error occurred while creating the source.';
       }
-    }
+    },
   );
 
   const [downloadSourceState, createDownloadSource] = useAsyncFn(
-    async (sourceName: string, sourceSshKey: string, httpProxy:string, httpsProxy:string, noProxy: string): Promise<void> => {
-      
-      const newSource = await createSource(sourceName, sourceSshKey, httpProxy, httpsProxy, noProxy);
+    async (
+      sourceName: string,
+      sourceSshKey: string,
+      httpProxy: string,
+      httpsProxy: string,
+      noProxy: string,
+    ): Promise<void> => {
+      const newSource = await createSource(
+        sourceName,
+        sourceSshKey,
+        httpProxy,
+        httpsProxy,
+        noProxy,
+      );
 
       if (!newSource?.id) {
         throw new Error(
-          `Failed to create source. Response: ${JSON.stringify(newSource, null, 2)}`
+          `Failed to create source. Response: ${JSON.stringify(
+            newSource,
+            null,
+            2,
+          )}`,
         );
       }
-      
+
       await imageApi.headImage({ id: newSource.id });
-      const imageUrl = await imageApi.getSourceDownloadURL({ id: newSource.id })
+      const imageUrl = await imageApi.getSourceDownloadURL({
+        id: newSource.id,
+      });
       downloadSourceState.loading = true;
 
       setDownloadSourceUrl(imageUrl.url);
-      
     },
   );
-  
 
   const [isPolling, setIsPolling] = useState(false);
   const [pollingDelay, setPollingDelay] = useState<number | null>(null);
@@ -185,10 +211,13 @@ export const Provider: React.FC<PropsWithChildren> = (props) => {
   );
 
   const [updateSourceState, updateSource] = useAsyncFn(
-    async (sourceId: string, jsonValue: string) => {
-      const updatedSource = sourceApi.updateSource({
+    async (sourceId: string, agentId: string, jsonValue: string) => {
+      const updatedSource = sourceApi.updateInventory({
         id: sourceId,
-        sourceUpdate: SourceUpdateFromJSON(jsonValue),
+        updateInventory: {
+          agentId: agentId,
+          inventory: InventoryFromJSON(jsonValue),
+        },
       });
       return updatedSource;
     },
@@ -231,7 +260,7 @@ export const Provider: React.FC<PropsWithChildren> = (props) => {
     isUpdatingSource: updateSourceState.loading,
     errorUpdatingSource: updateSourceState.error,
     downloadSourceUrl,
-    setDownloadUrl
+    setDownloadUrl,
   };
 
   return <Context.Provider value={ctx}>{children}</Context.Provider>;

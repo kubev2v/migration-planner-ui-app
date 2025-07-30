@@ -238,6 +238,7 @@ export const SourcesTable: React.FC<{
                               onUploadResult?.(message, isError);
                             }}
                             onUploadSuccess={onUploadSuccess}
+                            agentId={source.agent?.id ?? ''}
                           />
                         )}
                     </Td>

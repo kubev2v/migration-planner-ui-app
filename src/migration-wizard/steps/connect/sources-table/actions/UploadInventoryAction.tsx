@@ -8,6 +8,7 @@ interface UploadInventoryProps {
   asLink?: boolean;
   onUploadResult?: (message?: string, isError?: boolean) => void;
   onUploadSuccess?: () => void;
+  agentId: string;
 }
 
 export const UploadInventoryAction: React.FC<UploadInventoryProps> = ({
@@ -15,7 +16,8 @@ export const UploadInventoryAction: React.FC<UploadInventoryProps> = ({
   sourceId,
   asLink,
   onUploadResult,
-  onUploadSuccess
+  onUploadSuccess,
+  agentId,
 }) => {
   const handleUploadSource = useCallback(() => {
     const input = document.createElement("input");
@@ -35,7 +37,7 @@ export const UploadInventoryAction: React.FC<UploadInventoryProps> = ({
 
       try {
         const content = await file.text();
-        await discoverySourcesContext.updateSource(sourceId, JSON.parse(content));
+        await discoverySourcesContext.updateSource(sourceId, agentId, JSON.parse(content));
         if (discoverySourcesContext.errorUpdatingSource){
           onUploadResult?.(discoverySourcesContext.errorUpdatingSource.message, true);
         }
