@@ -104,7 +104,10 @@ module.exports = {
       './Histogram': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/Histogram.js'),
       './MigrationIssue': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/MigrationIssue.js'),
       './OsInfo': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/OsInfo.js'),   
-
+      './SourceUpdate': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/SourceUpdate.js'),
+      './UpdateInventory': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/UpdateInventory.js'),
+      './Assessment': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/Assessment.js'),
+      './AssessmentForm': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/AssessmentForm.js'),
       '@redhat-cloud-services/frontend-components/useChrome': path.resolve(__dirname, 'src/standalone-mocks/useChrome-mock.ts'),
       '@redhat-cloud-services/frontend-components/InvalidObject': path.resolve(__dirname, 'src/standalone-mocks/frontend-components-mock.tsx'),
       '@redhat-cloud-services/frontend-components/PageHeader': path.resolve(__dirname, 'src/standalone-mocks/frontend-components-mock.tsx'),

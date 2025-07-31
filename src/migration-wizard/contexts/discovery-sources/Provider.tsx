@@ -1,20 +1,22 @@
 import React, { type PropsWithChildren, useCallback, useState } from 'react';
 import { useAsyncFn, useInterval } from 'react-use';
+
 import {
-  type ImageApiInterface,
   type AgentApiInterface,
+  type ImageApiInterface,
   type SourceApiInterface,
 } from '@migration-planner-ui/api-client/apis';
-import { useInjection } from '@migration-planner-ui/ioc';
-import { Symbols } from '../../../main/Symbols';
-import { Context } from './Context';
 import {
   Agent,
   InventoryFromJSON,
   Source,
-  SourceUpdateFromJSON,
-  SourceUpdateOnPremFromJSON,
+  UpdateInventoryFromJSON,
 } from '@migration-planner-ui/api-client/models';
+import { useInjection } from '@migration-planner-ui/ioc';
+
+import { Symbols } from '../../../main/Symbols';
+
+import { Context } from './Context';
 
 export const Provider: React.FC<PropsWithChildren> = (props) => {
   const { children } = props;
@@ -211,13 +213,10 @@ export const Provider: React.FC<PropsWithChildren> = (props) => {
   );
 
   const [updateSourceState, updateSource] = useAsyncFn(
-    async (sourceId: string, agentId: string, jsonValue: string) => {
+    async (sourceId: string, jsonValue: string) => {
       const updatedSource = sourceApi.updateInventory({
         id: sourceId,
-        updateInventory: {
-          agentId: agentId,
-          inventory: InventoryFromJSON(jsonValue),
-        },
+        updateInventory: UpdateInventoryFromJSON(jsonValue),
       });
       return updatedSource;
     },

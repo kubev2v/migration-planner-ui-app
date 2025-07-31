@@ -34,11 +34,7 @@ declare namespace DiscoverySources {
     agentSelected: Agent;
     selectSourceById: (sourceId: string) => void;
     getSourceById: (sourceId: string) => Source;
-    updateSource: (
-      sourceId: string,
-      agentId: string,
-      jsonValue: string,
-    ) => void;
+    updateSource: (sourceId: string, jsonValue: string) => void;
     isUpdatingSource: boolean;
     errorUpdatingSource?: Error;
     downloadSourceUrl?: string;

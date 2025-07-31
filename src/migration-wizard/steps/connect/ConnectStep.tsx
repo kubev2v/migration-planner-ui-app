@@ -232,7 +232,6 @@ export const ConnectStep: React.FC = () => {
                     setUploadMessage(message ?? null);
                     setIsUploadError(isError ?? false);
                   }}
-                  agentId={sourceSelected?.agent?.id ?? ''}
                 />
               </Alert>
             </StackItem>
