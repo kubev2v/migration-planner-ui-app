@@ -38,17 +38,17 @@ export const UploadInventoryAction: React.FC<UploadInventoryProps> = ({
 
       try {
         const content = await file.text();
-        await discoverySourcesContext.updateInventory(
-          sourceId,
-          JSON.parse(content),
-        );
-        if (discoverySourcesContext.errorUpdatingInventory) {
+        try {
+          await discoverySourcesContext.updateInventory(
+            sourceId,
+            JSON.parse(content),
+          );
+          onUploadResult?.('Discovery file uploaded successfully', false);
+        } catch (error) {
           onUploadResult?.(
-            discoverySourcesContext.errorUpdatingInventory.message,
+            error?.message || 'Failed to update inventory',
             true,
           );
-        } else {
-          onUploadResult?.('Discovery file uploaded successfully', false);
         }
       } catch (err) {
         onUploadResult?.(

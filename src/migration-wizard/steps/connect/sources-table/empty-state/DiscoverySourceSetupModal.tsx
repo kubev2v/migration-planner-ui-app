@@ -108,6 +108,10 @@ export const DiscoverySourceSetupModal: React.FC<
 
       if (!discoverySourcesContext.downloadSourceUrl) {
         if (isEditingConfiguration) {
+          if (!discoverySourcesContext.sourceCreatedId) {
+            console.error('No source ID available for editing');
+            return;
+          }
           await discoverySourcesContext.updateSource(
             discoverySourcesContext.sourceCreatedId,
             sshKey,
@@ -270,7 +274,7 @@ export const DiscoverySourceSetupModal: React.FC<
                       name="httpProxy"
                       type="text"
                       value={httpProxy}
-                      placeholder="http://<user>:<password>@<ipaddr>:<port>"
+                      placeholder="http://proxy.example.com:8080"
                       onChange={(_, value) => setHttpProxy(value)}
                     />
                     <FormHelperText>
@@ -287,7 +291,7 @@ export const DiscoverySourceSetupModal: React.FC<
                       name="httpsProxy"
                       type="text"
                       value={httpsProxy}
-                      placeholder="https://<user>:<password>@<ipaddr>:<port>"
+                      placeholder="https://proxy.example.com:8443"
                       onChange={(_, value) => setHttpsProxy(value)}
                     />
                     <FormHelperText>

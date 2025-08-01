@@ -45,7 +45,7 @@ const ProxyInputFields = ({
             name="httpProxy"
             type="text"
             value={httpProxy}
-            placeholder="http://<user>:<password>@<ipaddr>:<port>"
+            placeholder="http://proxy.example.com:8080"
             onChange={(_event,value) => onChange('httpProxy', value)}
           />
           <FormHelperText>
@@ -76,7 +76,7 @@ const ProxyInputFields = ({
             name="httpsProxy"
             type="text"
             value={httpsProxy}
-            placeholder="https://<user>:<password>@<ipaddr>:<port>"
+            placeholder="https://proxy.example.com:8443"
             onChange={(_event,value) => onChange('httpsProxy', value)}
           />
           <FormHelperText>
