@@ -28,6 +28,8 @@ export const Provider: React.FC<PropsWithChildren> = (props) => {
 
   const [downloadSourceUrl, setDownloadSourceUrl] = useState('');
 
+  const [sourceCreatedId, setSourceCreatedId] = useState<string | null>(null);
+
   const sourceApi = useInjection<SourceApiInterface>(Symbols.SourceApi);
   const agentsApi = useInjection<AgentApiInterface>(Symbols.AgentApi);
   const imageApi = useInjection<ImageApiInterface>(Symbols.ImageApi);
@@ -145,6 +147,7 @@ export const Provider: React.FC<PropsWithChildren> = (props) => {
       downloadSourceState.loading = true;
 
       setDownloadSourceUrl(imageUrl.url);
+      setSourceCreatedId(newSource.id);
     },
   );
 
@@ -212,7 +215,7 @@ export const Provider: React.FC<PropsWithChildren> = (props) => {
     [listSourcesState.value],
   );
 
-  const [updateSourceState, updateSource] = useAsyncFn(
+  const [updateInventoryState, updateInventory] = useAsyncFn(
     async (sourceId: string, jsonValue: string) => {
       const updatedSource = sourceApi.updateInventory({
         id: sourceId,
@@ -223,8 +226,59 @@ export const Provider: React.FC<PropsWithChildren> = (props) => {
   );
 
   const setDownloadUrl = useCallback((url: string) => {
-    setDownloadSourceUrl('');
+    setDownloadSourceUrl(url);
   }, []);
+
+  const deleteSourceCreated = useCallback(() => {
+    setSourceCreatedId(null);
+  }, []);
+
+  const [updateSourceState, updateSource] = useAsyncFn(
+    async (
+      sourceId: string,
+      sshPublicKey: string,
+      httpProxy: string,
+      httpsProxy: string,
+      noProxy: string,
+    ): Promise<void> => {
+      // Build the sourceCreate object conditionally
+      const sourceUpdate: any = {};
+
+      // Only include sshPublicKey if it has a value
+      if (sshPublicKey && sshPublicKey.trim()) {
+        sourceUpdate.sshPublicKey = sshPublicKey;
+      }
+
+      // Only include proxy if at least one proxy field has a value
+      const proxyFields: any = {};
+      if (httpProxy && httpProxy.trim()) {
+        proxyFields.httpUrl = httpProxy;
+      }
+      if (httpsProxy && httpsProxy.trim()) {
+        proxyFields.httpsUrl = httpsProxy;
+      }
+      if (noProxy && noProxy.trim()) {
+        proxyFields.noProxy = noProxy;
+      }
+
+      // Only add proxy object if it has at least one field
+      if (Object.keys(proxyFields).length > 0) {
+        sourceUpdate.proxy = proxyFields;
+      }
+      const updatedSource = await sourceApi.updateSource({
+        id: sourceId,
+        sourceUpdate,
+      });
+
+      await imageApi.headImage({ id: updatedSource.id });
+      const imageUrl = await imageApi.getSourceDownloadURL({
+        id: updatedSource.id,
+      });
+      downloadSourceState.loading = true;
+
+      setDownloadSourceUrl(imageUrl.url);
+    },
+  );
 
   const ctx: DiscoverySources.Context = {
     sources: listSourcesState.value ?? [],
@@ -260,6 +314,11 @@ export const Provider: React.FC<PropsWithChildren> = (props) => {
     errorUpdatingSource: updateSourceState.error,
     downloadSourceUrl,
     setDownloadUrl,
+    sourceCreatedId,
+    deleteSourceCreated,
+    updateInventory,
+    isUpdatingInventory: updateInventoryState.loading,
+    errorUpdatingInventory: updateInventoryState.error,
   };
 
   return <Context.Provider value={ctx}>{children}</Context.Provider>;

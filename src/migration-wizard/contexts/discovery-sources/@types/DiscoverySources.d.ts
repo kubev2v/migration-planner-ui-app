@@ -34,10 +34,21 @@ declare namespace DiscoverySources {
     agentSelected: Agent;
     selectSourceById: (sourceId: string) => void;
     getSourceById: (sourceId: string) => Source;
-    updateSource: (sourceId: string, jsonValue: string) => void;
-    isUpdatingSource: boolean;
-    errorUpdatingSource?: Error;
+    updateInventory: (sourceId: string, jsonValue: string) => void;
+    isUpdatingInventory: boolean;
+    errorUpdatingInventory?: Error;
     downloadSourceUrl?: string;
     setDownloadUrl?: (url: string) => void;
+    sourceCreatedId?: string;
+    deleteSourceCreated: () => void;
+    updateSource: (
+      sourceId: string,
+      sourceSshKey: string,
+      httpProxy: string,
+      httpsProxy: string,
+      noProxy: string,
+    ) => Promise<void>;
+    isUpdatingSource: boolean;
+    errorUpdatingSource?: Error;
   };
 }

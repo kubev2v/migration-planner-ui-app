@@ -1,7 +1,9 @@
 import React, { useCallback, useEffect, useState } from 'react';
+
 import {
   Alert,
   Button,
+  Checkbox,
   ClipboardCopy,
   clipboardCopyFunc,
   Form,
@@ -19,7 +21,7 @@ import {
   ModalFooter,
   ModalHeader,
 } from '@patternfly/react-core/next';
-import ProxyFields from './ProxyFields';
+
 import { useDiscoverySources } from '../../../../contexts/discovery-sources/Context';
 
 export namespace DiscoverySourceSetupModal {
@@ -48,6 +50,12 @@ export const DiscoverySourceSetupModal: React.FC<
   const [showUrl, setShowUrl] = useState(false);
   const [generatedUrl, setGeneratedUrl] = useState<string>('');
   const [sourceName, setSourceName] = useState<string>('');
+  const [environmentName, setEnvironmentName] = useState<string>('');
+  const [httpProxy, setHttpProxy] = useState<string>('');
+  const [httpsProxy, setHttpsProxy] = useState<string>('');
+  const [noProxy, setNoProxy] = useState<string>('');
+  const [enableProxy, setEnableProxy] = useState(false);
+  const [isEditingConfiguration, setIsEditingConfiguration] = useState(false);
 
   const validateSshKey = useCallback((key: string): string | null => {
     const SSH_KEY_PATTERNS = {
@@ -78,8 +86,20 @@ export const DiscoverySourceSetupModal: React.FC<
     setShowUrl(false);
     setGeneratedUrl('');
     setSourceName('');
+    setEnvironmentName('');
+    setHttpProxy('');
+    setHttpsProxy('');
+    setNoProxy('');
+    setEnableProxy(false);
     discoverySourcesContext.setDownloadUrl('');
+    discoverySourcesContext.deleteSourceCreated();
     discoverySourcesContext.errorDownloadingSource = null;
+  };
+
+  const backToOvaConfiguration = () => {
+    setShowUrl(false);
+    discoverySourcesContext.setDownloadUrl('');
+    setIsEditingConfiguration(true);
   };
 
   const handleSubmit = useCallback<React.FormEventHandler<HTMLFormElement>>(
@@ -87,37 +107,35 @@ export const DiscoverySourceSetupModal: React.FC<
       event.preventDefault();
 
       if (!discoverySourcesContext.downloadSourceUrl) {
-        const form = event.currentTarget;
-        const keyValidationError = validateSshKey(sshKey);
-        if (keyValidationError) {
-          setSshKeyError(keyValidationError);
-          return;
+        if (isEditingConfiguration) {
+          await discoverySourcesContext.updateSource(
+            discoverySourcesContext.sourceCreatedId,
+            sshKey,
+            httpProxy,
+            httpsProxy,
+            noProxy,
+          );
+        } else {
+          const keyValidationError = validateSshKey(sshKey);
+          if (keyValidationError) {
+            setSshKeyError(keyValidationError);
+            return;
+          }
+
+          if (environmentName === '') {
+            return;
+          }
+
+          setSourceName(environmentName);
+
+          await discoverySourcesContext.createDownloadSource(
+            environmentName,
+            sshKey,
+            httpProxy,
+            httpsProxy,
+            noProxy,
+          );
         }
-
-        const environmentName = (
-          form['discoveryEnvironmentName'] as HTMLInputElement
-        )?.value;
-
-        if (environmentName===''){
-          return;
-        }
-
-        const httpProxy = (form['httpProxy'] as HTMLInputElement)?.value || '';
-        const httpsProxy =
-          (form['httpsProxy'] as HTMLInputElement)?.value || '';
-        const noProxy = (form['noProxy'] as HTMLInputElement)?.value || '';
-
-        setSourceName(environmentName);
-
-        
-        await discoverySourcesContext.createDownloadSource(
-          environmentName,
-          sshKey,
-          httpProxy,
-          httpsProxy,
-          noProxy,
-        );
-       
       } else {
         onStartDownload();
         const anchor = document.createElement('a');
@@ -130,7 +148,19 @@ export const DiscoverySourceSetupModal: React.FC<
         onClose?.();
       }
     },
-    [sshKey, validateSshKey, discoverySourcesContext, props],
+    [
+      sshKey,
+      environmentName,
+      httpProxy,
+      httpsProxy,
+      noProxy,
+      validateSshKey,
+      discoverySourcesContext,
+      sourceName,
+      onStartDownload,
+      onAfterDownload,
+      onClose,
+    ],
   );
 
   useEffect(() => {
@@ -140,11 +170,11 @@ export const DiscoverySourceSetupModal: React.FC<
     }
   }, [discoverySourcesContext.downloadSourceUrl]);
 
-  useEffect(()=>{
-    if (isOpen){
+  useEffect(() => {
+    if (isOpen) {
       resetForm();
     }
-  },[isOpen]);
+  }, [isOpen]);
 
   return (
     <Modal
@@ -181,11 +211,14 @@ export const DiscoverySourceSetupModal: React.FC<
                   id="discovery-source-name-form-control"
                   name="discoveryEnvironmentName"
                   type="text"
+                  value={environmentName}
+                  onChange={(_, value) => setEnvironmentName(value)}
                   placeholder="Example: ams-vcenter-prod-1"
                   pattern="^[a-zA-Z][a-zA-Z0-9_\-]*$"
                   maxLength={50}
                   minLength={1}
                   isRequired
+                  isDisabled={isEditingConfiguration}
                   aria-describedby="name-helper-text"
                 />
                 <FormHelperText>
@@ -222,7 +255,79 @@ export const DiscoverySourceSetupModal: React.FC<
                   </HelperText>
                 </FormHelperText>
               </FormGroup>
-              <ProxyFields />
+              <FormGroup label="Show proxy settings">
+                <Checkbox
+                  id="enable-proxy"
+                  label="Enable proxy"
+                  isChecked={enableProxy}
+                  onChange={(_, checked) => setEnableProxy(checked)}
+                />
+              </FormGroup>
+              {enableProxy && (
+                <>
+                  <FormGroup label="HTTP proxy URL">
+                    <TextInput
+                      name="httpProxy"
+                      type="text"
+                      value={httpProxy}
+                      placeholder="http://<user>:<password>@<ipaddr>:<port>"
+                      onChange={(_, value) => setHttpProxy(value)}
+                    />
+                    <FormHelperText>
+                      <HelperText>
+                        <HelperTextItem>
+                          URL must start with http.
+                        </HelperTextItem>
+                      </HelperText>
+                    </FormHelperText>
+                  </FormGroup>
+
+                  <FormGroup label="HTTPS proxy URL">
+                    <TextInput
+                      name="httpsProxy"
+                      type="text"
+                      value={httpsProxy}
+                      placeholder="https://<user>:<password>@<ipaddr>:<port>"
+                      onChange={(_, value) => setHttpsProxy(value)}
+                    />
+                    <FormHelperText>
+                      <HelperText>
+                        <HelperTextItem>
+                          URL must start with https.
+                        </HelperTextItem>
+                      </HelperText>
+                    </FormHelperText>
+                  </FormGroup>
+
+                  <FormGroup label="No proxy domains">
+                    <TextInput
+                      name="noProxy"
+                      type="text"
+                      value={noProxy}
+                      placeholder="one.domain.com,second.domain.com"
+                      onChange={(_, value) => setNoProxy(value)}
+                      onBlur={() =>
+                        setNoProxy(
+                          noProxy
+                            .split(',')
+                            .map((s) => s.trim())
+                            .join(','),
+                        )
+                      }
+                    />
+                    <FormHelperText>
+                      <HelperText>
+                        <HelperTextItem>
+                          Use a comma to separate each listed domain. Preface a
+                          domain with &quot;.&quot; to include its subdomains.
+                          Use &quot;*&quot; to bypass the proxy for all
+                          destinations.
+                        </HelperTextItem>
+                      </HelperText>
+                    </FormHelperText>
+                  </FormGroup>
+                </>
+              )}
             </>
           )}
           {showUrl && (
@@ -244,7 +349,6 @@ export const DiscoverySourceSetupModal: React.FC<
         )}
       </ModalBody>
       <ModalFooter>
-        
         <Button
           form="discovery-source-setup-form"
           type="submit"
@@ -252,7 +356,11 @@ export const DiscoverySourceSetupModal: React.FC<
           variant="primary"
           isDisabled={isDisabled || !!sshKeyError}
         >
-          {!showUrl ? 'Generate OVA' : 'Download OVA'}
+          {!showUrl
+            ? isEditingConfiguration
+              ? 'Update OVA configuration'
+              : 'Generate OVA'
+            : 'Download OVA'}
         </Button>
         {showUrl && (
           <Button
@@ -264,6 +372,17 @@ export const DiscoverySourceSetupModal: React.FC<
             }}
           >
             Close
+          </Button>
+        )}
+        {showUrl && (
+          <Button
+            key="primary"
+            variant="link"
+            onClick={() => {
+              backToOvaConfiguration();
+            }}
+          >
+            Edit OVA configuration
           </Button>
         )}
       </ModalFooter>
