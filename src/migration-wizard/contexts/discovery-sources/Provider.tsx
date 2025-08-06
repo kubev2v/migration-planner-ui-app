@@ -61,7 +61,15 @@ export const Provider: React.FC<PropsWithChildren> = (props) => {
     ) => {
       try {
         // Build the sourceCreate object conditionally
-        const sourceCreate: any = { name };
+        const sourceCreate: {
+          name: string;
+          sshPublicKey?: string;
+          proxy?: {
+            httpUrl?: string;
+            httpsUrl?: string;
+            noProxy?: string;
+          };
+        } = { name };
 
         // Only include sshPublicKey if it has a value
         if (sshPublicKey && sshPublicKey.trim()) {
@@ -69,7 +77,11 @@ export const Provider: React.FC<PropsWithChildren> = (props) => {
         }
 
         // Only include proxy if at least one proxy field has a value
-        const proxyFields: any = {};
+        const proxyFields: {
+          httpUrl?: string;
+          httpsUrl?: string;
+          noProxy?: string;
+        } = {};
         if (httpProxy && httpProxy.trim()) {
           proxyFields.httpUrl = httpProxy;
         }
@@ -225,6 +237,15 @@ export const Provider: React.FC<PropsWithChildren> = (props) => {
     },
   );
 
+  const [uploadRvtoolsFileState, uploadRvtoolsFile] = useAsyncFn(
+    async (sourceId: string, file: Blob): Promise<void> => {
+      await sourceApi.uploadRvtoolsFile({
+        id: sourceId,
+        file: file,
+      });
+    },
+  );
+
   const setDownloadUrl = useCallback((url: string) => {
     setDownloadSourceUrl(url);
   }, []);
@@ -241,8 +262,15 @@ export const Provider: React.FC<PropsWithChildren> = (props) => {
       httpsProxy: string,
       noProxy: string,
     ): Promise<void> => {
-      // Build the sourceCreate object conditionally
-      const sourceUpdate: any = {};
+      // Build the sourceUpdate object conditionally
+      const sourceUpdate: {
+        sshPublicKey?: string;
+        proxy?: {
+          httpUrl?: string;
+          httpsUrl?: string;
+          noProxy?: string;
+        };
+      } = {};
 
       // Only include sshPublicKey if it has a value
       if (sshPublicKey && sshPublicKey.trim()) {
@@ -250,7 +278,11 @@ export const Provider: React.FC<PropsWithChildren> = (props) => {
       }
 
       // Only include proxy if at least one proxy field has a value
-      const proxyFields: any = {};
+      const proxyFields: {
+        httpUrl?: string;
+        httpsUrl?: string;
+        noProxy?: string;
+      } = {};
       if (httpProxy && httpProxy.trim()) {
         proxyFields.httpUrl = httpProxy;
       }
@@ -319,6 +351,9 @@ export const Provider: React.FC<PropsWithChildren> = (props) => {
     updateInventory,
     isUpdatingInventory: updateInventoryState.loading,
     errorUpdatingInventory: updateInventoryState.error,
+    uploadRvtoolsFile,
+    isUploadingRvtoolsFile: uploadRvtoolsFileState.loading,
+    errorUploadingRvtoolsFile: uploadRvtoolsFileState.error,
   };
 
   return <Context.Provider value={ctx}>{children}</Context.Provider>;

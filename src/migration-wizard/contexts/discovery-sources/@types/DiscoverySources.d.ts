@@ -37,6 +37,9 @@ declare namespace DiscoverySources {
     updateInventory: (sourceId: string, jsonValue: string) => void;
     isUpdatingInventory: boolean;
     errorUpdatingInventory?: Error;
+    uploadRvtoolsFile: (sourceId: string, file: Blob) => Promise<void>;
+    isUploadingRvtoolsFile: boolean;
+    errorUploadingRvtoolsFile?: Error;
     downloadSourceUrl?: string;
     setDownloadUrl?: (url: string) => void;
     sourceCreatedId?: string;

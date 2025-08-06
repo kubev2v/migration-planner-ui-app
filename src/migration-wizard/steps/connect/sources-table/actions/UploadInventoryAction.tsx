@@ -1,5 +1,6 @@
-import React, { useCallback, useEffect, useState } from 'react';
-import { Tooltip, Button, Icon, Modal } from '@patternfly/react-core';
+import React, { useCallback } from 'react';
+
+import { Button, Icon, Tooltip } from '@patternfly/react-core';
 import { UploadIcon } from '@patternfly/react-icons';
 
 interface UploadInventoryProps {
@@ -20,7 +21,7 @@ export const UploadInventoryAction: React.FC<UploadInventoryProps> = ({
   const handleUploadSource = useCallback(() => {
     const input = document.createElement('input');
     input.type = 'file';
-    input.accept = '.json';
+    input.accept = '.json,.xlsx';
     input.style.visibility = 'hidden';
 
     input.onchange = async (event: Event) => {
@@ -36,23 +37,49 @@ export const UploadInventoryAction: React.FC<UploadInventoryProps> = ({
         return;
       }
 
+      const fileExtension = file.name.toLowerCase().split('.').pop();
+
       try {
-        const content = await file.text();
-        try {
-          await discoverySourcesContext.updateInventory(
-            sourceId,
-            JSON.parse(content),
-          );
-          onUploadResult?.('Discovery file uploaded successfully', false);
-        } catch (error) {
+        if (fileExtension === 'json') {
+          // Handle JSON file
+          const content = await file.text();
+          try {
+            await discoverySourcesContext.updateInventory(
+              sourceId,
+              JSON.parse(content),
+            );
+            onUploadResult?.('Discovery file uploaded successfully', false);
+          } catch (error) {
+            onUploadResult?.(
+              error?.message || 'Failed to update inventory',
+              true,
+            );
+          }
+        } else if (fileExtension === 'xlsx') {
+          // Handle Excel file
+          try {
+            // Convert File to Blob for the upload
+            // Use a generic content type that the API accepts
+            const blob = new Blob([file], {
+              type: 'application/octet-stream',
+            });
+            await discoverySourcesContext.uploadRvtoolsFile(sourceId, blob);
+            onUploadResult?.('RVTools file uploaded successfully', false);
+          } catch (error) {
+            onUploadResult?.(
+              error?.message || 'Failed to upload RVTools file',
+              true,
+            );
+          }
+        } else {
           onUploadResult?.(
-            error?.message || 'Failed to update inventory',
+            'Unsupported file format. Please upload a JSON or Excel (.xlsx) file.',
             true,
           );
         }
       } catch (err) {
         onUploadResult?.(
-          'Failed to import inventory. Please check the file format.',
+          'Failed to import file. Please check the file format.',
           true,
         );
       } finally {
@@ -72,10 +99,10 @@ export const UploadInventoryAction: React.FC<UploadInventoryProps> = ({
       onClick={handleUploadSource}
       style={{ padding: 0, marginTop: '5px' }}
     >
-      Upload discovery file
+      Upload discovery file (JSON/Excel)
     </Button>
   ) : (
-    <Tooltip content="Upload">
+    <Tooltip content="Upload JSON or Excel file">
       <Button variant="plain" onClick={handleUploadSource}>
         <Icon size="md" isInline>
           <UploadIcon />

@@ -74,7 +74,7 @@ module.exports = {
       './UpdateInventory': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/UpdateInventory.js'),
       './Assessment': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/Assessment.js'),
       './AssessmentForm': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/AssessmentForm.js'),
-
+      './AssessmentApi': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/apis/AssessmentApi.js'),
       
     }, 
   },
