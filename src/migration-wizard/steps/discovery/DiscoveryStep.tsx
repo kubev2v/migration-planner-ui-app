@@ -1,17 +1,24 @@
 import React from 'react';
 import Humanize from 'humanize-plus';
+
+import type {
+  Datastore,
+  InfraNetworksInner,
+  MigrationIssuesInner,
+  Source,
+} from '@migration-planner-ui/api-client/models';
 import {
+  Badge,
+  Flex,
+  FlexItem,
+  Icon,
+  Progress,
   Stack,
   StackItem,
-  Icon,
   Text,
   TextContent,
   TreeView,
   TreeViewDataItem,
-  Badge,
-  Flex,
-  FlexItem,
-  Progress,
 } from '@patternfly/react-core';
 import {
   CogsIcon,
@@ -24,19 +31,15 @@ import {
   NetworkIcon,
   VirtualMachineIcon,
 } from '@patternfly/react-icons';
-import { global_warning_color_100 as globalWarningColor100 } from '@patternfly/react-tokens/dist/js/global_warning_color_100';
 import { global_danger_color_100 as globalDangerColor100 } from '@patternfly/react-tokens/dist/js/global_danger_color_100';
-import type {
-  Datastore,
-  InfraNetworksInner,
-  MigrationIssuesInner,
-  Source,
-} from '@migration-planner-ui/api-client/models';
+import { global_warning_color_100 as globalWarningColor100 } from '@patternfly/react-tokens/dist/js/global_warning_color_100';
+
 import { useDiscoverySources } from '../../contexts/discovery-sources/Context';
-import { ReportTable } from './ReportTable';
-import { ReportPieChart } from './ReportPieChart';
-import EnhancedDownloadButton from './EnhancedDownloadButton';
+
 import { Dashboard } from './assessment-report/Dashboard';
+import EnhancedDownloadButton from './EnhancedDownloadButton';
+import { ReportPieChart } from './ReportPieChart';
+import { ReportTable } from './ReportTable';
 
 export const DiscoveryStep: React.FC = () => {
   const discoverSourcesContext = useDiscoverySources();

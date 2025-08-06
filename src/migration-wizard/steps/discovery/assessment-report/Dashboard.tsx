@@ -15,11 +15,13 @@ import {
 } from '@patternfly/react-core';
 
 import { Datastores } from './Datastores';
+import { ErrorTable } from './ErrorTable';
 import { InfrastructureOverview } from './InfastructureOverview';
 import { NetworkTopology } from './NetworkTopology';
 import { OSDistribution } from './OSDistribution';
 import { StorageOverview } from './StorageOverview';
 import { VMMigrationStatus } from './VMMigrationStatus';
+import { WarningsTable } from './WarningsTable';
 
 import './Dashboard.css';
 
@@ -104,6 +106,22 @@ export const Dashboard: React.FC<Props> = ({
             <GalleryItem>
               <Datastores
                 datastores={infra.datastores}
+                isExportMode={isExportMode}
+              />
+            </GalleryItem>
+          </Gallery>
+        </GridItem>
+        <GridItem span={12}>
+          <Gallery hasGutter minWidths={{ default: '300px', md: '45%' }}>
+            <GalleryItem>
+              <ErrorTable
+                errors={vms.notMigratableReasons}
+                isExportMode={isExportMode}
+              />
+            </GalleryItem>
+            <GalleryItem>
+              <WarningsTable
+                warnings={vms.migrationWarnings}
                 isExportMode={isExportMode}
               />
             </GalleryItem>

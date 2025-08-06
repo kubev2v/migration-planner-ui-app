@@ -9,21 +9,37 @@ export namespace ReportTable {
     fields: Array<keyof DataList[0]>;
     style?: React.CSSProperties;
     withoutBorder?: boolean;
+    caption?: string;
   };
 }
 
 export function ReportTable<DataItem>(
   props: ReportTable.Props<DataItem[]>,
-  withoutBorder = false
+  withoutBorder = false,
 ): React.ReactNode {
-  const { columns, data, fields, style } = props;
+  const { columns, data, fields, style, caption } = props;
 
   return (
     <Table
       variant="compact"
       borders={true}
-      style={{  border: withoutBorder ? 'none':'1px solid lightgray', borderRight: 'none', ...style }}
+      style={{
+        border: withoutBorder ? 'none' : '1px solid lightgray',
+        borderRight: 'none',
+        ...style,
+      }}
     >
+      {caption && (
+        <caption style={{ 
+          fontWeight: 'bold', 
+          fontSize: '14px', 
+          textAlign: 'left', 
+          padding: '8px 16px',
+          color: '#151515'
+        }}>
+          {caption}
+        </caption>
+      )}
       <Thead>
         <Tr style={{ border: withoutBorder ? 'none':'1px solid lightgray'}}>
           {columns.map((name, index) => (
