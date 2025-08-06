@@ -26,22 +26,35 @@ export const ErrorTable: React.FC<ErrorTableProps> = ({
         Errors
       </CardTitle>
       <CardBody style={{ padding: 0 }}>
-        <div
-          style={{
-            maxHeight: tableHeight,
-            overflowY: 'auto',
-            overflowX: 'auto',
-            padding: 2,
-          }}
-        >
-          <ReportTable<MigrationIssue>
-            data={errors}
-            columns={['Description', 'Total']}
-            fields={['assessment', 'count']}
-            withoutBorder
-            caption="Virtual machine validations"
-          />
-        </div>
+        {errors.length === 0 ? (
+          <div
+            style={{
+              padding: '16px',
+              textAlign: 'center',
+              color: '#6a6e73',
+              fontStyle: 'italic',
+            }}
+          >
+            No errors found
+          </div>
+        ) : (
+          <div
+            style={{
+              maxHeight: tableHeight,
+              overflowY: 'auto',
+              overflowX: 'auto',
+              padding: 2,
+            }}
+          >
+            <ReportTable<MigrationIssue>
+              data={errors}
+              columns={['Description', 'Total']}
+              fields={['assessment', 'count']}
+              withoutBorder
+              caption="Virtual machine validations"
+            />
+          </div>
+        )}
       </CardBody>
     </Card>
   );

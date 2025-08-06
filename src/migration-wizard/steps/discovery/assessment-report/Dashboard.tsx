@@ -112,16 +112,16 @@ export const Dashboard: React.FC<Props> = ({
           </Gallery>
         </GridItem>
         <GridItem span={12}>
-          <Gallery hasGutter minWidths={{ default: '300px', md: '45%' }}>
+          <Gallery hasGutter minWidths={{ default: '300px', md: '45%' }}>            
             <GalleryItem>
-              <ErrorTable
-                errors={vms.notMigratableReasons}
+              <WarningsTable
+                warnings={vms.migrationWarnings}
                 isExportMode={isExportMode}
               />
             </GalleryItem>
             <GalleryItem>
-              <WarningsTable
-                warnings={vms.migrationWarnings}
+              <ErrorTable
+                errors={vms.notMigratableReasons}
                 isExportMode={isExportMode}
               />
             </GalleryItem>
