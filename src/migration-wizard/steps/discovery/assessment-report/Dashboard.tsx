@@ -72,8 +72,8 @@ export const Dashboard: React.FC<Props> = ({
             <GalleryItem>
               <VMMigrationStatus
                 data={{
-                  migratable: vms.totalMigratableWithWarnings,
-                  nonMigratable: vms.total - vms.totalMigratableWithWarnings,
+                  migratable: vms.totalMigratable,
+                  nonMigratable: vms.total - vms.totalMigratable,
                 }}
                 isExportMode={isExportMode}
               />
