@@ -1,7 +1,13 @@
-import React, { Fragment, useEffect } from 'react';
+import React, { Fragment, useEffect, useMemo } from 'react';
 
 import { AgentApi } from '@migration-planner-ui/agent-client/apis';
-import { ImageApi, SourceApi } from '@migration-planner-ui/api-client/apis';
+import {
+  AssessmentApi,
+  ImageApi,
+  SourceApi,
+} from '@migration-planner-ui/api-client/apis';
+
+import { AgentApi } from '@migration-planner-ui/agent-client/apis';
 import { Configuration } from '@migration-planner-ui/api-client/runtime';
 import { Container } from '@migration-planner-ui/ioc';
 import { Provider as DependencyInjectionProvider } from '@migration-planner-ui/ioc';
@@ -30,6 +36,7 @@ const App = (): JSX.Element => {
       c.register(Symbols.ImageApi, new ImageApi(plannerApiConfig));
       c.register(Symbols.SourceApi, new SourceApi(plannerApiConfig));
       c.register(Symbols.AgentApi, new AgentApi(plannerApiConfig));
+      c.register(Symbols.AssessmentApi, new AssessmentApi(plannerApiConfig));
 
       setContainer(c);
     };

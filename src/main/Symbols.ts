@@ -3,4 +3,5 @@ export const Symbols = Object.freeze({
   AgentApi: Symbol.for('AgentApi'),
   ImageApi: Symbol.for('ImageApi'),
   SourceApi: Symbol.for('SourceApi'),
+  AssessmentApi: Symbol.for('AssessmentApi'),
 });

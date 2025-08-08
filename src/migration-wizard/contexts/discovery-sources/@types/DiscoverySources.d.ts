@@ -56,5 +56,12 @@ declare namespace DiscoverySources {
     sourceDownloadUrls: Record<string, string>;
     getDownloadUrlForSource: (sourceId: string) => string | undefined;
     storeDownloadUrlForSource: (sourceId: string, downloadUrl: string) => void;
+    assessments: Assessment[];
+    isLoadingAssessments: boolean;
+    errorLoadingAssessments?: Error;
+    listAssessments: () => Promise<Assessment[]>;
+    createAssessment: (sourceId: string, name?: string) => Promise<Assessment>;
+    isCreatingAssessment: boolean;
+    errorCreatingAssessment?: Error;
   };
 }
