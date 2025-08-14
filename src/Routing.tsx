@@ -1,10 +1,8 @@
-// Routing.tsx
 import React, { Suspense } from 'react';
 import { Route as RouterRoute, Routes as RouterRoutes } from 'react-router-dom';
-
-import { Bullseye, Spinner } from '@patternfly/react-core';
 import { InvalidObject } from '@redhat-cloud-services/frontend-components/InvalidObject';
-
+import { Bullseye, Spinner } from '@patternfly/react-core';
+import AssessmentDetailsPage from './pages/AssessmentDetailsPage';
 import MigrationAssessmentPage from './pages/MigrationAssessmentPage';
 import MigrationWizardPage from './pages/MigrationWizardPage';
 
@@ -20,6 +18,10 @@ const Routing: React.FC = () => {
     {
       path: '/',
       element: MigrationAssessmentPage,
+    },
+    {
+      path: '/migrate/assessments/:id',
+      element: AssessmentDetailsPage,
     },
     {
       path: '/migrate/wizard',

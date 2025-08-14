@@ -1,5 +1,6 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
+import { useMount, useUnmount } from 'react-use';
 
 import {
   Bullseye,
@@ -10,7 +11,6 @@ import {
   Flex,
   FlexItem,
   Icon,
-  PageSection,
   Spinner,
   Stack,
   StackItem,
@@ -30,6 +30,9 @@ import { AppPage } from '../components/AppPage';
 import { CustomEnterpriseIcon } from '../components/CustomEnterpriseIcon';
 import { useDiscoverySources } from '../migration-wizard/contexts/discovery-sources/Context';
 import { Provider as DiscoverySourcesProvider } from '../migration-wizard/contexts/discovery-sources/Provider';
+import { DEFAULT_POLLING_DELAY } from '../migration-wizard/steps/connect/sources-table/Constants';
+
+import AssessmentsTable from './AssessmentsTable';
 
 const cards: React.ReactElement[] = [
   <Card isFullHeight isPlain key="card-1">
@@ -106,90 +109,6 @@ const cards: React.ReactElement[] = [
   </Card>,
 ];
 
-const AssessmentsList: React.FC = () => {
-  const {
-    assessments,
-    isLoadingAssessments,
-    errorLoadingAssessments,
-    listAssessments,
-  } = useDiscoverySources();
-
-  useEffect(() => {
-    listAssessments();
-  }, [listAssessments]);
-
-  if (isLoadingAssessments) {
-    return (
-      <Bullseye>
-        <Spinner size="lg" />
-      </Bullseye>
-    );
-  }
-
-  if (errorLoadingAssessments) {
-    return (
-      <PageSection>
-        <Text component="p">
-          Error loading assessments: {errorLoadingAssessments.message}
-        </Text>
-      </PageSection>
-    );
-  }
-
-  return (
-    <PageSection>
-      <Stack hasGutter>
-        <StackItem>
-          <Title headingLevel="h2" size="xl">
-            Your Migration Assessments
-          </Title>
-        </StackItem>
-        <StackItem>
-          {assessments.length > 0 ? (
-            <Stack hasGutter>
-              {assessments.map((assessment, index) => (
-                <StackItem key={assessment.id || index}>
-                  <Card>
-                    <CardHeader>
-                      <Text component="h3">Assessment {assessment.id}</Text>
-                    </CardHeader>
-                    <CardBody>
-                      <TextContent>
-                        <Text>Status: {assessment.status || 'Unknown'}</Text>
-                        {assessment.createdAt && (
-                          <Text>
-                            Created:{' '}
-                            {new Date(
-                              assessment.createdAt,
-                            ).toLocaleDateString()}
-                          </Text>
-                        )}
-                      </TextContent>
-                    </CardBody>
-                  </Card>
-                </StackItem>
-              ))}
-            </Stack>
-          ) : (
-            <Card>
-              <CardBody>
-                <TextContent style={{ textAlign: 'center' }}>
-                  <Text>No assessments found.</Text>
-                </TextContent>
-              </CardBody>
-            </Card>
-          )}
-        </StackItem>
-        <StackItem style={{ alignSelf: 'center' }}>
-          <Link to="migrate/wizard">
-            <Button>Start new migration assessment</Button>
-          </Link>
-        </StackItem>
-      </Stack>
-    </PageSection>
-  );
-};
-
 const WelcomePage: React.FC = () => (
   <Bullseye>
     <Stack hasGutter style={{ justifyContent: 'space-evenly' }}>
@@ -212,15 +131,24 @@ const WelcomePage: React.FC = () => (
 );
 
 const MigrationAssessmentPageContent: React.FC = () => {
-  const { assessments, isLoadingAssessments, listAssessments } =
-    useDiscoverySources();
+  const discoverySourcesContext = useDiscoverySources();
 
-  useEffect(() => {
-    listAssessments();
-  }, [listAssessments]);
+  useMount(async () => {
+    discoverySourcesContext.startPolling(DEFAULT_POLLING_DELAY);
+    if (!discoverySourcesContext.isPolling) {
+      await Promise.all([discoverySourcesContext.listAssessments()]);
+    }
+  });
 
-  // Show loading while assessments are being fetched
-  if (isLoadingAssessments) {
+  useUnmount(() => {
+    discoverySourcesContext.stopPolling();
+  });
+
+  // Show loading only before the first successful assessments fetch
+  if (
+    discoverySourcesContext.isLoadingAssessments &&
+    discoverySourcesContext.assessments.length === 0
+  ) {
     return (
       <Bullseye>
         <Spinner size="lg" />
@@ -229,7 +157,11 @@ const MigrationAssessmentPageContent: React.FC = () => {
   }
 
   // Show assessments list if any exist, otherwise show welcome page
-  return assessments.length > 0 ? <AssessmentsList /> : <WelcomePage />;
+  return discoverySourcesContext.assessments.length > 0 ? (
+    <AssessmentsTable assessments={discoverySourcesContext.assessments} />
+  ) : (
+    <WelcomePage />
+  );
 };
 
 const MigrationAssessmentPage: React.FC = () => (

@@ -792,20 +792,20 @@
   resolved "https://registry.npmjs.org/@leichtgewicht/ip-codec/-/ip-codec-2.0.5.tgz"
   integrity sha512-Vo+PSpZG2/fmgmiNzYK9qWRh8h/CHrwD0mo1h1DzL4yzHNSfWYujGTYsWGreD000gcgmZ7K4Ys6Tx9TxtsKdDw==
 
-"@migration-planner-ui/agent-client@^0.0.15":
-  version "0.0.15"
-  resolved "https://registry.npmjs.org/@migration-planner-ui/agent-client/-/agent-client-0.0.15.tgz"
-  integrity sha512-4HJinnrmPUz9wuuQjKzpe/fAn9c9Sle5Ev3gZj7mPfFFcvPe/ujp2YGqv4GVhREJ0VufatPKRqP7hYJI3x7mWg==
+"@migration-planner-ui/agent-client@^0.0.16":
+  version "0.0.16"
+  resolved "https://registry.npmjs.org/@migration-planner-ui/agent-client/-/agent-client-0.0.16.tgz"
+  integrity sha512-99Mw9R4v356wh1l/gWUCbcfPbme7W/gVlQUB1kmjE0uee6YiRPnmfTmdQsbCMzMGvrmUPWp46L4q2/g/sX3awg==
 
-"@migration-planner-ui/api-client@^0.0.15":
-  version "0.0.15"
-  resolved "https://registry.npmjs.org/@migration-planner-ui/api-client/-/api-client-0.0.15.tgz"
-  integrity sha512-rTthj9mDTF9lTGQUD1QeN69DRDjkk5QGEgPMl635H/kfLOuamMnS1etxKkJuEC9QDfb1Z3WBF+kF09LBU7Fzgg==
+"@migration-planner-ui/api-client@^0.0.16":
+  version "0.0.16"
+  resolved "https://registry.npmjs.org/@migration-planner-ui/api-client/-/api-client-0.0.16.tgz"
+  integrity sha512-Jcpkl7kRjH091LUsPVqTEuYTaA4+QcOr+KnEovdnPzB+DFycsv+0Innosbhdbhscnv+gDin9QpnaH/un7ybG8g==
 
-"@migration-planner-ui/ioc@^0.0.15":
-  version "0.0.15"
-  resolved "https://registry.npmjs.org/@migration-planner-ui/ioc/-/ioc-0.0.15.tgz"
-  integrity sha512-f48IXdW2hZMAOVZegMlGwGNdsAqyy93pH2fTI78tghgcyHG5yZaXSdD93evU0NtEkfu2E3SbYBOiy5Wdfhl1nw==
+"@migration-planner-ui/ioc@^0.0.16":
+  version "0.0.16"
+  resolved "https://registry.npmjs.org/@migration-planner-ui/ioc/-/ioc-0.0.16.tgz"
+  integrity sha512-g5So0NSAloWcQoozTjkXhXJo6Y7HbOxQ/0mmuM+tYcINOjit4f0oJvDgQzDfsegOagFnZZBbv7ODpjOJ2gVX7Q==
 
 "@nicolo-ribaudo/eslint-scope-5-internals@5.1.1-v1":
   version "5.1.1-v1"

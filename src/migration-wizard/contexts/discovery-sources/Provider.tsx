@@ -1,4 +1,9 @@
-import React, { type PropsWithChildren, useCallback, useState } from 'react';
+import React, {
+  type PropsWithChildren,
+  useCallback,
+  useEffect,
+  useState,
+} from 'react';
 import { useAsyncFn, useInterval } from 'react-use';
 
 import {
@@ -52,16 +57,37 @@ export const Provider: React.FC<PropsWithChildren> = (props) => {
     return sources;
   });
 
+  function normalizeAssessmentsResponse(response: unknown): Assessment[] {
+    if (Array.isArray(response)) {
+      return response as Assessment[];
+    }
+    if (typeof response === 'object' && response !== null) {
+      const withItems = response as { items?: unknown };
+      if (Array.isArray(withItems.items)) {
+        return withItems.items as Assessment[];
+      }
+      const withAssessments = response as { assessments?: unknown };
+      if (Array.isArray(withAssessments.assessments)) {
+        return withAssessments.assessments as Assessment[];
+      }
+    }
+    return [];
+  }
+
   const [listAssessmentsState, listAssessments] = useAsyncFn(async () => {
-    const assessments = await assessmentApi.listAssessments();
-    return assessments;
+    const response = await assessmentApi.listAssessments();
+    return normalizeAssessmentsResponse(response);
   });
 
   const [createAssessmentState, createAssessment] = useAsyncFn(
-    async (sourceId: string, name?: string) => {
+    async (sourceId: string, sourceType: string, name?: string) => {
       const assessmentName = name || `Assessment-${new Date().toISOString()}`;
       const assessment = await assessmentApi.createAssessment({
-        assessmentForm: { sourceID: sourceId, name: assessmentName },
+        assessmentForm: {
+          sourceId: sourceId,
+          name: assessmentName,
+          sourceType: sourceType,
+        },
       });
       // Refresh the assessments list after creating a new one
       await listAssessments();
@@ -223,6 +249,9 @@ export const Provider: React.FC<PropsWithChildren> = (props) => {
   }, [isPolling]);
 
   useInterval(() => {
+    if (!listAssessmentsState.loading) {
+      listAssessments();
+    }
     if (!listSourcesState.loading) {
       listSources();
     }

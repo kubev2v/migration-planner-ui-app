@@ -60,7 +60,11 @@ declare namespace DiscoverySources {
     isLoadingAssessments: boolean;
     errorLoadingAssessments?: Error;
     listAssessments: () => Promise<Assessment[]>;
-    createAssessment: (sourceId: string, name?: string) => Promise<Assessment>;
+    createAssessment: (
+      sourceId: string,
+      sourceType: string,
+      name?: string,
+    ) => Promise<Assessment>;
     isCreatingAssessment: boolean;
     errorCreatingAssessment?: Error;
   };

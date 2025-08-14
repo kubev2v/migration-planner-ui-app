@@ -75,6 +75,10 @@ module.exports = {
       './Assessment': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/Assessment.js'),
       './AssessmentForm': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/AssessmentForm.js'),
       './AssessmentApi': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/apis/AssessmentApi.js'),
+      './SourceAgentItem':path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/SourceAgentItem.js'),
+      './Snapshot':path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/Snapshot.js'),
+      './AssessmentUpdate':path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/AssessmentUpdate.js'),
+
       
     }, 
   },

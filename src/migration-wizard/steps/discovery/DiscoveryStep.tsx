@@ -51,6 +51,13 @@ export const DiscoveryStep: React.FC = () => {
   React.useEffect(() => {
     const sourceId = discoverSourcesContext.sourceSelected?.id;
     const sourceName = discoverSourcesContext.sourceSelected?.name;
+    const sourceType = discoverSourcesContext.sourceSelected?.agent
+      ? 'agent'
+      : 'inventory';
+    const assessmentName = `Assessment for ${sourceName || 'source'}`.replace(
+      /\s+/g,
+      '_',
+    );
     if (
       sourceId &&
       sourceName !== 'Example' &&
@@ -58,7 +65,8 @@ export const DiscoveryStep: React.FC = () => {
     ) {
       discoverSourcesContext.createAssessment(
         sourceId,
-        `Assessment for ${sourceName || 'source'}`,
+        sourceType,
+        assessmentName,
       );
     }
   }, [
