@@ -1,6 +1,4 @@
 import React from 'react';
-
-import { Datastore } from '@migration-planner-ui/api-client/models';
 import {
   Card,
   CardBody,
@@ -8,14 +6,11 @@ import {
   Icon,
   Progress,
 } from '@patternfly/react-core';
-import {
-  CheckCircleIcon,
-  ExclamationCircleIcon,
-} from '@patternfly/react-icons';
+import { Datastore } from '@migration-planner-ui/api-client/models';
+import { ReportTable } from '../ReportTable';
+import { ExclamationCircleIcon, CheckCircleIcon } from '@patternfly/react-icons';
 import { global_danger_color_100 as globalDangerColor100 } from '@patternfly/react-tokens/dist/js/global_danger_color_100';
 import { global_success_color_100 as globalSuccessColor100 } from '@patternfly/react-tokens/dist/js/global_success_color_100';
-
-import { ReportTable } from '../ReportTable';
 
 interface DatastoresProps {
   datastores: Datastore[];
@@ -33,15 +28,8 @@ export const Datastores: React.FC<DatastoresProps> = ({
       <CardTitle>
         <i className="fas fa-database" /> Datastores
       </CardTitle>
-      <CardBody style={{ padding: 0 }}>
-        <div
-          style={{
-            maxHeight: tableHeight,
-            overflowY: 'auto',
-            overflowX: 'auto',
-            padding: 2,
-          }}
-        >
+      <CardBody style={{padding: 0}}>
+      <div style={{ maxHeight: tableHeight, overflowY: 'auto', overflowX:'auto',padding: 2 }}>
           <ReportTable<
             Datastore & {
               usage: JSX.Element;
@@ -61,11 +49,11 @@ export const Datastores: React.FC<DatastoresProps> = ({
               ),
               hardwareAcceleratedMoveDisplay: ds.hardwareAcceleratedMove ? (
                 <Icon size="md" isInline>
-                  <CheckCircleIcon color={globalSuccessColor100.value} />
-                </Icon>
+                <CheckCircleIcon color={globalSuccessColor100.value} />
+              </Icon>
               ) : (
                 <Icon size="md" isInline>
-                  <ExclamationCircleIcon color={globalDangerColor100.value} />
+                  <ExclamationCircleIcon  color={globalDangerColor100.value}/>
                 </Icon>
               ),
             }))}

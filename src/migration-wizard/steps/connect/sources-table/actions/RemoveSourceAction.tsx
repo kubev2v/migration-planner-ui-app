@@ -1,15 +1,13 @@
-import React, { useCallback, useState } from 'react';
-
+import React, { useCallback, useState } from "react";
 import {
+  Tooltip,
   Button,
   Icon,
-  Text,
   TextContent,
-  Tooltip,
-} from '@patternfly/react-core';
-import { TrashIcon } from '@patternfly/react-icons';
-
-import { ConfirmationModal } from '../../../../../components/ConfirmationModal';
+  Text,
+} from "@patternfly/react-core";
+import { TrashIcon } from "@patternfly/react-icons";
+import { ConfirmationModal } from "../../../../../components/ConfirmationModal";
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace RemoveSourceAction {
@@ -17,7 +15,7 @@ export namespace RemoveSourceAction {
     event: React.MouseEvent<HTMLButtonElement, MouseEvent> & {
       dismissConfirmationModal: () => void;
       showConfirmationModal: () => void;
-    },
+    }
   ) => void;
   export type Props = {
     sourceId: string;
@@ -28,7 +26,7 @@ export namespace RemoveSourceAction {
 }
 
 export const RemoveSourceAction: React.FC<RemoveSourceAction.Props> = (
-  props,
+  props
 ) => {
   const { sourceId, isDisabled = false, onConfirm, sourceName } = props;
 
@@ -48,9 +46,9 @@ export const RemoveSourceAction: React.FC<RemoveSourceAction.Props> = (
         onConfirm(event);
       }
     },
-    [dismissConfirmationModal, onConfirm],
-  );
-
+    [dismissConfirmationModal, onConfirm]
+  );   
+  
   return (
     <>
       <Tooltip content="Remove">
@@ -77,10 +75,8 @@ export const RemoveSourceAction: React.FC<RemoveSourceAction.Props> = (
         >
           <TextContent>
             <Text id="confirmation-modal-description">
-              Are you sure you want to delete{' '}
-              <b>{sourceName ? sourceName : 'this environment'}</b>?
-              <br />
-              To use it again, create a new discovery image and redeploy it.
+            Are you sure you want to delete <b>{sourceName ? sourceName : "this environment"}</b>?
+  <br/>To use it again, create a new discovery image and redeploy it.
             </Text>
           </TextContent>
         </ConfirmationModal>
@@ -89,4 +85,4 @@ export const RemoveSourceAction: React.FC<RemoveSourceAction.Props> = (
   );
 };
 
-RemoveSourceAction.displayName = 'RemoveSourceAction';
+RemoveSourceAction.displayName = "RemoveSourceAction";

@@ -17,14 +17,14 @@ export const UploadInventoryAction: React.FC<UploadInventoryProps> = ({
   asLink,
   onUploadResult,
   onUploadSuccess,
-}): JSX.Element => {
+}) => {
   const handleUploadSource = useCallback(() => {
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = '.json,.xlsx';
     input.style.visibility = 'hidden';
 
-    input.onchange = async (event: Event): Promise<void> => {
+    input.onchange = async (event: Event) => {
       const file = (event.target as HTMLInputElement)?.files?.[0];
       if (!file) return;
 
@@ -91,7 +91,7 @@ export const UploadInventoryAction: React.FC<UploadInventoryProps> = ({
 
     document.body.appendChild(input);
     input.click();
-  }, [discoverySourcesContext, sourceId, onUploadResult, onUploadSuccess]);
+  }, [discoverySourcesContext, sourceId]);
 
   return asLink ? (
     <Button

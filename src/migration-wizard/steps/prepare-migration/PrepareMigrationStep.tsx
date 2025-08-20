@@ -1,14 +1,14 @@
-import React from 'react';
-
+import React from "react";
 import {
-  Radio,
   Stack,
   StackItem,
-  Text,
   TextContent,
-} from '@patternfly/react-core';
+  Text,
+  Radio,
+} from "@patternfly/react-core";
 
 export const PrepareMigrationStep: React.FC = () => {
+
   return (
     <Stack hasGutter>
       <StackItem>
@@ -49,7 +49,7 @@ export const PrepareMigrationStep: React.FC = () => {
         />
       </StackItem>
       <StackItem>
-        <TextContent style={{ paddingBlock: '1rem' }}>
+        <TextContent style={{ paddingBlock: "1rem" }}>
           <Text component="h3">Target cluster</Text>
         </TextContent>
       </StackItem>
@@ -84,4 +84,4 @@ export const PrepareMigrationStep: React.FC = () => {
   );
 };
 
-PrepareMigrationStep.displayName = 'PrepareMigrationStep';
+PrepareMigrationStep.displayName = "PrepareMigrationStep";

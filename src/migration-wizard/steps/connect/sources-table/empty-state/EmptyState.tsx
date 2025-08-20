@@ -1,23 +1,19 @@
-/* eslint-disable simple-import-sort/imports */
 import React, { useCallback, useState } from 'react';
-
 import {
-  Alert,
   Button,
+  EmptyState as PFEmptyState,
   EmptyStateActions,
   EmptyStateBody,
   EmptyStateFooter,
   EmptyStateHeader,
   EmptyStateIcon,
-  EmptyState as PFEmptyState,
   StackItem,
+  Alert,
 } from '@patternfly/react-core';
 import { ExclamationCircleIcon, SearchIcon } from '@patternfly/react-icons';
 import { global_danger_color_200 as globalDangerColor200 } from '@patternfly/react-tokens/dist/js/global_danger_color_200';
-
-import { useDiscoverySources } from '../../../../contexts/discovery-sources/Context';
-
 import { DiscoverySourceSetupModal } from './DiscoverySourceSetupModal';
+import { useDiscoverySources } from '../../../../contexts/discovery-sources/Context';
 
 export const EmptyState: React.FC = () => {
   const discoverySourcesContext = useDiscoverySources();

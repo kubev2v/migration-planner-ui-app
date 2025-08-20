@@ -1,28 +1,25 @@
-import React, { Fragment, useEffect } from 'react';
+import React, { Fragment, useEffect, useMemo } from "react";
+import { useChrome } from "@redhat-cloud-services/frontend-components/useChrome";
+import { Spinner } from "@patternfly/react-core";
+import { Container } from "@migration-planner-ui/ioc";
+import { Provider as DependencyInjectionProvider } from "@migration-planner-ui/ioc";
+import { Configuration } from "@migration-planner-ui/api-client/runtime";
+import { AgentApi } from "@migration-planner-ui/agent-client/apis";
+import { ImageApi, SourceApi } from "@migration-planner-ui/api-client/apis";
+import Routing from "./Routing";
+import { Symbols } from "./main/Symbols";
+import { createAuthFetch } from "./utils/authFetch";
 
-import { AgentApi } from '@migration-planner-ui/agent-client/apis';
-import { ImageApi, SourceApi } from '@migration-planner-ui/api-client/apis';
-import { Configuration } from '@migration-planner-ui/api-client/runtime';
-import { Container } from '@migration-planner-ui/ioc';
-import { Provider as DependencyInjectionProvider } from '@migration-planner-ui/ioc';
-import { Spinner } from '@patternfly/react-core';
-import { useChrome } from '@redhat-cloud-services/frontend-components/useChrome';
-
-import { Symbols } from './main/Symbols';
-import { createAuthFetch } from './utils/authFetch';
-import Routing from './Routing';
-
-const App = (): JSX.Element => {
+const App = () => {
   const chrome = useChrome(); // useChrome SÍ puede usarse acá
   const [container, setContainer] = React.useState<Container>();
 
   useEffect(() => {
-    const configure = (): void => {
+    const configure = () => {
       const authFetch = createAuthFetch(chrome); // pasamos chrome
 
       const plannerApiConfig = new Configuration({
-        basePath:
-          process.env.PLANNER_API_BASE_URL || '/api/migration-assessment',
+        basePath: process.env.PLANNER_API_BASE_URL || '/api/migration-assessment',
         fetchApi: authFetch,
       });
 

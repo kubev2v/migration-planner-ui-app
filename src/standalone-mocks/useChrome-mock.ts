@@ -1,20 +1,12 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect } from 'react';
 
-export const useChrome = (): Record<string, unknown> => {
+export const useChrome = () => {
   useEffect(() => {
-    if (
-      (window as Record<string, any>).insights &&
-      (window as Record<string, any>).insights.chrome
-    ) {
-      (window as Record<string, any>).insights.chrome.init();
-      (window as Record<string, any>).insights.chrome.identifyApp(
-        'assisted-migration-app',
-      ); // Your appname from package.json
+    if (window.insights && window.insights.chrome) {
+      window.insights.chrome.init();
+      window.insights.chrome.identifyApp('assisted-migration-app'); // Your appname from package.json
     }
   }, []);
 
-  return (window as Record<string, any>).insights
-    ? (window as Record<string, any>).insights.chrome
-    : {};
+  return window.insights ? window.insights.chrome : {};
 };

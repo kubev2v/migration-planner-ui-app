@@ -1,11 +1,9 @@
 // TroubleshootingModal.tsx
 import React, { useEffect, useState } from 'react';
+import { Modal, Spinner } from '@patternfly/react-core';
 import ReactMarkdown from 'react-markdown';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
-
-import { Modal, Spinner } from '@patternfly/react-core';
-
 import 'github-markdown-css/github-markdown.css';
 
 export const TroubleshootingModal: React.FC<{
@@ -18,7 +16,7 @@ export const TroubleshootingModal: React.FC<{
   useEffect(() => {
     if (isOpen) {
       fetch(
-        'https://raw.githubusercontent.com/kubev2v/migration-planner/main/doc/troubleshooting.md',
+        'https://raw.githubusercontent.com/kubev2v/migration-planner/main/doc/troubleshooting.md'
       )
         .then((res) => {
           if (!res.ok) {
@@ -28,7 +26,7 @@ export const TroubleshootingModal: React.FC<{
         })
         .then(setMarkdown)
         .catch((err) =>
-          setError(`Failed to load troubleshooting content: ${err.message}`),
+          setError(`Failed to load troubleshooting content: ${err.message}`)
         );
     }
   }, [isOpen]);

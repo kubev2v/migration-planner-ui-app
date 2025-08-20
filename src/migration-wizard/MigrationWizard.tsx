@@ -1,24 +1,22 @@
-/* eslint-disable simple-import-sort/imports */
 import React, { useEffect } from 'react';
-
-import { Source } from '@migration-planner-ui/api-client/models';
 import {
   Button,
+  useWizardContext,
   Wizard,
   WizardFooterWrapper,
   WizardStep,
-  useWizardContext,
 } from '@patternfly/react-core';
-
-import { useDiscoverySources } from './contexts/discovery-sources/Context';
-import { useComputedHeightFromPageHeader } from './hooks/UseComputedHeightFromPageHeader';
 import { ConnectStep } from './steps/connect/ConnectStep';
 import { DiscoveryStep } from './steps/discovery/DiscoveryStep';
+import { useComputedHeightFromPageHeader } from './hooks/UseComputedHeightFromPageHeader';
+import { useDiscoverySources } from './contexts/discovery-sources/Context';
 import { PrepareMigrationStep } from './steps/prepare-migration/PrepareMigrationStep';
+import { Source } from '@migration-planner-ui/api-client/models';
 
 const openAssistedInstaller = (): void => {
   const currentHost = window.location.hostname;
-
+  
+  
   if (currentHost === 'console.stage.redhat.com') {
     console.log('Opening dev URL for stage environment');
     window.open(
@@ -96,8 +94,7 @@ export const MigrationWizard: React.FC = () => {
   const [sourceSelected, setSourceSelected] = React.useState<Source>();
   const [isDiscoverySourceUpToDate, setIsDiscoverySourceUpToDate] =
     React.useState<boolean>(false);
-  const [activeStepId, setActiveStepId] =
-    React.useState<string>('connect-step');
+  const [activeStepId, setActiveStepId] = React.useState<string>('connect-step');
 
   useEffect(() => {
     if (discoverSourcesContext.sourceSelected) {
@@ -150,7 +147,7 @@ export const MigrationWizard: React.FC = () => {
             }
           : undefined
       }
-      onStepChange={(_event, step) => setActiveStepId(step.id as string)}
+      onStepChange={(_event,step) => setActiveStepId(step.id as string)}
     >
       <WizardStep
         name="Connect"
@@ -176,7 +173,7 @@ export const MigrationWizard: React.FC = () => {
         isDisabled={!isDiscoverySourceUpToDate || sourceSelected === null}
       >
         <div style={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
-          <DiscoveryStep />
+        <DiscoveryStep />
         </div>
       </WizardStep>
       <WizardStep
@@ -191,8 +188,8 @@ export const MigrationWizard: React.FC = () => {
         }
         isDisabled={!isDiscoverySourceUpToDate || sourceSelected === null}
       >
-        <div style={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
-          <PrepareMigrationStep />
+         <div style={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
+        <PrepareMigrationStep />
         </div>
       </WizardStep>
     </Wizard>

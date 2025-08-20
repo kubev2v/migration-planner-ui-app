@@ -8,7 +8,7 @@ import {
 import {
   GetSourceRequest,
   UpdateInventoryRequest,
-  UpdateSourceRequest,
+  UpdateSourceRequest
 } from '@migration-planner-ui/api-client/apis';
 import {
   Source,

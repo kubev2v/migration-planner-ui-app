@@ -1,5 +1,4 @@
 import React from 'react';
-
 import { SVGIcon } from './SVGIcon';
 
 export const CustomEnterpriseIcon: React.FC = () => (

@@ -1,29 +1,26 @@
 import React, { useCallback, useEffect, useState } from 'react';
-
-import { Source } from '@migration-planner-ui/api-client/models';
 import {
-  Alert,
-  AlertActionLink,
-  Button,
-  Icon,
-  List,
-  ListItem,
-  OrderType,
-  Panel,
-  PanelHeader,
-  PanelMain,
   Stack,
   StackItem,
-  Text,
   TextContent,
+  Text,
+  Panel,
+  PanelMain,
+  PanelHeader,
+  List,
+  OrderType,
+  ListItem,
+  Icon,
+  Alert,
+  Button,
+  AlertActionLink,
 } from '@patternfly/react-core';
-import { ClusterIcon, PlusCircleIcon } from '@patternfly/react-icons';
 import { chart_color_blue_300 as blueColor } from '@patternfly/react-tokens/dist/js/chart_color_blue_300';
-
-import { useDiscoverySources } from '../../contexts/discovery-sources/Context';
-
-import { UploadInventoryAction } from './sources-table/actions/UploadInventoryAction';
+import { ClusterIcon, PlusCircleIcon } from '@patternfly/react-icons';
 import { DiscoverySourceSetupModal } from './sources-table/empty-state/DiscoverySourceSetupModal';
+import { Source } from '@migration-planner-ui/api-client/models';
+import { UploadInventoryAction } from './sources-table/actions/UploadInventoryAction';
+import { useDiscoverySources } from '../../contexts/discovery-sources/Context';
 import { SourcesTable } from './sources-table/SourcesTable';
 import { TroubleshootingModal } from './TroubleshootingModal';
 

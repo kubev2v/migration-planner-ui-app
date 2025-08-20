@@ -53,7 +53,7 @@ export const StorageOverview: React.FC<DiskHistogramProps> = ({
       </CardTitle>
       <CardBody>
         <Text component={TextVariants.small}>Disk Size Distribution</Text>
-        <MigrationChart data={chartData} maxHeight={tableHeight} />
+        <MigrationChart data={chartData}  maxHeight={tableHeight} />    
       </CardBody>
     </Card>
   );

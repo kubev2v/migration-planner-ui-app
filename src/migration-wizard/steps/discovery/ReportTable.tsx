@@ -1,6 +1,5 @@
+import { Table, Thead, Tr, Th, Tbody, Td } from '@patternfly/react-table';
 import React from 'react';
-
-import { Table, Tbody, Td, Th, Thead, Tr } from '@patternfly/react-table';
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace ReportTable {
@@ -31,29 +30,23 @@ export function ReportTable<DataItem>(
       }}
     >
       {caption && (
-        <caption
-          style={{
-            fontWeight: 'bold',
-            fontSize: '14px',
-            textAlign: 'left',
-            padding: '8px 16px',
-            color: '#151515',
-          }}
-        >
+        <caption style={{ 
+          fontWeight: 'bold', 
+          fontSize: '14px', 
+          textAlign: 'left', 
+          padding: '8px 16px',
+          color: '#151515'
+        }}>
           {caption}
         </caption>
       )}
       <Thead>
-        <Tr style={{ border: withoutBorder ? 'none' : '1px solid lightgray' }}>
+        <Tr style={{ border: withoutBorder ? 'none':'1px solid lightgray'}}>
           {columns.map((name, index) => (
             <Th
               key={index}
               hasRightBorder={!withoutBorder}
-              style={{
-                whiteSpace: 'normal',
-                wordBreak: 'break-word',
-                border: withoutBorder ? 'none' : '1px solid lightgray',
-              }}
+              style={{ whiteSpace: 'normal', wordBreak: 'break-word', border: withoutBorder ? 'none':'1px solid lightgray'  }}
             >
               {name}
             </Th>
@@ -62,13 +55,7 @@ export function ReportTable<DataItem>(
       </Thead>
       <Tbody>
         {data.map((item, idx) => (
-          <Tr
-            key={idx}
-            style={{
-              width: 100,
-              border: withoutBorder ? 'none' : '1px solid lightgray',
-            }}
-          >
+          <Tr key={idx} style={{ width: 100,  border: withoutBorder ? 'none':'1px solid lightgray' }}>
             {fields.map((f, fieldIdx) => (
               <Td key={fieldIdx} hasRightBorder={!withoutBorder}>
                 {' '}

@@ -1,4 +1,4 @@
-import React, { type PropsWithChildren, useCallback, useState } from 'react';
+import React, { type PropsWithChildren, useCallback, useState, useEffect } from 'react';
 import { useAsyncFn, useInterval } from 'react-use';
 
 import {
@@ -8,6 +8,7 @@ import {
 } from '@migration-planner-ui/api-client/apis';
 import {
   Agent,
+  InventoryFromJSON,
   Source,
   UpdateInventoryFromJSON,
 } from '@migration-planner-ui/api-client/models';
@@ -26,9 +27,7 @@ export const Provider: React.FC<PropsWithChildren> = (props) => {
   const [sourcesLoaded, setSourcesLoaded] = useState(false);
 
   const [downloadSourceUrl, setDownloadSourceUrl] = useState('');
-  const [sourceDownloadUrls, setSourceDownloadUrls] = useState<
-    Record<string, string>
-  >({});
+  const [sourceDownloadUrls, setSourceDownloadUrls] = useState<Record<string, string>>({});
 
   const [sourceCreatedId, setSourceCreatedId] = useState<string | null>(null);
 
@@ -166,22 +165,16 @@ export const Provider: React.FC<PropsWithChildren> = (props) => {
     },
   );
 
-  const getDownloadUrlForSource = useCallback(
-    (sourceId: string): string | undefined => {
-      return sourceDownloadUrls[sourceId];
-    },
-    [sourceDownloadUrls],
-  );
+  const getDownloadUrlForSource = useCallback((sourceId: string): string | undefined => {
+    return sourceDownloadUrls[sourceId];
+  }, [sourceDownloadUrls]);
 
-  const storeDownloadUrlForSource = useCallback(
-    (sourceId: string, downloadUrl: string) => {
-      setSourceDownloadUrls((prev) => ({
-        ...prev,
-        [sourceId]: downloadUrl,
-      }));
-    },
-    [],
-  );
+  const storeDownloadUrlForSource = useCallback((sourceId: string, downloadUrl: string) => {
+    setSourceDownloadUrls(prev => ({
+      ...prev,
+      [sourceId]: downloadUrl
+    }));
+  }, []);
 
   const [isPolling, setIsPolling] = useState(false);
   const [pollingDelay, setPollingDelay] = useState<number | null>(null);

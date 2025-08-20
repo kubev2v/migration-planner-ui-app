@@ -1,15 +1,14 @@
 import React, { useState } from 'react';
-
 import {
-  Checkbox,
   FormGroup,
-  FormHelperText,
   Grid,
   GridItem,
-  HelperText,
-  HelperTextItem,
   Popover,
   TextInput,
+  Checkbox,
+  FormHelperText,
+  HelperText,
+  HelperTextItem,
 } from '@patternfly/react-core';
 import { HelpIcon } from '@patternfly/react-icons';
 
@@ -23,7 +22,7 @@ const ProxyInputFields = ({
   httpsProxy: string;
   noProxy: string;
   onChange: (field: string, value: string) => void;
-}): JSX.Element => {
+}) => {
   return (
     <Grid hasGutter>
       <GridItem span={12}>
@@ -47,7 +46,7 @@ const ProxyInputFields = ({
             type="text"
             value={httpProxy}
             placeholder="http://proxy.example.com:8080"
-            onChange={(_event, value) => onChange('httpProxy', value)}
+            onChange={(_event,value) => onChange('httpProxy', value)}
           />
           <FormHelperText>
             <HelperText>
@@ -78,11 +77,13 @@ const ProxyInputFields = ({
             type="text"
             value={httpsProxy}
             placeholder="https://proxy.example.com:8443"
-            onChange={(_event, value) => onChange('httpsProxy', value)}
+            onChange={(_event,value) => onChange('httpsProxy', value)}
           />
           <FormHelperText>
             <HelperText>
-              <HelperTextItem>URL must start with https.</HelperTextItem>
+              <HelperTextItem>
+                URL must start with https.
+              </HelperTextItem>
             </HelperText>
           </FormHelperText>
         </FormGroup>
@@ -109,23 +110,18 @@ const ProxyInputFields = ({
             type="text"
             value={noProxy}
             placeholder="one.domain.com,second.domain.com"
-            onChange={(_event, value) => onChange('noProxy', value)}
+            onChange={(_event,value) => onChange('noProxy', value)}
             onBlur={() =>
               onChange(
                 'noProxy',
-                noProxy
-                  .split(',')
-                  .map((s) => s.trim())
-                  .join(','),
+                noProxy.split(',').map((s) => s.trim()).join(','),
               )
             }
           />
           <FormHelperText>
             <HelperText>
               <HelperTextItem>
-                Use a comma to separate each listed domain. Preface a domain
-                with &quot;.&quot; to include its subdomains. Use &quot;*&quot;
-                to bypass the proxy for all destinations.
+                Use a comma to separate each listed domain. Preface a domain with "." to include its subdomains. Use "*" to bypass the proxy for all destinations.
               </HelperTextItem>
             </HelperText>
           </FormHelperText>
@@ -143,11 +139,11 @@ const ProxyFields: React.FC = () => {
     noProxy: '',
   });
 
-  const handleFieldChange = (field: string, value: string): void => {
+  const handleFieldChange = (field: string, value: string) => {
     setProxyValues((prev) => ({ ...prev, [field]: value }));
   };
 
-  const toggleEnableProxy = (checked: boolean): void => {
+  const toggleEnableProxy = (checked: boolean) => {
     setEnableProxy(checked);
     if (!checked) {
       setProxyValues({
@@ -164,7 +160,7 @@ const ProxyFields: React.FC = () => {
           id="enable-proxy"
           label="Enable proxy"
           isChecked={enableProxy}
-          onChange={(_event, value) => toggleEnableProxy(value)}
+          onChange={(_event,value) => toggleEnableProxy(value)}
         />
       </FormGroup>
       {enableProxy && (

@@ -1,5 +1,4 @@
 import React, { useMemo } from 'react';
-
 import {
   Flex,
   FlexItem,
@@ -58,7 +57,7 @@ const MigrationChart: React.FC<MigrationChartProps> = ({
       },
       { seen: new Set(), result: [] },
     ).result;
-  }, [data]);
+  }, [data, legendColors]);
 
   const chartLegend = legend ? legend : Object.assign({}, ...dynamicLegend);
   const getColor = (name: string): string => chartLegend[name];

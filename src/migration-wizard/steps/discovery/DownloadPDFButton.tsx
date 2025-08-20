@@ -1,9 +1,13 @@
 import React, { useRef, useState } from 'react';
-import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
+import {
+  Button,
+  Spinner,
+  TreeView,
+  TreeViewDataItem,
+} from '@patternfly/react-core';
 import { createRoot } from 'react-dom/client';
-
-import { Button, Spinner } from '@patternfly/react-core';
 
 import './DownloadPDFStyles.css';
 
@@ -13,16 +17,16 @@ interface DownloadPDFButtonProps {
 }
 
 const DownloadPDFButton: React.FC<DownloadPDFButtonProps> = ({
-  elementId: _elementId,
+  elementId,
   componentToRender,
-}): JSX.Element => {
+}) => {
   const hiddenContainerRef = useRef<HTMLDivElement | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const handleDownloadPDF = async (): Promise<void> => {
+  const handleDownloadPDF = async () => {
     try {
       setIsLoading(true);
       const originalWarn = console.warn;
-      console.warn = (): void => {};
+      console.warn = () => {};
 
       const hiddenContainer = hiddenContainerRef.current;
       if (!hiddenContainer) return;

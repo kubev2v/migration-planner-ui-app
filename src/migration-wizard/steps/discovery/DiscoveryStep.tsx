@@ -17,6 +17,7 @@ import {
   StackItem,
   Text,
   TextContent,
+  TreeView,
   TreeViewDataItem,
 } from '@patternfly/react-core';
 import {
@@ -316,6 +317,7 @@ export const DiscoveryStep: React.FC = () => {
               'protocolType',
               'model',
               'totalCapacityGB',
+              ,
               'usage',
             ]}
             style={{ width: '55rem' }}
@@ -349,7 +351,7 @@ export const DiscoveryStep: React.FC = () => {
     ],
   };
 
-  const _treeViewData = [
+  const treeViewData: Array<TreeViewDataItem> = [
     infrastructureViewData,
     virtualMachinesViewData,
     networksViewData,

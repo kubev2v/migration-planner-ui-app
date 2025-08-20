@@ -1,5 +1,4 @@
 import React from 'react';
-
 import { ChartDonut, ChartLegend } from '@patternfly/react-charts';
 import { Card, CardBody, CardTitle } from '@patternfly/react-core';
 import VirtualMachineIcon from '@patternfly/react-icons/dist/esm/icons/virtual-machine-icon';
@@ -14,7 +13,7 @@ interface VmMigrationStatusProps {
 
 export const VMMigrationStatus: React.FC<VmMigrationStatusProps> = ({
   data,
-  isExportMode = false,
+  isExportMode=false
 }) => {
   const chartData = [
     { x: 'Migratable', y: data.migratable },
@@ -22,7 +21,7 @@ export const VMMigrationStatus: React.FC<VmMigrationStatusProps> = ({
   ];
 
   return (
-    <Card className={isExportMode ? 'dashboard-card-print' : 'dashboard-card'}>
+    <Card className={isExportMode ? "dashboard-card-print":"dashboard-card"}>
       <CardTitle>
         <VirtualMachineIcon /> VM Migration Status
       </CardTitle>

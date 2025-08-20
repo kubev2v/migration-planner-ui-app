@@ -1,20 +1,17 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
 import { useMount, useUnmount } from 'react-use';
-
-import { Source } from '@migration-planner-ui/api-client/models';
-import { Radio, Spinner } from '@patternfly/react-core';
-import { Table, Tbody, Td, Th, Thead, Tr } from '@patternfly/react-table';
-
-import { useDiscoverySources } from '../../../contexts/discovery-sources/Context';
-
-import { DownloadOvaAction } from './actions/DownloadOvaAction';
-import { RemoveSourceAction } from './actions/RemoveSourceAction';
-import { UploadInventoryAction } from './actions/UploadInventoryAction';
+import { Table, Thead, Tr, Th, Tbody, Td } from '@patternfly/react-table';
 import { EmptyState } from './empty-state/EmptyState';
-import { AgentStatusView } from './AgentStatusView';
+import { RemoveSourceAction } from './actions/RemoveSourceAction';
 import { Columns } from './Columns';
 import { DEFAULT_POLLING_DELAY, VALUE_NOT_AVAILABLE } from './Constants';
+import { Radio, Spinner } from '@patternfly/react-core';
+import { Link } from 'react-router-dom';
+import { Source } from '@migration-planner-ui/api-client/models';
+import { AgentStatusView } from './AgentStatusView';
+import { UploadInventoryAction } from './actions/UploadInventoryAction';
+import { DownloadOvaAction } from './actions/DownloadOvaAction';
+import { useDiscoverySources } from '../../../contexts/discovery-sources/Context';
 
 export const SourcesTable: React.FC<{
   onUploadResult?: (message: string, isError?: boolean) => void;

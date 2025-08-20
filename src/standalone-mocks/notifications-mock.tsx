@@ -1,31 +1,18 @@
 import React from 'react';
 
-export const addNotification = (
-  notification: Record<string, unknown>,
-): void => {
+export const addNotification = (notification: any) => {
   console.warn('Notifications Mock: addNotification called', notification);
-  alert(
-    `Notification: ${notification.title}\n${
-      notification.description || ''
-    }\nType: ${notification.variant || 'info'}`,
-  );
+  alert(`Notification: <span class="math-inline">\{notification\.title\}\\n</span>{notification.description || ''}\nType: ${notification.variant || 'info'}`);
 };
 
-export const notificationsReducer = (
-  state: Record<string, unknown>,
-  action: Record<string, unknown>,
-): Record<string, unknown> => {
+export const notificationsReducer = (state: any, action: any) => {
   console.warn('Notifications Mock: notificationsReducer called', action);
   return state;
 };
 
-export const connectNotification = (
-  Component: React.ComponentType,
-): React.FC<Record<string, unknown>> => {
+export const connectNotification = (Component: React.ComponentType) => {
   console.warn('Notifications Mock: connectNotification HOC applied');
-  const WrappedComponent: React.FC<Record<string, unknown>> = (
-    props,
-  ): JSX.Element => {
+  const WrappedComponent: React.FC<any> = (props) => {
     return <Component {...props} />;
   };
   return WrappedComponent;
