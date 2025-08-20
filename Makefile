@@ -27,35 +27,21 @@ else
 	@echo "oc is already installed at $(OC_BIN)"
 endif
 
-# Downloads and sets up all the packages, based on your package.json
-install:
-	@echo "📦 Update all packages..."
-	npm install
-	@echo "✅ All packages are updated successfully..."
-
 # Build the standalone application locally
-build-standalone: install
+build-standalone:
 	@echo "Building standalone application..."
 	rm -rf dist-standalone
+	npm install
 	npm run build:standalone
-	@echo "✅ Standalone build completed in dist-standalone/"
+	@echo "Standalone build completed in dist-standalone/"
 
 # Legacy build target (federated module)
-build: install
+build:
 	@echo "Building federated module..."
 	rm -rf dist
+	npm install
 	npm run build
-	@echo "✅ Federated build completed in dist/"
-
-lint: install
-	@echo "🔍 Running npm run lint..."
-	@npm run lint:js
-	@echo "✅ Lint passed successfully!"
-
-lint-fix: install
-	@echo "🔍 Running npm run lint fix..."
-	npm run lint:js:fix
-	@echo "✅ Lint fix finished successfully!"
+	@echo "Federated build completed in dist/"
 
 # Build the container image
 podman-build:

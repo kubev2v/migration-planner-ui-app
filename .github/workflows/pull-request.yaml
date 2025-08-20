@@ -8,7 +8,8 @@ on:
       - synchronize
       - ready_for_review
     branches:
-      - master
+      - main
+      - releases/*
 
 env:
   NODE_OPTIONS: '--max-old-space-size=8192'
@@ -32,7 +33,7 @@ jobs:
           fi
           echo "skip=${skip}" >> $GITHUB_OUTPUT
           echo "skip=${skip}"
-  lint:
+  lint-and-test:
     needs: preflight-check
     if: needs.preflight-check.outputs.skip == 'false'
     runs-on: ubuntu-latest
@@ -41,21 +42,9 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ vars.NODEJS_VERSION }}
-      - run: make lint
-  #####
-  ## test target is not working, need to fix and than uncomment it
-  #####
-  # test:
-  #   needs: preflight-check
-  #   if: needs.preflight-check.outputs.skip == 'false'
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - uses: actions/checkout@v4
-  #     - uses: actions/setup-node@v4
-  #       with:
-  #         node-version: ${{ vars.NODEJS_VERSION }}
-  #     - run: npm install --immutable
-  #     - run: npm run test --passWithNoTests
+      - run: npm install --immutable
+      - run: npm run lint
+      - run: npm run test --passWithNoTests
   build:
     needs: preflight-check
     if: needs.preflight-check.outputs.skip == 'false'
@@ -65,4 +54,5 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ vars.NODEJS_VERSION }}
-      - run: make build
+      - run: npm install --immutable
+      - run: npm run build

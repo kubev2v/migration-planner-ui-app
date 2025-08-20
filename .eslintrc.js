@@ -7,8 +7,8 @@ module.exports = {
     {
       files: ['src/**/*.ts', 'src/**/*.tsx'],
       parser: '@typescript-eslint/parser',
-      plugins: ['@typescript-eslint', 'simple-import-sort', 'react-hooks'],
-      extends: ['plugin:@typescript-eslint/recommended', 'plugin:react-hooks/recommended'],
+      plugins: ['@typescript-eslint', 'simple-import-sort'],
+      extends: ['plugin:@typescript-eslint/recommended'],
       rules: {
         '@typescript-eslint/no-unused-vars': [
           'warn',
