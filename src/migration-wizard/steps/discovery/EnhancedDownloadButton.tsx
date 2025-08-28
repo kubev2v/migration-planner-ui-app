@@ -1,11 +1,12 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useRef, useState } from 'react';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
+import type { Root } from 'react-dom/client';
 import { createRoot } from 'react-dom/client';
 
 import type { Source } from '@migration-planner-ui/api-client/models';
 import {
+  Alert,
   Dropdown,
   DropdownItem,
   DropdownList,
@@ -16,6 +17,110 @@ import {
 import { DownloadIcon } from '@patternfly/react-icons';
 
 import './DownloadPDFStyles.css';
+
+// Constants
+const EXPORT_CONFIG = {
+  PDF_FILENAME: 'Dashboard_Report.pdf',
+  HTML_FILENAME: 'VMware_Infrastructure_Assessment_Comprehensive.html',
+  CANVAS_TIMEOUT: 500,
+  HIDDEN_CONTAINER_WIDTH: 1600,
+  HIDDEN_CONTAINER_HEIGHT: 1200,
+  PDF_MARGIN: 10,
+} as const;
+
+const CHART_COLORS = {
+  PRIMARY: '#3498db',
+  SUCCESS: '#27ae60',
+  DANGER: '#e74c3c',
+  WARNING: '#f39c12',
+  INFO: '#9b59b6',
+  SECONDARY: '#1abc9c',
+  DARK: '#34495e',
+  ORANGE: '#e67e22',
+} as const;
+
+// Enhanced TypeScript interfaces
+interface OSInfo {
+  count: number;
+  supported: boolean;
+}
+
+interface MigrationWarning {
+  label: string;
+  count: number;
+}
+
+interface PowerStates {
+  poweredOn?: number;
+  poweredOff?: number;
+  suspended?: number;
+  [key: string]: number | undefined;
+}
+
+interface ResourceInfo {
+  total: number;
+}
+
+interface VMsData {
+  total: number;
+  powerStates: PowerStates;
+  cpuCores: ResourceInfo;
+  ramGB: ResourceInfo;
+  diskGB: ResourceInfo;
+  os?: Record<string, number>;
+  osInfo?: Record<string, OSInfo>;
+  migrationWarnings: MigrationWarning[];
+}
+
+interface Datastore {
+  vendor: string;
+  type: string;
+  protocolType: string;
+  totalCapacityGB: number;
+  freeCapacityGB: number;
+  hardwareAcceleratedMove: boolean;
+}
+
+interface Network {
+  name: string;
+  type: string;
+}
+
+interface InfraData {
+  totalHosts: number;
+  datastores: Datastore[];
+  networks: Network[];
+}
+
+interface ExportOption {
+  key: string;
+  label: string;
+  description: string;
+  action: () => Promise<void>;
+  disabled?: boolean;
+}
+
+type LoadingState = 'idle' | 'generating-pdf' | 'generating-html' | 'error';
+
+interface ExportError {
+  message: string;
+  type: 'pdf' | 'html' | 'general';
+}
+
+interface ChartData {
+  powerStateData: Array<[string, number]>;
+  resourceData: Array<[string, number, number]>;
+  osData: Array<[string, number]>;
+  warningsData: Array<[string, number]>;
+  storageLabels: string[];
+  storageUsedData: number[];
+  storageTotalData: number[];
+}
+
+interface InventoryData {
+  infra: InfraData;
+  vms: VMsData;
+}
 
 interface EnhancedDownloadButtonProps {
   elementId: string;
@@ -29,25 +134,40 @@ const EnhancedDownloadButton: React.FC<EnhancedDownloadButtonProps> = ({
   sourceData,
 }): JSX.Element => {
   const hiddenContainerRef = useRef<HTMLDivElement | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [loadingState, setLoadingState] = useState<LoadingState>('idle');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [error, setError] = useState<ExportError | null>(null);
+
+  const isLoading =
+    loadingState === 'generating-pdf' || loadingState === 'generating-html';
+  const hasInventoryData = Boolean(sourceData?.inventory);
 
   const handleDownloadPDF = async (): Promise<void> => {
+    // Ensure cleanup even on errors
+    let tempDiv: HTMLDivElement | null = null;
+    let root: Root | null = null;
+    const originalWarn = console.warn;
     try {
-      setIsLoading(true);
-      const originalWarn = console.warn;
+      setLoadingState('generating-pdf');
+      setError(null);
+
       console.warn = (): void => {};
 
       const hiddenContainer = hiddenContainerRef.current;
-      if (!hiddenContainer) return;
+      if (!hiddenContainer) {
+        throw new Error('Hidden container not found');
+      }
+
       hiddenContainer.innerHTML = '';
 
-      const tempDiv = document.createElement('div');
+      tempDiv = document.createElement('div');
       hiddenContainer.appendChild(tempDiv);
-      const root = createRoot(tempDiv);
+      root = createRoot(tempDiv);
       root.render(componentToRender);
 
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      await new Promise((resolve) =>
+        setTimeout(resolve, EXPORT_CONFIG.CANVAS_TIMEOUT),
+      );
 
       const canvas = await html2canvas(hiddenContainer, { useCORS: true });
       const imgData = canvas.toDataURL('image/png');
@@ -55,7 +175,7 @@ const EnhancedDownloadButton: React.FC<EnhancedDownloadButtonProps> = ({
 
       const pageWidth = pdf.internal.pageSize.getWidth();
       const pageHeight = pdf.internal.pageSize.getHeight();
-      const margin = 10;
+      const { PDF_MARGIN: margin } = EXPORT_CONFIG;
 
       const contentWidth = pageWidth - margin * 2;
       const contentHeight = pageHeight - margin * 2;
@@ -76,14 +196,27 @@ const EnhancedDownloadButton: React.FC<EnhancedDownloadButtonProps> = ({
         imgWidth * scaleFactor,
         imgHeight * scaleFactor,
       );
-      pdf.save('Dashboard_Report.pdf');
+      pdf.save(EXPORT_CONFIG.PDF_FILENAME);
 
-      hiddenContainer.innerHTML = '';
-      console.warn = originalWarn;
+      setLoadingState('idle');
     } catch (error) {
       console.error('Error generating PDF:', error);
+      setError({
+        message:
+          error instanceof Error ? error.message : 'Failed to generate PDF',
+        type: 'pdf',
+      });
+      setLoadingState('error');
     } finally {
-      setIsLoading(false);
+      try {
+        root?.unmount();
+        tempDiv?.parentNode?.removeChild(tempDiv);
+        hiddenContainerRef.current &&
+          (hiddenContainerRef.current.innerHTML = '');
+      } catch (_) {
+        /* noop */
+      }
+      console.warn = originalWarn;
     }
   };
 
@@ -104,42 +237,57 @@ const EnhancedDownloadButton: React.FC<EnhancedDownloadButtonProps> = ({
     return div.innerHTML;
   };
 
+  // Helper function to extract OS data from either vms.os or vms.osInfo
+  const extractOSData = (vms: VMsData): Array<[string, number]> => {
+    // Check if osInfo exists (new format)
+    if (vms.osInfo && Object.keys(vms.osInfo).length > 0) {
+      return Object.entries(vms.osInfo).map(
+        ([osName, osInfo]: [string, OSInfo]) => [osName, osInfo.count],
+      );
+    }
+    // Fallback to os (old format)
+    if (vms.os && Object.keys(vms.os).length > 0) {
+      return Object.entries(vms.os);
+    }
+    return [];
+  };
+
   // Generate chart data from inventory
-  const generateChartData = (
-    inventory: Record<string, any>,
-  ): Record<string, any> => {
+  const generateChartData = (inventory: InventoryData): ChartData => {
     const { infra, vms } = inventory;
 
     const powerStateData = [
-      ['Powered On', vms.powerStates.poweredOn],
-      ['Powered Off', vms.powerStates.poweredOff],
+      ['Powered On', vms.powerStates.poweredOn || 0],
+      ['Powered Off', vms.powerStates.poweredOff || 0],
       ['Suspended', vms.powerStates.suspended || 0],
-    ];
+    ] as Array<[string, number]>;
 
     const resourceData = [
       ['CPU Cores', vms.cpuCores.total, Math.round(vms.cpuCores.total * 1.2)],
       ['Memory GB', vms.ramGB.total, Math.round(vms.ramGB.total * 1.25)],
       ['Storage GB', vms.diskGB.total, Math.round(vms.diskGB.total * 1.15)],
-    ];
+    ] as Array<[string, number, number]>;
 
-    const osEntries = Object.entries(vms.os).sort(
+    const osEntries = extractOSData(vms).sort(
       ([, a], [, b]) => (b as number) - (a as number),
     );
-    const osData = osEntries.slice(0, 8).map(([name, count]) => [name, count]);
+    const osData = osEntries
+      .slice(0, 8)
+      .map(([name, count]) => [name, count]) as Array<[string, number]>;
 
-    const warningsData = vms.migrationWarnings.map((w: any) => [
+    const warningsData = vms.migrationWarnings.map((w) => [
       w.label,
       w.count,
-    ]);
+    ]) as Array<[string, number]>;
 
     const storageLabels = infra.datastores.map(
-      (ds: any) => `${ds.vendor} ${ds.type}`,
+      (ds: Datastore) => `${ds.vendor} ${ds.type}`,
     );
     const storageUsedData = infra.datastores.map(
-      (ds: any) => ds.totalCapacityGB - ds.freeCapacityGB,
+      (ds: Datastore) => ds.totalCapacityGB - ds.freeCapacityGB,
     );
     const storageTotalData = infra.datastores.map(
-      (ds: any) => ds.totalCapacityGB,
+      (ds: Datastore) => ds.totalCapacityGB,
     );
 
     return {
@@ -154,8 +302,8 @@ const EnhancedDownloadButton: React.FC<EnhancedDownloadButtonProps> = ({
   };
 
   // Generate HTML table for operating systems
-  const generateOSTable = (vms: any): string => {
-    const osEntries = Object.entries(vms.os).sort(
+  const generateOSTable = (vms: VMsData): string => {
+    const osEntries = extractOSData(vms).sort(
       ([, a], [, b]) => (b as number) - (a as number),
     );
     if (osEntries.length === 0) {
@@ -182,7 +330,7 @@ const EnhancedDownloadButton: React.FC<EnhancedDownloadButtonProps> = ({
   };
 
   // Generate HTML table for migration warnings
-  const generateWarningsTable = (vms: any): string => {
+  const generateWarningsTable = (vms: VMsData): string => {
     if (vms.migrationWarnings.length === 0) {
       return `<div class="table-section">
       <h3>Migration Warnings Analysis</h3>
@@ -191,7 +339,7 @@ const EnhancedDownloadButton: React.FC<EnhancedDownloadButtonProps> = ({
     }
 
     const warningsRows = vms.migrationWarnings
-      .map((warning: any) => {
+      .map((warning: MigrationWarning) => {
         const impact =
           warning.count > 50
             ? 'Critical'
@@ -249,13 +397,13 @@ const EnhancedDownloadButton: React.FC<EnhancedDownloadButtonProps> = ({
   };
 
   // Generate HTML table for storage infrastructure
-  const generateStorageTable = (infra: any): string => {
+  const generateStorageTable = (infra: InfraData): string => {
     if (infra.datastores.length === 0) {
       return '<tr><td colspan="7">No datastore information available</td></tr>';
     }
 
     return infra.datastores
-      .map((ds: any) => {
+      .map((ds: Datastore) => {
         const utilization =
           ds.totalCapacityGB > 0
             ? (
@@ -321,7 +469,10 @@ const EnhancedDownloadButton: React.FC<EnhancedDownloadButtonProps> = ({
   };
 
   // Generate complete HTML template with data and scripts
-  const generateHTMLTemplate = (chartData: any, inventory: any): string => {
+  const generateHTMLTemplate = (
+    chartData: ChartData,
+    inventory: InventoryData,
+  ): string => {
     const { infra, vms } = inventory;
     const {
       powerStateData,
@@ -520,13 +671,15 @@ const EnhancedDownloadButton: React.FC<EnhancedDownloadButtonProps> = ({
                     type: 'doughnut',
                     data: {
                         labels: ${JSON.stringify(
-                          powerStateData.map((d: any) => d[0]),
-                        )},
+                          powerStateData.map((d) => d[0]),
+                        ).replace(/<\//g, '<\\/')},
                         datasets: [{
                             data: ${JSON.stringify(
-                              powerStateData.map((d: any) => d[1]),
+                              powerStateData.map((d) => d[1]),
                             )},
-                            backgroundColor: ['#27ae60', '#e74c3c', '#f39c12']
+                            backgroundColor: ['${CHART_COLORS.SUCCESS}', '${
+                              CHART_COLORS.DANGER
+                            }', '${CHART_COLORS.WARNING}']
                         }]
                     },
                     options: {
@@ -544,20 +697,20 @@ const EnhancedDownloadButton: React.FC<EnhancedDownloadButtonProps> = ({
                     type: 'bar',
                     data: {
                         labels: ${JSON.stringify(
-                          resourceData.map((d: any) => d[0]),
-                        )},
+                          resourceData.map((d) => d[0]),
+                        ).replace(/<\//g, '<\\/')},
                         datasets: [{
                             label: 'Current',
                             data: ${JSON.stringify(
-                              resourceData.map((d: any) => d[1]),
+                              resourceData.map((d) => d[1]),
                             )},
-                            backgroundColor: '#3498db'
+                            backgroundColor: '${CHART_COLORS.PRIMARY}'
                         }, {
                             label: 'Recommended',
                             data: ${JSON.stringify(
-                              resourceData.map((d: any) => d[2]),
+                              resourceData.map((d) => d[2]),
                             )},
-                            backgroundColor: '#2ecc71'
+                            backgroundColor: '${CHART_COLORS.SUCCESS}'
                         }]
                     },
                     options: {
@@ -575,12 +728,21 @@ const EnhancedDownloadButton: React.FC<EnhancedDownloadButtonProps> = ({
                 new Chart(osCtx, {
                     type: 'bar',
                     data: {
-                        labels: ${JSON.stringify(osData.map((d: any) => d[0]))},
+                        labels: ${JSON.stringify(
+                          osData.map((d) => d[0]),
+                        ).replace(/<\//g, '<\\/')},
                         datasets: [{
-                            data: ${JSON.stringify(
-                              osData.map((d: any) => d[1]),
-                            )},
-                            backgroundColor: ['#3498db', '#e74c3c', '#27ae60', '#f39c12', '#9b59b6', '#1abc9c', '#34495e', '#e67e22']
+                            data: ${JSON.stringify(osData.map((d) => d[1]))},
+                            backgroundColor: ${JSON.stringify([
+                              CHART_COLORS.PRIMARY,
+                              CHART_COLORS.DANGER,
+                              CHART_COLORS.SUCCESS,
+                              CHART_COLORS.WARNING,
+                              CHART_COLORS.INFO,
+                              CHART_COLORS.SECONDARY,
+                              CHART_COLORS.DARK,
+                              CHART_COLORS.ORANGE,
+                            ])}
                         }]
                     },
                     options: {
@@ -603,22 +765,22 @@ const EnhancedDownloadButton: React.FC<EnhancedDownloadButtonProps> = ({
                     type: 'bar',
                     data: {
                         labels: ${JSON.stringify(
-                          warningsData.map((d: any) => d[0]),
-                        )},
+                          warningsData.map((d) => d[0]),
+                        ).replace(/<\//g, '<\\/')},
                         datasets: [{
                             data: ${JSON.stringify(
-                              warningsData.map((d: any) => d[1]),
+                              warningsData.map((d) => d[1]),
                             )},
                             backgroundColor: ${JSON.stringify(
-                              warningsData.map((d: any) => {
+                              warningsData.map((d) => {
                                 const count = Number(d[1]);
                                 return count > 50
-                                  ? '#e74c3c'
+                                  ? CHART_COLORS.DANGER
                                   : count > 20
-                                    ? '#f39c12'
+                                    ? CHART_COLORS.WARNING
                                     : count > 5
-                                      ? '#27ae60'
-                                      : '#3498db';
+                                      ? CHART_COLORS.SUCCESS
+                                      : CHART_COLORS.PRIMARY;
                               }),
                             )}
                         }]
@@ -643,15 +805,18 @@ const EnhancedDownloadButton: React.FC<EnhancedDownloadButtonProps> = ({
                 new Chart(storageCtx, {
                     type: 'bar',
                     data: {
-                        labels: ${JSON.stringify(storageLabels)},
+                        labels: ${JSON.stringify(storageLabels).replace(
+                          /<\//g,
+                          '<\\/',
+                        )},
                         datasets: [{
                             label: 'Used (GB)',
                             data: ${JSON.stringify(storageUsedData)},
-                            backgroundColor: '#e74c3c'
+                            backgroundColor: '${CHART_COLORS.DANGER}'
                         }, {
                             label: 'Total (GB)',
                             data: ${JSON.stringify(storageTotalData)},
-                            backgroundColor: '#3498db'
+                            backgroundColor: '${CHART_COLORS.PRIMARY}'
                         }]
                     },
                     options: {
@@ -685,37 +850,35 @@ const EnhancedDownloadButton: React.FC<EnhancedDownloadButtonProps> = ({
 
   const handleHTMLExport = async (): Promise<void> => {
     try {
-      setIsLoading(true);
+      setLoadingState('generating-html');
+      setError(null);
 
       if (!sourceData?.inventory) {
-        alert('No inventory data available for export');
-        return;
+        throw new Error('No inventory data available for export');
       }
 
       const { inventory } = sourceData;
-
       const chartData = generateChartData(inventory);
-
       const htmlContent = generateHTMLTemplate(chartData, inventory);
-
-      // Download the file
-      downloadHTMLFile(
-        htmlContent,
-        'VMware_Infrastructure_Assessment_Comprehensive.html',
-      );
-
+      downloadHTMLFile(htmlContent, EXPORT_CONFIG.HTML_FILENAME);
       console.log(
         '✅ Comprehensive HTML file with enhanced charts and tables downloaded successfully!',
       );
+      setLoadingState('idle');
     } catch (error) {
       console.error('Error generating HTML file:', error);
-      alert('Failed to generate HTML file: ' + error);
-    } finally {
-      setIsLoading(false);
+      setError({
+        message:
+          error instanceof Error
+            ? error.message
+            : 'Failed to generate HTML file',
+        type: 'html',
+      });
+      setLoadingState('error');
     }
   };
 
-  const exportOptions = [
+  const exportOptions: ExportOption[] = [
     {
       key: 'pdf',
       label: 'PDF (View Only)',
@@ -727,7 +890,7 @@ const EnhancedDownloadButton: React.FC<EnhancedDownloadButtonProps> = ({
       label: 'Export HTML',
       description: 'Interactive charts',
       action: handleHTMLExport,
-      disabled: !sourceData?.inventory,
+      disabled: !hasInventoryData,
     },
   ];
 
@@ -737,6 +900,7 @@ const EnhancedDownloadButton: React.FC<EnhancedDownloadButtonProps> = ({
 
   const onSelect = (): void => {
     setIsDropdownOpen(false);
+    setError(null); // Clear any previous errors when dropdown closes
   };
 
   return (
@@ -752,14 +916,18 @@ const EnhancedDownloadButton: React.FC<EnhancedDownloadButtonProps> = ({
             isExpanded={isDropdownOpen}
             variant="secondary"
             isDisabled={isLoading}
+            aria-label="Export report options"
           >
             {isLoading ? (
               <>
-                <Spinner size="sm" /> Exporting...
+                <Spinner size="sm" aria-hidden="true" />
+                {loadingState === 'generating-pdf'
+                  ? 'Generating PDF...'
+                  : 'Generating HTML...'}
               </>
             ) : (
               <>
-                <DownloadIcon /> Export Report
+                <DownloadIcon aria-hidden="true" /> Export Report
               </>
             )}
           </MenuToggle>
@@ -779,6 +947,17 @@ const EnhancedDownloadButton: React.FC<EnhancedDownloadButtonProps> = ({
         </DropdownList>
       </Dropdown>
 
+      {error && (
+        <Alert
+          variant="danger"
+          isInline
+          title="An error occurred"
+          style={{ marginTop: '0.5rem' }}
+        >
+          {error.message}
+        </Alert>
+      )}
+
       <div
         id="hidden-container"
         ref={hiddenContainerRef}
@@ -786,8 +965,8 @@ const EnhancedDownloadButton: React.FC<EnhancedDownloadButtonProps> = ({
           position: 'absolute',
           left: '-9999px',
           top: '0',
-          width: '1600px',
-          minHeight: '1200px',
+          width: `${EXPORT_CONFIG.HIDDEN_CONTAINER_WIDTH}px`,
+          minHeight: `${EXPORT_CONFIG.HIDDEN_CONTAINER_HEIGHT}px`,
           padding: '2rem',
           backgroundColor: 'white',
           zIndex: -1,
