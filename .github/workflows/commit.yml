@@ -57,7 +57,7 @@ jobs:
               echo "   NO-JIRA is allowed if the change isn't tied to a ticket"
               echo "   TYPE must be one of:"
               echo "       $VALID_TYPES"
-              echo "See: https://github.com/kubev2v/migration-planner/blob/main/CONTRIBUTING.md"
+              echo "See: https://github.com/kubev2v/migration-planner-ui-app/blob/main/CONTRIBUTING.md"
               exit 1
             fi
           done
