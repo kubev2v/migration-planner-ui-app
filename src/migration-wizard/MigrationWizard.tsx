@@ -1,5 +1,6 @@
 /* eslint-disable simple-import-sort/imports */
 import React, { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 import { Source } from '@migration-planner-ui/api-client/models';
 import {
@@ -40,56 +41,45 @@ type CustomWizardFooterPropType = {
   isBackDisabled?: boolean;
   nextButtonText?: string;
   onNext?: () => void;
+  onBack?: () => void;
+  isHidden?: boolean;
 };
 
 export const CustomWizardFooter: React.FC<CustomWizardFooterPropType> = ({
-  isCancelHidden,
   isBackDisabled,
-  isNextDisabled,
-  nextButtonText,
-  onNext,
+  onBack,
+  isHidden,
 }): JSX.Element => {
-  const { goToNextStep, goToPrevStep, goToStepById } = useWizardContext();
+  const { goToPrevStep } = useWizardContext();
+
+  if (isHidden) {
+    return <></>;
+  }
+
   return (
     <>
       <WizardFooterWrapper>
         <Button
           ouiaId="wizard-back-btn"
           variant="secondary"
-          onClick={goToPrevStep}
+          onClick={() => {
+            if (onBack) {
+              onBack();
+            } else {
+              goToPrevStep();
+            }
+          }}
           isDisabled={isBackDisabled}
         >
           Back
         </Button>
-        <Button
-          ouiaId="wizard-next-btn"
-          variant="primary"
-          onClick={() => {
-            if (onNext) {
-              onNext();
-            } else {
-              goToNextStep();
-            }
-          }}
-          isDisabled={isNextDisabled}
-        >
-          {nextButtonText ?? 'Next'}
-        </Button>
-        {!isCancelHidden && (
-          <Button
-            ouiaId="wizard-cancel-btn"
-            variant="link"
-            onClick={() => goToStepById('connect-step')}
-          >
-            Cancel
-          </Button>
-        )}
       </WizardFooterWrapper>
     </>
   );
 };
 
 export const MigrationWizard: React.FC = () => {
+  const navigate = useNavigate();
   const computedHeight = useComputedHeightFromPageHeader();
   const discoverSourcesContext = useDiscoverySources();
   const [firstSource, ..._otherSources] = discoverSourcesContext.sources ?? [];
@@ -98,6 +88,12 @@ export const MigrationWizard: React.FC = () => {
     React.useState<boolean>(false);
   const [activeStepId, setActiveStepId] =
     React.useState<string>('connect-step');
+
+  // Handle back navigation when coming from assessment page
+  const handleBackToAssessments = () => {
+    discoverSourcesContext.setAssessmentFromAgent(false);
+    navigate('/');
+  };
 
   useEffect(() => {
     if (discoverSourcesContext.sourceSelected) {
@@ -161,7 +157,13 @@ export const MigrationWizard: React.FC = () => {
             isNextDisabled={
               !isDiscoverySourceUpToDate || sourceSelected === null
             }
-            isBackDisabled={true}
+            isBackDisabled={!discoverSourcesContext.assessmentFromAgentState}
+            onBack={
+              discoverSourcesContext.assessmentFromAgentState
+                ? handleBackToAssessments
+                : undefined
+            }
+            isHidden={false}
           />
         }
       >

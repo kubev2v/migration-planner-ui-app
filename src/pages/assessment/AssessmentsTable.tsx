@@ -1,0 +1,436 @@
+import React, { useMemo, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+
+import { Assessment as AssessmentModel } from '@migration-planner-ui/api-client/models';
+import {
+  Button,
+  Dropdown,
+  DropdownItem,
+  DropdownList,
+  MenuToggle,
+  MenuToggleElement,
+  Spinner,
+} from '@patternfly/react-core';
+import {
+  EllipsisVIcon,
+  FileIcon,
+  MonitoringIcon,
+} from '@patternfly/react-icons';
+import { Table, Tbody, Td, Th, Thead, Tr } from '@patternfly/react-table';
+
+import { parseLatestSnapshot } from './utils/snapshotParser';
+
+type Props = {
+  assessments: AssessmentModel[];
+  isLoading?: boolean;
+  search?: string;
+  filterBy?: string;
+  filterValue?: string;
+  selectedSourceTypes?: string[];
+  sortBy?: { index: number; direction: 'asc' | 'desc' } | undefined;
+  onSort?: (event: unknown, index: number, direction: 'asc' | 'desc') => void;
+  onDelete?: (assessmentId: string) => void;
+  onUpdate?: (assessmentId: string) => void;
+};
+
+const enum Columns {
+  Name = 'Name',
+  SourceType = 'Source type',
+  LastUpdated = 'Last updated',
+  Owner = 'Owner',
+  Hosts = 'Hosts',
+  VMs = 'VMs',
+  Networks = 'Networks',
+  Datastores = 'Datastores',
+  Actions = '',
+}
+
+export const AssessmentsTable: React.FC<Props> = ({
+  assessments,
+  isLoading,
+  search = '',
+  filterBy = 'Filter',
+  filterValue = '',
+  selectedSourceTypes = [],
+  sortBy,
+  onSort,
+  onDelete,
+  onUpdate,
+}) => {
+  const navigate = useNavigate();
+  const [openDropdowns, setOpenDropdowns] = useState<Record<string, boolean>>(
+    {},
+  );
+
+  const toggleDropdown = (assessmentId: string) => {
+    setOpenDropdowns((prev) => ({
+      ...prev,
+      [assessmentId]: !prev[assessmentId],
+    }));
+  };
+
+  const handleDelete = (assessmentId: string): void => {
+    onDelete?.(assessmentId);
+  };
+
+  const handleUpdate = (assessmentId: string): void => {
+    onUpdate?.(assessmentId);
+  };
+
+  const handleShare = (assessmentId: string): void => {
+    alert('Share functionality coming soon!');
+  };
+
+  const rows = useMemo(() => {
+    const items = (assessments || []).map((assessment) => {
+      const assessmentModel = assessment as AssessmentModel;
+
+      const name = assessmentModel?.name;
+      const id = String(assessmentModel?.id ?? '');
+      const sourceType = assessmentModel?.sourceType || 'Unknown';
+      const snapshots = assessmentModel?.snapshots;
+
+      // Parse snapshot data using utility function
+      const snapshotData = parseLatestSnapshot(snapshots);
+
+      return {
+        key: id || name,
+        id,
+        name,
+        sourceType,
+        lastUpdated: snapshotData.lastUpdated,
+        owner: 'Current User', // Stub for owner
+        hosts: snapshotData.hosts,
+        vms: snapshotData.vms,
+        networks: snapshotData.networks,
+        datastores: snapshotData.datastores,
+        snapshots: snapshots || [],
+      };
+    });
+
+    let filtered = items;
+
+    // Apply dropdown filter (Source type or Owner)
+    if (filterBy !== 'Filter' && filterValue.trim() !== '') {
+      switch (filterBy) {
+        case 'Source type':
+          filtered = filtered.filter((i) =>
+            i.sourceType.toLowerCase().includes(filterValue.toLowerCase()),
+          );
+          break;
+        case 'Owner':
+          filtered = filtered.filter((i) =>
+            i.owner.toLowerCase().includes(filterValue.toLowerCase()),
+          );
+          break;
+      }
+    }
+
+    // Apply source type filter (legacy - keeping for backward compatibility)
+    if (selectedSourceTypes && selectedSourceTypes.length > 0) {
+      // Only filter if source types are actually selected
+      filtered = filtered.filter((i) =>
+        selectedSourceTypes.includes(i.sourceType.toLowerCase()),
+      );
+    }
+    // If no source types are selected, show all assessments
+
+    if (!sortBy) return filtered;
+
+    const copy = [...filtered];
+    switch (sortBy.index) {
+      case 0: // Name column
+        copy.sort((a, b) =>
+          sortBy.direction === 'asc'
+            ? a.name.localeCompare(b.name)
+            : b.name.localeCompare(a.name),
+        );
+        break;
+      case 1: // Source type column
+        copy.sort((a, b) =>
+          sortBy.direction === 'asc'
+            ? a.sourceType.localeCompare(b.sourceType)
+            : b.sourceType.localeCompare(a.sourceType),
+        );
+        break;
+      case 2: // Last updated column
+        copy.sort((a, b) =>
+          sortBy.direction === 'asc'
+            ? a.lastUpdated.localeCompare(b.lastUpdated)
+            : b.lastUpdated.localeCompare(a.lastUpdated),
+        );
+        break;
+      case 3: // Owner column
+        copy.sort((a, b) =>
+          sortBy.direction === 'asc'
+            ? a.owner.localeCompare(b.owner)
+            : b.owner.localeCompare(a.owner),
+        );
+        break;
+      case 4: // Hosts column
+        copy.sort((a, b) => {
+          const aHosts = typeof a.hosts === 'number' ? a.hosts : 0;
+          const bHosts = typeof b.hosts === 'number' ? b.hosts : 0;
+          return sortBy.direction === 'asc' ? aHosts - bHosts : bHosts - aHosts;
+        });
+        break;
+      case 5: // VMs column
+        copy.sort((a, b) => {
+          const aVms = typeof a.vms === 'number' ? a.vms : 0;
+          const bVms = typeof b.vms === 'number' ? b.vms : 0;
+          return sortBy.direction === 'asc' ? aVms - bVms : bVms - aVms;
+        });
+        break;
+      case 6: // Networks column
+        copy.sort((a, b) => {
+          const aNetworks = typeof a.networks === 'number' ? a.networks : 0;
+          const bNetworks = typeof b.networks === 'number' ? b.networks : 0;
+          return sortBy.direction === 'asc'
+            ? aNetworks - bNetworks
+            : bNetworks - aNetworks;
+        });
+        break;
+      case 7: // Datastores column
+        copy.sort((a, b) => {
+          const aDatastores =
+            typeof a.datastores === 'number' ? a.datastores : 0;
+          const bDatastores =
+            typeof b.datastores === 'number' ? b.datastores : 0;
+          return sortBy.direction === 'asc'
+            ? aDatastores - bDatastores
+            : bDatastores - aDatastores;
+        });
+        break;
+    }
+    return copy;
+  }, [assessments, filterBy, filterValue, selectedSourceTypes, sortBy]);
+
+  const nameSortParams = onSort
+    ? {
+        sortBy,
+        onSort,
+        columnIndex: 0,
+      }
+    : undefined;
+
+  const sourceTypeSortParams = onSort
+    ? {
+        sortBy,
+        onSort,
+        columnIndex: 1,
+      }
+    : undefined;
+
+  const lastUpdatedSortParams = onSort
+    ? {
+        sortBy,
+        onSort,
+        columnIndex: 2,
+      }
+    : undefined;
+
+  const ownerSortParams = onSort
+    ? {
+        sortBy,
+        onSort,
+        columnIndex: 3,
+      }
+    : undefined;
+
+  const hostsSortParams = onSort
+    ? {
+        sortBy,
+        onSort,
+        columnIndex: 4,
+      }
+    : undefined;
+
+  const vmsSortParams = onSort
+    ? {
+        sortBy,
+        onSort,
+        columnIndex: 5,
+      }
+    : undefined;
+
+  const networksSortParams = onSort
+    ? {
+        sortBy,
+        onSort,
+        columnIndex: 6,
+      }
+    : undefined;
+
+  const datastoresSortParams = onSort
+    ? {
+        sortBy,
+        onSort,
+        columnIndex: 7,
+      }
+    : undefined;
+
+  if (isLoading && (!assessments || assessments.length === 0)) {
+    return (
+      <Table aria-label="Loading assessments" variant="compact" borders={false}>
+        <Tbody>
+          <Tr>
+            <Td colSpan={9}>
+              <Spinner size="xl" />
+            </Td>
+          </Tr>
+        </Tbody>
+      </Table>
+    );
+  }
+
+  return (
+    <div style={{ width: '100%' }}>
+      <Table
+        aria-label="Assessments table"
+        variant="compact"
+        borders={false}
+        style={{ tableLayout: 'auto', width: '100%', fontSize: '16px' }}
+      >
+        {rows && rows.length > 0 && (
+          <Thead>
+            <Tr>
+              <Th sort={nameSortParams} style={{ whiteSpace: 'nowrap' }}>
+                {Columns.Name}
+              </Th>
+              <Th sort={sourceTypeSortParams} style={{ whiteSpace: 'nowrap' }}>
+                {Columns.SourceType}
+              </Th>
+              <Th sort={lastUpdatedSortParams} style={{ whiteSpace: 'nowrap' }}>
+                {Columns.LastUpdated}
+              </Th>
+              <Th sort={ownerSortParams} style={{ whiteSpace: 'nowrap' }}>
+                {Columns.Owner}
+              </Th>
+              <Th sort={hostsSortParams} style={{ whiteSpace: 'nowrap' }}>
+                {Columns.Hosts}
+              </Th>
+              <Th sort={vmsSortParams} style={{ whiteSpace: 'nowrap' }}>
+                {Columns.VMs}
+              </Th>
+              <Th sort={networksSortParams} style={{ whiteSpace: 'nowrap' }}>
+                {Columns.Networks}
+              </Th>
+              <Th sort={datastoresSortParams} style={{ whiteSpace: 'nowrap' }}>
+                {Columns.Datastores}
+              </Th>
+              <Th style={{ whiteSpace: 'nowrap' }}>{Columns.Actions}</Th>
+            </Tr>
+          </Thead>
+        )}
+        <Tbody>
+          {rows && rows.length > 0 ? (
+            rows.map((row) => (
+              <Tr key={row.key}>
+                <Td dataLabel={Columns.Name}>
+                  <Link
+                    to={`migrate/assessments/${row.id}`}
+                    style={{ color: '#0066cc', textDecoration: 'none' }}
+                  >
+                    {row.name}
+                  </Link>
+                </Td>
+                <Td dataLabel={Columns.SourceType}>
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                    }}
+                  >
+                    {row.sourceType.toLowerCase() === 'rvtools' ? (
+                      <FileIcon />
+                    ) : (
+                      <MonitoringIcon style={{ color: '#0066cc' }} />
+                    )}
+                    {row.sourceType.toLowerCase() === 'rvtools'
+                      ? 'RVTools (XLS/X)'
+                      : 'Discovery OVA'}
+                  </div>
+                </Td>
+                <Td dataLabel={Columns.LastUpdated}>{row.lastUpdated}</Td>
+                <Td dataLabel={Columns.Owner}>{row.owner}</Td>
+                <Td dataLabel={Columns.Hosts}>{row.hosts}</Td>
+                <Td dataLabel={Columns.VMs}>{row.vms}</Td>
+                <Td dataLabel={Columns.Networks}>{row.networks}</Td>
+                <Td dataLabel={Columns.Datastores}>{row.datastores}</Td>
+                <Td dataLabel={Columns.Actions}>
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                    }}
+                  >
+                    <Button
+                      variant="plain"
+                      component="a"
+                      href={`migrate/assessments/${row.id}`}
+                      target="_blank"
+                      aria-label="Open assessment"
+                      icon={<MonitoringIcon />}
+                      style={{ color: '#0066cc' }}
+                    />
+                    <Dropdown
+                      isOpen={openDropdowns[row.id] || false}
+                      onSelect={() => toggleDropdown(row.id)}
+                      toggle={(toggleRef: React.Ref<MenuToggleElement>) => (
+                        <MenuToggle
+                          ref={toggleRef}
+                          aria-label="Actions"
+                          variant="plain"
+                          onClick={() => toggleDropdown(row.id)}
+                        >
+                          <EllipsisVIcon />
+                        </MenuToggle>
+                      )}
+                    >
+                      <DropdownList>
+                        <DropdownItem
+                          onClick={() =>
+                            navigate(`migrate/assessments/${row.id}`)
+                          }
+                        >
+                          Show assessment report
+                        </DropdownItem>
+                        <DropdownItem onClick={() => handleShare(row.id)}>
+                          Share assessment
+                        </DropdownItem>
+                        <DropdownItem
+                          onClick={() =>
+                            alert('Edit functionality coming soon!')
+                          }
+                        >
+                          Edit assessment
+                        </DropdownItem>
+                        <DropdownItem onClick={() => handleDelete(row.id)}>
+                          Delete assessment
+                        </DropdownItem>
+                      </DropdownList>
+                    </Dropdown>
+                  </div>
+                </Td>
+              </Tr>
+            ))
+          ) : (
+            <Tr>
+              <Td colSpan={9}>
+                <div style={{ textAlign: 'center', padding: '2rem' }}>
+                  No assessments found.
+                </div>
+              </Td>
+            </Tr>
+          )}
+        </Tbody>
+      </Table>
+    </div>
+  );
+};
+
+AssessmentsTable.displayName = 'AssessmentsTable';
+
+export default AssessmentsTable;

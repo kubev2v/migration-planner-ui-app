@@ -2,9 +2,11 @@ import React, { Suspense } from 'react';
 import { Route as RouterRoute, Routes as RouterRoutes } from 'react-router-dom';
 import { InvalidObject } from '@redhat-cloud-services/frontend-components/InvalidObject';
 import { Bullseye, Spinner } from '@patternfly/react-core';
-import AssessmentDetailsPage from './pages/AssessmentDetailsPage';
-import MigrationAssessmentPage from './pages/MigrationAssessmentPage';
+
+import { Provider as DiscoverySourcesProvider } from './migration-wizard/contexts/discovery-sources/Provider';
+import MigrationPage from './pages/MigrationPage';
 import MigrationWizardPage from './pages/MigrationWizardPage';
+import Report from './pages/report/Report';
 
 interface RouteType {
   path?: string;
@@ -17,11 +19,11 @@ const Routing: React.FC = () => {
   const routes: RouteType[] = [
     {
       path: '/',
-      element: MigrationAssessmentPage,
+      element: MigrationPage,
     },
     {
       path: '/migrate/assessments/:id',
-      element: AssessmentDetailsPage,
+      element: Report,
     },
     {
       path: '/migrate/wizard',
@@ -45,15 +47,17 @@ const Routing: React.FC = () => {
     ));
 
   return (
-    <Suspense
-      fallback={
-        <Bullseye>
-          <Spinner />
-        </Bullseye>
-      }
-    >
-      <RouterRoutes>{renderRoutes(routes)}</RouterRoutes>
-    </Suspense>
+    <DiscoverySourcesProvider>
+      <Suspense
+        fallback={
+          <Bullseye>
+            <Spinner />
+          </Bullseye>
+        }
+      >
+        <RouterRoutes>{renderRoutes(routes)}</RouterRoutes>
+      </Suspense>
+    </DiscoverySourcesProvider>
   );
 };
 

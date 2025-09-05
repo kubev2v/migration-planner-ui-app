@@ -5,6 +5,7 @@ const webpack = require('webpack');
 module.exports = (env, argv) => {
   const config = {
   mode: 'development',
+  devtool: 'source-map',
 
   entry: './src/standalone-entry.tsx',
 
@@ -104,7 +105,7 @@ module.exports = (env, argv) => {
       './Label': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/Label.js'),
       './Histogram': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/Histogram.js'),
       './MigrationIssue': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/MigrationIssue.js'),
-      './OsInfo': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/OsInfo.js'),   
+      './OsInfo': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/OsInfo.js'),
       './SourceUpdate': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/SourceUpdate.js'),
       './UpdateInventory': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/UpdateInventory.js'),
       './Assessment': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/Assessment.js'),
@@ -130,7 +131,7 @@ module.exports = (env, argv) => {
     new webpack.DefinePlugin({
       'process.env.STANDALONE_MODE': JSON.stringify(true),
       'process.env.PLANNER_API_BASE_URL': JSON.stringify(
-        process.env.USE_MIGRATION_PLANNER_API === 'true' 
+        process.env.USE_MIGRATION_PLANNER_API === 'true'
           ? (process.env.PLANNER_API_BASE_URL || '')
           : '/planner'
       ),

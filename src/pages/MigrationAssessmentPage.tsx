@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useMount, useUnmount } from 'react-use';
 
+import { Assessment } from '@migration-planner-ui/api-client/models';
 import {
   Bullseye,
   Button,
@@ -29,10 +30,9 @@ import { global_active_color_300 as globalActiveColor300 } from '@patternfly/rea
 import { AppPage } from '../components/AppPage';
 import { CustomEnterpriseIcon } from '../components/CustomEnterpriseIcon';
 import { useDiscoverySources } from '../migration-wizard/contexts/discovery-sources/Context';
-import { Provider as DiscoverySourcesProvider } from '../migration-wizard/contexts/discovery-sources/Provider';
 import { DEFAULT_POLLING_DELAY } from '../migration-wizard/steps/connect/sources-table/Constants';
 
-import AssessmentsTable from './AssessmentsTable';
+import AssessmentPage from './assessment/Assessment';
 
 const cards: React.ReactElement[] = [
   <Card isFullHeight isPlain key="card-1">
@@ -130,25 +130,57 @@ const WelcomePage: React.FC = () => (
   </Bullseye>
 );
 
-const MigrationAssessmentPageContent: React.FC = () => {
+export const MigrationAssessmentPageContent: React.FC = () => {
   const discoverySourcesContext = useDiscoverySources();
+  const [assessments, setAssessments] = useState<Assessment[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [hasInitialLoad, setHasInitialLoad] = useState(false);
+
+  // Check if there are any up-to-date sources
+  const hasUpToDateSources = React.useMemo(() => {
+    return discoverySourcesContext.sources.some((source) => {
+      const agent = source.agent;
+      return agent && agent.status === 'up-to-date';
+    });
+  }, [discoverySourcesContext.sources]);
+
+  const updateAssessments = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      const fetchedAssessments =
+        await discoverySourcesContext.listAssessments();
+      // Use the returned data directly instead of relying on context state timing
+      setAssessments(fetchedAssessments || []);
+
+      if (!hasInitialLoad) {
+        setHasInitialLoad(true);
+      }
+    } catch (error) {
+      console.error('Failed to fetch assessments:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [discoverySourcesContext, hasInitialLoad]);
 
   useMount(async () => {
+    await updateAssessments();
+    await discoverySourcesContext.listSources(); // Load sources to check for up-to-date status
     discoverySourcesContext.startPolling(DEFAULT_POLLING_DELAY);
-    if (!discoverySourcesContext.isPolling) {
-      await Promise.all([discoverySourcesContext.listAssessments()]);
-    }
   });
 
   useUnmount(() => {
     discoverySourcesContext.stopPolling();
   });
 
+  // Listen to context changes and update local state when needed (for polling updates)
+  useEffect(() => {
+    if (hasInitialLoad) {
+      setAssessments(discoverySourcesContext.assessments);
+    }
+  }, [discoverySourcesContext.assessments, hasInitialLoad]);
+
   // Show loading only before the first successful assessments fetch
-  if (
-    discoverySourcesContext.isLoadingAssessments &&
-    discoverySourcesContext.assessments.length === 0
-  ) {
+  if (isLoading && !hasInitialLoad) {
     return (
       <Bullseye>
         <Spinner size="lg" />
@@ -156,11 +188,13 @@ const MigrationAssessmentPageContent: React.FC = () => {
     );
   }
 
-  // Show assessments list if any exist, otherwise show welcome page
-  return discoverySourcesContext.assessments.length > 0 ? (
-    <AssessmentsTable assessments={discoverySourcesContext.assessments} />
-  ) : (
-    <WelcomePage />
+  // Always show assessment component
+  return (
+    <AssessmentPage
+      assessments={assessments}
+      isLoading={isLoading}
+      hasUpToDateSources={hasUpToDateSources}
+    />
   );
 };
 
@@ -176,9 +210,7 @@ const MigrationAssessmentPage: React.FC = () => (
     ]}
     title="Welcome, let's start your migration journey from VMware to OpenShift."
   >
-    <DiscoverySourcesProvider>
-      <MigrationAssessmentPageContent />
-    </DiscoverySourcesProvider>
+    <MigrationAssessmentPageContent />
   </AppPage>
 );
 

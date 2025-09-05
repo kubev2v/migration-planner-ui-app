@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { Button } from '@patternfly/react-core';
+import { Button, Flex } from '@patternfly/react-core';
 import {
   Modal,
   ModalBody,
@@ -63,19 +63,21 @@ export const ConfirmationModal: React.FC<
       />
       <ModalBody>{children}</ModalBody>
       <ModalFooter>
-        <Button
-          key="confirm"
-          variant={primaryButtonVariant}
-          isDisabled={isDisabled}
-          onClick={onConfirm}
-        >
-          Delete
-        </Button>
-        {onCancel && (
-          <Button key="cancel" variant="link" onClick={onCancel}>
-            Cancel
+        <Flex justifyContent={{ default: 'justifyContentFlexStart' }}>
+          <Button
+            key="confirm"
+            variant={primaryButtonVariant}
+            isDisabled={isDisabled}
+            onClick={onConfirm}
+          >
+            Delete
           </Button>
-        )}
+          {onCancel && (
+            <Button key="cancel" variant="link" onClick={onCancel}>
+              Cancel
+            </Button>
+          )}
+        </Flex>
       </ModalFooter>
     </Modal>
   );

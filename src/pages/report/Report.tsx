@@ -17,10 +17,10 @@ import {
   TextContent,
 } from '@patternfly/react-core';
 
-import { AppPage } from '../components/AppPage';
-import { useDiscoverySources } from '../migration-wizard/contexts/discovery-sources/Context';
-import { Provider as DiscoverySourcesProvider } from '../migration-wizard/contexts/discovery-sources/Provider';
-import { Dashboard } from '../migration-wizard/steps/discovery/assessment-report/Dashboard';
+import { AppPage } from '../../components/AppPage';
+import { useDiscoverySources } from '../../migration-wizard/contexts/discovery-sources/Context';
+import { Provider as DiscoverySourcesProvider } from '../../migration-wizard/contexts/discovery-sources/Provider';
+import { Dashboard } from '../../migration-wizard/steps/discovery/assessment-report/Dashboard';
 
 type SnapshotLike = {
   infra?: Infra;
@@ -130,12 +130,12 @@ const Inner: React.FC = () => {
   );
 };
 
-const AssessmentDetailsPage: React.FC = () => (
+const Report: React.FC = () => (
   <DiscoverySourcesProvider>
     <Inner />
   </DiscoverySourcesProvider>
 );
 
-AssessmentDetailsPage.displayName = 'AssessmentDetailsPage';
+Report.displayName = 'Report';
 
-export default AssessmentDetailsPage;
+export default Report;

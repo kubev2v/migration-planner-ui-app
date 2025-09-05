@@ -20,14 +20,14 @@ import {
 import { ClusterIcon, PlusCircleIcon } from '@patternfly/react-icons';
 import { chart_color_blue_300 as blueColor } from '@patternfly/react-tokens/dist/js/chart_color_blue_300';
 
-import { useDiscoverySources } from '../../contexts/discovery-sources/Context';
+import { useDiscoverySources } from '../../migration-wizard/contexts/discovery-sources/Context';
 
 import { UploadInventoryAction } from './sources-table/actions/UploadInventoryAction';
 import { DiscoverySourceSetupModal } from './sources-table/empty-state/DiscoverySourceSetupModal';
 import { SourcesTable } from './sources-table/SourcesTable';
 import { TroubleshootingModal } from './TroubleshootingModal';
 
-export const ConnectStep: React.FC = () => {
+export const Environment: React.FC = () => {
   const discoverySourcesContext = useDiscoverySources();
 
   const [
@@ -270,4 +270,4 @@ export const ConnectStep: React.FC = () => {
   );
 };
 
-ConnectStep.displayName = 'ConnectStep';
+Environment.displayName = 'Environment';

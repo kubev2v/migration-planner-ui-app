@@ -17,9 +17,7 @@ const MigrationWizardPage: React.FC = () => {
       ]}
       title="Welcome, let's start your migration journey from VMware to OpenShift."
     >
-      <DiscoverySourcesProvider>
-        <MigrationWizard />
-      </DiscoverySourcesProvider>
+      <MigrationWizard />
     </AppPage>
   );
 };

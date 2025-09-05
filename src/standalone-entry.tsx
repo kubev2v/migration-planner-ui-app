@@ -63,7 +63,7 @@ if (process.env.STANDALONE_MODE) {
   (window as Record<string, unknown>).insights = {
     chrome: {
       auth: {
-        getUser: (): Promise<Record<string, unknown>> =>
+        getUser: () =>
           Promise.resolve({
             identity: {
               account_number: '000000',
@@ -87,6 +87,7 @@ if (process.env.STANDALONE_MODE) {
               'migration-assessment': true,
             },
           }),
+<<<<<<< HEAD
         getToken: (): Promise<string> =>
           Promise.resolve('mock-standalone-token'),
         getOfflineToken: (): Promise<string> =>
@@ -95,6 +96,27 @@ if (process.env.STANDALONE_MODE) {
           Promise.resolve('mock-refresh-token'),
         login: (): Promise<void> => Promise.resolve(),
         logout: (): void => {},
+||||||| parent of f8c7e08 (Implement assessment new design with RVTools creation flow only)
+          },
+          entitlements: {
+            'migration-assessment': { is_entitled: true, is_trial: false },
+          },
+          entitled: {
+            'migration-assessment': true
+          }
+        }),
+        getToken: () => Promise.resolve('mock-standalone-token'),
+        getOfflineToken: () => Promise.resolve('mock-offline-token'),
+        getRefreshToken: () => Promise.resolve('mock-refresh-token'),
+        login: () => Promise.resolve(),
+        logout: () => {},
+=======
+        getToken: () => Promise.resolve('mock-standalone-token'),
+        getOfflineToken: () => Promise.resolve('mock-offline-token'),
+        getRefreshToken: () => Promise.resolve('mock-refresh-token'),
+        login: () => Promise.resolve(),
+        logout: () => {},
+>>>>>>> f8c7e08 (Implement assessment new design with RVTools creation flow only)
         qe: {},
         reAuthWithScopes: (..._scopes: string[]): Promise<void> =>
           Promise.resolve(),
@@ -113,11 +135,23 @@ if (process.env.STANDALONE_MODE) {
         console.log(`[Standalone Mock] identifyApp called with: ${appName}`);
         return Promise.resolve(true);
       },
+<<<<<<< HEAD
       on: (event: string, _callback: (...args: unknown[]) => void): void => {
         console.log(
           `[Standalone Mock] Event listener for "${event}" registered.`,
         );
         return (): void =>
+||||||| parent of f8c7e08 (Implement assessment new design with RVTools creation flow only)
+      on: (event: string, callback: Function) => {
+        console.log(`[Standalone Mock] Event listener for "${event}" registered.`);
+        return () => console.log(`[Standalone Mock] Event listener for "${event}" unregistered.`);
+=======
+      on: (event: string, callback: Function) => {
+        console.log(
+          `[Standalone Mock] Event listener for "${event}" registered.`,
+        );
+        return () =>
+>>>>>>> f8c7e08 (Implement assessment new design with RVTools creation flow only)
           console.log(
             `[Standalone Mock] Event listener for "${event}" unregistered.`,
           );
@@ -125,7 +159,15 @@ if (process.env.STANDALONE_MODE) {
       init: (): void => {
         console.log('[Standalone Mock] insights.chrome.init() called.');
       },
+<<<<<<< HEAD
       getUserPermissions: (): Promise<Record<string, unknown>[]> =>
+||||||| parent of f8c7e08 (Implement assessment new design with RVTools creation flow only)
+      getUserPermissions: () => Promise.resolve([
+        { permission: 'app:read', resource: '*', resourceDefinitions: [] }
+      ]),
+=======
+      getUserPermissions: () =>
+>>>>>>> f8c7e08 (Implement assessment new design with RVTools creation flow only)
         Promise.resolve([
           { permission: 'app:read', resource: '*', resourceDefinitions: [] },
         ]),

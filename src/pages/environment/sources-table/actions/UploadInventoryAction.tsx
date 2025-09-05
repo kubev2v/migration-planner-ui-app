@@ -3,7 +3,7 @@ import React, { useCallback } from 'react';
 import { Button, Icon, Tooltip } from '@patternfly/react-core';
 import { UploadIcon } from '@patternfly/react-icons';
 
-import { DiscoverySources } from '../../../../contexts/discovery-sources/@types/DiscoverySources';
+import { DiscoverySources } from '../../../../migration-wizard/contexts/discovery-sources/@types/DiscoverySources';
 
 interface UploadInventoryProps {
   discoverySourcesContext: DiscoverySources.Context;
@@ -19,14 +19,14 @@ export const UploadInventoryAction: React.FC<UploadInventoryProps> = ({
   asLink,
   onUploadResult,
   onUploadSuccess,
-}): JSX.Element => {
+}) => {
   const handleUploadSource = useCallback(() => {
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = '.json';
     input.style.visibility = 'hidden';
 
-    input.onchange = async (event: Event): Promise<void> => {
+    input.onchange = async (event: Event) => {
       const file = (event.target as HTMLInputElement)?.files?.[0];
       if (!file) return;
 
@@ -77,7 +77,7 @@ export const UploadInventoryAction: React.FC<UploadInventoryProps> = ({
 
     document.body.appendChild(input);
     input.click();
-  }, [discoverySourcesContext, sourceId, onUploadResult, onUploadSuccess]);
+  }, [discoverySourcesContext, sourceId]);
 
   return asLink ? (
     <Button

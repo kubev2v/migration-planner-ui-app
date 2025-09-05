@@ -1,5 +1,7 @@
 import React from 'react';
 
+import { DiscoverySources } from './@types/DiscoverySources';
+
 export const Context = React.createContext<DiscoverySources.Context | null>(
   null,
 );

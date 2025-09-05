@@ -23,7 +23,7 @@ const ProxyInputFields = ({
   httpsProxy: string;
   noProxy: string;
   onChange: (field: string, value: string) => void;
-}): JSX.Element => {
+}) => {
   return (
     <Grid hasGutter>
       <GridItem span={12}>
@@ -143,11 +143,11 @@ const ProxyFields: React.FC = () => {
     noProxy: '',
   });
 
-  const handleFieldChange = (field: string, value: string): void => {
+  const handleFieldChange = (field: string, value: string) => {
     setProxyValues((prev) => ({ ...prev, [field]: value }));
   };
 
-  const toggleEnableProxy = (checked: boolean): void => {
+  const toggleEnableProxy = (checked: boolean) => {
     setEnableProxy(checked);
     if (!checked) {
       setProxyValues({

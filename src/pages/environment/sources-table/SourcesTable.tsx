@@ -7,7 +7,7 @@ import { Button, Radio, Spinner, Tooltip } from '@patternfly/react-core';
 import { ArrowLeftIcon } from '@patternfly/react-icons';
 import { Table, Tbody, Td, Th, Thead, Tr } from '@patternfly/react-table';
 
-import { useDiscoverySources } from '../../../contexts/discovery-sources/Context';
+import { useDiscoverySources } from '../../../migration-wizard/contexts/discovery-sources/Context';
 
 import { DownloadOvaAction } from './actions/DownloadOvaAction';
 import { RemoveSourceAction } from './actions/RemoveSourceAction';
