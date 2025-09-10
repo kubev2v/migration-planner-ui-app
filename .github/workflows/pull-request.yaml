@@ -64,6 +64,17 @@ jobs:
         with:
           node-version: ${{ vars.NODEJS_VERSION }}
       - run: make type-check
+
+  security-scan:
+    needs: preflight-check
+    if: needs.preflight-check.outputs.skip == 'false'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ vars.NODEJS_VERSION }}
+      - run: make security-scan
   #####
   ## test target is not working, need to fix and than uncomment it
   #####
