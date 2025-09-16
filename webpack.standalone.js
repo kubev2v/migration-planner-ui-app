@@ -2,7 +2,8 @@ const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const webpack = require('webpack');
 
-module.exports = {
+module.exports = (env, argv) => {
+  const config = {
   mode: 'development',
 
   entry: './src/standalone-entry.tsx',
@@ -133,33 +134,50 @@ module.exports = {
     }),
   ],
 
-  devServer: {
+  };
+
+  // Configure webpack-dev-server with proper proxy settings
+  // Using array format for compatibility with webpack-dev-server v5+
+  const devServerConfig = {
     port: 3000,
     historyApiFallback: true,
     open: true,
-    // Proxy for your backend APIs
-    proxy: process.env.PLANNER_LOCAL_DEV === 'true' ? {
-      // Local development with migration-planner API
-      '/planner': {
+    hot: true,
+    compress: true,
+  };
+
+  // Configure proxy based on environment variable
+  if (process.env.PLANNER_LOCAL_DEV === 'true') {
+    // Local development: proxy to local migration-planner API
+    devServerConfig.proxy = [
+      {
+        context: ['/planner'],
         target: 'http://localhost:3443',
         secure: false,
         changeOrigin: true,
         pathRewrite: {
-          '^/planner': ''              // Remove /planner prefix for local dev only
+          '^/planner': '' // Remove /planner prefix for local dev
         },
       },
-    } : {
-      // Default proxy configuration
-      '/api/migration-assessment': {
+    ];
+  } else {
+    // Default: proxy to remote services
+    devServerConfig.proxy = [
+      {
+        context: ['/api/migration-assessment'],
         target: 'https://migration-planner-assisted-migration-stage.apps.crcs02ue1.urby.p1.openshiftapps.com',
         secure: false,
         changeOrigin: true,
       },
-      '/planner': {
+      {
+        context: ['/planner'],
         target: 'http://localhost:3443',
         secure: false,
         changeOrigin: true,
       },
-    },
-  },
+    ];
+  }
+
+  config.devServer = devServerConfig;
+  return config;
 };
