@@ -1,4 +1,3 @@
-/* eslint-disable sort-imports */
 import React, { useCallback, useEffect, useState } from 'react';
 
 import {
@@ -25,17 +24,17 @@ import {
 
 import { useDiscoverySources } from '../../../../contexts/discovery-sources/Context';
 
-type DiscoverySourceSetupModalProps = {
+export interface DiscoverySourceSetupModalProps {
   isOpen?: boolean;
   isDisabled?: boolean;
   onClose?: (event?: KeyboardEvent | React.MouseEvent) => void;
   onStartDownload: () => void;
   onAfterDownload: () => Promise<void>;
-};
+}
 
 export const DiscoverySourceSetupModal: React.FC<
   DiscoverySourceSetupModalProps
-> = (props): JSX.Element => {
+> = (props) => {
   const discoverySourcesContext = useDiscoverySources();
   const {
     isOpen = false,
@@ -79,7 +78,7 @@ export const DiscoverySourceSetupModal: React.FC<
     setSshKeyError(validateSshKey(value));
   };
 
-  const resetForm = useCallback((): void => {
+  const resetForm = (): void => {
     setSshKey('');
     setSshKeyError(null);
     setShowUrl(false);
@@ -93,7 +92,7 @@ export const DiscoverySourceSetupModal: React.FC<
     discoverySourcesContext.setDownloadUrl('');
     discoverySourcesContext.deleteSourceCreated();
     discoverySourcesContext.errorDownloadingSource = null;
-  }, []);
+  };
 
   const backToOvaConfiguration = (): void => {
     setShowUrl(false);
@@ -163,8 +162,6 @@ export const DiscoverySourceSetupModal: React.FC<
       onStartDownload,
       onAfterDownload,
       onClose,
-      isEditingConfiguration,
-      resetForm,
     ],
   );
 
@@ -179,7 +176,7 @@ export const DiscoverySourceSetupModal: React.FC<
     if (isOpen) {
       resetForm();
     }
-  }, [isOpen, resetForm]);
+  }, [isOpen]);
 
   return (
     <Modal

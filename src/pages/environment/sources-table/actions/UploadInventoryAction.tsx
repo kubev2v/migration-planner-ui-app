@@ -26,7 +26,7 @@ export const UploadInventoryAction: React.FC<UploadInventoryProps> = ({
     input.accept = '.json';
     input.style.visibility = 'hidden';
 
-    input.onchange = async (event: Event) => {
+    input.onchange = async (event: Event): Promise<void> => {
       const file = (event.target as HTMLInputElement)?.files?.[0];
       if (!file) return;
 
@@ -77,6 +77,7 @@ export const UploadInventoryAction: React.FC<UploadInventoryProps> = ({
 
     document.body.appendChild(input);
     input.click();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [discoverySourcesContext, sourceId]);
 
   return asLink ? (

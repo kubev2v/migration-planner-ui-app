@@ -1,4 +1,4 @@
-import React, { Fragment, useEffect, useMemo } from 'react';
+import React, { Fragment, useEffect } from 'react';
 
 import { AgentApi } from '@migration-planner-ui/agent-client/apis';
 import {
@@ -6,8 +6,6 @@ import {
   ImageApi,
   SourceApi,
 } from '@migration-planner-ui/api-client/apis';
-
-import { AgentApi } from '@migration-planner-ui/agent-client/apis';
 import { Configuration } from '@migration-planner-ui/api-client/runtime';
 import { Container } from '@migration-planner-ui/ioc';
 import { Provider as DependencyInjectionProvider } from '@migration-planner-ui/ioc';
@@ -18,7 +16,7 @@ import { Symbols } from './main/Symbols';
 import { createAuthFetch } from './utils/authFetch';
 import Routing from './Routing';
 
-const App = (): JSX.Element => {
+const App: React.FC = () => {
   const chrome = useChrome(); // useChrome SÍ puede usarse acá
   const [container, setContainer] = React.useState<Container>();
 

@@ -3,12 +3,7 @@ import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import { createRoot } from 'react-dom/client';
 
-import {
-  Button,
-  Spinner,
-  TreeView,
-  TreeViewDataItem,
-} from '@patternfly/react-core';
+import { Button, Spinner } from '@patternfly/react-core';
 
 import './DownloadPDFStyles.css';
 

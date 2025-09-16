@@ -24,18 +24,16 @@ import {
 
 import { useDiscoverySources } from '../../../../migration-wizard/contexts/discovery-sources/Context';
 
-export namespace DiscoverySourceSetupModal {
-  export type Props = {
-    isOpen?: boolean;
-    isDisabled?: boolean;
-    onClose?: (event?: KeyboardEvent | React.MouseEvent) => void;
-    onStartDownload: () => void;
-    onAfterDownload: () => Promise<void>;
-  };
+export interface DiscoverySourceSetupModalProps {
+  isOpen?: boolean;
+  isDisabled?: boolean;
+  onClose?: (event?: KeyboardEvent | React.MouseEvent) => void;
+  onStartDownload: () => void;
+  onAfterDownload: () => Promise<void>;
 }
 
 export const DiscoverySourceSetupModal: React.FC<
-  DiscoverySourceSetupModal.Props
+  DiscoverySourceSetupModalProps
 > = (props) => {
   const discoverySourcesContext = useDiscoverySources();
   const {
@@ -80,7 +78,7 @@ export const DiscoverySourceSetupModal: React.FC<
     setSshKeyError(validateSshKey(value));
   };
 
-  const resetForm = () => {
+  const resetForm = (): void => {
     setSshKey('');
     setSshKeyError(null);
     setShowUrl(false);
@@ -96,7 +94,7 @@ export const DiscoverySourceSetupModal: React.FC<
     discoverySourcesContext.errorDownloadingSource = null;
   };
 
-  const backToOvaConfiguration = () => {
+  const backToOvaConfiguration = (): void => {
     setShowUrl(false);
     discoverySourcesContext.setDownloadUrl('');
     setIsEditingConfiguration(true);
@@ -152,6 +150,7 @@ export const DiscoverySourceSetupModal: React.FC<
         onClose?.();
       }
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [
       sshKey,
       environmentName,
@@ -178,6 +177,7 @@ export const DiscoverySourceSetupModal: React.FC<
     if (isOpen) {
       resetForm();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
 
   return (

@@ -35,12 +35,12 @@ export const CreateAssessmentModal: React.FC<CreateAssessmentModalProps> = ({
   mode,
   isLoading = false,
   selectedEnvironment = null,
-  onSelectEnvironment,
+  onSelectEnvironment: _onSelectEnvironment,
 }) => {
   const [assessmentName, setAssessmentName] = useState('');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [filename, setFilename] = useState('');
-  const [isFileLoading, setIsFileLoading] = useState(false);
+  const [isFileLoading, _setIsFileLoading] = useState(false);
   const [nameError, setNameError] = useState('');
   const [fileError, setFileError] = useState('');
   const [selectedEnvironmentId, setSelectedEnvironmentId] = useState('');
@@ -50,7 +50,13 @@ export const CreateAssessmentModal: React.FC<CreateAssessmentModalProps> = ({
     ? [selectedEnvironment]
     : [];
 
-  const getFileConfig = () => {
+  const getFileConfig = (): {
+    title: string;
+    fileLabel: string;
+    fileDescription: string;
+    allowedExtensions: string[];
+    accept: string;
+  } => {
     switch (mode) {
       case 'inventory':
         return {
@@ -92,7 +98,7 @@ export const CreateAssessmentModal: React.FC<CreateAssessmentModalProps> = ({
   const handleFileChange = (
     _event: React.ChangeEvent<HTMLInputElement> | React.DragEvent<HTMLElement>,
     file: File,
-  ) => {
+  ): void => {
     const maxSize = 12582912; // 12 MiB
     const fileExtension = file.name.toLowerCase().split('.').pop();
 
@@ -121,7 +127,7 @@ export const CreateAssessmentModal: React.FC<CreateAssessmentModalProps> = ({
     setFilename(file.name);
   };
 
-  const handleFileClear = () => {
+  const handleFileClear = (): void => {
     setSelectedFile(null);
     setFilename('');
     setFileError('');
@@ -150,7 +156,7 @@ export const CreateAssessmentModal: React.FC<CreateAssessmentModalProps> = ({
     return isValid;
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (): Promise<void> => {
     if (validateForm()) {
       try {
         await onSubmit(assessmentName.trim(), selectedFile, mode);
@@ -162,7 +168,7 @@ export const CreateAssessmentModal: React.FC<CreateAssessmentModalProps> = ({
     }
   };
 
-  const handleClose = () => {
+  const handleClose = (): void => {
     // Reset form when closing
     setAssessmentName('');
     setSelectedFile(null);

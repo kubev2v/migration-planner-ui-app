@@ -107,7 +107,7 @@ const Assessment: React.FC<Props> = ({ assessments, isLoading }) => {
 
   const handleConfirmUpdate = async (
     name: string,
-    file?: File,
+    _file?: File,
   ): Promise<void> => {
     if (!selectedAssessment) return;
 
@@ -139,7 +139,10 @@ const Assessment: React.FC<Props> = ({ assessments, isLoading }) => {
     }
   };
 
-  const handleSubmitAssessment = async (name: string, file: File | null) => {
+  const handleSubmitAssessment = async (
+    name: string,
+    file: File | null,
+  ): Promise<void> => {
     try {
       if (!file) throw new Error('File is required for RVTools assessment');
 

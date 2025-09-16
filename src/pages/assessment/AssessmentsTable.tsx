@@ -48,21 +48,20 @@ const enum Columns {
 export const AssessmentsTable: React.FC<Props> = ({
   assessments,
   isLoading,
-  search = '',
+  search: _search = '',
   filterBy = 'Filter',
   filterValue = '',
   selectedSourceTypes = [],
   sortBy,
   onSort,
   onDelete,
-  onUpdate,
 }) => {
   const navigate = useNavigate();
   const [openDropdowns, setOpenDropdowns] = useState<Record<string, boolean>>(
     {},
   );
 
-  const toggleDropdown = (assessmentId: string) => {
+  const toggleDropdown = (assessmentId: string): void => {
     setOpenDropdowns((prev) => ({
       ...prev,
       [assessmentId]: !prev[assessmentId],
@@ -73,11 +72,7 @@ export const AssessmentsTable: React.FC<Props> = ({
     onDelete?.(assessmentId);
   };
 
-  const handleUpdate = (assessmentId: string): void => {
-    onUpdate?.(assessmentId);
-  };
-
-  const handleShare = (assessmentId: string): void => {
+  const handleShare = (_assessmentId: string): void => {
     alert('Share functionality coming soon!');
   };
 

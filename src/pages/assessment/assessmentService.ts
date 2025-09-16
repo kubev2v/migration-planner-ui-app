@@ -1,9 +1,9 @@
-import { Assessment } from '@migration-planner-ui/api-client/models';
+import { Assessment, Inventory } from '@migration-planner-ui/api-client/models';
 
 export interface CreateAssessmentRequest {
   name: string;
   sourceType: 'inventory' | 'rvtools' | 'agent';
-  inventory?: any;
+  inventory?: Inventory;
   sourceId?: string;
   rvToolFile?: File;
 }
@@ -18,7 +18,10 @@ export class AssessmentService {
   /**
    * Create assessment from JSON inventory
    */
-  async createFromInventory(name: string, inventory: any): Promise<Assessment> {
+  async createFromInventory(
+    name: string,
+    inventory: Inventory,
+  ): Promise<Assessment> {
     const response = await fetch(`${this.baseUrl}/assessments`, {
       method: 'POST',
       headers: {

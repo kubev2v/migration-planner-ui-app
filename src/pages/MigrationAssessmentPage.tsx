@@ -18,7 +18,6 @@ import {
   Text,
   TextContent,
   Tooltip,
-  Title,
 } from '@patternfly/react-core';
 import {
   ClusterIcon,
@@ -109,7 +108,7 @@ const cards: React.ReactElement[] = [
   </Card>,
 ];
 
-const WelcomePage: React.FC = () => (
+const _WelcomePage: React.FC = () => (
   <Bullseye>
     <Stack hasGutter style={{ justifyContent: 'space-evenly' }}>
       <StackItem>

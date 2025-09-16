@@ -49,7 +49,7 @@ export const parseLatestSnapshot = (
 
   // Format last updated date
   const lastUpdated = lastSnapshot.createdAt
-    ? (() => {
+    ? ((): string => {
         const date = new Date(lastSnapshot.createdAt);
         const now = new Date();
         const diffMs = now.getTime() - date.getTime();

@@ -2,7 +2,6 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { Source } from '@migration-planner-ui/api-client/models';
 import {
   Button,
   Wizard,
@@ -10,6 +9,8 @@ import {
   WizardStep,
   useWizardContext,
 } from '@patternfly/react-core';
+
+import { Source } from '@migration-planner-ui/api-client/models';
 
 import { useDiscoverySources } from './contexts/discovery-sources/Context';
 import { useComputedHeightFromPageHeader } from './hooks/UseComputedHeightFromPageHeader';
@@ -90,7 +91,7 @@ export const MigrationWizard: React.FC = () => {
     React.useState<string>('connect-step');
 
   // Handle back navigation when coming from assessment page
-  const handleBackToAssessments = () => {
+  const handleBackToAssessments = (): void => {
     discoverSourcesContext.setAssessmentFromAgent(false);
     navigate('/');
   };

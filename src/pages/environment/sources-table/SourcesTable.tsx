@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { useMount, useUnmount } from 'react-use';
 
 import { Source } from '@migration-planner-ui/api-client/models';
-import { Button, Radio, Spinner, Tooltip } from '@patternfly/react-core';
+import { Button, Radio, Spinner } from '@patternfly/react-core';
 import { ArrowLeftIcon } from '@patternfly/react-icons';
 import { Table, Tbody, Td, Th, Thead, Tr } from '@patternfly/react-table';
 

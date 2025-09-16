@@ -7,7 +7,6 @@ import { createRoot } from 'react-dom/client';
 import type { Source } from '@migration-planner-ui/api-client/models';
 import {
   Alert,
-  Button,
   Dropdown,
   DropdownItem,
   DropdownList,
@@ -238,7 +237,6 @@ const EnhancedDownloadButton: React.FC<EnhancedDownloadButtonProps> = ({
     return div.innerHTML;
   };
 
-<<<<<<< HEAD
   // Helper function to extract OS data from either vms.os or vms.osInfo
   const extractOSData = (vms: VMsData): Array<[string, number]> => {
     // Check if osInfo exists (new format)
@@ -320,78 +318,6 @@ const EnhancedDownloadButton: React.FC<EnhancedDownloadButtonProps> = ({
           : osName.includes('Linux') || osName.includes('Red Hat')
             ? 'Medium'
             : 'Review Required';
-||||||| parent of f8c7e08 (Implement assessment new design with RVTools creation flow only)
-  return osEntries.map(([osName, count]) => {
-    const percentage = ((count as number) / vms.total * 100).toFixed(1);
-    const priority = osName.includes('Windows') ? 'High' : 
-                    osName.includes('Linux') || osName.includes('Red Hat') ? 'Medium' : 'Review Required';
-    return `
-=======
-  // Generate chart data from inventory
-  const generateChartData = (inventory: any) => {
-    const { infra, vms } = inventory;
-
-    const powerStateData = [
-      ['Powered On', vms.powerStates.poweredOn],
-      ['Powered Off', vms.powerStates.poweredOff],
-      ['Suspended', vms.powerStates.suspended || 0],
-    ];
-
-    const resourceData = [
-      ['CPU Cores', vms.cpuCores.total, Math.round(vms.cpuCores.total * 1.2)],
-      ['Memory GB', vms.ramGB.total, Math.round(vms.ramGB.total * 1.25)],
-      ['Storage GB', vms.diskGB.total, Math.round(vms.diskGB.total * 1.15)],
-    ];
-
-    const osEntries = Object.entries(vms.os).sort(
-      ([, a], [, b]) => (b as number) - (a as number),
-    );
-    const osData = osEntries.slice(0, 8).map(([name, count]) => [name, count]);
-
-    const warningsData = vms.migrationWarnings.map((w: any) => [
-      w.label,
-      w.count,
-    ]);
-
-    const storageLabels = infra.datastores.map(
-      (ds: any) => `${ds.vendor} ${ds.type}`,
-    );
-    const storageUsedData = infra.datastores.map(
-      (ds: any) => ds.totalCapacityGB - ds.freeCapacityGB,
-    );
-    const storageTotalData = infra.datastores.map(
-      (ds: any) => ds.totalCapacityGB,
-    );
-
-    return {
-      powerStateData,
-      resourceData,
-      osData,
-      warningsData,
-      storageLabels,
-      storageUsedData,
-      storageTotalData,
-    };
-  };
-
-  // Generate HTML table for operating systems
-  const generateOSTable = (vms: any): string => {
-    const osEntries = Object.entries(vms.os).sort(
-      ([, a], [, b]) => (b as number) - (a as number),
-    );
-    if (osEntries.length === 0) {
-      return '<tr><td colspan="4">No operating system data available</td></tr>';
-    }
-
-    return osEntries
-      .map(([osName, count]) => {
-        const percentage = (((count as number) / vms.total) * 100).toFixed(1);
-        const priority = osName.includes('Windows')
-          ? 'High'
-          : osName.includes('Linux') || osName.includes('Red Hat')
-          ? 'Medium'
-          : 'Review Required';
->>>>>>> f8c7e08 (Implement assessment new design with RVTools creation flow only)
         return `
       <tr>
         <td><strong>${escapeHtml(osName)}</strong></td>
@@ -404,16 +330,7 @@ const EnhancedDownloadButton: React.FC<EnhancedDownloadButtonProps> = ({
   };
 
   // Generate HTML table for migration warnings
-<<<<<<< HEAD
   const generateWarningsTable = (vms: VMsData): string => {
-||||||| parent of f8c7e08 (Implement assessment new design with RVTools creation flow only)
-// Generate HTML table for migration warnings
-const generateWarningsTable = (vms: any): string => {
-  if (vms.migrationWarnings.length === 0) {
-    return `<div class="table-section">
-=======
-  const generateWarningsTable = (vms: any): string => {
->>>>>>> f8c7e08 (Implement assessment new design with RVTools creation flow only)
     if (vms.migrationWarnings.length === 0) {
       return `<div class="table-section">
       <h3>Migration Warnings Analysis</h3>
@@ -422,7 +339,6 @@ const generateWarningsTable = (vms: any): string => {
     }
 
     const warningsRows = vms.migrationWarnings
-<<<<<<< HEAD
       .map((warning: MigrationWarning) => {
         const impact =
           warning.count > 50
@@ -449,46 +365,6 @@ const generateWarningsTable = (vms: any): string => {
               : impact === 'Medium'
                 ? 'warning-low'
                 : '';
-||||||| parent of f8c7e08 (Implement assessment new design with RVTools creation flow only)
-  const warningsRows = vms.migrationWarnings.map((warning: any) => {
-    const impact = warning.count > 50 ? 'Critical' : 
-                  warning.count > 20 ? 'High' : 
-                  warning.count > 5 ? 'Medium' : 'Low';
-    const percentage = ((warning.count / vms.total) * 100).toFixed(1);
-    const priority = impact === 'Critical' ? 'Immediate' :
-                    impact === 'High' ? 'Before Migration' :
-                    impact === 'Medium' ? 'During Migration' : 'Post Migration';
-    const rowClass = impact === 'Critical' ? 'warning-high' :
-                    impact === 'High' ? 'warning-medium' :
-                    impact === 'Medium' ? 'warning-low' : '';
-=======
-      .map((warning: any) => {
-        const impact =
-          warning.count > 50
-            ? 'Critical'
-            : warning.count > 20
-            ? 'High'
-            : warning.count > 5
-            ? 'Medium'
-            : 'Low';
-        const percentage = ((warning.count / vms.total) * 100).toFixed(1);
-        const priority =
-          impact === 'Critical'
-            ? 'Immediate'
-            : impact === 'High'
-            ? 'Before Migration'
-            : impact === 'Medium'
-            ? 'During Migration'
-            : 'Post Migration';
-        const rowClass =
-          impact === 'Critical'
-            ? 'warning-high'
-            : impact === 'High'
-            ? 'warning-medium'
-            : impact === 'Medium'
-            ? 'warning-low'
-            : '';
->>>>>>> f8c7e08 (Implement assessment new design with RVTools creation flow only)
 
         return `
       <tr class="${rowClass}">
@@ -521,32 +397,13 @@ const generateWarningsTable = (vms: any): string => {
   };
 
   // Generate HTML table for storage infrastructure
-<<<<<<< HEAD
   const generateStorageTable = (infra: InfraData): string => {
-||||||| parent of f8c7e08 (Implement assessment new design with RVTools creation flow only)
-// Generate HTML table for storage infrastructure
-const generateStorageTable = (infra: any): string => {
-  if (infra.datastores.length === 0) {
-    return '<tr><td colspan="7">No datastore information available</td></tr>';
-  }
-=======
-  const generateStorageTable = (infra: any): string => {
->>>>>>> f8c7e08 (Implement assessment new design with RVTools creation flow only)
     if (infra.datastores.length === 0) {
       return '<tr><td colspan="7">No datastore information available</td></tr>';
     }
 
     return infra.datastores
-<<<<<<< HEAD
       .map((ds: Datastore) => {
-||||||| parent of f8c7e08 (Implement assessment new design with RVTools creation flow only)
-  return infra.datastores.map((ds: any) => {
-    const utilization = ds.totalCapacityGB > 0 ? 
-      (((ds.totalCapacityGB - ds.freeCapacityGB) / ds.totalCapacityGB) * 100).toFixed(1) : '0.0';
-    const hwAccel = ds.hardwareAcceleratedMove ? '✅ Yes' : '❌ No';
-=======
-      .map((ds: any) => {
->>>>>>> f8c7e08 (Implement assessment new design with RVTools creation flow only)
         const utilization =
           ds.totalCapacityGB > 0
             ? (
@@ -612,19 +469,10 @@ const generateStorageTable = (infra: any): string => {
   };
 
   // Generate complete HTML template with data and scripts
-<<<<<<< HEAD
   const generateHTMLTemplate = (
     chartData: ChartData,
     inventory: InventoryData,
   ): string => {
-||||||| parent of f8c7e08 (Implement assessment new design with RVTools creation flow only)
-// Generate complete HTML template with data and scripts
-const generateHTMLTemplate = (chartData: any, inventory: any): string => {
-  const { infra, vms } = inventory;
-  const { powerStateData, resourceData, osData, warningsData, storageLabels, storageUsedData, storageTotalData } = chartData;
-=======
-  const generateHTMLTemplate = (chartData: any, inventory: any): string => {
->>>>>>> f8c7e08 (Implement assessment new design with RVTools creation flow only)
     const { infra, vms } = inventory;
     const {
       powerStateData,
@@ -823,31 +671,15 @@ const generateHTMLTemplate = (chartData: any, inventory: any): string => {
                     type: 'doughnut',
                     data: {
                         labels: ${JSON.stringify(
-<<<<<<< HEAD
                           powerStateData.map((d) => d[0]),
                         ).replace(/<\//g, '<\\/')},
-||||||| parent of f8c7e08 (Implement assessment new design with RVTools creation flow only)
-                        labels: ${JSON.stringify(powerStateData.map((d: any) => d[0]))},
-=======
-                          powerStateData.map((d: any) => d[0]),
-                        )},
->>>>>>> f8c7e08 (Implement assessment new design with RVTools creation flow only)
                         datasets: [{
                             data: ${JSON.stringify(
-<<<<<<< HEAD
                               powerStateData.map((d) => d[1]),
                             )},
                             backgroundColor: ['${CHART_COLORS.SUCCESS}', '${
                               CHART_COLORS.DANGER
                             }', '${CHART_COLORS.WARNING}']
-||||||| parent of f8c7e08 (Implement assessment new design with RVTools creation flow only)
-                            data: ${JSON.stringify(powerStateData.map((d: any) => d[1]))},
-                            backgroundColor: ['#27ae60', '#e74c3c', '#f39c12']
-=======
-                              powerStateData.map((d: any) => d[1]),
-                            )},
-                            backgroundColor: ['#27ae60', '#e74c3c', '#f39c12']
->>>>>>> f8c7e08 (Implement assessment new design with RVTools creation flow only)
                         }]
                     },
                     options: {
@@ -865,45 +697,20 @@ const generateHTMLTemplate = (chartData: any, inventory: any): string => {
                     type: 'bar',
                     data: {
                         labels: ${JSON.stringify(
-<<<<<<< HEAD
                           resourceData.map((d) => d[0]),
                         ).replace(/<\//g, '<\\/')},
-||||||| parent of f8c7e08 (Implement assessment new design with RVTools creation flow only)
-                        labels: ${JSON.stringify(resourceData.map((d: any) => d[0]))},
-=======
-                          resourceData.map((d: any) => d[0]),
-                        )},
->>>>>>> f8c7e08 (Implement assessment new design with RVTools creation flow only)
                         datasets: [{
                             label: 'Current',
                             data: ${JSON.stringify(
-<<<<<<< HEAD
                               resourceData.map((d) => d[1]),
                             )},
                             backgroundColor: '${CHART_COLORS.PRIMARY}'
-||||||| parent of f8c7e08 (Implement assessment new design with RVTools creation flow only)
-                            data: ${JSON.stringify(resourceData.map((d: any) => d[1]))},
-                            backgroundColor: '#3498db'
-=======
-                              resourceData.map((d: any) => d[1]),
-                            )},
-                            backgroundColor: '#3498db'
->>>>>>> f8c7e08 (Implement assessment new design with RVTools creation flow only)
                         }, {
                             label: 'Recommended',
                             data: ${JSON.stringify(
-<<<<<<< HEAD
                               resourceData.map((d) => d[2]),
                             )},
                             backgroundColor: '${CHART_COLORS.SUCCESS}'
-||||||| parent of f8c7e08 (Implement assessment new design with RVTools creation flow only)
-                            data: ${JSON.stringify(resourceData.map((d: any) => d[2]))},
-                            backgroundColor: '#2ecc71'
-=======
-                              resourceData.map((d: any) => d[2]),
-                            )},
-                            backgroundColor: '#2ecc71'
->>>>>>> f8c7e08 (Implement assessment new design with RVTools creation flow only)
                         }]
                     },
                     options: {
@@ -925,7 +732,6 @@ const generateHTMLTemplate = (chartData: any, inventory: any): string => {
                           osData.map((d) => d[0]),
                         ).replace(/<\//g, '<\\/')},
                         datasets: [{
-<<<<<<< HEAD
                             data: ${JSON.stringify(osData.map((d) => d[1]))},
                             backgroundColor: ${JSON.stringify([
                               CHART_COLORS.PRIMARY,
@@ -937,15 +743,6 @@ const generateHTMLTemplate = (chartData: any, inventory: any): string => {
                               CHART_COLORS.DARK,
                               CHART_COLORS.ORANGE,
                             ])}
-||||||| parent of f8c7e08 (Implement assessment new design with RVTools creation flow only)
-                            data: ${JSON.stringify(osData.map((d: any) => d[1]))},
-                            backgroundColor: ['#3498db', '#e74c3c', '#27ae60', '#f39c12', '#9b59b6', '#1abc9c', '#34495e', '#e67e22']
-=======
-                            data: ${JSON.stringify(
-                              osData.map((d: any) => d[1]),
-                            )},
-                            backgroundColor: ['#3498db', '#e74c3c', '#27ae60', '#f39c12', '#9b59b6', '#1abc9c', '#34495e', '#e67e22']
->>>>>>> f8c7e08 (Implement assessment new design with RVTools creation flow only)
                         }]
                     },
                     options: {
@@ -968,18 +765,10 @@ const generateHTMLTemplate = (chartData: any, inventory: any): string => {
                     type: 'bar',
                     data: {
                         labels: ${JSON.stringify(
-<<<<<<< HEAD
                           warningsData.map((d) => d[0]),
                         ).replace(/<\//g, '<\\/')},
-||||||| parent of f8c7e08 (Implement assessment new design with RVTools creation flow only)
-                        labels: ${JSON.stringify(warningsData.map((d: any) => d[0]))},
-=======
-                          warningsData.map((d: any) => d[0]),
-                        )},
->>>>>>> f8c7e08 (Implement assessment new design with RVTools creation flow only)
                         datasets: [{
                             data: ${JSON.stringify(
-<<<<<<< HEAD
                               warningsData.map((d) => d[1]),
                             )},
                             backgroundColor: ${JSON.stringify(
@@ -992,26 +781,6 @@ const generateHTMLTemplate = (chartData: any, inventory: any): string => {
                                     : count > 5
                                       ? CHART_COLORS.SUCCESS
                                       : CHART_COLORS.PRIMARY;
-||||||| parent of f8c7e08 (Implement assessment new design with RVTools creation flow only)
-                            data: ${JSON.stringify(warningsData.map((d: any) => d[1]))},
-                            backgroundColor: ${JSON.stringify(warningsData.map((d: any) => {
-                              const count = Number(d[1]);
-                              return count > 50 ? '#e74c3c' : count > 20 ? '#f39c12' : count > 5 ? '#27ae60' : '#3498db';
-                            }))}
-=======
-                              warningsData.map((d: any) => d[1]),
-                            )},
-                            backgroundColor: ${JSON.stringify(
-                              warningsData.map((d: any) => {
-                                const count = Number(d[1]);
-                                return count > 50
-                                  ? '#e74c3c'
-                                  : count > 20
-                                  ? '#f39c12'
-                                  : count > 5
-                                  ? '#27ae60'
-                                  : '#3498db';
->>>>>>> f8c7e08 (Implement assessment new design with RVTools creation flow only)
                               }),
                             )}
                         }]
@@ -1079,7 +848,6 @@ const generateHTMLTemplate = (chartData: any, inventory: any): string => {
     document.body.removeChild(htmlLink);
   };
 
-<<<<<<< HEAD
   const handleHTMLExport = async (): Promise<void> => {
     try {
       setLoadingState('generating-html');
@@ -1107,75 +875,10 @@ const generateHTMLTemplate = (chartData: any, inventory: any): string => {
         type: 'html',
       });
       setLoadingState('error');
-||||||| parent of f8c7e08 (Implement assessment new design with RVTools creation flow only)
-const handleHTMLExport = async () => {
-  try {
-    setIsLoading(true);
-    
-    if (!sourceData?.inventory) {
-      alert('No inventory data available for export');
-      return;
-=======
-  const handleHTMLExport = async () => {
-    try {
-      setIsLoading(true);
-
-      if (!sourceData?.inventory) {
-        alert('No inventory data available for export');
-        return;
-      }
-
-      const { inventory } = sourceData;
-
-      const chartData = generateChartData(inventory);
-
-      const htmlContent = generateHTMLTemplate(chartData, inventory);
-
-      // Download the file
-      downloadHTMLFile(
-        htmlContent,
-        'VMware_Infrastructure_Assessment_Comprehensive.html',
-      );
-
-      console.log(
-        '✅ Comprehensive HTML file with enhanced charts and tables downloaded successfully!',
-      );
-    } catch (error) {
-      console.error('Error generating HTML file:', error);
-      alert('Failed to generate HTML file: ' + error);
-    } finally {
-      setIsLoading(false);
->>>>>>> f8c7e08 (Implement assessment new design with RVTools creation flow only)
     }
   };
 
-<<<<<<< HEAD
   const exportOptions: ExportOption[] = [
-||||||| parent of f8c7e08 (Implement assessment new design with RVTools creation flow only)
-
-    const { inventory } = sourceData;
-
-    const chartData = generateChartData(inventory);
-
-    const htmlContent = generateHTMLTemplate(chartData, inventory);
-    
-    // Download the file
-    downloadHTMLFile(htmlContent, 'VMware_Infrastructure_Assessment_Comprehensive.html');
-
-    console.log("✅ Comprehensive HTML file with enhanced charts and tables downloaded successfully!");
-
-  } catch (error) {
-    console.error('Error generating HTML file:', error);
-    alert('Failed to generate HTML file: ' + error);
-  } finally {
-    setIsLoading(false);
-  }
-};
-
-  const exportOptions = [
-=======
-  const exportOptions = [
->>>>>>> f8c7e08 (Implement assessment new design with RVTools creation flow only)
     {
       key: 'pdf',
       label: 'PDF (View Only)',
@@ -1187,18 +890,7 @@ const handleHTMLExport = async () => {
       label: 'Export HTML',
       description: 'Interactive charts',
       action: handleHTMLExport,
-<<<<<<< HEAD
       disabled: !hasInventoryData,
-||||||| parent of f8c7e08 (Implement assessment new design with RVTools creation flow only)
-    key: 'html-interactive',
-    label: 'Export HTML',
-    description: 'Interactive charts',
-    action: handleHTMLExport,
-    disabled: !sourceData?.inventory,
-  },
-=======
-      disabled: !sourceData?.inventory,
->>>>>>> f8c7e08 (Implement assessment new design with RVTools creation flow only)
     },
   ];
 

@@ -2,7 +2,7 @@ import React from 'react';
 
 import { Card, CardBody, CardTitle } from '@patternfly/react-core';
 
-import MigrationChart from '../../../../components/MigrationChart';
+import MigrationChart from '../../../components/MigrationChart';
 
 interface OSDistributionProps {
   osData: {

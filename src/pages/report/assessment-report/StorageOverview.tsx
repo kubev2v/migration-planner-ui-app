@@ -8,7 +8,7 @@ import {
   TextVariants,
 } from '@patternfly/react-core';
 
-import MigrationChart from '../../../../components/MigrationChart';
+import MigrationChart from '../../../components/MigrationChart';
 
 interface DiskHistogramProps {
   data: number[];

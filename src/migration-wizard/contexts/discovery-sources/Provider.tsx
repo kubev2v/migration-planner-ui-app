@@ -1,9 +1,4 @@
-import React, {
-  type PropsWithChildren,
-  useCallback,
-  useEffect,
-  useState,
-} from 'react';
+import React, { type PropsWithChildren, useCallback, useState } from 'react';
 import { useAsyncFn, useInterval } from 'react-use';
 
 import {
@@ -14,6 +9,7 @@ import {
 } from '@migration-planner-ui/api-client/apis';
 import {
   Agent,
+  Assessment,
   Source,
   UpdateInventoryFromJSON,
 } from '@migration-planner-ui/api-client/models';

@@ -35,10 +35,10 @@ import { global_warning_color_100 as globalWarningColor100 } from '@patternfly/r
 
 import { useDiscoverySources } from '../../contexts/discovery-sources/Context';
 
-import { Dashboard } from './assessment-report/Dashboard';
+import { Dashboard } from '../../../pages/report/assessment-report/Dashboard';
 import EnhancedDownloadButton from './EnhancedDownloadButton';
-import { ReportPieChart } from './ReportPieChart';
-import { ReportTable } from './ReportTable';
+import { ReportPieChart } from '../../../pages/report/ReportPieChart';
+import { ReportTable } from '../../../pages/report/ReportTable';
 
 export const DiscoveryStep: React.FC = () => {
   const discoverSourcesContext = useDiscoverySources();
@@ -378,7 +378,7 @@ export const DiscoveryStep: React.FC = () => {
     ],
   };
 
-  const _treeViewData = [
+  const _treeViewData: Array<TreeViewDataItem> = [
     infrastructureViewData,
     virtualMachinesViewData,
     networksViewData,

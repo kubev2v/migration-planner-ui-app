@@ -41,7 +41,7 @@ export const UpdateAssessment: React.FC<UpdateAssessmentProps> = ({
   const handleFileChange = (
     _event: React.ChangeEvent<HTMLInputElement> | React.DragEvent<HTMLElement>,
     file: File,
-  ) => {
+  ): void => {
     setSelectedFile(file);
   };
 

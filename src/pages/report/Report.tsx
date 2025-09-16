@@ -20,7 +20,8 @@ import {
 import { AppPage } from '../../components/AppPage';
 import { useDiscoverySources } from '../../migration-wizard/contexts/discovery-sources/Context';
 import { Provider as DiscoverySourcesProvider } from '../../migration-wizard/contexts/discovery-sources/Provider';
-import { Dashboard } from '../../migration-wizard/steps/discovery/assessment-report/Dashboard';
+
+import { Dashboard } from './assessment-report/Dashboard';
 
 type SnapshotLike = {
   infra?: Infra;

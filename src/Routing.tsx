@@ -1,7 +1,8 @@
 import React, { Suspense } from 'react';
 import { Route as RouterRoute, Routes as RouterRoutes } from 'react-router-dom';
-import { InvalidObject } from '@redhat-cloud-services/frontend-components/InvalidObject';
+
 import { Bullseye, Spinner } from '@patternfly/react-core';
+import { InvalidObject } from '@redhat-cloud-services/frontend-components/InvalidObject';
 
 import { Provider as DiscoverySourcesProvider } from './migration-wizard/contexts/discovery-sources/Provider';
 import MigrationPage from './pages/MigrationPage';

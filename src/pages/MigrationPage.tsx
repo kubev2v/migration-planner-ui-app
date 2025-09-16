@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-import { Tab, TabContent, TabTitleText, Tabs } from '@patternfly/react-core';
+import { Tab, TabContent, TabTitleText,Tabs } from '@patternfly/react-core';
 
 import { AppPage } from '../components/AppPage';
 
@@ -11,9 +11,9 @@ const MigrationPage: React.FC = () => {
   const [activeTabKey, setActiveTabKey] = useState<string | number>(0);
 
   const handleTabClick = (
-    event: React.MouseEvent<any> | React.KeyboardEvent | MouseEvent,
+    _event: React.MouseEvent<HTMLElement> | React.KeyboardEvent | MouseEvent,
     tabIndex: string | number,
-  ) => {
+  ): void => {
     setActiveTabKey(tabIndex);
   };
 

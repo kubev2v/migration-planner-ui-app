@@ -23,7 +23,7 @@ const ProxyInputFields = ({
   httpsProxy: string;
   noProxy: string;
   onChange: (field: string, value: string) => void;
-}) => {
+}): React.ReactElement => {
   return (
     <Grid hasGutter>
       <GridItem span={12}>
@@ -124,8 +124,8 @@ const ProxyInputFields = ({
             <HelperText>
               <HelperTextItem>
                 Use a comma to separate each listed domain. Preface a domain
-                with "." to include its subdomains. Use "*" to bypass the proxy
-                for all destinations.
+                with &ldquo;.&rdquo; to include its subdomains. Use
+                &ldquo;*&rdquo; to bypass the proxy for all destinations.
               </HelperTextItem>
             </HelperText>
           </FormHelperText>
@@ -143,11 +143,11 @@ const ProxyFields: React.FC = () => {
     noProxy: '',
   });
 
-  const handleFieldChange = (field: string, value: string) => {
+  const handleFieldChange = (field: string, value: string): void => {
     setProxyValues((prev) => ({ ...prev, [field]: value }));
   };
 
-  const toggleEnableProxy = (checked: boolean) => {
+  const toggleEnableProxy = (checked: boolean): void => {
     setEnableProxy(checked);
     if (!checked) {
       setProxyValues({
