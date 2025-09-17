@@ -33,12 +33,12 @@ import {
 import { global_danger_color_100 as globalDangerColor100 } from '@patternfly/react-tokens/dist/js/global_danger_color_100';
 import { global_warning_color_100 as globalWarningColor100 } from '@patternfly/react-tokens/dist/js/global_warning_color_100';
 
-import { useDiscoverySources } from '../../contexts/discovery-sources/Context';
-
 import { Dashboard } from '../../../pages/report/assessment-report/Dashboard';
-import EnhancedDownloadButton from './EnhancedDownloadButton';
 import { ReportPieChart } from '../../../pages/report/ReportPieChart';
 import { ReportTable } from '../../../pages/report/ReportTable';
+import { useDiscoverySources } from '../../contexts/discovery-sources/Context';
+
+import EnhancedDownloadButton from './EnhancedDownloadButton';
 
 export const DiscoveryStep: React.FC = () => {
   const discoverSourcesContext = useDiscoverySources();

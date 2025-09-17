@@ -22,12 +22,12 @@ import { useDiscoverySources } from '../../migration-wizard/contexts/discovery-s
 
 import AssessmentsTable from './AssessmentsTable';
 import CreateAssessmentModal, { AssessmentMode } from './CreateAssessmentModal';
+import EmptyTableBanner from './EmptyTableBanner';
 import UpdateAssessment from './UpdateAssessment';
 
 type Props = {
   assessments: AssessmentModel[];
   isLoading?: boolean;
-  hasUpToDateSources?: boolean;
 };
 
 const Assessment: React.FC<Props> = ({ assessments, isLoading }) => {
@@ -83,6 +83,10 @@ const Assessment: React.FC<Props> = ({ assessments, isLoading }) => {
       setSelectedAssessment(assessment);
       setIsUpdateModalOpen(true);
     }
+  };
+
+  const isTableEmpty = (): boolean => {
+    return assessments.length == 0;
   };
 
   const handleDeleteAssessment = (assessmentId: string): void => {
@@ -165,118 +169,137 @@ const Assessment: React.FC<Props> = ({ assessments, isLoading }) => {
 
   return (
     <>
-      <Toolbar inset={{ default: 'insetNone' }}>
-        <ToolbarContent>
-          <ToolbarItem>
-            <InputGroup>
-              <InputGroupItem>
+      <div
+        style={{
+          background: 'white',
+          padding: '0 20px 20px 20px',
+          marginTop: '10px',
+          marginBottom: '10px',
+        }}
+      >
+        <Toolbar inset={{ default: 'insetNone' }}>
+          <ToolbarContent>
+            <ToolbarItem>
+              <InputGroup>
+                <InputGroupItem>
+                  <Dropdown
+                    isOpen={isFilterDropdownOpen}
+                    onSelect={() => setIsFilterDropdownOpen(false)}
+                    onOpenChange={(isOpen: boolean) =>
+                      setIsFilterDropdownOpen(isOpen)
+                    }
+                    toggle={(toggleRef: React.Ref<MenuToggleElement>) => (
+                      <MenuToggle
+                        ref={toggleRef}
+                        onClick={() =>
+                          setIsFilterDropdownOpen(!isFilterDropdownOpen)
+                        }
+                        isExpanded={isFilterDropdownOpen}
+                        style={{ minWidth: '180px', width: '180px' }}
+                      >
+                        <FilterIcon style={{ marginRight: '8px' }} />
+                        {filterBy}
+                      </MenuToggle>
+                    )}
+                  >
+                    <DropdownList>
+                      <DropdownItem
+                        key="sourceType"
+                        onClick={() => setFilterBy('Source type')}
+                      >
+                        Source type
+                      </DropdownItem>
+                      <DropdownItem
+                        key="owner"
+                        onClick={() => setFilterBy('Owner')}
+                      >
+                        Owner
+                      </DropdownItem>
+                    </DropdownList>
+                  </Dropdown>
+                </InputGroupItem>
+                <InputGroupItem>
+                  <Button variant="control" aria-label="Search">
+                    <SearchIcon />
+                  </Button>
+                </InputGroupItem>
+                <InputGroupItem isFill>
+                  <TextInput
+                    name="assessment-search"
+                    id="assessment-search"
+                    type="search"
+                    placeholder="Search"
+                    style={{ minWidth: '300px', width: '300px' }}
+                    value={search}
+                    onChange={(_event, value) => setSearch(value)}
+                  />
+                </InputGroupItem>
+              </InputGroup>
+            </ToolbarItem>
+            {!isTableEmpty() ? (
+              <ToolbarItem align={{ default: 'alignLeft' }}>
                 <Dropdown
-                  isOpen={isFilterDropdownOpen}
-                  onSelect={() => setIsFilterDropdownOpen(false)}
-                  onOpenChange={(isOpen: boolean) =>
-                    setIsFilterDropdownOpen(isOpen)
-                  }
+                  isOpen={isDropdownOpen}
+                  onSelect={onDropdownSelect}
+                  onOpenChange={(isOpen: boolean) => setIsDropdownOpen(isOpen)}
                   toggle={(toggleRef: React.Ref<MenuToggleElement>) => (
                     <MenuToggle
                       ref={toggleRef}
-                      onClick={() =>
-                        setIsFilterDropdownOpen(!isFilterDropdownOpen)
-                      }
-                      isExpanded={isFilterDropdownOpen}
-                      style={{ minWidth: '180px', width: '180px' }}
+                      variant="primary"
+                      onClick={onDropdownToggle}
+                      isExpanded={isDropdownOpen}
                     >
-                      <FilterIcon style={{ marginRight: '8px' }} />
-                      {filterBy}
+                      Create new migration assessment
                     </MenuToggle>
                   )}
+                  shouldFocusToggleOnSelect
                 >
                   <DropdownList>
                     <DropdownItem
-                      key="sourceType"
-                      onClick={() => setFilterBy('Source type')}
+                      key="rvtools"
+                      component="button"
+                      onClick={() => handleOpenModal('rvtools')}
                     >
-                      Source type
+                      From RVTools (XLS/X)
                     </DropdownItem>
                     <DropdownItem
-                      key="owner"
-                      onClick={() => setFilterBy('Owner')}
+                      key="agent"
+                      component="button"
+                      onClick={() => {
+                        alert('To be implemented');
+                      }}
                     >
-                      Owner
+                      With discovery OVA
                     </DropdownItem>
                   </DropdownList>
                 </Dropdown>
-              </InputGroupItem>
-              <InputGroupItem>
-                <Button variant="control" aria-label="Search">
-                  <SearchIcon />
-                </Button>
-              </InputGroupItem>
-              <InputGroupItem isFill>
-                <TextInput
-                  name="assessment-search"
-                  id="assessment-search"
-                  type="search"
-                  placeholder="Search"
-                  style={{ minWidth: '300px', width: '300px' }}
-                  value={search}
-                  onChange={(_event, value) => setSearch(value)}
-                />
-              </InputGroupItem>
-            </InputGroup>
-          </ToolbarItem>
-          <ToolbarItem align={{ default: 'alignLeft' }}>
-            <Dropdown
-              isOpen={isDropdownOpen}
-              onSelect={onDropdownSelect}
-              onOpenChange={(isOpen: boolean) => setIsDropdownOpen(isOpen)}
-              toggle={(toggleRef: React.Ref<MenuToggleElement>) => (
-                <MenuToggle
-                  ref={toggleRef}
-                  variant="primary"
-                  onClick={onDropdownToggle}
-                  isExpanded={isDropdownOpen}
-                >
-                  Create new migration assessment
-                </MenuToggle>
-              )}
-              shouldFocusToggleOnSelect
-            >
-              <DropdownList>
-                <DropdownItem
-                  key="rvtools"
-                  component="button"
-                  onClick={() => handleOpenModal('rvtools')}
-                >
-                  From RVTools (XLS/X)
-                </DropdownItem>
-                <DropdownItem
-                  key="agent"
-                  component="button"
-                  onClick={() => {
-                    alert('To be implemented');
-                  }}
-                >
-                  With discovery OVA
-                </DropdownItem>
-              </DropdownList>
-            </Dropdown>
-          </ToolbarItem>
-        </ToolbarContent>
-      </Toolbar>
+              </ToolbarItem>
+            ) : (
+              <></>
+            )}
+          </ToolbarContent>
+        </Toolbar>
 
-      <div style={{ marginTop: '24px' }}>
-        <AssessmentsTable
-          assessments={assessments}
-          isLoading={isLoading}
-          search={search}
-          filterBy={filterBy}
-          filterValue={search}
-          sortBy={sortBy}
-          onSort={onSort}
-          onDelete={handleDeleteAssessment}
-          onUpdate={handleUpdateAssessment}
-        />
+        <div style={{ marginTop: '10px' }}>
+          <AssessmentsTable
+            assessments={assessments}
+            isLoading={isLoading}
+            search={search}
+            filterBy={filterBy}
+            filterValue={search}
+            sortBy={sortBy}
+            onSort={onSort}
+            onDelete={handleDeleteAssessment}
+            onUpdate={handleUpdateAssessment}
+          />
+        </div>
       </div>
+
+      {isTableEmpty() ? (
+        <EmptyTableBanner onOpenModal={handleOpenModal} />
+      ) : (
+        <></>
+      )}
 
       <CreateAssessmentModal
         isOpen={isModalOpen}

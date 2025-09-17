@@ -24,6 +24,7 @@ module.exports = {
           },
         ],
         '@typescript-eslint/explicit-function-return-type': 'warn',
+        'sort-imports': 'off', // Disable default sort-imports in favor of simple-import-sort
         'simple-import-sort/imports': [
           'error',
           {

@@ -7,9 +7,7 @@ export const addNotification = (
   alert(
     `Notification: ${notification.title}\n${
       notification.description || ''
-    }\nType: ${
-      notification.variant || 'info'
-    }`,
+    }\nType: ${notification.variant || 'info'}`,
   );
 };
 

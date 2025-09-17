@@ -3,12 +3,12 @@ import React, { useCallback, useState } from 'react';
 import {
   Alert,
   Button,
+  EmptyState as PFEmptyState,
   EmptyStateActions,
   EmptyStateBody,
   EmptyStateFooter,
   EmptyStateHeader,
   EmptyStateIcon,
-  EmptyState as PFEmptyState,
   StackItem,
 } from '@patternfly/react-core';
 import { ExclamationCircleIcon, SearchIcon } from '@patternfly/react-icons';

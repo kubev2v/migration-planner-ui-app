@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-import { Tab, TabContent, TabTitleText,Tabs } from '@patternfly/react-core';
+import { Tab, TabContent, Tabs, TabTitleText } from '@patternfly/react-core';
 
 import { AppPage } from '../components/AppPage';
 

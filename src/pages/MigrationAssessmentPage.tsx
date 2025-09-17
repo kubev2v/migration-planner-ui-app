@@ -135,14 +135,6 @@ export const MigrationAssessmentPageContent: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [hasInitialLoad, setHasInitialLoad] = useState(false);
 
-  // Check if there are any up-to-date sources
-  const hasUpToDateSources = React.useMemo(() => {
-    return discoverySourcesContext.sources.some((source) => {
-      const agent = source.agent;
-      return agent && agent.status === 'up-to-date';
-    });
-  }, [discoverySourcesContext.sources]);
-
   const updateAssessments = useCallback(async () => {
     try {
       setIsLoading(true);
@@ -188,13 +180,7 @@ export const MigrationAssessmentPageContent: React.FC = () => {
   }
 
   // Always show assessment component
-  return (
-    <AssessmentPage
-      assessments={assessments}
-      isLoading={isLoading}
-      hasUpToDateSources={hasUpToDateSources}
-    />
-  );
+  return <AssessmentPage assessments={assessments} isLoading={isLoading} />;
 };
 
 const MigrationAssessmentPage: React.FC = () => (

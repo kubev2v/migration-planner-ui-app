@@ -286,140 +286,126 @@ export const AssessmentsTable: React.FC<Props> = ({
         borders={false}
         style={{ tableLayout: 'auto', width: '100%', fontSize: '16px' }}
       >
-        {rows && rows.length > 0 && (
-          <Thead>
-            <Tr>
-              <Th sort={nameSortParams} style={{ whiteSpace: 'nowrap' }}>
-                {Columns.Name}
-              </Th>
-              <Th sort={sourceTypeSortParams} style={{ whiteSpace: 'nowrap' }}>
-                {Columns.SourceType}
-              </Th>
-              <Th sort={lastUpdatedSortParams} style={{ whiteSpace: 'nowrap' }}>
-                {Columns.LastUpdated}
-              </Th>
-              <Th sort={ownerSortParams} style={{ whiteSpace: 'nowrap' }}>
-                {Columns.Owner}
-              </Th>
-              <Th sort={hostsSortParams} style={{ whiteSpace: 'nowrap' }}>
-                {Columns.Hosts}
-              </Th>
-              <Th sort={vmsSortParams} style={{ whiteSpace: 'nowrap' }}>
-                {Columns.VMs}
-              </Th>
-              <Th sort={networksSortParams} style={{ whiteSpace: 'nowrap' }}>
-                {Columns.Networks}
-              </Th>
-              <Th sort={datastoresSortParams} style={{ whiteSpace: 'nowrap' }}>
-                {Columns.Datastores}
-              </Th>
-              <Th style={{ whiteSpace: 'nowrap' }}>{Columns.Actions}</Th>
-            </Tr>
-          </Thead>
-        )}
+        <Thead>
+          <Tr>
+            <Th sort={nameSortParams} style={{ whiteSpace: 'nowrap' }}>
+              {Columns.Name}
+            </Th>
+            <Th sort={sourceTypeSortParams} style={{ whiteSpace: 'nowrap' }}>
+              {Columns.SourceType}
+            </Th>
+            <Th sort={lastUpdatedSortParams} style={{ whiteSpace: 'nowrap' }}>
+              {Columns.LastUpdated}
+            </Th>
+            <Th sort={ownerSortParams} style={{ whiteSpace: 'nowrap' }}>
+              {Columns.Owner}
+            </Th>
+            <Th sort={hostsSortParams} style={{ whiteSpace: 'nowrap' }}>
+              {Columns.Hosts}
+            </Th>
+            <Th sort={vmsSortParams} style={{ whiteSpace: 'nowrap' }}>
+              {Columns.VMs}
+            </Th>
+            <Th sort={networksSortParams} style={{ whiteSpace: 'nowrap' }}>
+              {Columns.Networks}
+            </Th>
+            <Th sort={datastoresSortParams} style={{ whiteSpace: 'nowrap' }}>
+              {Columns.Datastores}
+            </Th>
+            <Th style={{ whiteSpace: 'nowrap' }}>{Columns.Actions}</Th>
+          </Tr>
+        </Thead>
         <Tbody>
-          {rows && rows.length > 0 ? (
-            rows.map((row) => (
-              <Tr key={row.key}>
-                <Td dataLabel={Columns.Name}>
-                  <Link
-                    to={`migrate/assessments/${row.id}`}
-                    style={{ color: '#0066cc', textDecoration: 'none' }}
-                  >
-                    {row.name}
-                  </Link>
-                </Td>
-                <Td dataLabel={Columns.SourceType}>
-                  <div
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '8px',
-                    }}
-                  >
-                    {row.sourceType.toLowerCase() === 'rvtools' ? (
-                      <FileIcon />
-                    ) : (
-                      <MonitoringIcon style={{ color: '#0066cc' }} />
+          {rows.map((row) => (
+            <Tr key={row.key}>
+              <Td dataLabel={Columns.Name}>
+                <Link
+                  to={`migrate/assessments/${row.id}`}
+                  style={{ color: '#0066cc', textDecoration: 'none' }}
+                >
+                  {row.name}
+                </Link>
+              </Td>
+              <Td dataLabel={Columns.SourceType}>
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                  }}
+                >
+                  {row.sourceType.toLowerCase() === 'rvtools' ? (
+                    <FileIcon />
+                  ) : (
+                    <MonitoringIcon style={{ color: '#0066cc' }} />
+                  )}
+                  {row.sourceType.toLowerCase() === 'rvtools'
+                    ? 'RVTools (XLS/X)'
+                    : 'Discovery OVA'}
+                </div>
+              </Td>
+              <Td dataLabel={Columns.LastUpdated}>{row.lastUpdated}</Td>
+              <Td dataLabel={Columns.Owner}>{row.owner}</Td>
+              <Td dataLabel={Columns.Hosts}>{row.hosts}</Td>
+              <Td dataLabel={Columns.VMs}>{row.vms}</Td>
+              <Td dataLabel={Columns.Networks}>{row.networks}</Td>
+              <Td dataLabel={Columns.Datastores}>{row.datastores}</Td>
+              <Td dataLabel={Columns.Actions}>
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                  }}
+                >
+                  <Button
+                    variant="plain"
+                    component="a"
+                    href={`migrate/assessments/${row.id}`}
+                    target="_blank"
+                    aria-label="Open assessment"
+                    icon={<MonitoringIcon />}
+                    style={{ color: '#0066cc' }}
+                  />
+                  <Dropdown
+                    isOpen={openDropdowns[row.id] || false}
+                    onSelect={() => toggleDropdown(row.id)}
+                    toggle={(toggleRef: React.Ref<MenuToggleElement>) => (
+                      <MenuToggle
+                        ref={toggleRef}
+                        aria-label="Actions"
+                        variant="plain"
+                        onClick={() => toggleDropdown(row.id)}
+                      >
+                        <EllipsisVIcon />
+                      </MenuToggle>
                     )}
-                    {row.sourceType.toLowerCase() === 'rvtools'
-                      ? 'RVTools (XLS/X)'
-                      : 'Discovery OVA'}
-                  </div>
-                </Td>
-                <Td dataLabel={Columns.LastUpdated}>{row.lastUpdated}</Td>
-                <Td dataLabel={Columns.Owner}>{row.owner}</Td>
-                <Td dataLabel={Columns.Hosts}>{row.hosts}</Td>
-                <Td dataLabel={Columns.VMs}>{row.vms}</Td>
-                <Td dataLabel={Columns.Networks}>{row.networks}</Td>
-                <Td dataLabel={Columns.Datastores}>{row.datastores}</Td>
-                <Td dataLabel={Columns.Actions}>
-                  <div
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '8px',
-                    }}
                   >
-                    <Button
-                      variant="plain"
-                      component="a"
-                      href={`migrate/assessments/${row.id}`}
-                      target="_blank"
-                      aria-label="Open assessment"
-                      icon={<MonitoringIcon />}
-                      style={{ color: '#0066cc' }}
-                    />
-                    <Dropdown
-                      isOpen={openDropdowns[row.id] || false}
-                      onSelect={() => toggleDropdown(row.id)}
-                      toggle={(toggleRef: React.Ref<MenuToggleElement>) => (
-                        <MenuToggle
-                          ref={toggleRef}
-                          aria-label="Actions"
-                          variant="plain"
-                          onClick={() => toggleDropdown(row.id)}
-                        >
-                          <EllipsisVIcon />
-                        </MenuToggle>
-                      )}
-                    >
-                      <DropdownList>
-                        <DropdownItem
-                          onClick={() =>
-                            navigate(`migrate/assessments/${row.id}`)
-                          }
-                        >
-                          Show assessment report
-                        </DropdownItem>
-                        <DropdownItem onClick={() => handleShare(row.id)}>
-                          Share assessment
-                        </DropdownItem>
-                        <DropdownItem
-                          onClick={() =>
-                            alert('Edit functionality coming soon!')
-                          }
-                        >
-                          Edit assessment
-                        </DropdownItem>
-                        <DropdownItem onClick={() => handleDelete(row.id)}>
-                          Delete assessment
-                        </DropdownItem>
-                      </DropdownList>
-                    </Dropdown>
-                  </div>
-                </Td>
-              </Tr>
-            ))
-          ) : (
-            <Tr>
-              <Td colSpan={9}>
-                <div style={{ textAlign: 'center', padding: '2rem' }}>
-                  No assessments found.
+                    <DropdownList>
+                      <DropdownItem
+                        onClick={() =>
+                          navigate(`migrate/assessments/${row.id}`)
+                        }
+                      >
+                        Show assessment report
+                      </DropdownItem>
+                      <DropdownItem onClick={() => handleShare(row.id)}>
+                        Share assessment
+                      </DropdownItem>
+                      <DropdownItem
+                        onClick={() => alert('Edit functionality coming soon!')}
+                      >
+                        Edit assessment
+                      </DropdownItem>
+                      <DropdownItem onClick={() => handleDelete(row.id)}>
+                        Delete assessment
+                      </DropdownItem>
+                    </DropdownList>
+                  </Dropdown>
                 </div>
               </Td>
             </Tr>
-          )}
+          ))}
         </Tbody>
       </Table>
     </div>
