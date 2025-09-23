@@ -35,10 +35,6 @@ const EmptyTableBanner: React.FC<Props> = ({ onOpenModal }) => {
     setIsDropdownOpen(!isDropdownOpen);
   };
 
-  const onDropdownSelect = (): void => {
-    setIsDropdownOpen(false);
-  };
-
   const handleOpenModal = (mode: AssessmentMode): void => {
     onOpenModal(mode);
     setIsDropdownOpen(false);
@@ -64,6 +60,15 @@ const EmptyTableBanner: React.FC<Props> = ({ onOpenModal }) => {
               <Text>
                 Run the discovery process and create a full evaluation
                 assessment report.
+              </Text>
+              <div
+                style={{
+                  display: 'inline-flex',
+                  gap: '8px',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
                 <Tooltip
                   content="As part of the discovery process,
             we're collecting aggregated data about your VMware environment.
@@ -76,7 +81,7 @@ const EmptyTableBanner: React.FC<Props> = ({ onOpenModal }) => {
                     <QuestionCircleIcon />
                   </Icon>
                 </Tooltip>
-              </Text>
+              </div>
             </TextContent>
           </CardBody>
         </Card>
@@ -91,8 +96,7 @@ const EmptyTableBanner: React.FC<Props> = ({ onOpenModal }) => {
       <FlexItem>
         <Dropdown
           isOpen={isDropdownOpen}
-          onSelect={onDropdownSelect}
-          onOpenChange={(isOpen: boolean) => setIsDropdownOpen(isOpen)}
+          onOpenChange={setIsDropdownOpen}
           toggle={(toggleRef: React.Ref<MenuToggleElement>) => (
             <MenuToggle
               ref={toggleRef}

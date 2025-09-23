@@ -22,13 +22,14 @@ export namespace AppPage {
     title: React.ReactNode;
     caption?: React.ReactNode;
     breadcrumbs?: Array<BreadcrumbItemProps>;
+    headerActions?: React.ReactNode;
   };
 }
 
 export const AppPage: React.FC<React.PropsWithChildren<AppPage.Props>> = (
   props,
 ) => {
-  const { title, caption, breadcrumbs, children } = props;
+  const { title, caption, breadcrumbs, children, headerActions } = props;
 
   return (
     <Page>
@@ -43,7 +44,18 @@ export const AppPage: React.FC<React.PropsWithChildren<AppPage.Props>> = (
           </Breadcrumb>
         </PageBreadcrumb>
         <PageHeader>
-          <PageHeaderTitle title={title} />
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: '1rem',
+              width: '100%',
+            }}
+          >
+            <PageHeaderTitle title={title} />
+            {headerActions}
+          </div>
           <TextContent
             style={{ paddingBlockStart: 'var(--pf-v5-global--spacer--md)' }}
           >

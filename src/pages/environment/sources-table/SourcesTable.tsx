@@ -3,13 +3,12 @@ import { Link } from 'react-router-dom';
 import { useMount, useUnmount } from 'react-use';
 
 import { Source } from '@migration-planner-ui/api-client/models';
-import { Button, Radio, Spinner } from '@patternfly/react-core';
+import { Button, Spinner } from '@patternfly/react-core';
 import { ArrowLeftIcon } from '@patternfly/react-icons';
 import { Table, Tbody, Td, Th, Thead, Tr } from '@patternfly/react-table';
 
 import { useDiscoverySources } from '../../../migration-wizard/contexts/discovery-sources/Context';
 
-import { DownloadOvaAction } from './actions/DownloadOvaAction';
 import { RemoveSourceAction } from './actions/RemoveSourceAction';
 import { UploadInventoryAction } from './actions/UploadInventoryAction';
 import { EmptyState } from './empty-state/EmptyState';
@@ -26,7 +25,7 @@ export const SourcesTable: React.FC<{
   const [isLoading, setIsLoading] = useState(true);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Memorize ordered agents
+  // Memorize ordered agents without mutating context sources
   const memoizedSources = useMemo(() => {
     const areSourcesEquals = (
       prevSources: typeof discoverySourcesContext.sources,
@@ -43,18 +42,16 @@ export const SourcesTable: React.FC<{
       );
     };
 
-    if (
-      !areSourcesEquals(prevSourcesRef.current, discoverySourcesContext.sources)
-    ) {
-      prevSourcesRef.current = discoverySourcesContext.sources;
-      const sourcesToUse = discoverySourcesContext.sources
-        ? discoverySourcesContext.sources.sort((a: Source, b: Source) =>
-            a.id.localeCompare(b.id),
-          )
-        : [];
+    const sourcesToUse: Source[] = discoverySourcesContext.sources
+      ? [...discoverySourcesContext.sources].sort((a: Source, b: Source) =>
+          a.id.localeCompare(b.id),
+        )
+      : [];
 
-      return sourcesToUse;
+    if (!areSourcesEquals(prevSourcesRef.current, sourcesToUse)) {
+      prevSourcesRef.current = sourcesToUse;
     }
+
     return prevSourcesRef.current;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [discoverySourcesContext.sources]);
@@ -73,15 +70,15 @@ export const SourcesTable: React.FC<{
     discoverySourcesContext.stopPolling();
   });
 
-  useEffect(() => {
-    if (!discoverySourcesContext.sourceSelected && firstSource) {
-      discoverySourcesContext.selectSource(firstSource);
-    }
-  }, [
-    discoverySourcesContext,
-    firstSource,
-    discoverySourcesContext.sourceSelected,
-  ]);
+  useEffect(
+    () => {
+      if (!discoverySourcesContext.sourceSelected && firstSource) {
+        discoverySourcesContext.selectSource(firstSource);
+      }
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [firstSource, discoverySourcesContext],
+  );
 
   useEffect(() => {
     // Use timeout to verify memoizedSources variable
@@ -161,6 +158,7 @@ export const SourcesTable: React.FC<{
                       minWidth: '120px',
                       maxWidth: '200px',
                     }}
+                    screenReaderText="Actions"
                   >
                     {Columns.Actions}
                   </Th>
@@ -174,22 +172,7 @@ export const SourcesTable: React.FC<{
                   const agent = source.agent;
                   return (
                     <Tr key={source.id}>
-                      <Td dataLabel={Columns.Name}>
-                        <Radio
-                          id={source.id}
-                          name="source-selection"
-                          label={source.name}
-                          isChecked={
-                            discoverySourcesContext.sourceSelected
-                              ? discoverySourcesContext.sourceSelected.id ===
-                                source.id
-                              : false
-                          }
-                          onChange={() =>
-                            discoverySourcesContext.selectSource(source)
-                          }
-                        />
-                      </Td>
+                      <Td dataLabel={Columns.Name}>{source.name}</Td>
                       <Td dataLabel={Columns.CredentialsUrl}>
                         {agent !== undefined && !source.onPremises ? (
                           <Link to={agent.credentialUrl} target="_blank">
@@ -265,12 +248,14 @@ export const SourcesTable: React.FC<{
                                 onUploadSuccess={onUploadSuccess}
                               />
                             )}
+                          {/* Temporarily disabled: Download OVA action. Re-enable when needed.
                           {source.name !== 'Example' && (
                             <DownloadOvaAction
                               sourceId={source.id}
                               sourceName={source.name}
                             />
                           )}
+                          */}
                         </>
                       </Td>
                     </Tr>

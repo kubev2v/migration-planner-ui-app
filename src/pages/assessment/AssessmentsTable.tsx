@@ -77,7 +77,8 @@ export const AssessmentsTable: React.FC<Props> = ({
   };
 
   const rows = useMemo(() => {
-    const items = (assessments || []).map((assessment) => {
+    const safeAssessments = Array.isArray(assessments) ? assessments : [];
+    const items = safeAssessments.map((assessment) => {
       const assessmentModel = assessment as AssessmentModel;
 
       const name = assessmentModel?.name;
@@ -312,7 +313,9 @@ export const AssessmentsTable: React.FC<Props> = ({
             <Th sort={datastoresSortParams} style={{ whiteSpace: 'nowrap' }}>
               {Columns.Datastores}
             </Th>
-            <Th style={{ whiteSpace: 'nowrap' }}>{Columns.Actions}</Th>
+            <Th style={{ whiteSpace: 'nowrap' }} screenReaderText="Actions">
+              {Columns.Actions}
+            </Th>
           </Tr>
         </Thead>
         <Tbody>
@@ -369,7 +372,12 @@ export const AssessmentsTable: React.FC<Props> = ({
                   />
                   <Dropdown
                     isOpen={openDropdowns[row.id] || false}
-                    onSelect={() => toggleDropdown(row.id)}
+                    onOpenChange={(isOpen) =>
+                      setOpenDropdowns((prev) => ({
+                        ...prev,
+                        [row.id]: isOpen,
+                      }))
+                    }
                     toggle={(toggleRef: React.Ref<MenuToggleElement>) => (
                       <MenuToggle
                         ref={toggleRef}

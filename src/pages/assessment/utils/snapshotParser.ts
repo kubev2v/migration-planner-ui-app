@@ -8,9 +8,9 @@ interface SnapshotData {
 }
 
 export const parseLatestSnapshot = (
-  snapshots: SnapshotModel[],
+  snapshots: SnapshotModel[] | undefined,
 ): SnapshotData => {
-  if (!snapshots || snapshots.length === 0) {
+  if (!Array.isArray(snapshots) || snapshots.length === 0) {
     return {
       hosts: '-',
       vms: '-',
@@ -20,8 +20,8 @@ export const parseLatestSnapshot = (
     };
   }
 
-  // Sort snapshots by createdAt date (latest first)
-  const sortedSnapshots = snapshots.sort(
+  // Sort snapshots by createdAt date (latest first) on a cloned array
+  const sortedSnapshots = [...snapshots].sort(
     (a: SnapshotModel, b: SnapshotModel) => {
       const aDate = new Date(a.createdAt || 0).getTime();
       const bDate = new Date(b.createdAt || 0).getTime();

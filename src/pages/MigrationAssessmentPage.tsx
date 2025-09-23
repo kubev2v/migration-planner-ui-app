@@ -48,11 +48,24 @@ const cards: React.ReactElement[] = [
         <Text>
           Run the discovery process and create a full evaluation report
           including recommendations for your migration journey.
-          <a href="/apps/assisted-migration-app/example_report.pdf" download>
-            <Button size="sm" variant="link">
-              See an example report.
-            </Button>
-          </a>
+        </Text>
+        <div
+          style={{
+            display: 'inline-flex',
+            gap: '8px',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <Button
+            size="sm"
+            variant="link"
+            component="a"
+            href="/apps/assisted-migration-app/example_report.pdf"
+            download
+          >
+            See an example report.
+          </Button>
           <Tooltip
             content="As part of the discovery process,
             we're collecting aggregated data about your VMware environment.
@@ -65,7 +78,7 @@ const cards: React.ReactElement[] = [
               <QuestionCircleIcon />
             </Icon>
           </Tooltip>
-        </Text>
+        </div>
       </TextContent>
     </CardBody>
   </Card>,
@@ -142,14 +155,11 @@ export const MigrationAssessmentPageContent: React.FC = () => {
         await discoverySourcesContext.listAssessments();
       // Use the returned data directly instead of relying on context state timing
       setAssessments(fetchedAssessments || []);
-
-      if (!hasInitialLoad) {
-        setHasInitialLoad(true);
-      }
     } catch (error) {
       console.error('Failed to fetch assessments:', error);
     } finally {
       setIsLoading(false);
+      if (!hasInitialLoad) setHasInitialLoad(true);
     }
   }, [discoverySourcesContext, hasInitialLoad]);
 
@@ -165,9 +175,20 @@ export const MigrationAssessmentPageContent: React.FC = () => {
 
   // Listen to context changes and update local state when needed (for polling updates)
   useEffect(() => {
-    if (hasInitialLoad) {
-      setAssessments(discoverySourcesContext.assessments);
-    }
+    if (!hasInitialLoad) return;
+    const ctxAssessments = (discoverySourcesContext.assessments ||
+      []) as Assessment[];
+
+    setAssessments((prev) => {
+      if (prev === ctxAssessments) return prev;
+      if (
+        prev.length === ctxAssessments.length &&
+        prev.every((item, idx) => item === ctxAssessments[idx])
+      ) {
+        return prev;
+      }
+      return ctxAssessments;
+    });
   }, [discoverySourcesContext.assessments, hasInitialLoad]);
 
   // Show loading only before the first successful assessments fetch

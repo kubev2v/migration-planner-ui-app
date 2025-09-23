@@ -26,7 +26,7 @@ export const SourcesTable: React.FC<{
   const [isLoading, setIsLoading] = useState(true);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Memorize ordered agents
+  // Memorize ordered agents without mutating context sources
   const memoizedSources = useMemo(() => {
     const areSourcesEquals = (
       prevSources: typeof discoverySourcesContext.sources,
@@ -43,18 +43,16 @@ export const SourcesTable: React.FC<{
       );
     };
 
-    if (
-      !areSourcesEquals(prevSourcesRef.current, discoverySourcesContext.sources)
-    ) {
-      prevSourcesRef.current = discoverySourcesContext.sources;
-      const sourcesToUse = discoverySourcesContext.sources
-        ? discoverySourcesContext.sources.sort((a: Source, b: Source) =>
-            a.id.localeCompare(b.id),
-          )
-        : [];
+    const sourcesToUse: Source[] = discoverySourcesContext.sources
+      ? [...discoverySourcesContext.sources].sort((a: Source, b: Source) =>
+          a.id.localeCompare(b.id),
+        )
+      : [];
 
-      return sourcesToUse;
+    if (!areSourcesEquals(prevSourcesRef.current, sourcesToUse)) {
+      prevSourcesRef.current = sourcesToUse;
     }
+
     return prevSourcesRef.current;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [discoverySourcesContext.sources]);
@@ -73,15 +71,15 @@ export const SourcesTable: React.FC<{
     discoverySourcesContext.stopPolling();
   });
 
-  useEffect(() => {
-    if (!discoverySourcesContext.sourceSelected && firstSource) {
-      discoverySourcesContext.selectSource(firstSource);
-    }
-  }, [
-    discoverySourcesContext,
-    firstSource,
-    discoverySourcesContext.sourceSelected,
-  ]);
+  useEffect(
+    () => {
+      if (!discoverySourcesContext.sourceSelected && firstSource) {
+        discoverySourcesContext.selectSource(firstSource);
+      }
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [firstSource, discoverySourcesContext.selectSource],
+  );
 
   useEffect(() => {
     // Use timeout to verify memoizedSources variable

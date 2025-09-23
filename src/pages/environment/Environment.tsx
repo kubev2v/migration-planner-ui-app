@@ -42,7 +42,7 @@ export const Environment: React.FC = () => {
     discoverySourcesContext.sources &&
     discoverySourcesContext.sources.length > 0;
   const [firstSource, ..._otherSources] = discoverySourcesContext.sources ?? [];
-  const [sourceSelected, setSourceSelected] = React.useState<Source>();
+  const [sourceSelected, setSourceSelected] = useState<Source>();
   const [isOvaDownloading, setIsOvaDownloading] = useState(false);
   const [uploadMessage, setUploadMessage] = useState<string | null>(null);
   const [isUploadError, setIsUploadError] = useState(false);
@@ -63,11 +63,8 @@ export const Environment: React.FC = () => {
         }
       }
     }
-  }, [
-    discoverySourcesContext.sourceSelected,
-    discoverySourcesContext.sources,
-    firstSource,
-  ]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [discoverySourcesContext.sources, firstSource]);
 
   useEffect(() => {
     if (uploadMessage) {

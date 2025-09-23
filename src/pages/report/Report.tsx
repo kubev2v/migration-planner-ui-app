@@ -4,6 +4,7 @@ import { useMount } from 'react-use';
 
 import {
   Infra,
+  Source,
   VMResourceBreakdown,
   VMs,
 } from '@migration-planner-ui/api-client/models';
@@ -20,6 +21,7 @@ import {
 import { AppPage } from '../../components/AppPage';
 import { useDiscoverySources } from '../../migration-wizard/contexts/discovery-sources/Context';
 import { Provider as DiscoverySourcesProvider } from '../../migration-wizard/contexts/discovery-sources/Provider';
+import EnhancedDownloadButton from '../../migration-wizard/steps/discovery/EnhancedDownloadButton';
 
 import { Dashboard } from './assessment-report/Dashboard';
 
@@ -66,7 +68,7 @@ const Inner: React.FC = () => {
         breadcrumbs={[
           {
             key: 1,
-            to: '/openshift/migrate',
+            to: '/openshift/migration-assessment',
             children: 'Migration assessment',
           },
           { key: 2, to: '#', children: 'Assessment not found', isActive: true },
@@ -80,7 +82,7 @@ const Inner: React.FC = () => {
             </TextContent>
           </StackItem>
           <StackItem>
-            <Link to="/">
+            <Link to="/openshift/migration-assessment">
               <Button variant="primary">Back to assessments</Button>
             </Link>
           </StackItem>
@@ -106,7 +108,11 @@ const Inner: React.FC = () => {
   return (
     <AppPage
       breadcrumbs={[
-        { key: 1, to: '/', children: 'Migration assessment' },
+        {
+          key: 1,
+          to: '/openshift/migration-assessment',
+          children: 'Migration assessment',
+        },
         {
           key: 2,
           to: '#',
@@ -115,6 +121,23 @@ const Inner: React.FC = () => {
         },
       ]}
       title={assessment.name || `Assessment ${id}`}
+      headerActions={
+        infra && vms && cpuCores && ramGB ? (
+          <EnhancedDownloadButton
+            elementId="discovery-report"
+            componentToRender={
+              <Dashboard
+                infra={infra}
+                cpuCores={cpuCores}
+                ramGB={ramGB}
+                vms={vms}
+                isExportMode={true}
+              />
+            }
+            sourceData={discoverySourcesContext.sourceSelected as Source}
+          />
+        ) : null
+      }
     >
       {infra && vms && cpuCores && ramGB ? (
         <Dashboard infra={infra} cpuCores={cpuCores} ramGB={ramGB} vms={vms} />

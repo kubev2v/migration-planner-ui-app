@@ -61,10 +61,6 @@ const Assessment: React.FC<Props> = ({ assessments, isLoading }) => {
     setIsDropdownOpen(!isDropdownOpen);
   };
 
-  const onDropdownSelect = (): void => {
-    setIsDropdownOpen(false);
-  };
-
   const handleOpenModal = (mode: AssessmentMode): void => {
     setModalMode(mode);
     setIsModalOpen(true);
@@ -86,7 +82,7 @@ const Assessment: React.FC<Props> = ({ assessments, isLoading }) => {
   };
 
   const isTableEmpty = (): boolean => {
-    return assessments.length == 0;
+    return !Array.isArray(assessments) || assessments.length === 0;
   };
 
   const handleDeleteAssessment = (assessmentId: string): void => {
@@ -185,9 +181,6 @@ const Assessment: React.FC<Props> = ({ assessments, isLoading }) => {
                   <Dropdown
                     isOpen={isFilterDropdownOpen}
                     onSelect={() => setIsFilterDropdownOpen(false)}
-                    onOpenChange={(isOpen: boolean) =>
-                      setIsFilterDropdownOpen(isOpen)
-                    }
                     toggle={(toggleRef: React.Ref<MenuToggleElement>) => (
                       <MenuToggle
                         ref={toggleRef}
@@ -240,8 +233,7 @@ const Assessment: React.FC<Props> = ({ assessments, isLoading }) => {
               <ToolbarItem align={{ default: 'alignLeft' }}>
                 <Dropdown
                   isOpen={isDropdownOpen}
-                  onSelect={onDropdownSelect}
-                  onOpenChange={(isOpen: boolean) => setIsDropdownOpen(isOpen)}
+                  onOpenChange={setIsDropdownOpen}
                   toggle={(toggleRef: React.Ref<MenuToggleElement>) => (
                     <MenuToggle
                       ref={toggleRef}

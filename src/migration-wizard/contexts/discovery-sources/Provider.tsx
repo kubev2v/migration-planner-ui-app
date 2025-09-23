@@ -21,6 +21,9 @@ import { AssessmentService } from '../../../pages/assessment/assessmentService';
 import { DiscoverySources } from './@types/DiscoverySources';
 import { Context } from './Context';
 
+// Use a shared constant to avoid recreating empty array references on each render
+const EMPTY_ARRAY: unknown[] = [];
+
 export const Provider: React.FC<PropsWithChildren> = (props) => {
   const { children } = props;
   const [sourceSelected, setSourceSelected] = useState<Source | null>(null);
@@ -449,7 +452,7 @@ export const Provider: React.FC<PropsWithChildren> = (props) => {
   );
 
   const ctx: DiscoverySources.Context = {
-    sources: listSourcesState.value ?? [],
+    sources: listSourcesState.value || (EMPTY_ARRAY as Source[]),
     isLoadingSources: listSourcesState.loading,
     errorLoadingSources: listSourcesState.error,
     isDeletingSource: deleteSourceState.loading,
@@ -466,7 +469,7 @@ export const Provider: React.FC<PropsWithChildren> = (props) => {
     stopPolling,
     sourceSelected: sourceSelected,
     selectSource,
-    agents: listAgentsState.value ?? [],
+    agents: listAgentsState.value || (EMPTY_ARRAY as Agent[]),
     isLoadingAgents: listAgentsState.loading,
     errorLoadingAgents: listAgentsState.error,
     listAgents,
@@ -493,7 +496,7 @@ export const Provider: React.FC<PropsWithChildren> = (props) => {
     sourceDownloadUrls,
     getDownloadUrlForSource,
     storeDownloadUrlForSource,
-    assessments: listAssessmentsState.value ?? [],
+    assessments: listAssessmentsState.value || (EMPTY_ARRAY as Assessment[]),
     isLoadingAssessments: listAssessmentsState.loading,
     errorLoadingAssessments: listAssessmentsState.error,
     listAssessments,
