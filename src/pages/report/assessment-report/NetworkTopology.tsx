@@ -1,13 +1,13 @@
 import React from 'react';
 
-import { InfraNetworksInner } from '@migration-planner-ui/api-client/models';
+import { Network } from '@migration-planner-ui/api-client/models';
 import { Card, CardBody, CardTitle } from '@patternfly/react-core';
 import NetworkIcon from '@patternfly/react-icons/dist/esm/icons/network-icon';
 
 import { ReportTable } from '../ReportTable';
 
 interface NetworkTopologyProps {
-  networks: InfraNetworksInner[];
+  networks: Network[];
   isExportMode?: boolean;
 }
 
@@ -30,7 +30,7 @@ export const NetworkTopology: React.FC<NetworkTopologyProps> = ({
             padding: 2,
           }}
         >
-          <ReportTable<InfraNetworksInner>
+          <ReportTable<Network>
             data={networks}
             columns={['Type', 'VlanId']}
             fields={['type', 'vlanId']}

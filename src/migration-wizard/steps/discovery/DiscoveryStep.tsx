@@ -3,8 +3,8 @@ import Humanize from 'humanize-plus';
 
 import type {
   Datastore,
-  InfraNetworksInner,
-  MigrationIssuesInner,
+  Network,
+  MigrationIssue,
   Source,
 } from '@migration-planner-ui/api-client/models';
 import {
@@ -206,7 +206,7 @@ export const DiscoveryStep: React.FC = () => {
         children: [
           {
             name: (
-              <ReportTable<MigrationIssuesInner>
+              <ReportTable<MigrationIssue>
                 data={vms.migrationWarnings}
                 columns={['Total', 'Description']}
                 fields={['count', 'assessment']}
@@ -239,7 +239,7 @@ export const DiscoveryStep: React.FC = () => {
             children: [
               {
                 name: (
-                  <ReportTable<MigrationIssuesInner>
+                  <ReportTable<MigrationIssue>
                     data={vms.notMigratableReasons}
                     columns={['Total', 'Description']}
                     fields={['count', 'assessment']}
@@ -280,7 +280,7 @@ export const DiscoveryStep: React.FC = () => {
       {
         title: 'Details',
         name: (
-          <ReportTable<InfraNetworksInner>
+          <ReportTable<Network>
             data={networks}
             columns={['Name', 'Type', 'VlanId']}
             fields={['name', 'type', 'vlanId']}
