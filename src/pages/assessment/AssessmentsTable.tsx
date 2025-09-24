@@ -89,13 +89,30 @@ export const AssessmentsTable: React.FC<Props> = ({
       // Parse snapshot data using utility function
       const snapshotData = parseLatestSnapshot(snapshots);
 
+      // Format owner name from first and last name with proper capitalization
+      const formatName = (name?: string): string | undefined =>
+        name
+          ?.split(' ')
+          .map(
+            (word) =>
+              word.charAt(0).toUpperCase() + word.slice(1).toLowerCase(),
+          )
+          .join(' ');
+
+      const ownerFirstName = formatName(assessmentModel?.ownerFirstName);
+      const ownerLastName = formatName(assessmentModel?.ownerLastName);
+      const ownerFullName =
+        ownerFirstName && ownerLastName
+          ? `${ownerFirstName} ${ownerLastName}`
+          : ownerFirstName || ownerLastName;
+
       return {
         key: id || name,
         id,
         name,
         sourceType,
         lastUpdated: snapshotData.lastUpdated,
-        owner: 'Current User', // Stub for owner
+        owner: ownerFullName,
         hosts: snapshotData.hosts,
         vms: snapshotData.vms,
         networks: snapshotData.networks,
