@@ -114,6 +114,8 @@ module.exports = (env, argv) => {
       './SourceAgentItem':path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/SourceAgentItem.js'),
       './Snapshot':path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/Snapshot.js'),
       './AssessmentUpdate':path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/AssessmentUpdate.js'),
+      './Info': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/Info.js'),
+      './InfoApi': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/apis/InfoApi.js'),
       '@redhat-cloud-services/frontend-components/useChrome': path.resolve(__dirname, 'src/standalone-mocks/useChrome-mock.ts'),
       '@redhat-cloud-services/frontend-components/InvalidObject': path.resolve(__dirname, 'src/standalone-mocks/frontend-components-mock.tsx'),
       '@redhat-cloud-services/frontend-components/PageHeader': path.resolve(__dirname, 'src/standalone-mocks/frontend-components-mock.tsx'),
