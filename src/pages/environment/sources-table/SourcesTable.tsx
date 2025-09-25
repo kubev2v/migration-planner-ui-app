@@ -1,5 +1,4 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
 import { useMount, useUnmount } from 'react-use';
 
 import { Source } from '@migration-planner-ui/api-client/models';
@@ -16,10 +15,21 @@ import { AgentStatusView } from './AgentStatusView';
 import { Columns } from './Columns';
 import { DEFAULT_POLLING_DELAY, VALUE_NOT_AVAILABLE } from './Constants';
 
-export const SourcesTable: React.FC<{
+type SourceTableProps = {
   onUploadResult?: (message: string, isError?: boolean) => void;
   onUploadSuccess?: () => void;
-}> = ({ onUploadResult, onUploadSuccess }) => {
+  search?: string;
+  filterBy?: string;
+  filterValue?: string;
+};
+
+export const SourcesTable: React.FC<SourceTableProps> = ({
+  onUploadResult,
+  onUploadSuccess,
+  search: _search = '',
+  filterBy = 'Filter',
+  filterValue = '',
+}) => {
   const discoverySourcesContext = useDiscoverySources();
   const prevSourcesRef = useRef<typeof discoverySourcesContext.sources>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -58,6 +68,21 @@ export const SourcesTable: React.FC<{
 
   const [firstSource, ..._otherSources] = memoizedSources ?? [];
   const hasSources = memoizedSources && memoizedSources.length > 0;
+
+  const filteredSources = useMemo(() => {
+    if (!memoizedSources) return [];
+    let filtered = memoizedSources;
+
+    if (filterBy === 'Status' && filterValue.trim() !== '') {
+      const normalizedFilter = filterValue.toLowerCase();
+      filtered = memoizedSources.filter((source) => {
+        const status = source.agent ? source.agent.status : 'not-connected';
+        return status.toLowerCase().includes(normalizedFilter);
+      });
+    }
+
+    return filtered;
+  }, [memoizedSources, filterBy, filterValue]);
 
   useMount(async () => {
     discoverySourcesContext.startPolling(DEFAULT_POLLING_DELAY);
@@ -124,13 +149,10 @@ export const SourcesTable: React.FC<{
           style={{ maxHeight: '300px', overflowY: 'auto', overflowX: 'auto' }}
         >
           <Table aria-label="Sources table" variant="compact" borders={false}>
-            {memoizedSources && memoizedSources.length > 0 && (
+            {filteredSources && filteredSources.length > 0 && (
               <Thead>
                 <Tr>
                   <Th style={{ whiteSpace: 'normal' }}>{Columns.Name}</Th>
-                  <Th style={{ whiteSpace: 'normal' }}>
-                    {Columns.CredentialsUrl}
-                  </Th>
                   <Th style={{ whiteSpace: 'normal' }}>{Columns.Status}</Th>
                   <Th style={{ whiteSpace: 'normal' }}>{Columns.Hosts}</Th>
                   <Th style={{ whiteSpace: 'normal' }}>{Columns.VMs}</Th>
@@ -166,22 +188,13 @@ export const SourcesTable: React.FC<{
               </Thead>
             )}
             <Tbody>
-              {memoizedSources && memoizedSources.length > 0 ? (
-                memoizedSources.map((source) => {
+              {filteredSources && filteredSources.length > 0 ? (
+                filteredSources.map((source) => {
                   // Get the agent related to this source
                   const agent = source.agent;
                   return (
                     <Tr key={source.id}>
                       <Td dataLabel={Columns.Name}>{source.name}</Td>
-                      <Td dataLabel={Columns.CredentialsUrl}>
-                        {agent !== undefined && !source.onPremises ? (
-                          <Link to={agent.credentialUrl} target="_blank">
-                            {agent.credentialUrl}
-                          </Link>
-                        ) : (
-                          '-'
-                        )}
-                      </Td>
                       <Td dataLabel={Columns.Status}>
                         <AgentStatusView
                           status={agent ? agent.status : 'not-connected'}

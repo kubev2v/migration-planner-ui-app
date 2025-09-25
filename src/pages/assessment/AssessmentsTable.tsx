@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 import { Assessment as AssessmentModel } from '@migration-planner-ui/api-client/models';
 import {
@@ -12,6 +12,7 @@ import {
   Spinner,
 } from '@patternfly/react-core';
 import {
+  ConnectedIcon,
   EllipsisVIcon,
   FileIcon,
   MonitoringIcon,
@@ -338,14 +339,7 @@ export const AssessmentsTable: React.FC<Props> = ({
         <Tbody>
           {rows.map((row) => (
             <Tr key={row.key}>
-              <Td dataLabel={Columns.Name}>
-                <Link
-                  to={`migrate/assessments/${row.id}`}
-                  style={{ color: '#0066cc', textDecoration: 'none' }}
-                >
-                  {row.name}
-                </Link>
-              </Td>
+              <Td dataLabel={Columns.Name}>{row.name}</Td>
               <Td dataLabel={Columns.SourceType}>
                 <div
                   style={{
@@ -357,7 +351,7 @@ export const AssessmentsTable: React.FC<Props> = ({
                   {row.sourceType.toLowerCase() === 'rvtools' ? (
                     <FileIcon />
                   ) : (
-                    <MonitoringIcon style={{ color: '#0066cc' }} />
+                    <ConnectedIcon />
                   )}
                   {row.sourceType.toLowerCase() === 'rvtools'
                     ? 'RVTools (XLS/X)'

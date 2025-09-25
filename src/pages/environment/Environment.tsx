@@ -5,24 +5,29 @@ import {
   Alert,
   AlertActionLink,
   Button,
-  Icon,
-  List,
-  ListItem,
-  OrderType,
-  Panel,
-  PanelHeader,
-  PanelMain,
-  Stack,
+  Dropdown,
+  DropdownItem,
+  DropdownList,
+  InputGroup,
+  InputGroupItem,
+  MenuToggle,
+  MenuToggleElement,
   StackItem,
   Text,
   TextContent,
+  TextInput,
+  Toolbar,
+  ToolbarContent,
+  ToolbarItem,
 } from '@patternfly/react-core';
-import { ClusterIcon, PlusCircleIcon } from '@patternfly/react-icons';
-import { chart_color_blue_300 as blueColor } from '@patternfly/react-tokens/dist/js/chart_color_blue_300';
+import {
+  FilterIcon,
+  PlusCircleIcon,
+  SearchIcon,
+} from '@patternfly/react-icons';
 
 import { useDiscoverySources } from '../../migration-wizard/contexts/discovery-sources/Context';
 
-import { UploadInventoryAction } from './sources-table/actions/UploadInventoryAction';
 import { DiscoverySourceSetupModal } from './sources-table/empty-state/DiscoverySourceSetupModal';
 import { SourcesTable } from './sources-table/SourcesTable';
 import { TroubleshootingModal } from './TroubleshootingModal';
@@ -47,6 +52,9 @@ export const Environment: React.FC = () => {
   const [uploadMessage, setUploadMessage] = useState<string | null>(null);
   const [isUploadError, setIsUploadError] = useState(false);
   const [isTroubleshootingOpen, setIsTroubleshootingOpen] = useState(false);
+  const [search, setSearch] = useState('');
+  const [isFilterDropdownOpen, setIsFilterDropdownOpen] = useState(false);
+  const [filterBy, setFilterBy] = useState('Filter');
 
   useEffect(() => {
     if (discoverySourcesContext.sourceSelected) {
@@ -88,166 +96,148 @@ export const Environment: React.FC = () => {
 
   return (
     <>
-      <Stack hasGutter>
-        <StackItem>
-          <TextContent>
-            <Text component="h2">Connect your VMware environment</Text>
-          </TextContent>
-        </StackItem>
-        <StackItem>
-          <TextContent style={{ paddingBlock: '1rem' }}>
-            <Text component="h4">
-              Follow these steps to connect your environment and start the
-              discovery process
-            </Text>
-            <List
-              component="ol"
-              type={OrderType.number}
-              style={{ marginInlineStart: 0 }}
-            >
-              <ListItem>
-                To add a new environment download and import a discovery OVA
-                file to your VMware environment.
-              </ListItem>
-              <ListItem>
-                A link will appear below once the VM is running. Use this link
-                to enter credentials and connect your environment.
-                <Button
-                  variant="link"
-                  isInline
-                  onClick={() => setIsTroubleshootingOpen(true)}
-                >
-                  (VM not showing up?)
-                </Button>{' '}
-              </ListItem>
-              <ListItem>
-                When the connection is established, you will be able to proceed
-                and see the discovery report.
-              </ListItem>
-            </List>
-          </TextContent>
-        </StackItem>
-        <StackItem>
-          <Panel variant="bordered">
-            <PanelMain>
-              <PanelHeader style={{ paddingBlockEnd: 0 }}>
-                <TextContent>
-                  <Text component="h3">
-                    <Icon isInline style={{ marginRight: '1rem' }}>
-                      <ClusterIcon />
-                    </Icon>
-                    Environment
-                  </Text>
-                </TextContent>
-              </PanelHeader>
-              <SourcesTable
-                onUploadResult={(message, isError) => {
-                  setUploadMessage(message);
-                  setIsUploadError(isError ?? false);
-                }}
-                onUploadSuccess={async () => {
-                  await discoverySourcesContext.listSources();
-                }}
-              />
-            </PanelMain>
-          </Panel>
-        </StackItem>
-
-        {hasSources && (
-          <StackItem>
-            <Button
-              variant="secondary"
-              onClick={toggleDiscoverySourceSetupModal}
-              style={{ marginTop: '1rem' }}
-              icon={<PlusCircleIcon color={blueColor.value} />}
-            >
-              Add environment
-            </Button>
-          </StackItem>
-        )}
-
-        {isOvaDownloading && (
-          <StackItem>
-            <Alert isInline variant="info" title="Download OVA image">
-              The OVA image is downloading
-            </Alert>
-          </StackItem>
-        )}
-
-        {discoverySourcesContext.errorDownloadingSource && (
-          <StackItem>
-            <Alert isInline variant="danger" title="Download Environment error">
-              {discoverySourcesContext.errorDownloadingSource.message}
-            </Alert>
-          </StackItem>
-        )}
-
-        {sourceSelected?.agent &&
-          sourceSelected?.agent.status === 'waiting-for-credentials' && (
-            <StackItem>
-              <Alert
-                isInline
-                variant="custom"
-                title="Discovery VM"
-                actionLinks={
-                  <AlertActionLink
-                    component="a"
-                    href={sourceSelected?.agent.credentialUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
+      <div
+        style={{
+          background: 'white',
+          padding: '0 20px 20px 20px',
+          marginTop: '10px',
+          marginBottom: '10px',
+        }}
+      >
+        <Toolbar inset={{ default: 'insetNone' }}>
+          <ToolbarContent>
+            <ToolbarItem>
+              <InputGroup>
+                <InputGroupItem>
+                  <Dropdown
+                    isOpen={isFilterDropdownOpen}
+                    onSelect={() => setIsFilterDropdownOpen(false)}
+                    toggle={(toggleRef: React.Ref<MenuToggleElement>) => (
+                      <MenuToggle
+                        ref={toggleRef}
+                        onClick={() =>
+                          setIsFilterDropdownOpen(!isFilterDropdownOpen)
+                        }
+                        isExpanded={isFilterDropdownOpen}
+                        style={{ minWidth: '180px', width: '180px' }}
+                      >
+                        <FilterIcon style={{ marginRight: '8px' }} />
+                        {filterBy}
+                      </MenuToggle>
+                    )}
                   >
-                    {sourceSelected?.agent.credentialUrl}
-                  </AlertActionLink>
-                }
-              >
-                <TextContent>
-                  <Text>
-                    Click the link below to connect the Discovery Source to your
-                    VMware environment.
-                  </Text>
-                </TextContent>
-              </Alert>
-            </StackItem>
-          )}
+                    <DropdownList>
+                      <DropdownItem
+                        key="sourceType"
+                        onClick={() => setFilterBy('Discovery VM Status')}
+                      >
+                        Discovery VM Status
+                      </DropdownItem>
+                    </DropdownList>
+                  </Dropdown>
+                </InputGroupItem>
+                <InputGroupItem>
+                  <Button variant="control" aria-label="Search">
+                    <SearchIcon />
+                  </Button>
+                </InputGroupItem>
+                <InputGroupItem isFill>
+                  <TextInput
+                    name="environment-search"
+                    id="environment-search"
+                    type="search"
+                    placeholder="Search"
+                    style={{ minWidth: '300px', width: '300px' }}
+                    value={search}
+                    onChange={(_event, value) => setSearch(value)}
+                  />
+                </InputGroupItem>
+              </InputGroup>
+            </ToolbarItem>
+            <ToolbarItem>
+              {hasSources ? (
+                <Button
+                  variant="primary"
+                  onClick={toggleDiscoverySourceSetupModal}
+                  icon={<PlusCircleIcon />}
+                >
+                  Add environment
+                </Button>
+              ) : null}
+            </ToolbarItem>
+          </ToolbarContent>
+        </Toolbar>
 
-        {hasSources &&
-          !sourceSelected?.agent &&
-          sourceSelected?.name !== 'Example' && (
-            <StackItem>
-              <Alert
-                isInline
-                variant="custom"
-                title="Environment not connected"
-              >
-                <TextContent>
-                  <Text>
-                    The selected environment is not connected, if you have a
-                    discovery file click the link below to upload it.
-                  </Text>
-                </TextContent>
-                <UploadInventoryAction
-                  discoverySourcesContext={discoverySourcesContext}
-                  sourceId={sourceSelected?.id ?? ''}
-                  asLink
-                  onUploadResult={(message, isError) => {
-                    setUploadMessage(message ?? null);
-                    setIsUploadError(isError ?? false);
-                  }}
-                />
-              </Alert>
-            </StackItem>
-          )}
+        <div style={{ marginTop: '10px' }}>
+          <SourcesTable
+            onUploadResult={(message, isError) => {
+              setUploadMessage(message);
+              setIsUploadError(isError ?? false);
+            }}
+            onUploadSuccess={async () => {
+              await discoverySourcesContext.listSources();
+            }}
+            search={search}
+            filterBy={filterBy}
+            filterValue={search}
+          />
+        </div>
+      </div>
 
-        {uploadMessage && (
+      {isOvaDownloading && (
+        <StackItem>
+          <Alert isInline variant="info" title="Download OVA image">
+            The OVA image is downloading
+          </Alert>
+        </StackItem>
+      )}
+
+      {discoverySourcesContext.errorDownloadingSource && (
+        <StackItem>
+          <Alert isInline variant="danger" title="Download Environment error">
+            {discoverySourcesContext.errorDownloadingSource.message}
+          </Alert>
+        </StackItem>
+      )}
+
+      {sourceSelected?.agent &&
+        sourceSelected?.agent.status === 'waiting-for-credentials' && (
           <StackItem>
             <Alert
               isInline
-              variant={isUploadError ? 'danger' : 'success'}
-              title={uploadMessage}
-            />
+              variant="custom"
+              title="Discovery VM"
+              actionLinks={
+                <AlertActionLink
+                  component="a"
+                  href={sourceSelected?.agent.credentialUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {sourceSelected?.agent.credentialUrl}
+                </AlertActionLink>
+              }
+            >
+              <TextContent>
+                <Text>
+                  Click the link below to connect the Discovery Source to your
+                  VMware environment.
+                </Text>
+              </TextContent>
+            </Alert>
           </StackItem>
         )}
-      </Stack>
+
+      {uploadMessage && (
+        <StackItem>
+          <Alert
+            isInline
+            variant={isUploadError ? 'danger' : 'success'}
+            title={uploadMessage}
+          />
+        </StackItem>
+      )}
+
       {shouldShowDiscoverySourceSetupModal && (
         <DiscoverySourceSetupModal
           isOpen={shouldShowDiscoverySourceSetupModal}
