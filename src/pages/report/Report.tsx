@@ -25,7 +25,7 @@ import EnhancedDownloadButton from '../../migration-wizard/steps/discovery/Enhan
 
 import { Dashboard } from './assessment-report/Dashboard';
 
-type SnapshotLike = {
+export type SnapshotLike = {
   infra?: Infra;
   vms?: VMs;
   inventory?: { infra?: Infra; vms?: VMs };
@@ -135,6 +135,7 @@ const Inner: React.FC = () => {
               />
             }
             sourceData={discoverySourcesContext.sourceSelected as Source}
+            snapshot={last}
           />
         ) : null
       }

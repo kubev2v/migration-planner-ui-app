@@ -380,12 +380,10 @@ export const AssessmentsTable: React.FC<Props> = ({
                 >
                   <Button
                     variant="plain"
-                    component="a"
-                    href={`migrate/assessments/${row.id}`}
-                    target="_blank"
                     aria-label="Open assessment"
                     icon={<MonitoringIcon />}
                     style={{ color: '#0066cc' }}
+                    onClick={() => navigate(`migrate/assessments/${row.id}`)}
                   />
                   <Dropdown
                     isOpen={openDropdowns[row.id] || false}

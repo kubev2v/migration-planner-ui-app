@@ -17,6 +17,7 @@ import {
 import { DownloadIcon } from '@patternfly/react-icons';
 
 import './DownloadPDFStyles.css';
+import { SnapshotLike } from '../../../pages/report/Report';
 
 // Constants
 const EXPORT_CONFIG = {
@@ -126,12 +127,14 @@ interface EnhancedDownloadButtonProps {
   elementId: string;
   componentToRender: React.ReactNode;
   sourceData?: Source;
+  snapshot?: SnapshotLike;
 }
 
 const EnhancedDownloadButton: React.FC<EnhancedDownloadButtonProps> = ({
   elementId: _elementId,
   componentToRender,
   sourceData,
+  snapshot,
 }): JSX.Element => {
   const hiddenContainerRef = useRef<HTMLDivElement | null>(null);
   const [loadingState, setLoadingState] = useState<LoadingState>('idle');
@@ -140,7 +143,8 @@ const EnhancedDownloadButton: React.FC<EnhancedDownloadButtonProps> = ({
 
   const isLoading =
     loadingState === 'generating-pdf' || loadingState === 'generating-html';
-  const hasInventoryData = Boolean(sourceData?.inventory);
+  const hasInventoryData =
+    Boolean(sourceData?.inventory) || Boolean(snapshot.inventory);
 
   const handleDownloadPDF = async (): Promise<void> => {
     // Ensure cleanup even on errors
@@ -253,8 +257,10 @@ const EnhancedDownloadButton: React.FC<EnhancedDownloadButtonProps> = ({
   };
 
   // Generate chart data from inventory
-  const generateChartData = (inventory: InventoryData): ChartData => {
-    const { infra, vms } = inventory;
+  const generateChartData = (
+    inventory: InventoryData | SnapshotLike,
+  ): ChartData => {
+    const { infra, vms } = inventory as InventoryData;
 
     const powerStateData = [
       ['Powered On', vms.powerStates.poweredOn || 0],
@@ -471,7 +477,7 @@ const EnhancedDownloadButton: React.FC<EnhancedDownloadButtonProps> = ({
   // Generate complete HTML template with data and scripts
   const generateHTMLTemplate = (
     chartData: ChartData,
-    inventory: InventoryData,
+    inventory: InventoryData | SnapshotLike,
   ): string => {
     const { infra, vms } = inventory;
     const {
@@ -853,11 +859,11 @@ const EnhancedDownloadButton: React.FC<EnhancedDownloadButtonProps> = ({
       setLoadingState('generating-html');
       setError(null);
 
-      if (!sourceData?.inventory) {
+      if (!sourceData?.inventory && !snapshot?.inventory) {
         throw new Error('No inventory data available for export');
       }
 
-      const { inventory } = sourceData;
+      const { inventory } = sourceData || snapshot;
       const chartData = generateChartData(inventory);
       const htmlContent = generateHTMLTemplate(chartData, inventory);
       downloadHTMLFile(htmlContent, EXPORT_CONFIG.HTML_FILENAME);

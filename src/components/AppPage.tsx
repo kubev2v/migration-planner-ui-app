@@ -32,7 +32,7 @@ export const AppPage: React.FC<React.PropsWithChildren<AppPage.Props>> = (
   const { title, caption, breadcrumbs, children, headerActions } = props;
 
   return (
-    <Page>
+    <Page style={{ height: '100%', overflowY: 'hidden' }}>
       <div id="base-page__header">
         <PageBreadcrumb>
           <Breadcrumb>
