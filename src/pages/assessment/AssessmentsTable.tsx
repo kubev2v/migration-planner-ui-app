@@ -28,6 +28,7 @@ type Props = {
   filterBy?: string;
   filterValue?: string;
   selectedSourceTypes?: string[];
+  selectedOwners?: string[];
   sortBy?: { index: number; direction: 'asc' | 'desc' } | undefined;
   onSort?: (event: unknown, index: number, direction: 'asc' | 'desc') => void;
   onDelete?: (assessmentId: string) => void;
@@ -53,6 +54,7 @@ export const AssessmentsTable: React.FC<Props> = ({
   filterBy = 'Filter',
   filterValue = '',
   selectedSourceTypes = [],
+  selectedOwners = [],
   sortBy,
   onSort,
   onDelete,
@@ -124,6 +126,14 @@ export const AssessmentsTable: React.FC<Props> = ({
 
     let filtered = items;
 
+    // Apply name-only search
+    if (_search && _search.trim() !== '') {
+      const query = _search.toLowerCase();
+      filtered = filtered.filter((i) =>
+        (i.name || '').toLowerCase().includes(query),
+      );
+    }
+
     // Apply dropdown filter (Source type or Owner)
     if (filterBy !== 'Filter' && filterValue.trim() !== '') {
       switch (filterBy) {
@@ -134,7 +144,7 @@ export const AssessmentsTable: React.FC<Props> = ({
           break;
         case 'Owner':
           filtered = filtered.filter((i) =>
-            i.owner.toLowerCase().includes(filterValue.toLowerCase()),
+            (i.owner || '').toLowerCase().includes(filterValue.toLowerCase()),
           );
           break;
       }
@@ -142,12 +152,17 @@ export const AssessmentsTable: React.FC<Props> = ({
 
     // Apply source type filter (legacy - keeping for backward compatibility)
     if (selectedSourceTypes && selectedSourceTypes.length > 0) {
-      // Only filter if source types are actually selected
       filtered = filtered.filter((i) =>
-        selectedSourceTypes.includes(i.sourceType.toLowerCase()),
+        selectedSourceTypes.includes(
+          i.sourceType.toLowerCase() === 'rvtools' ? 'rvtools' : 'discovery',
+        ),
       );
     }
-    // If no source types are selected, show all assessments
+
+    // Apply owners multi-select filter
+    if (selectedOwners && selectedOwners.length > 0) {
+      filtered = filtered.filter((i) => selectedOwners.includes(i.owner));
+    }
 
     if (!sortBy) return filtered;
 
@@ -177,8 +192,8 @@ export const AssessmentsTable: React.FC<Props> = ({
       case 3: // Owner column
         copy.sort((a, b) =>
           sortBy.direction === 'asc'
-            ? a.owner.localeCompare(b.owner)
-            : b.owner.localeCompare(a.owner),
+            ? (a.owner || '').localeCompare(b.owner || '')
+            : (b.owner || '').localeCompare(a.owner || ''),
         );
         break;
       case 4: // Hosts column
@@ -217,7 +232,15 @@ export const AssessmentsTable: React.FC<Props> = ({
         break;
     }
     return copy;
-  }, [assessments, filterBy, filterValue, selectedSourceTypes, sortBy]);
+  }, [
+    assessments,
+    _search,
+    filterBy,
+    filterValue,
+    selectedSourceTypes,
+    selectedOwners,
+    sortBy,
+  ]);
 
   const nameSortParams = onSort
     ? {

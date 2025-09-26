@@ -12,19 +12,15 @@ import {
   InputGroupItem,
   MenuToggle,
   MenuToggleElement,
+  SearchInput,
   StackItem,
   Text,
   TextContent,
-  TextInput,
   Toolbar,
   ToolbarContent,
   ToolbarItem,
 } from '@patternfly/react-core';
-import {
-  FilterIcon,
-  PlusCircleIcon,
-  SearchIcon,
-} from '@patternfly/react-icons';
+import { FilterIcon, PlusCircleIcon } from '@patternfly/react-icons';
 
 import { useDiscoverySources } from '../../migration-wizard/contexts/discovery-sources/Context';
 
@@ -54,13 +50,35 @@ export const Environment: React.FC = () => {
   const [isTroubleshootingOpen, setIsTroubleshootingOpen] = useState(false);
   const [search, setSearch] = useState('');
   const [isFilterDropdownOpen, setIsFilterDropdownOpen] = useState(false);
-  const [filterBy, setFilterBy] = useState('Filter');
+
+  // Multi-select status filters
+  const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]);
+
+  const toggleStatus = (statusKey: string): void => {
+    setSelectedStatuses((prev) =>
+      prev.includes(statusKey)
+        ? prev.filter((s) => s !== statusKey)
+        : [...prev, statusKey],
+    );
+  };
+
+  const clearStatuses = (): void => setSelectedStatuses([]);
+
+  const statusOptions: { key: string; label: string }[] = [
+    { key: 'not-connected-uploaded', label: 'Uploaded manually' },
+    { key: 'not-connected', label: 'Not connected' },
+    { key: 'waiting-for-credentials', label: 'Waiting for credentials' },
+    { key: 'gathering-initial-inventory', label: 'Gathering inventory' },
+    { key: 'error', label: 'Error' },
+    { key: 'up-to-date', label: 'Ready' },
+  ];
 
   useEffect(() => {
     if (discoverySourcesContext.sourceSelected) {
       const foundSource = discoverySourcesContext.sources.find(
         (source) => source.id === discoverySourcesContext.sourceSelected?.id,
       );
+
       if (foundSource) {
         setSourceSelected(foundSource);
       } else {
@@ -119,37 +137,57 @@ export const Environment: React.FC = () => {
                           setIsFilterDropdownOpen(!isFilterDropdownOpen)
                         }
                         isExpanded={isFilterDropdownOpen}
-                        style={{ minWidth: '180px', width: '180px' }}
+                        style={{ minWidth: '220px', width: '220px' }}
                       >
                         <FilterIcon style={{ marginRight: '8px' }} />
-                        {filterBy}
+                        Filters
                       </MenuToggle>
                     )}
                   >
                     <DropdownList>
-                      <DropdownItem
-                        key="sourceType"
-                        onClick={() => setFilterBy('Discovery VM Status')}
-                      >
+                      <DropdownItem isDisabled key="heading-status">
                         Discovery VM Status
                       </DropdownItem>
+                      <DropdownItem
+                        key="status-all"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          clearStatuses();
+                        }}
+                      >
+                        All statuses
+                      </DropdownItem>
+                      {statusOptions.map((opt) => (
+                        <DropdownItem
+                          key={`status-${opt.key}`}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            toggleStatus(opt.key);
+                          }}
+                        >
+                          <input
+                            type="checkbox"
+                            readOnly
+                            checked={selectedStatuses.includes(opt.key)}
+                            style={{ marginRight: '8px' }}
+                          />
+                          {opt.label}
+                        </DropdownItem>
+                      ))}
                     </DropdownList>
                   </Dropdown>
                 </InputGroupItem>
-                <InputGroupItem>
-                  <Button variant="control" aria-label="Search">
-                    <SearchIcon />
-                  </Button>
-                </InputGroupItem>
                 <InputGroupItem isFill>
-                  <TextInput
-                    name="environment-search"
+                  <SearchInput
                     id="environment-search"
-                    type="search"
-                    placeholder="Search"
-                    style={{ minWidth: '300px', width: '300px' }}
+                    aria-label="Search by name"
+                    placeholder="Search by name"
                     value={search}
                     onChange={(_event, value) => setSearch(value)}
+                    onClear={() => setSearch('')}
+                    style={{ minWidth: '300px', width: '300px' }}
                   />
                 </InputGroupItem>
               </InputGroup>
@@ -178,8 +216,7 @@ export const Environment: React.FC = () => {
               await discoverySourcesContext.listSources();
             }}
             search={search}
-            filterBy={filterBy}
-            filterValue={search}
+            selectedStatuses={selectedStatuses}
           />
         </div>
       </div>
@@ -233,8 +270,10 @@ export const Environment: React.FC = () => {
           <Alert
             isInline
             variant={isUploadError ? 'danger' : 'success'}
-            title={uploadMessage}
-          />
+            title={isUploadError ? 'Upload error' : 'Upload success'}
+          >
+            {uploadMessage}
+          </Alert>
         </StackItem>
       )}
 

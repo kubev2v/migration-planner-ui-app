@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 
 import { Assessment as AssessmentModel } from '@migration-planner-ui/api-client/models';
 import {
-  Button,
   Dropdown,
   DropdownItem,
   DropdownList,
@@ -10,12 +9,12 @@ import {
   InputGroupItem,
   MenuToggle,
   MenuToggleElement,
-  TextInput,
+  SearchInput,
   Toolbar,
   ToolbarContent,
   ToolbarItem,
 } from '@patternfly/react-core';
-import { FilterIcon, SearchIcon } from '@patternfly/react-icons';
+import { FilterIcon } from '@patternfly/react-icons';
 
 import { ConfirmationModal } from '../../components/ConfirmationModal';
 import { useDiscoverySources } from '../../migration-wizard/contexts/discovery-sources/Context';
@@ -41,13 +40,58 @@ const Assessment: React.FC<Props> = ({ assessments, isLoading }) => {
   });
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isFilterDropdownOpen, setIsFilterDropdownOpen] = useState(false);
-  const [filterBy, setFilterBy] = useState('Filter');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState<AssessmentMode>('inventory');
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedAssessment, setSelectedAssessment] =
     useState<AssessmentModel | null>(null);
+
+  // Multi-select filters (checkbox)
+  const [selectedSourceTypes, setSelectedSourceTypes] = useState<string[]>([]);
+  const [selectedOwners, setSelectedOwners] = useState<string[]>([]);
+
+  const toggleSourceType = (value: 'rvtools' | 'discovery'): void => {
+    setSelectedSourceTypes((prev) =>
+      prev.includes(value) ? prev.filter((v) => v !== value) : [...prev, value],
+    );
+  };
+
+  const clearSourceTypes = (): void => setSelectedSourceTypes([]);
+
+  const toggleOwner = (owner: string): void => {
+    setSelectedOwners((prev) =>
+      prev.includes(owner) ? prev.filter((o) => o !== owner) : [...prev, owner],
+    );
+  };
+
+  const clearOwners = (): void => setSelectedOwners([]);
+
+  const formatName = (name?: string): string | undefined =>
+    name
+      ?.split(' ')
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(' ');
+
+  const owners = Array.from(
+    new Set(
+      (Array.isArray(assessments) ? assessments : [])
+        .map((a) => {
+          const ownerFirstName = formatName(
+            (a as AssessmentModel).ownerFirstName,
+          );
+          const ownerLastName = formatName(
+            (a as AssessmentModel).ownerLastName,
+          );
+          const ownerFullName =
+            ownerFirstName && ownerLastName
+              ? `${ownerFirstName} ${ownerLastName}`
+              : ownerFirstName || ownerLastName || '';
+          return ownerFullName;
+        })
+        .filter((name) => !!name && name.trim() !== ''),
+    ),
+  ).sort((a, b) => a.localeCompare(b));
 
   const onSort = (
     _event: unknown,
@@ -188,43 +232,103 @@ const Assessment: React.FC<Props> = ({ assessments, isLoading }) => {
                           setIsFilterDropdownOpen(!isFilterDropdownOpen)
                         }
                         isExpanded={isFilterDropdownOpen}
-                        style={{ minWidth: '180px', width: '180px' }}
+                        style={{ minWidth: '220px', width: '220px' }}
                       >
                         <FilterIcon style={{ marginRight: '8px' }} />
-                        {filterBy}
+                        Filters
                       </MenuToggle>
                     )}
                   >
                     <DropdownList>
-                      <DropdownItem
-                        key="sourceType"
-                        onClick={() => setFilterBy('Source type')}
-                      >
+                      <DropdownItem isDisabled key="heading-source-type">
                         Source type
                       </DropdownItem>
                       <DropdownItem
-                        key="owner"
-                        onClick={() => setFilterBy('Owner')}
+                        key="st-all"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          clearSourceTypes();
+                        }}
                       >
+                        All source types
+                      </DropdownItem>
+                      <DropdownItem
+                        key="st-discovery"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          toggleSourceType('discovery');
+                        }}
+                      >
+                        <input
+                          type="checkbox"
+                          readOnly
+                          checked={selectedSourceTypes.includes('discovery')}
+                          style={{ marginRight: '8px' }}
+                        />
+                        Discovery OVA
+                      </DropdownItem>
+                      <DropdownItem
+                        key="st-rvtools"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          toggleSourceType('rvtools');
+                        }}
+                      >
+                        <input
+                          type="checkbox"
+                          readOnly
+                          checked={selectedSourceTypes.includes('rvtools')}
+                          style={{ marginRight: '8px' }}
+                        />
+                        RVTools (XLS/X)
+                      </DropdownItem>
+
+                      <DropdownItem isDisabled key="heading-owner">
                         Owner
                       </DropdownItem>
+                      <DropdownItem
+                        key="owner-all"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          clearOwners();
+                        }}
+                      >
+                        All owners
+                      </DropdownItem>
+                      {owners.map((owner) => (
+                        <DropdownItem
+                          key={`owner-${owner}`}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            toggleOwner(owner);
+                          }}
+                        >
+                          <input
+                            type="checkbox"
+                            readOnly
+                            checked={selectedOwners.includes(owner)}
+                            style={{ marginRight: '8px' }}
+                          />
+                          {owner}
+                        </DropdownItem>
+                      ))}
                     </DropdownList>
                   </Dropdown>
                 </InputGroupItem>
-                <InputGroupItem>
-                  <Button variant="control" aria-label="Search">
-                    <SearchIcon />
-                  </Button>
-                </InputGroupItem>
                 <InputGroupItem isFill>
-                  <TextInput
-                    name="assessment-search"
+                  <SearchInput
                     id="assessment-search"
-                    type="search"
-                    placeholder="Search"
-                    style={{ minWidth: '300px', width: '300px' }}
+                    aria-label="Search by name"
+                    placeholder="Search by name"
                     value={search}
                     onChange={(_event, value) => setSearch(value)}
+                    onClear={() => setSearch('')}
+                    style={{ minWidth: '300px', width: '300px' }}
                   />
                 </InputGroupItem>
               </InputGroup>
@@ -277,12 +381,12 @@ const Assessment: React.FC<Props> = ({ assessments, isLoading }) => {
             assessments={assessments}
             isLoading={isLoading}
             search={search}
-            filterBy={filterBy}
-            filterValue={search}
             sortBy={sortBy}
             onSort={onSort}
             onDelete={handleDeleteAssessment}
             onUpdate={handleUpdateAssessment}
+            selectedSourceTypes={selectedSourceTypes}
+            selectedOwners={selectedOwners}
           />
         </div>
       </div>

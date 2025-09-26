@@ -19,16 +19,14 @@ type SourceTableProps = {
   onUploadResult?: (message: string, isError?: boolean) => void;
   onUploadSuccess?: () => void;
   search?: string;
-  filterBy?: string;
-  filterValue?: string;
+  selectedStatuses?: string[];
 };
 
 export const SourcesTable: React.FC<SourceTableProps> = ({
   onUploadResult,
   onUploadSuccess,
   search: _search = '',
-  filterBy = 'Filter',
-  filterValue = '',
+  selectedStatuses = [],
 }) => {
   const discoverySourcesContext = useDiscoverySources();
   const prevSourcesRef = useRef<typeof discoverySourcesContext.sources>([]);
@@ -73,16 +71,48 @@ export const SourcesTable: React.FC<SourceTableProps> = ({
     if (!memoizedSources) return [];
     let filtered = memoizedSources;
 
-    if (filterBy === 'Status' && filterValue.trim() !== '') {
-      const normalizedFilter = filterValue.toLowerCase();
-      filtered = memoizedSources.filter((source) => {
+    // Name-only search
+    if (_search && _search.trim() !== '') {
+      const query = _search.toLowerCase();
+      filtered = filtered.filter((source) =>
+        (source.name || '').toLowerCase().includes(query),
+      );
+    }
+
+    // Multi-select statuses with label mapping
+    if (selectedStatuses && selectedStatuses.length > 0) {
+      filtered = filtered.filter((source) => {
         const status = source.agent ? source.agent.status : 'not-connected';
-        return status.toLowerCase().includes(normalizedFilter);
+        const uploadedManually = Boolean(
+          source?.onPremises && source?.inventory !== undefined,
+        );
+
+        // Map keys to conditions
+        const matches = selectedStatuses.some((key) => {
+          switch (key) {
+            case 'not-connected-uploaded':
+              return status === 'not-connected' && uploadedManually;
+            case 'not-connected':
+              return status === 'not-connected' && !uploadedManually;
+            case 'waiting-for-credentials':
+              return status === 'waiting-for-credentials';
+            case 'gathering-initial-inventory':
+              return status === 'gathering-initial-inventory';
+            case 'error':
+              return status === 'error';
+            case 'up-to-date':
+              return status === 'up-to-date';
+            default:
+              return false;
+          }
+        });
+
+        return matches;
       });
     }
 
     return filtered;
-  }, [memoizedSources, filterBy, filterValue]);
+  }, [memoizedSources, _search, selectedStatuses]);
 
   useMount(async () => {
     discoverySourcesContext.startPolling(DEFAULT_POLLING_DELAY);
