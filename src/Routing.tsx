@@ -16,6 +16,10 @@ interface RouteType {
   elementProps?: Record<string, unknown>;
 }
 
+const CreateFromOva = React.lazy(
+  () => import('./pages/assessment/CreateFromOva'),
+);
+
 const Routing: React.FC = () => {
   const routes: RouteType[] = [
     {
@@ -25,6 +29,10 @@ const Routing: React.FC = () => {
     {
       path: '/migrate/assessments/:id',
       element: Report,
+    },
+    {
+      path: '/migrate/assessments/create',
+      element: CreateFromOva,
     },
     {
       path: '/migrate/wizard',

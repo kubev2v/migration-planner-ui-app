@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
 
-import { Source } from '@migration-planner-ui/api-client/models';
 import {
   Alert,
   AlertActionLink,
@@ -43,7 +42,12 @@ export const Environment: React.FC = () => {
     discoverySourcesContext.sources &&
     discoverySourcesContext.sources.length > 0;
   const [firstSource, ..._otherSources] = discoverySourcesContext.sources ?? [];
-  const [sourceSelected, setSourceSelected] = useState<Source>();
+  const sourceSelected =
+    (discoverySourcesContext.sourceSelected &&
+      discoverySourcesContext.sources?.find(
+        (source) => source.id === discoverySourcesContext.sourceSelected?.id,
+      )) ||
+    firstSource;
   const [isOvaDownloading, setIsOvaDownloading] = useState(false);
   const [uploadMessage, setUploadMessage] = useState<string | null>(null);
   const [isUploadError, setIsUploadError] = useState(false);
@@ -72,25 +76,6 @@ export const Environment: React.FC = () => {
     { key: 'error', label: 'Error' },
     { key: 'up-to-date', label: 'Ready' },
   ];
-
-  useEffect(() => {
-    if (discoverySourcesContext.sourceSelected) {
-      const foundSource = discoverySourcesContext.sources.find(
-        (source) => source.id === discoverySourcesContext.sourceSelected?.id,
-      );
-
-      if (foundSource) {
-        setSourceSelected(foundSource);
-      } else {
-        if (firstSource) {
-          setSourceSelected(firstSource);
-        } else {
-          setSourceSelected(undefined);
-        }
-      }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [discoverySourcesContext.sources, firstSource]);
 
   useEffect(() => {
     if (uploadMessage) {

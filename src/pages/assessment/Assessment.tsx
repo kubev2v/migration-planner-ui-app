@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 import { Assessment as AssessmentModel } from '@migration-planner-ui/api-client/models';
 import {
@@ -30,6 +31,7 @@ type Props = {
 };
 
 const Assessment: React.FC<Props> = ({ assessments, isLoading }) => {
+  const navigate = useNavigate();
   const discoverySourcesContext = useDiscoverySources();
   const [search, setSearch] = useState('');
   const [sortBy, setSortBy] = useState<
@@ -361,9 +363,7 @@ const Assessment: React.FC<Props> = ({ assessments, isLoading }) => {
                     <DropdownItem
                       key="agent"
                       component="button"
-                      onClick={() => {
-                        alert('To be implemented');
-                      }}
+                      onClick={() => navigate('migrate/assessments/create')}
                     >
                       With discovery OVA
                     </DropdownItem>
@@ -422,8 +422,8 @@ const Assessment: React.FC<Props> = ({ assessments, isLoading }) => {
         titleIconVariant="warning"
         primaryButtonVariant="danger"
       >
-        `Are you sure you want to delete{' '}
-        {(selectedAssessment as AssessmentModel)?.name}?`
+        Are you sure you want to delete{' '}
+        {(selectedAssessment as AssessmentModel)?.name}?
       </ConfirmationModal>
     </>
   );
