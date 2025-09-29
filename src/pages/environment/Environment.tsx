@@ -4,6 +4,8 @@ import {
   Alert,
   AlertActionLink,
   Button,
+  Chip,
+  ChipGroup,
   Dropdown,
   DropdownItem,
   DropdownList,
@@ -19,7 +21,7 @@ import {
   ToolbarContent,
   ToolbarItem,
 } from '@patternfly/react-core';
-import { FilterIcon, PlusCircleIcon } from '@patternfly/react-icons';
+import { FilterIcon, PlusCircleIcon, TimesIcon } from '@patternfly/react-icons';
 
 import { useDiscoverySources } from '../../migration-wizard/contexts/discovery-sources/Context';
 
@@ -190,6 +192,71 @@ export const Environment: React.FC = () => {
             </ToolbarItem>
           </ToolbarContent>
         </Toolbar>
+
+        {selectedStatuses.length > 0 && (
+          <div style={{ marginTop: '8px' }}>
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                flexWrap: 'wrap',
+                background: '#f5f5f5',
+                padding: '6px 8px',
+                borderRadius: '6px',
+              }}
+            >
+              <span
+                style={{
+                  background: '#e7e7e7',
+                  borderRadius: '12px',
+                  padding: '2px 8px',
+                  fontSize: '12px',
+                }}
+              >
+                Filters
+              </span>
+
+              <ChipGroup>
+                {(() => {
+                  const MAX_STATUS_CHIPS = 1;
+                  const visible = selectedStatuses.slice(0, MAX_STATUS_CHIPS);
+                  const overflow = selectedStatuses.length - visible.length;
+                  const labelMap = new Map(
+                    statusOptions.map((s) => [s.key, s.label]),
+                  );
+                  return (
+                    <>
+                      {visible.map((key) => (
+                        <Chip
+                          key={`chip-status-${key}`}
+                          onClick={() => toggleStatus(key)}
+                          closeBtnAriaLabel={`Remove status ${key}`}
+                        >
+                          {`status=${labelMap.get(key) ?? key}`}
+                        </Chip>
+                      ))}
+                      {overflow > 0 && (
+                        <Chip
+                          isReadOnly
+                          key="status-overflow"
+                        >{`${overflow} more`}</Chip>
+                      )}
+                    </>
+                  );
+                })()}
+              </ChipGroup>
+
+              <Button
+                variant="plain"
+                aria-label="Clear all filters"
+                onClick={() => clearStatuses()}
+              >
+                <TimesIcon />
+              </Button>
+            </div>
+          </div>
+        )}
 
         <div style={{ marginTop: '10px' }}>
           <SourcesTable

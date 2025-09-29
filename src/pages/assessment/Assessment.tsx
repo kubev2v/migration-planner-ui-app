@@ -3,6 +3,9 @@ import { useNavigate } from 'react-router-dom';
 
 import { Assessment as AssessmentModel } from '@migration-planner-ui/api-client/models';
 import {
+  Button,
+  Chip,
+  ChipGroup,
   Dropdown,
   DropdownItem,
   DropdownList,
@@ -15,7 +18,7 @@ import {
   ToolbarContent,
   ToolbarItem,
 } from '@patternfly/react-core';
-import { FilterIcon } from '@patternfly/react-icons';
+import { FilterIcon, TimesIcon } from '@patternfly/react-icons';
 
 import { ConfirmationModal } from '../../components/ConfirmationModal';
 import { useDiscoverySources } from '../../migration-wizard/contexts/discovery-sources/Context';
@@ -375,6 +378,86 @@ const Assessment: React.FC<Props> = ({ assessments, isLoading }) => {
             )}
           </ToolbarContent>
         </Toolbar>
+
+        {(selectedSourceTypes.length > 0 || selectedOwners.length > 0) && (
+          <div style={{ marginTop: '8px' }}>
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                flexWrap: 'wrap',
+                background: '#f5f5f5',
+                padding: '6px 8px',
+                borderRadius: '6px',
+              }}
+            >
+              <span
+                style={{
+                  background: '#e7e7e7',
+                  borderRadius: '12px',
+                  padding: '2px 8px',
+                  fontSize: '12px',
+                }}
+              >
+                Filters
+              </span>
+
+              <ChipGroup>
+                {selectedSourceTypes.map((t) => (
+                  <Chip
+                    key={`chip-st-${t}`}
+                    onClick={() =>
+                      toggleSourceType(t as 'discovery' | 'rvtools')
+                    }
+                    closeBtnAriaLabel={`Remove source type ${t}`}
+                  >
+                    {`source type=${t === 'discovery' ? 'discovery ova' : 'rvtools'}`}
+                  </Chip>
+                ))}
+
+                {(() => {
+                  const MAX_OWNER_CHIPS = 1;
+                  const visibleOwners = selectedOwners.slice(
+                    0,
+                    MAX_OWNER_CHIPS,
+                  );
+                  const overflow = selectedOwners.length - visibleOwners.length;
+                  return (
+                    <>
+                      {visibleOwners.map((owner) => (
+                        <Chip
+                          key={`chip-owner-${owner}`}
+                          onClick={() => toggleOwner(owner)}
+                          closeBtnAriaLabel={`Remove owner ${owner}`}
+                        >
+                          {`owner=${owner}`}
+                        </Chip>
+                      ))}
+                      {overflow > 0 && (
+                        <Chip
+                          isReadOnly
+                          key="owners-overflow"
+                        >{`${overflow} more`}</Chip>
+                      )}
+                    </>
+                  );
+                })()}
+              </ChipGroup>
+
+              <Button
+                variant="plain"
+                aria-label="Clear all filters"
+                onClick={() => {
+                  clearSourceTypes();
+                  clearOwners();
+                }}
+              >
+                <TimesIcon />
+              </Button>
+            </div>
+          </div>
+        )}
 
         <div style={{ marginTop: '10px' }}>
           <AssessmentsTable

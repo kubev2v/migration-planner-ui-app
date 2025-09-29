@@ -54,14 +54,14 @@ const EmptyTableBanner: React.FC<Props> = ({ onOpenModal }) => {
               <Icon size="xl" style={{ color: globalActiveColor300.var }}>
                 <CustomEnterpriseIcon />
               </Icon>
-              <Text component="h2">Discover your VMware environment</Text>
+              <Text component="h2">Assess your VMware environment</Text>
             </TextContent>
           </CardHeader>
           <CardBody style={{ margin: '0', paddingBottom: '0' }}>
             <TextContent style={{ textAlign: 'center' }}>
               <Text>
-                Run the discovery process and create a full evaluation
-                assessment report.
+                Run the discovery process or upload an inventory file to create
+                a full migration assessment report.
               </Text>
               <div
                 style={{

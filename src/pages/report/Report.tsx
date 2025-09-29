@@ -11,19 +11,39 @@ import {
 import {
   Bullseye,
   Button,
+  Icon,
   Spinner,
   Stack,
   StackItem,
   Text,
   TextContent,
 } from '@patternfly/react-core';
+import { CheckCircleIcon } from '@patternfly/react-icons';
+import { global_success_color_100 as globalSuccessColor100 } from '@patternfly/react-tokens/dist/js/global_success_color_100';
 
 import { AppPage } from '../../components/AppPage';
 import { useDiscoverySources } from '../../migration-wizard/contexts/discovery-sources/Context';
 import { Provider as DiscoverySourcesProvider } from '../../migration-wizard/contexts/discovery-sources/Provider';
 import EnhancedDownloadButton from '../../migration-wizard/steps/discovery/EnhancedDownloadButton';
+import { parseLatestSnapshot } from '../assessment/utils/snapshotParser';
 
 import { Dashboard } from './assessment-report/Dashboard';
+
+const openAssistedInstaller = (): void => {
+  const currentHost = window.location.hostname;
+
+  if (currentHost === 'console.stage.redhat.com') {
+    window.open(
+      'https://console.dev.redhat.com/openshift/assisted-installer/clusters/~new?source=assisted_migration',
+      '_blank',
+    );
+  } else {
+    window.open(
+      '/openshift/assisted-installer/clusters/~new?source=assisted_migration',
+      '_blank',
+    );
+  }
+};
 
 export type SnapshotLike = {
   infra?: Infra;
@@ -105,6 +125,17 @@ const Inner: React.FC = () => {
     | VMResourceBreakdown
     | undefined;
 
+  // Derive last updated text from latest snapshot
+  const lastUpdatedText: string = (() => {
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const result = parseLatestSnapshot((assessment as any).snapshots);
+      return result.lastUpdated || '-';
+    } catch {
+      return '-';
+    }
+  })();
+
   return (
     <AppPage
       breadcrumbs={[
@@ -116,28 +147,51 @@ const Inner: React.FC = () => {
         {
           key: 2,
           to: '#',
-          children: assessment.name || `Assessment ${id}`,
+          children: assessment.name || `Assessment ${id} report`,
           isActive: true,
         },
       ]}
-      title={assessment.name || `Assessment ${id}`}
+      title={assessment.name || `Assessment ${id} report`}
+      caption={
+        <>
+          Discovery VM status :{' '}
+          <Icon size="md" isInline>
+            <CheckCircleIcon color={globalSuccessColor100.value} />
+          </Icon>{' '}
+          Connected
+          <br />
+          Presenting the information we were able to fetch from the discovery
+          process
+          <br />
+          {lastUpdatedText !== '-'
+            ? `Last updated: ${lastUpdatedText}`
+            : '[Last updated time stamp]'}
+        </>
+      }
       headerActions={
-        infra && vms && cpuCores && ramGB ? (
-          <EnhancedDownloadButton
-            elementId="discovery-report"
-            componentToRender={
-              <Dashboard
-                infra={infra}
-                cpuCores={cpuCores}
-                ramGB={ramGB}
-                vms={vms}
-                isExportMode={true}
+        <div style={{ display: 'flex', gap: '0.5rem' }}>
+          {infra && vms && cpuCores && ramGB ? (
+            <>
+              <EnhancedDownloadButton
+                elementId="discovery-report"
+                componentToRender={
+                  <Dashboard
+                    infra={infra}
+                    cpuCores={cpuCores}
+                    ramGB={ramGB}
+                    vms={vms}
+                    isExportMode={true}
+                  />
+                }
+                sourceData={discoverySourcesContext.sourceSelected as Source}
+                snapshot={last}
               />
-            }
-            sourceData={discoverySourcesContext.sourceSelected as Source}
-            snapshot={last}
-          />
-        ) : null
+              <Button variant="primary" onClick={openAssistedInstaller}>
+                Create a target cluster
+              </Button>
+            </>
+          ) : null}
+        </div>
       }
     >
       {infra && vms && cpuCores && ramGB ? (

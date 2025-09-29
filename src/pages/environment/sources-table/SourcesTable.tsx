@@ -20,6 +20,7 @@ type SourceTableProps = {
   onUploadSuccess?: () => void;
   search?: string;
   selectedStatuses?: string[];
+  onlySourceId?: string;
 };
 
 export const SourcesTable: React.FC<SourceTableProps> = ({
@@ -27,6 +28,7 @@ export const SourcesTable: React.FC<SourceTableProps> = ({
   onUploadSuccess,
   search: _search = '',
   selectedStatuses = [],
+  onlySourceId,
 }) => {
   const discoverySourcesContext = useDiscoverySources();
   const prevSourcesRef = useRef<typeof discoverySourcesContext.sources>([]);
@@ -71,6 +73,11 @@ export const SourcesTable: React.FC<SourceTableProps> = ({
     if (!memoizedSources) return [];
     let filtered = memoizedSources;
 
+    // Filter by specific source id if provided
+    if (onlySourceId) {
+      filtered = filtered.filter((s) => s.id === onlySourceId);
+    }
+
     // Name-only search
     if (_search && _search.trim() !== '') {
       const query = _search.toLowerCase();
@@ -112,7 +119,7 @@ export const SourcesTable: React.FC<SourceTableProps> = ({
     }
 
     return filtered;
-  }, [memoizedSources, _search, selectedStatuses]);
+  }, [memoizedSources, _search, selectedStatuses, onlySourceId]);
 
   useMount(async () => {
     discoverySourcesContext.startPolling(DEFAULT_POLLING_DELAY);
@@ -132,7 +139,7 @@ export const SourcesTable: React.FC<SourceTableProps> = ({
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [firstSource, discoverySourcesContext],
+    [firstSource, discoverySourcesContext.sources],
   );
 
   useEffect(() => {

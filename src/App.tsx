@@ -40,7 +40,8 @@ const App: React.FC = () => {
     };
 
     configure();
-  }, [chrome]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   if (!container) {
     return <Spinner />;

@@ -429,13 +429,23 @@ export const AssessmentsTable: React.FC<Props> = ({
                       >
                         Show assessment report
                       </DropdownItem>
-                      <DropdownItem onClick={() => handleShare(row.id)}>
+                      <DropdownItem
+                        onClick={() => handleShare(row.id)}
+                        isDisabled={true}
+                      >
                         Share assessment
                       </DropdownItem>
                       <DropdownItem
                         onClick={() => alert('Edit functionality coming soon!')}
+                        isDisabled={true}
                       >
                         Edit assessment
+                      </DropdownItem>
+                      <DropdownItem
+                        onClick={() => alert('Edit functionality coming soon!')}
+                        isDisabled={true}
+                      >
+                        Create a target cluster
                       </DropdownItem>
                       <DropdownItem onClick={() => handleDelete(row.id)}>
                         Delete assessment

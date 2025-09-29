@@ -164,9 +164,16 @@ export const MigrationAssessmentPageContent: React.FC = () => {
   }, [discoverySourcesContext, hasInitialLoad]);
 
   useMount(async () => {
-    await updateAssessments();
-    await discoverySourcesContext.listSources(); // Load sources to check for up-to-date status
     discoverySourcesContext.startPolling(DEFAULT_POLLING_DELAY);
+    void (async () => {
+      try {
+        await updateAssessments();
+        await discoverySourcesContext.listSources(); // Load sources to check for up-to-date status
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.error('Initial load failed:', err);
+      }
+    })();
   });
 
   useUnmount(() => {

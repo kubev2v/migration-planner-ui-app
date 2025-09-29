@@ -1,5 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useMount, useUnmount } from 'react-use';
 
 import {
   Alert,
@@ -21,7 +22,9 @@ import {
 
 import { AppPage } from '../../components/AppPage';
 import { useDiscoverySources } from '../../migration-wizard/contexts/discovery-sources/Context';
+import { DEFAULT_POLLING_DELAY } from '../environment/sources-table/Constants';
 import { DiscoverySourceSetupModal } from '../environment/sources-table/empty-state/DiscoverySourceSetupModal';
+import { SourcesTable } from '../environment/sources-table/SourcesTable';
 
 const CreateFromOva: React.FC = () => {
   const navigate = useNavigate();
@@ -39,25 +42,41 @@ const CreateFromOva: React.FC = () => {
     ? discoverySourcesContext.getSourceById?.(createdSourceId)
     : undefined;
 
-  React.useEffect(() => {
-    discoverySourcesContext.startPolling(5000);
-    if (!discoverySourcesContext.isLoadingSources) {
-      discoverySourcesContext.listSources();
+  useMount(async () => {
+    discoverySourcesContext.startPolling(DEFAULT_POLLING_DELAY);
+    if (!discoverySourcesContext.isPolling) {
+      await Promise.all([discoverySourcesContext.listSources()]);
     }
-    return () => discoverySourcesContext.stopPolling();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [discoverySourcesContext.sources]);
+  });
+
+  useUnmount(() => {
+    discoverySourcesContext.stopPolling();
+  });
 
   const availableEnvironments = React.useMemo(
     () =>
       (discoverySourcesContext.sources || [])
-        .filter(
-          (source) =>
-            source.agent?.status === 'up-to-date' && source.name !== 'Example',
-        )
+        .filter((source) => source.name !== 'Example')
         .slice()
         .sort((a, b) => (a.name || '').localeCompare(b.name || '')),
     [discoverySourcesContext.sources],
+  );
+
+  const selectedEnv = React.useMemo(
+    () =>
+      (discoverySourcesContext.sources || []).find(
+        (s) => s.id === selectedEnvironmentId,
+      ),
+    [discoverySourcesContext.sources, selectedEnvironmentId],
+  );
+
+  const isSelectedNotReady = Boolean(
+    useExisting &&
+      selectedEnv &&
+      !(
+        selectedEnv.agent?.status === 'up-to-date' ||
+        (selectedEnv?.onPremises && selectedEnv.inventory !== undefined)
+      ),
   );
 
   const handleSubmit = async (): Promise<void> => {
@@ -65,7 +84,7 @@ const CreateFromOva: React.FC = () => {
 
     if (!sourceIdToUse) return;
 
-    await discoverySourcesContext.createAssessment(
+    const assessment = await discoverySourcesContext.createAssessment(
       name,
       'agent',
       undefined,
@@ -73,7 +92,9 @@ const CreateFromOva: React.FC = () => {
     );
 
     await discoverySourcesContext.listAssessments();
-    navigate('/openshift/migration-assessment/');
+    navigate(
+      `/openshift/migration-assessment/migrate/assessments/${assessment.id}`,
+    );
   };
 
   const isSubmitDisabled =
@@ -181,6 +202,17 @@ const CreateFromOva: React.FC = () => {
             </FormGroup>
           )}
 
+          {useExisting && selectedEnvironmentId && (
+            <div style={{ marginTop: '16px' }}>
+              <SourcesTable
+                onlySourceId={selectedEnvironmentId}
+                onUploadSuccess={async () => {
+                  await discoverySourcesContext.listSources();
+                }}
+              />
+            </div>
+          )}
+
           <div style={{ marginTop: '8px' }}>
             <Button
               variant="secondary"
@@ -226,7 +258,7 @@ const CreateFromOva: React.FC = () => {
               isDisabled={
                 isSubmitDisabled ||
                 discoverySourcesContext.isCreatingAssessment ||
-                !selectedEnvironmentId
+                isSelectedNotReady
               }
               onClick={handleSubmit}
             >
@@ -241,11 +273,24 @@ const CreateFromOva: React.FC = () => {
         {isSetupModalOpen && (
           <DiscoverySourceSetupModal
             isOpen={isSetupModalOpen}
-            onClose={() => setIsSetupModalOpen(false)}
+            onClose={async () => {
+              const newId = discoverySourcesContext.sourceCreatedId;
+              await discoverySourcesContext.listSources();
+              if (newId) {
+                setUseExisting(true);
+                setSelectedEnvironmentId(newId);
+              }
+              setIsSetupModalOpen(false);
+            }}
             isDisabled={discoverySourcesContext.isDownloadingSource}
             onStartDownload={() => discoverySourcesContext.setDownloadUrl?.('')}
             onAfterDownload={async () => {
+              const newId = discoverySourcesContext.sourceCreatedId;
               await discoverySourcesContext.listSources();
+              if (newId) {
+                setUseExisting(true);
+                setSelectedEnvironmentId(newId);
+              }
             }}
           />
         )}
