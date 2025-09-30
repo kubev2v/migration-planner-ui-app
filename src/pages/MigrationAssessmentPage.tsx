@@ -134,7 +134,7 @@ const _WelcomePage: React.FC = () => (
         </Flex>
       </StackItem>
       <StackItem style={{ alignSelf: 'center' }}>
-        <Link to="migrate/wizard">
+        <Link to="wizard">
           <Button>Start your migration journey</Button>
         </Link>
       </StackItem>

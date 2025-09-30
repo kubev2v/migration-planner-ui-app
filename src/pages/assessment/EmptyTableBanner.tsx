@@ -122,7 +122,9 @@ const EmptyTableBanner: React.FC<Props> = ({ onOpenModal }) => {
             <DropdownItem
               key="agent"
               component="button"
-              onClick={() => navigate('migrate/assessments/create')}
+              onClick={() =>
+                navigate('/openshift/migration-assessment/assessments/create')
+              }
             >
               With discovery OVA
             </DropdownItem>

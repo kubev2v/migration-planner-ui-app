@@ -20,6 +20,10 @@ const CreateFromOva = React.lazy(
   () => import('./pages/assessment/CreateFromOva'),
 );
 
+const AssessmentDetails = React.lazy(
+  () => import('./pages/assessment/AssessmentDetails'),
+);
+
 const Routing: React.FC = () => {
   const routes: RouteType[] = [
     {
@@ -27,15 +31,29 @@ const Routing: React.FC = () => {
       element: MigrationPage,
     },
     {
-      path: '/migrate/assessments/:id',
+      path: '/assessments',
+      element: MigrationPage,
+      elementProps: { initialTabKey: 0 },
+    },
+    {
+      path: '/assessments/:id',
+      element: AssessmentDetails,
+    },
+    {
+      path: '/environments',
+      element: MigrationPage,
+      elementProps: { initialTabKey: 1 },
+    },
+    {
+      path: '/assessments/:id/report',
       element: Report,
     },
     {
-      path: '/migrate/assessments/create',
+      path: '/assessments/create',
       element: CreateFromOva,
     },
     {
-      path: '/migrate/wizard',
+      path: '/wizard',
       element: MigrationWizardPage,
     },
     {

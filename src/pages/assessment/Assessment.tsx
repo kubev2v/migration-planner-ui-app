@@ -366,7 +366,11 @@ const Assessment: React.FC<Props> = ({ assessments, isLoading }) => {
                     <DropdownItem
                       key="agent"
                       component="button"
-                      onClick={() => navigate('migrate/assessments/create')}
+                      onClick={() =>
+                        navigate(
+                          '/openshift/migration-assessment/assessments/create',
+                        )
+                      }
                     >
                       With discovery OVA
                     </DropdownItem>

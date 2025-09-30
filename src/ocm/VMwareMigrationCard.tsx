@@ -53,7 +53,7 @@ export const VMwareMigrationCard: React.FC = () => {
       <CardFooter>
         <Flex>
           <FlexItem>
-            <Link to="migrate/wizard">
+            <Link to="wizard">
               <Button variant="secondary">Start your migration journey</Button>
             </Link>
           </FlexItem>

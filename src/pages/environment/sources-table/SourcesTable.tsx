@@ -1,14 +1,23 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useMount, useUnmount } from 'react-use';
 
 import { Source } from '@migration-planner-ui/api-client/models';
-import { Button, Spinner } from '@patternfly/react-core';
-import { ArrowLeftIcon } from '@patternfly/react-icons';
+import {
+  Button,
+  Dropdown,
+  DropdownItem,
+  DropdownList,
+  MenuToggle,
+  MenuToggleElement,
+  Spinner,
+} from '@patternfly/react-core';
+import { ArrowLeftIcon, EllipsisVIcon } from '@patternfly/react-icons';
 import { Table, Tbody, Td, Th, Thead, Tr } from '@patternfly/react-table';
 
+import { ConfirmationModal } from '../../../components/ConfirmationModal';
 import { useDiscoverySources } from '../../../migration-wizard/contexts/discovery-sources/Context';
 
-import { RemoveSourceAction } from './actions/RemoveSourceAction';
 import { UploadInventoryAction } from './actions/UploadInventoryAction';
 import { EmptyState } from './empty-state/EmptyState';
 import { AgentStatusView } from './AgentStatusView';
@@ -21,6 +30,7 @@ type SourceTableProps = {
   search?: string;
   selectedStatuses?: string[];
   onlySourceId?: string;
+  uploadOnly?: boolean;
 };
 
 export const SourcesTable: React.FC<SourceTableProps> = ({
@@ -29,40 +39,26 @@ export const SourcesTable: React.FC<SourceTableProps> = ({
   search: _search = '',
   selectedStatuses = [],
   onlySourceId,
+  uploadOnly = false,
 }) => {
   const discoverySourcesContext = useDiscoverySources();
-  const prevSourcesRef = useRef<typeof discoverySourcesContext.sources>([]);
   const [isLoading, setIsLoading] = useState(true);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const navigate = useNavigate();
+  const [openDropdowns, setOpenDropdowns] = useState<Record<string, boolean>>(
+    {},
+  );
+  const [deleteTarget, setDeleteTarget] = useState<Source | null>(null);
 
-  // Memorize ordered agents without mutating context sources
+  // Memorize ordered sources without mutating context sources
   const memoizedSources = useMemo(() => {
-    const areSourcesEquals = (
-      prevSources: typeof discoverySourcesContext.sources,
-      newSources: typeof discoverySourcesContext.sources,
-    ): boolean => {
-      if (
-        !prevSources ||
-        !newSources ||
-        prevSources.length !== newSources.length
-      )
-        return false;
-      return prevSources.every(
-        (agent, index) => agent.id === newSources[index].id,
-      );
-    };
-
     const sourcesToUse: Source[] = discoverySourcesContext.sources
       ? [...discoverySourcesContext.sources].sort((a: Source, b: Source) =>
           a.id.localeCompare(b.id),
         )
       : [];
 
-    if (!areSourcesEquals(prevSourcesRef.current, sourcesToUse)) {
-      prevSourcesRef.current = sourcesToUse;
-    }
-
-    return prevSourcesRef.current;
+    return sourcesToUse;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [discoverySourcesContext.sources]);
 
@@ -124,7 +120,10 @@ export const SourcesTable: React.FC<SourceTableProps> = ({
   useMount(async () => {
     discoverySourcesContext.startPolling(DEFAULT_POLLING_DELAY);
     if (!discoverySourcesContext.isPolling) {
-      await Promise.all([discoverySourcesContext.listSources()]);
+      await Promise.all([
+        discoverySourcesContext.listSources(),
+        discoverySourcesContext.listAssessments?.(),
+      ]);
     }
   });
 
@@ -147,6 +146,8 @@ export const SourcesTable: React.FC<SourceTableProps> = ({
     timeoutRef.current = setTimeout(() => {
       if (memoizedSources && memoizedSources.length === 0) {
         setIsLoading(false);
+      } else {
+        setIsLoading(false);
       }
     }, 3000); // Timeout in milisecons (3 seconds here)
 
@@ -158,6 +159,107 @@ export const SourcesTable: React.FC<SourceTableProps> = ({
       }
     };
   }, [memoizedSources]);
+
+  // Build map of sourceId -> assessmentId to enable report action
+  const sourceToAssessmentId = useMemo(() => {
+    const map: Record<string, string> = {};
+    try {
+      const list = (discoverySourcesContext.assessments || []) as unknown[];
+      list.forEach((a: unknown) => {
+        const obj = (a || {}) as Record<string, unknown>;
+        const id = obj.id as string | number | undefined;
+        const sourceId = obj.sourceId as string | number | undefined;
+        if (id !== undefined && sourceId !== undefined) {
+          map[String(sourceId)] = String(id);
+        }
+      });
+    } catch {
+      // ignore
+    }
+    return map;
+  }, [discoverySourcesContext.assessments]);
+
+  const handleUploadFile = async (sourceId: string): Promise<void> => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json';
+    input.style.visibility = 'hidden';
+
+    input.onchange = async (event: Event): Promise<void> => {
+      const file = (event.target as HTMLInputElement)?.files?.[0];
+      if (!file) return;
+
+      const maxSize = 12582912; // 12 MiB
+      if (file.size > maxSize) {
+        onUploadResult?.(
+          'The file is too big. Upload a file up to 12 MiB.',
+          true,
+        );
+        return;
+      }
+
+      const fileExtension = file.name.toLowerCase().split('.').pop();
+
+      try {
+        if (fileExtension === 'json') {
+          const content = await file.text();
+          try {
+            await discoverySourcesContext.updateInventory(
+              sourceId,
+              JSON.parse(content),
+            );
+            onUploadResult?.('Discovery file uploaded successfully', false);
+          } catch (error: unknown) {
+            const message =
+              (error as { message?: string })?.message ||
+              'Failed to update inventory';
+            onUploadResult?.(message, true);
+          }
+        } else {
+          onUploadResult?.(
+            'Unsupported file format. Please upload a JSON file.',
+            true,
+          );
+        }
+      } catch {
+        onUploadResult?.(
+          'Failed to import file. Please check the file format.',
+          true,
+        );
+      } finally {
+        input.remove();
+        await discoverySourcesContext.listSources();
+        onUploadSuccess?.();
+      }
+    };
+
+    document.body.appendChild(input);
+    input.click();
+  };
+
+  const handleDelete = async (source: Source): Promise<void> => {
+    await discoverySourcesContext.deleteSource(source.id);
+    setDeleteTarget(null);
+    await Promise.all([
+      discoverySourcesContext.listSources(),
+      firstSource && discoverySourcesContext.selectSource(firstSource),
+    ]);
+  };
+
+  const handleShowReport = (sourceId: string): void => {
+    const assessmentId = sourceToAssessmentId[sourceId];
+    if (assessmentId) {
+      navigate(
+        `/openshift/migration-assessment/assessments/${assessmentId}/report`,
+      );
+    }
+  };
+
+  const handleCreateAssessment = (sourceId: string): void => {
+    discoverySourcesContext.setAssessmentFromAgent?.(true);
+    discoverySourcesContext.selectSourceById?.(sourceId);
+    navigate('/openshift/migration-assessment/assessments/create');
+  };
 
   // Show spinner until all data is loaded
   if (isLoading && !hasSources) {
@@ -177,7 +279,14 @@ export const SourcesTable: React.FC<SourceTableProps> = ({
       <div>
         {discoverySourcesContext.assessmentFromAgentState && (
           <div style={{ marginBottom: '16px' }}>
-            <Button variant="link" icon={<ArrowLeftIcon />} onClick={() => {}}>
+            <Button
+              variant="link"
+              icon={<ArrowLeftIcon />}
+              onClick={() => {
+                discoverySourcesContext.setAssessmentFromAgent?.(false);
+                navigate('/openshift/migration-assessment/assessments');
+              }}
+            >
               Back to Assessments
             </Button>
           </div>
@@ -229,6 +338,10 @@ export const SourcesTable: React.FC<SourceTableProps> = ({
                 filteredSources.map((source) => {
                   // Get the agent related to this source
                   const agent = source.agent;
+                  const isReportAvailable = Boolean(
+                    sourceToAssessmentId[source.id],
+                  );
+                  const isUploadAllowed = !source?.agent || source?.onPremises;
                   return (
                     <Tr key={source.id}>
                       <Td dataLabel={Columns.Name}>{source.name}</Td>
@@ -261,52 +374,86 @@ export const SourcesTable: React.FC<SourceTableProps> = ({
                           VALUE_NOT_AVAILABLE}
                       </Td>
                       <Td dataLabel={Columns.Actions}>
-                        <>
-                          {source.name !== 'Example' && (
-                            <RemoveSourceAction
-                              sourceId={source.id}
-                              sourceName={source.name}
-                              isDisabled={
-                                discoverySourcesContext.isDeletingSource
-                              }
-                              onConfirm={async (event) => {
-                                event.stopPropagation();
-                                await discoverySourcesContext.deleteSource(
-                                  source.id,
-                                );
-                                event.dismissConfirmationModal();
-                                await Promise.all([
-                                  discoverySourcesContext.listSources(),
-                                  firstSource &&
-                                    discoverySourcesContext.selectSource(
-                                      firstSource,
-                                    ),
-                                ]);
-                              }}
-                            />
-                          )}
-                          {(!source?.agent || source?.onPremises) &&
-                            source?.name !== 'Example' && (
+                        {uploadOnly ? (
+                          <>
+                            {isUploadAllowed && source.name !== 'Example' && (
                               <UploadInventoryAction
                                 sourceId={source.id}
                                 discoverySourcesContext={
                                   discoverySourcesContext
                                 }
-                                onUploadResult={(message, isError) => {
-                                  onUploadResult?.(message, isError);
-                                }}
+                                onUploadResult={(message, isError) =>
+                                  onUploadResult?.(message, isError)
+                                }
                                 onUploadSuccess={onUploadSuccess}
                               />
                             )}
-                          {/* Temporarily disabled: Download OVA action. Re-enable when needed.
-                          {source.name !== 'Example' && (
-                            <DownloadOvaAction
-                              sourceId={source.id}
-                              sourceName={source.name}
-                            />
-                          )}
-                          */}
-                        </>
+                          </>
+                        ) : (
+                          <Dropdown
+                            isOpen={openDropdowns[source.id] || false}
+                            onOpenChange={(isOpen) =>
+                              setOpenDropdowns((prev) => ({
+                                ...prev,
+                                [source.id]: isOpen,
+                              }))
+                            }
+                            toggle={(
+                              toggleRef: React.Ref<MenuToggleElement>,
+                            ) => (
+                              <MenuToggle
+                                ref={toggleRef}
+                                aria-label="Actions"
+                                variant="plain"
+                                onClick={() =>
+                                  setOpenDropdowns((prev) => ({
+                                    ...prev,
+                                    [source.id]: !prev[source.id],
+                                  }))
+                                }
+                              >
+                                <EllipsisVIcon />
+                              </MenuToggle>
+                            )}
+                          >
+                            <DropdownList>
+                              <DropdownItem
+                                isDisabled={!isReportAvailable}
+                                onClick={() => handleShowReport(source.id)}
+                              >
+                                Show assessment report
+                              </DropdownItem>
+                              <DropdownItem
+                                description="Based on this environment"
+                                onClick={() =>
+                                  handleCreateAssessment(source.id)
+                                }
+                              >
+                                Create new migration assessment
+                              </DropdownItem>
+                              <DropdownItem isDisabled>
+                                Edit environment
+                              </DropdownItem>
+                              <DropdownItem
+                                isDisabled={
+                                  !isUploadAllowed || source.name === 'Example'
+                                }
+                                onClick={() => handleUploadFile(source.id)}
+                              >
+                                Upload file
+                              </DropdownItem>
+                              <DropdownItem
+                                isDisabled={
+                                  discoverySourcesContext.isDeletingSource ||
+                                  source.name === 'Example'
+                                }
+                                onClick={() => setDeleteTarget(source)}
+                              >
+                                Delete environment
+                              </DropdownItem>
+                            </DropdownList>
+                          </Dropdown>
+                        )}
                       </Td>
                     </Tr>
                   );
@@ -321,6 +468,23 @@ export const SourcesTable: React.FC<SourceTableProps> = ({
             </Tbody>
           </Table>
         </div>
+
+        {deleteTarget && (
+          <ConfirmationModal
+            title="Delete Environment"
+            titleIconVariant="warning"
+            isOpen={Boolean(deleteTarget)}
+            isDisabled={discoverySourcesContext.isDeletingSource}
+            onCancel={() => setDeleteTarget(null)}
+            onConfirm={() => deleteTarget && handleDelete(deleteTarget)}
+            onClose={() => setDeleteTarget(null)}
+          >
+            Are you sure you want to delete{' '}
+            <b>{deleteTarget.name || 'this environment'}</b>?
+            <br />
+            To use it again, create a new discovery image and redeploy it.
+          </ConfirmationModal>
+        )}
       </div>
     );
   }

@@ -51,7 +51,22 @@ const CreateFromOva: React.FC = () => {
 
   useUnmount(() => {
     discoverySourcesContext.stopPolling();
+    discoverySourcesContext.setAssessmentFromAgent?.(false);
   });
+
+  React.useEffect(() => {
+    if (discoverySourcesContext.assessmentFromAgentState) {
+      const preselected = discoverySourcesContext.sourceSelected;
+      if (preselected?.id) {
+        setUseExisting(true);
+        setSelectedEnvironmentId(preselected.id);
+      }
+    }
+  }, [
+    discoverySourcesContext.assessmentFromAgentState,
+    discoverySourcesContext.sourceSelected,
+    discoverySourcesContext.sources,
+  ]);
 
   const availableEnvironments = React.useMemo(
     () =>
@@ -93,7 +108,7 @@ const CreateFromOva: React.FC = () => {
 
     await discoverySourcesContext.listAssessments();
     navigate(
-      `/openshift/migration-assessment/migrate/assessments/${assessment.id}`,
+      `/openshift/migration-assessment/assessments/${assessment.id}/report`,
     );
   };
 
@@ -206,6 +221,7 @@ const CreateFromOva: React.FC = () => {
             <div style={{ marginTop: '16px' }}>
               <SourcesTable
                 onlySourceId={selectedEnvironmentId}
+                uploadOnly={true}
                 onUploadSuccess={async () => {
                   await discoverySourcesContext.listSources();
                 }}

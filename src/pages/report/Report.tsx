@@ -88,10 +88,14 @@ const Inner: React.FC = () => {
         breadcrumbs={[
           {
             key: 1,
-            to: '/openshift/migration-assessment',
             children: 'Migration assessment',
           },
-          { key: 2, to: '#', children: 'Assessment not found', isActive: true },
+          {
+            key: 2,
+            to: '/openshift/migration-assessment/assessments',
+            children: 'assessments',
+          },
+          { key: 3, to: '#', children: 'Assessment not found', isActive: true },
         ]}
         title="Assessment details"
       >
@@ -102,7 +106,7 @@ const Inner: React.FC = () => {
             </TextContent>
           </StackItem>
           <StackItem>
-            <Link to="/openshift/migration-assessment">
+            <Link to="/openshift/migration-assessment/assessments">
               <Button variant="primary">Back to assessments</Button>
             </Link>
           </StackItem>
@@ -141,17 +145,21 @@ const Inner: React.FC = () => {
       breadcrumbs={[
         {
           key: 1,
-          to: '/openshift/migration-assessment',
           children: 'Migration assessment',
         },
         {
           key: 2,
+          to: '/openshift/migration-assessment/assessments',
+          children: 'assessments',
+        },
+        {
+          key: 3,
           to: '#',
-          children: assessment.name || `Assessment ${id} report`,
+          children: `${assessment.name || `Assessment ${id}`} report`,
           isActive: true,
         },
       ]}
-      title={assessment.name || `Assessment ${id} report`}
+      title={`${assessment.name || `Assessment ${id}`} report`}
       caption={
         <>
           Discovery VM status :{' '}

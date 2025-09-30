@@ -75,10 +75,6 @@ export const AssessmentsTable: React.FC<Props> = ({
     onDelete?.(assessmentId);
   };
 
-  const handleShare = (_assessmentId: string): void => {
-    alert('Share functionality coming soon!');
-  };
-
   const rows = useMemo(() => {
     const safeAssessments = Array.isArray(assessments) ? assessments : [];
     const items = safeAssessments.map((assessment) => {
@@ -362,7 +358,19 @@ export const AssessmentsTable: React.FC<Props> = ({
         <Tbody>
           {rows.map((row) => (
             <Tr key={row.key}>
-              <Td dataLabel={Columns.Name}>{row.name}</Td>
+              <Td dataLabel={Columns.Name}>
+                <Button
+                  variant="link"
+                  style={{ padding: 0 }}
+                  onClick={() =>
+                    navigate(
+                      `/openshift/migration-assessment/assessments/${row.id}`,
+                    )
+                  }
+                >
+                  {row.name}
+                </Button>
+              </Td>
               <Td dataLabel={Columns.SourceType}>
                 <div
                   style={{
@@ -400,7 +408,11 @@ export const AssessmentsTable: React.FC<Props> = ({
                     aria-label="Open assessment"
                     icon={<MonitoringIcon />}
                     style={{ color: '#0066cc' }}
-                    onClick={() => navigate(`migrate/assessments/${row.id}`)}
+                    onClick={() =>
+                      navigate(
+                        `/openshift/migration-assessment/assessments/${row.id}/report`,
+                      )
+                    }
                   />
                   <Dropdown
                     isOpen={openDropdowns[row.id] || false}
@@ -424,16 +436,12 @@ export const AssessmentsTable: React.FC<Props> = ({
                     <DropdownList>
                       <DropdownItem
                         onClick={() =>
-                          navigate(`migrate/assessments/${row.id}`)
+                          navigate(
+                            `/openshift/migration-assessment/assessments/${row.id}/report`,
+                          )
                         }
                       >
                         Show assessment report
-                      </DropdownItem>
-                      <DropdownItem
-                        onClick={() => handleShare(row.id)}
-                        isDisabled={true}
-                      >
-                        Share assessment
                       </DropdownItem>
                       <DropdownItem
                         onClick={() => alert('Edit functionality coming soon!')}
