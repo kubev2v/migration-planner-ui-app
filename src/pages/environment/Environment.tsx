@@ -37,6 +37,8 @@ export const Environment: React.FC = () => {
     setShouldShowDiscoverySetupModal,
   ] = useState(false);
 
+  const [editSourceId, setEditSourceId] = useState<string | null>(null);
+
   const toggleDiscoverySourceSetupModal = useCallback((): void => {
     setShouldShowDiscoverySetupModal((lastState) => !lastState);
   }, []);
@@ -183,7 +185,10 @@ export const Environment: React.FC = () => {
               {hasSources ? (
                 <Button
                   variant="primary"
-                  onClick={toggleDiscoverySourceSetupModal}
+                  onClick={() => {
+                    setEditSourceId(null);
+                    toggleDiscoverySourceSetupModal();
+                  }}
                   icon={<PlusCircleIcon />}
                 >
                   Add environment
@@ -269,6 +274,11 @@ export const Environment: React.FC = () => {
             }}
             search={search}
             selectedStatuses={selectedStatuses}
+            onEditEnvironment={(sourceId) => {
+              setEditSourceId(sourceId);
+              discoverySourcesContext.selectSourceById?.(sourceId);
+              setShouldShowDiscoverySetupModal(true);
+            }}
           />
         </div>
       </div>
@@ -332,12 +342,16 @@ export const Environment: React.FC = () => {
       {shouldShowDiscoverySourceSetupModal && (
         <DiscoverySourceSetupModal
           isOpen={shouldShowDiscoverySourceSetupModal}
-          onClose={toggleDiscoverySourceSetupModal}
+          onClose={() => {
+            setEditSourceId(null);
+            toggleDiscoverySourceSetupModal();
+          }}
           isDisabled={discoverySourcesContext.isDownloadingSource}
           onStartDownload={() => setIsOvaDownloading(true)}
           onAfterDownload={async () => {
             await discoverySourcesContext.listSources();
           }}
+          editSourceId={editSourceId || undefined}
         />
       )}
       <TroubleshootingModal

@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 
+import { Source } from '@migration-planner-ui/api-client/models';
 import {
   Alert,
   Button,
@@ -30,6 +31,7 @@ export interface DiscoverySourceSetupModalProps {
   onClose?: (event?: KeyboardEvent | React.MouseEvent) => void;
   onStartDownload: () => void;
   onAfterDownload: () => Promise<void>;
+  editSourceId?: string;
 }
 
 export const DiscoverySourceSetupModal: React.FC<
@@ -42,6 +44,7 @@ export const DiscoverySourceSetupModal: React.FC<
     onClose,
     onStartDownload,
     onAfterDownload,
+    editSourceId,
   } = props;
   const [sshKey, setSshKey] = useState('');
   const [sshKeyError, setSshKeyError] = useState<string | null>(null);
@@ -89,6 +92,7 @@ export const DiscoverySourceSetupModal: React.FC<
     setHttpsProxy('');
     setNoProxy('');
     setEnableProxy(false);
+    setIsEditingConfiguration(false);
     discoverySourcesContext.setDownloadUrl('');
     discoverySourcesContext.deleteSourceCreated();
     discoverySourcesContext.errorDownloadingSource = null;
@@ -106,12 +110,14 @@ export const DiscoverySourceSetupModal: React.FC<
 
       if (!discoverySourcesContext.downloadSourceUrl) {
         if (isEditingConfiguration) {
-          if (!discoverySourcesContext.sourceCreatedId) {
+          const sourceIdToUpdate =
+            editSourceId || discoverySourcesContext.sourceCreatedId;
+          if (!sourceIdToUpdate) {
             console.error('No source ID available for editing');
             return;
           }
           await discoverySourcesContext.updateSource(
-            discoverySourcesContext.sourceCreatedId,
+            sourceIdToUpdate,
             sshKey,
             httpProxy,
             httpsProxy,
@@ -163,6 +169,8 @@ export const DiscoverySourceSetupModal: React.FC<
       onStartDownload,
       onAfterDownload,
       onClose,
+      editSourceId,
+      isEditingConfiguration,
     ],
   );
 
@@ -176,9 +184,35 @@ export const DiscoverySourceSetupModal: React.FC<
   useEffect(() => {
     if (isOpen) {
       resetForm();
+      if (editSourceId) {
+        setIsEditingConfiguration(true);
+        const src = discoverySourcesContext.getSourceById?.(editSourceId) as
+          | Source
+          | undefined;
+        if (src) {
+          setEnvironmentName(src.name || '');
+          const proxy =
+            (
+              src as {
+                proxy?: {
+                  httpUrl?: string;
+                  httpsUrl?: string;
+                  noProxy?: string;
+                };
+              }
+            ).proxy || {};
+          const httpUrl = proxy.httpUrl || '';
+          const httpsUrl = proxy.httpsUrl || '';
+          const noProxyVal = proxy.noProxy || '';
+          setHttpProxy(httpUrl);
+          setHttpsProxy(httpsUrl);
+          setNoProxy(noProxyVal);
+          setEnableProxy(Boolean(httpUrl || httpsUrl || noProxyVal));
+        }
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOpen]);
+  }, [isOpen, editSourceId]);
 
   return (
     <Modal

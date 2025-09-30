@@ -31,6 +31,7 @@ type SourceTableProps = {
   selectedStatuses?: string[];
   onlySourceId?: string;
   uploadOnly?: boolean;
+  onEditEnvironment?: (sourceId: string) => void;
 };
 
 export const SourcesTable: React.FC<SourceTableProps> = ({
@@ -40,6 +41,7 @@ export const SourcesTable: React.FC<SourceTableProps> = ({
   selectedStatuses = [],
   onlySourceId,
   uploadOnly = false,
+  onEditEnvironment,
 }) => {
   const discoverySourcesContext = useDiscoverySources();
   const [isLoading, setIsLoading] = useState(true);
@@ -431,9 +433,6 @@ export const SourcesTable: React.FC<SourceTableProps> = ({
                               >
                                 Create new migration assessment
                               </DropdownItem>
-                              <DropdownItem isDisabled>
-                                Edit environment
-                              </DropdownItem>
                               <DropdownItem
                                 isDisabled={
                                   !isUploadAllowed || source.name === 'Example'
@@ -441,6 +440,17 @@ export const SourcesTable: React.FC<SourceTableProps> = ({
                                 onClick={() => handleUploadFile(source.id)}
                               >
                                 Upload file
+                              </DropdownItem>
+                              <DropdownItem
+                                onClick={() => {
+                                  setOpenDropdowns((prev) => ({
+                                    ...prev,
+                                    [source.id]: false,
+                                  }));
+                                  onEditEnvironment?.(source.id);
+                                }}
+                              >
+                                Edit environment
                               </DropdownItem>
                               <DropdownItem
                                 isDisabled={
