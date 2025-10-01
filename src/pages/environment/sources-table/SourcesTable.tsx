@@ -377,7 +377,9 @@ export const SourcesTable: React.FC<SourceTableProps> = ({
                           VALUE_NOT_AVAILABLE}
                       </Td>
                       <Td dataLabel={Columns.LastSeen}>
-                        {source?.updatedAt ? new Date(source?.updatedAt).toLocaleString() : '-'}
+                        {source?.updatedAt
+                          ? new Date(source?.updatedAt).toLocaleString()
+                          : '-'}
                       </Td>
                       <Td dataLabel={Columns.Actions}>
                         {uploadOnly ? (

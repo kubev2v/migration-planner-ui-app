@@ -36,6 +36,8 @@ const CreateFromOva: React.FC = () => {
     React.useState<string>('');
   const [isSetupModalOpen, setIsSetupModalOpen] =
     React.useState<boolean>(false);
+  const [isCreatingAssessment, setIsCreatingAssessment] =
+    React.useState<boolean>(false);
 
   const createdSourceId = discoverySourcesContext.sourceCreatedId || '';
   const createdSource = createdSourceId
@@ -95,21 +97,28 @@ const CreateFromOva: React.FC = () => {
   );
 
   const handleSubmit = async (): Promise<void> => {
-    const sourceIdToUse = useExisting ? selectedEnvironmentId : createdSourceId;
+    setIsCreatingAssessment(true);
+    try {
+      const sourceIdToUse = useExisting
+        ? selectedEnvironmentId
+        : createdSourceId;
 
-    if (!sourceIdToUse) return;
+      if (!sourceIdToUse) return;
 
-    const assessment = await discoverySourcesContext.createAssessment(
-      name,
-      'agent',
-      undefined,
-      sourceIdToUse,
-    );
+      const assessment = await discoverySourcesContext.createAssessment(
+        name,
+        'agent',
+        undefined,
+        sourceIdToUse,
+      );
 
-    await discoverySourcesContext.listAssessments();
-    navigate(
-      `/openshift/migration-assessment/assessments/${assessment.id}/report`,
-    );
+      await discoverySourcesContext.listAssessments();
+      navigate(
+        `/openshift/migration-assessment/assessments/${assessment.id}/report`,
+      );
+    } finally {
+      setIsCreatingAssessment(false);
+    }
   };
 
   const isSubmitDisabled =
@@ -272,10 +281,9 @@ const CreateFromOva: React.FC = () => {
             <Button
               variant="primary"
               isDisabled={
-                isSubmitDisabled ||
-                discoverySourcesContext.isCreatingAssessment ||
-                isSelectedNotReady
+                isSubmitDisabled || isCreatingAssessment || isSelectedNotReady
               }
+              isLoading={isCreatingAssessment}
               onClick={handleSubmit}
             >
               Create assessment report
