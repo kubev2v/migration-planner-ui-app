@@ -48,6 +48,12 @@ export const DiscoverySourceSetupModal: React.FC<
   } = props;
   const [sshKey, setSshKey] = useState('');
   const [sshKeyError, setSshKeyError] = useState<string | null>(null);
+  const [ipAddressError, setIpAddressError] = useState<string | null>(null);
+  const [subnetMaskError, setSubnetMaskError] = useState<string | null>(null);
+  const [defaultGatewayError, setDefaultGatewayError] = useState<string | null>(
+    null,
+  );
+  const [dnsError, setDnsError] = useState<string | null>(null);
   const [showUrl, setShowUrl] = useState(false);
   const [generatedUrl, setGeneratedUrl] = useState<string>('');
   const [sourceName, setSourceName] = useState<string>('');
@@ -83,14 +89,72 @@ export const DiscoverySourceSetupModal: React.FC<
       : 'Invalid SSH key format. Please provide a valid SSH public key.';
   }, []);
 
+  const validateIpAddress = useCallback((ip: string): string | null => {
+    if (!ip.trim()) return null;
+
+    const ipPattern = /^((25[0-5]|(2[0-4]|1\d|[1-9]|)\d)\.?\b){4}$/;
+    if (!ipPattern.test(ip.trim())) {
+      return 'Invalid IP address format. Please use format like 192.168.1.100';
+    }
+
+    const parts = ip.trim().split('.');
+    if (parts.length !== 4) {
+      return 'IP address must have 4 octets separated by dots';
+    }
+
+    for (const part of parts) {
+      const num = parseInt(part, 10);
+      if (isNaN(num) || num < 0 || num > 255) {
+        return 'Each octet must be between 0 and 255';
+      }
+    }
+
+    return null;
+  }, []);
+
+  const validateSubnetMask = useCallback((mask: string): string | null => {
+    if (!mask.trim()) return null;
+
+    const maskNum = parseInt(mask.trim(), 10);
+    if (isNaN(maskNum) || maskNum < 1 || maskNum > 32) {
+      return 'Subnet mask must be between 1 and 32';
+    }
+
+    return null;
+  }, []);
+
   const handleSshKeyChange = (value: string): void => {
     setSshKey(value);
     setSshKeyError(validateSshKey(value));
   };
 
-  const resetForm = () => {
+  const handleIpAddressChange = (value: string): void => {
+    setIpAddress(value);
+    setIpAddressError(validateIpAddress(value));
+  };
+
+  const handleSubnetMaskChange = (value: string): void => {
+    setSubnetMask(value);
+    setSubnetMaskError(validateSubnetMask(value));
+  };
+
+  const handleDefaultGatewayChange = (value: string): void => {
+    setDefaultGateway(value);
+    setDefaultGatewayError(validateIpAddress(value));
+  };
+
+  const handleDnsChange = (value: string): void => {
+    setDns(value);
+    setDnsError(validateIpAddress(value));
+  };
+
+  const resetForm = (): void => {
     setSshKey('');
     setSshKeyError(null);
+    setIpAddressError(null);
+    setSubnetMaskError(null);
+    setDefaultGatewayError(null);
+    setDnsError(null);
     setShowUrl(false);
     setGeneratedUrl('');
     setSourceName('');
@@ -156,6 +220,21 @@ export const DiscoverySourceSetupModal: React.FC<
               !defaultGateway.trim() ||
               !ipAddress.trim()
             ) {
+              return;
+            }
+
+            // Validate network fields and show errors
+            const ipError = validateIpAddress(ipAddress);
+            const maskError = validateSubnetMask(subnetMask);
+            const gatewayError = validateIpAddress(defaultGateway);
+            const dnsValidationError = validateIpAddress(dns);
+
+            setIpAddressError(ipError);
+            setSubnetMaskError(maskError);
+            setDefaultGatewayError(gatewayError);
+            setDnsError(dnsValidationError);
+
+            if (ipError || maskError || gatewayError || dnsValidationError) {
               return;
             }
           }
@@ -413,9 +492,10 @@ export const DiscoverySourceSetupModal: React.FC<
                         name="ipAddress"
                         type="text"
                         value={ipAddress}
-                        onChange={(_, value) => setIpAddress(value)}
+                        onChange={(_, value) => handleIpAddressChange(value)}
                         placeholder="10.0.0.2"
                         isRequired
+                        validated={ipAddressError ? 'error' : 'default'}
                         aria-describedby="ip-address-helper-text"
                         style={{ flex: 1 }}
                       />
@@ -425,9 +505,10 @@ export const DiscoverySourceSetupModal: React.FC<
                         name="subnetMask"
                         type="text"
                         value={subnetMask}
-                        onChange={(_, value) => setSubnetMask(value)}
+                        onChange={(_, value) => handleSubnetMaskChange(value)}
                         placeholder="24"
                         isRequired
+                        validated={subnetMaskError ? 'error' : 'default'}
                         style={{ width: '60px' }}
                         aria-describedby="ip-address-helper-text"
                       />
@@ -444,9 +525,11 @@ export const DiscoverySourceSetupModal: React.FC<
                       name="defaultGateway"
                       type="text"
                       value={defaultGateway}
-                      onChange={(_, value) => setDefaultGateway(value)}
+                      onChange={(_, value) => handleDefaultGatewayChange(value)}
                       placeholder="10.0.0.1"
                       isRequired
+                      validated={defaultGatewayError ? 'error' : 'default'}
+                      style={{ flex: 1 }}
                       aria-describedby="default-gateway-helper-text"
                     />
                   </FormGroup>
@@ -457,9 +540,11 @@ export const DiscoverySourceSetupModal: React.FC<
                       name="dns"
                       type="text"
                       value={dns}
-                      onChange={(_, value) => setDns(value)}
+                      onChange={(_, value) => handleDnsChange(value)}
                       placeholder="10.0.0.1"
                       isRequired
+                      validated={dnsError ? 'error' : 'default'}
+                      style={{ flex: 1 }}
                       aria-describedby="dns-helper-text"
                     />
                   </FormGroup>
@@ -494,6 +579,10 @@ export const DiscoverySourceSetupModal: React.FC<
           isDisabled={
             isDisabled ||
             !!sshKeyError ||
+            !!ipAddressError ||
+            !!subnetMaskError ||
+            !!defaultGatewayError ||
+            !!dnsError ||
             !environmentName.trim() ||
             (networkConfigType === 'static' &&
               (!dns.trim() ||
