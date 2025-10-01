@@ -1,6 +1,5 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useMount, useUnmount } from 'react-use';
 
 import {
   Alert,
@@ -22,7 +21,6 @@ import {
 
 import { AppPage } from '../../components/AppPage';
 import { useDiscoverySources } from '../../migration-wizard/contexts/discovery-sources/Context';
-import { DEFAULT_POLLING_DELAY } from '../environment/sources-table/Constants';
 import { DiscoverySourceSetupModal } from '../environment/sources-table/empty-state/DiscoverySourceSetupModal';
 import { SourcesTable } from '../environment/sources-table/SourcesTable';
 
@@ -43,18 +41,6 @@ const CreateFromOva: React.FC = () => {
   const createdSource = createdSourceId
     ? discoverySourcesContext.getSourceById?.(createdSourceId)
     : undefined;
-
-  useMount(async () => {
-    discoverySourcesContext.startPolling(DEFAULT_POLLING_DELAY);
-    if (!discoverySourcesContext.isPolling) {
-      await Promise.all([discoverySourcesContext.listSources()]);
-    }
-  });
-
-  useUnmount(() => {
-    discoverySourcesContext.stopPolling();
-    discoverySourcesContext.setAssessmentFromAgent?.(false);
-  });
 
   React.useEffect(() => {
     if (discoverySourcesContext.assessmentFromAgentState) {

@@ -130,7 +130,7 @@ const Inner: React.FC = () => {
     | undefined;
 
   // Derive last updated text from latest snapshot
-  const lastUpdatedText: string = (() => {
+  const lastUpdatedText: string = ((): string => {
     try {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const result = parseLatestSnapshot((assessment as any).snapshots);
