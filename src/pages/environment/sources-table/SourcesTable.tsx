@@ -322,6 +322,7 @@ export const SourcesTable: React.FC<SourceTableProps> = ({
                   >
                     {Columns.Datastores}
                   </Th>
+                  <Th style={{ whiteSpace: 'normal' }}>{Columns.LastSeen}</Th>
                   <Th
                     style={{
                       whiteSpace: 'normal',
@@ -374,6 +375,9 @@ export const SourcesTable: React.FC<SourceTableProps> = ({
                       <Td dataLabel={Columns.Datastores}>
                         {source?.inventory?.infra.datastores?.length ??
                           VALUE_NOT_AVAILABLE}
+                      </Td>
+                      <Td dataLabel={Columns.LastSeen}>
+                        {source?.updatedAt ? new Date(source?.updatedAt).toLocaleString() : '-'}
                       </Td>
                       <Td dataLabel={Columns.Actions}>
                         {uploadOnly ? (
