@@ -12,6 +12,7 @@ import {
   FormHelperText,
   HelperText,
   HelperTextItem,
+  Radio,
   TextArea,
   TextContent,
   TextInput,
@@ -57,6 +58,13 @@ export const DiscoverySourceSetupModal: React.FC<
   const [noProxy, setNoProxy] = useState<string>('');
   const [enableProxy, setEnableProxy] = useState(false);
   const [isEditingConfiguration, setIsEditingConfiguration] = useState(false);
+  const [networkConfigType, setNetworkConfigType] = useState<'dhcp' | 'static'>(
+    'dhcp',
+  );
+  const [dns, setDns] = useState<string>('');
+  const [subnetMask, setSubnetMask] = useState<string>('');
+  const [defaultGateway, setDefaultGateway] = useState<string>('');
+  const [ipAddress, setIpAddress] = useState<string>('');
 
   const validateSshKey = useCallback((key: string): string | null => {
     const SSH_KEY_PATTERNS = {
@@ -93,6 +101,11 @@ export const DiscoverySourceSetupModal: React.FC<
     setNoProxy('');
     setEnableProxy(false);
     setIsEditingConfiguration(false);
+    setNetworkConfigType('dhcp');
+    setDns('');
+    setSubnetMask('');
+    setDefaultGateway('');
+    setIpAddress('');
     discoverySourcesContext.setDownloadUrl('');
     discoverySourcesContext.deleteSourceCreated();
     discoverySourcesContext.errorDownloadingSource = null;
@@ -122,6 +135,11 @@ export const DiscoverySourceSetupModal: React.FC<
             httpProxy,
             httpsProxy,
             noProxy,
+            networkConfigType,
+            ipAddress,
+            subnetMask,
+            defaultGateway,
+            dns,
           );
         } else {
           const keyValidationError = validateSshKey(sshKey);
@@ -134,6 +152,18 @@ export const DiscoverySourceSetupModal: React.FC<
             return;
           }
 
+          // Validate static IP configuration fields if static IP is selected
+          if (networkConfigType === 'static') {
+            if (
+              !dns.trim() ||
+              !subnetMask.trim() ||
+              !defaultGateway.trim() ||
+              !ipAddress.trim()
+            ) {
+              return;
+            }
+          }
+
           setSourceName(environmentName);
 
           await discoverySourcesContext.createDownloadSource(
@@ -142,6 +172,11 @@ export const DiscoverySourceSetupModal: React.FC<
             httpProxy,
             httpsProxy,
             noProxy,
+            networkConfigType,
+            ipAddress,
+            subnetMask,
+            defaultGateway,
+            dns,
           );
         }
       } else {
@@ -160,6 +195,11 @@ export const DiscoverySourceSetupModal: React.FC<
     [
       sshKey,
       environmentName,
+      networkConfigType,
+      dns,
+      subnetMask,
+      defaultGateway,
+      ipAddress,
       httpProxy,
       httpsProxy,
       noProxy,
@@ -293,7 +333,8 @@ export const DiscoverySourceSetupModal: React.FC<
                   </HelperText>
                 </FormHelperText>
               </FormGroup>
-              <FormGroup label="Show proxy settings">
+
+              <FormGroup>
                 <Checkbox
                   id="enable-proxy"
                   label="Enable proxy"
@@ -301,6 +342,7 @@ export const DiscoverySourceSetupModal: React.FC<
                   onChange={(_, checked) => setEnableProxy(checked)}
                 />
               </FormGroup>
+
               {enableProxy && (
                 <>
                   <FormGroup label="HTTP proxy URL">
@@ -357,12 +399,102 @@ export const DiscoverySourceSetupModal: React.FC<
                       <HelperText>
                         <HelperTextItem>
                           Use a comma to separate each listed domain. Preface a
-                          domain with &quot;.&quot; to include its subdomains.
-                          Use &quot;*&quot; to bypass the proxy for all
+                          domain with &ldquo;.&rdquo; to include its subdomains.
+                          Use &ldquo;*&rdquo; to bypass the proxy for all
                           destinations.
                         </HelperTextItem>
                       </HelperText>
                     </FormHelperText>
+                  </FormGroup>
+                </>
+              )}
+
+              <FormGroup>
+                <div style={{ display: 'flex', gap: '16px' }}>
+                  <Radio
+                    id="dhcp-radio"
+                    name="network-config"
+                    label="DHCP"
+                    isChecked={networkConfigType === 'dhcp'}
+                    onChange={() => setNetworkConfigType('dhcp')}
+                  />
+                  <Radio
+                    id="static-ip-radio"
+                    name="network-config"
+                    label="Static IP configuration"
+                    isChecked={networkConfigType === 'static'}
+                    onChange={() => setNetworkConfigType('static')}
+                  />
+                </div>
+              </FormGroup>
+
+              {networkConfigType === 'static' && (
+                <>
+                  <FormGroup
+                    label="IP address / subnet mask"
+                    isRequired
+                    fieldId="ip-address-form-control"
+                  >
+                    <div
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                      }}
+                    >
+                      <TextInput
+                        id="ip-address-form-control"
+                        name="ipAddress"
+                        type="text"
+                        value={ipAddress}
+                        onChange={(_, value) => setIpAddress(value)}
+                        placeholder="10.0.0.2"
+                        isRequired
+                        aria-describedby="ip-address-helper-text"
+                        style={{ flex: 1 }}
+                      />
+                      <span>/</span>
+                      <TextInput
+                        id="subnet-mask-form-control"
+                        name="subnetMask"
+                        type="text"
+                        value={subnetMask}
+                        onChange={(_, value) => setSubnetMask(value)}
+                        placeholder="24"
+                        isRequired
+                        aria-describedby="ip-address-helper-text"
+                      />
+                    </div>
+                  </FormGroup>
+
+                  <FormGroup
+                    label="Default gateway"
+                    isRequired
+                    fieldId="default-gateway-form-control"
+                  >
+                    <TextInput
+                      id="default-gateway-form-control"
+                      name="defaultGateway"
+                      type="text"
+                      value={defaultGateway}
+                      onChange={(_, value) => setDefaultGateway(value)}
+                      placeholder="10.0.0.1"
+                      isRequired
+                      aria-describedby="default-gateway-helper-text"
+                    />
+                  </FormGroup>
+
+                  <FormGroup label="DNS" isRequired fieldId="dns-form-control">
+                    <TextInput
+                      id="dns-form-control"
+                      name="dns"
+                      type="text"
+                      value={dns}
+                      onChange={(_, value) => setDns(value)}
+                      placeholder="10.0.0.1"
+                      isRequired
+                      aria-describedby="dns-helper-text"
+                    />
                   </FormGroup>
                 </>
               )}
@@ -392,7 +524,16 @@ export const DiscoverySourceSetupModal: React.FC<
           type="submit"
           key="confirm"
           variant="primary"
-          isDisabled={isDisabled || !!sshKeyError}
+          isDisabled={
+            isDisabled ||
+            !!sshKeyError ||
+            !environmentName.trim() ||
+            (networkConfigType === 'static' &&
+              (!dns.trim() ||
+                !subnetMask.trim() ||
+                !defaultGateway.trim() ||
+                !ipAddress.trim()))
+          }
         >
           {!showUrl
             ? isEditingConfiguration

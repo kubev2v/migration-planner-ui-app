@@ -159,7 +159,7 @@ const ProxyFields: React.FC = () => {
   };
   return (
     <>
-      <FormGroup label="Show proxy settings">
+      <FormGroup>
         <Checkbox
           id="enable-proxy"
           label="Enable proxy"
