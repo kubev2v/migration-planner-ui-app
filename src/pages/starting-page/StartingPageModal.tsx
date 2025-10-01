@@ -40,7 +40,7 @@ const StartingPageModal: React.FC<Props> = ({
   const handleCreateFromOVA = (): void => {
     setIsDropdownOpen(false);
     onClose();
-    navigate('migrate/assessments/create');
+    navigate('/openshift/migration-assessment/assessments/create');
   };
 
   return (

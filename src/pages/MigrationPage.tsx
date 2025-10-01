@@ -1,10 +1,17 @@
 import React, { useEffect, useState } from 'react';
 
-import { Tab, TabContent, Tabs, TabTitleText } from '@patternfly/react-core';
+import {
+  Button,
+  Tab,
+  TabContent,
+  Tabs,
+  TabTitleText,
+} from '@patternfly/react-core';
 
 import { AppPage } from '../components/AppPage';
 
 import { Environment } from './environment/Environment';
+import StartingPageModal from './starting-page/StartingPageModal';
 import { MigrationAssessmentPageContent } from './MigrationAssessmentPage';
 
 type Props = {
@@ -15,6 +22,7 @@ const MigrationPage: React.FC<Props> = ({ initialTabKey }) => {
   const [activeTabKey, setActiveTabKey] = useState<string | number>(
     typeof initialTabKey === 'number' ? initialTabKey : 0,
   );
+  const [isStartingPageModalOpen, setIsStartingPageModalOpen] = useState(false);
 
   useEffect(() => {
     setActiveTabKey(typeof initialTabKey === 'number' ? initialTabKey : 0);
@@ -28,52 +36,69 @@ const MigrationPage: React.FC<Props> = ({ initialTabKey }) => {
   };
 
   return (
-    <AppPage
-      breadcrumbs={[
-        {
-          key: 1,
-          to: '#',
-          children: 'Migration assessment',
-          isActive: true,
-        },
-      ]}
-      title="Welcome, let's start your migration journey from VMware to OpenShift."
-    >
-      <Tabs
-        activeKey={activeTabKey}
-        onSelect={handleTabClick}
-        aria-label="Migration tabs"
-        role="region"
+    <>
+      <AppPage
+        breadcrumbs={[
+          {
+            key: 1,
+            to: '#',
+            children: 'Migration assessment',
+            isActive: true,
+          },
+        ]}
+        title="Welcome, let's start your migration journey from VMware to OpenShift."
+        caption={
+          <Button
+            variant="link"
+            isInline
+            onClick={() => setIsStartingPageModalOpen(true)}
+          >
+            How does this work?
+          </Button>
+        }
       >
-        <Tab
-          eventKey={0}
-          title={<TabTitleText>Assessments</TabTitleText>}
-          aria-label="Assessments tab"
+        <Tabs
+          activeKey={activeTabKey}
+          onSelect={handleTabClick}
+          aria-label="Migration tabs"
+          role="region"
         >
-          <TabContent
+          <Tab
             eventKey={0}
-            id="assessments-tab-content"
-            style={{ padding: 0, marginTop: '24px' }}
+            title={<TabTitleText>Assessments</TabTitleText>}
+            aria-label="Assessments tab"
           >
-            <MigrationAssessmentPageContent />
-          </TabContent>
-        </Tab>
+            <TabContent
+              eventKey={0}
+              id="assessments-tab-content"
+              style={{ padding: 0, marginTop: '24px' }}
+            >
+              <MigrationAssessmentPageContent />
+            </TabContent>
+          </Tab>
 
-        <Tab
-          eventKey={1}
-          title={<TabTitleText>Environments</TabTitleText>}
-          aria-label="Environments tab"
-        >
-          <TabContent
+          <Tab
             eventKey={1}
-            id="environments-tab-content"
-            style={{ padding: 0, marginTop: '24px' }}
+            title={<TabTitleText>Environments</TabTitleText>}
+            aria-label="Environments tab"
           >
-            <Environment />
-          </TabContent>
-        </Tab>
-      </Tabs>
-    </AppPage>
+            <TabContent
+              eventKey={1}
+              id="environments-tab-content"
+              style={{ padding: 0, marginTop: '24px' }}
+            >
+              <Environment />
+            </TabContent>
+          </Tab>
+        </Tabs>
+      </AppPage>
+
+      <StartingPageModal
+        isOpen={isStartingPageModalOpen}
+        onClose={() => setIsStartingPageModalOpen(false)}
+        onOpenRVToolsModal={() => setActiveTabKey(0)}
+      />
+    </>
   );
 };
 
