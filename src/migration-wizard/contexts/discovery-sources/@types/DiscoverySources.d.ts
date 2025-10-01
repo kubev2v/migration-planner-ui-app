@@ -19,6 +19,11 @@ declare namespace DiscoverySources {
       httpProxy: string,
       httpsProxy: string,
       noProxy: string,
+      networkConfigType?: 'dhcp' | 'static',
+      ipAddress?: string,
+      subnetMask?: string,
+      defaultGateway?: string,
+      dns?: string,
     ) => Promise<void>;
     startPolling: (delay: number) => void;
     stopPolling: () => void;
@@ -50,6 +55,11 @@ declare namespace DiscoverySources {
       httpProxy: string,
       httpsProxy: string,
       noProxy: string,
+      networkConfigType?: 'dhcp' | 'static',
+      ipAddress?: string,
+      subnetMask?: string,
+      defaultGateway?: string,
+      dns?: string,
     ) => Promise<void>;
     isUpdatingSource: boolean;
     errorUpdatingSource?: Error;

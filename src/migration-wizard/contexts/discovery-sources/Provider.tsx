@@ -59,6 +59,11 @@ export const Provider: React.FC<PropsWithChildren> = (props) => {
       httpProxy: string,
       httpsProxy: string,
       noProxy: string,
+      networkConfigType?: 'dhcp' | 'static',
+      ipAddress?: string,
+      subnetMask?: string,
+      defaultGateway?: string,
+      dns?: string,
     ) => {
       try {
         // Build the sourceCreate object conditionally
@@ -69,6 +74,14 @@ export const Provider: React.FC<PropsWithChildren> = (props) => {
             httpUrl?: string;
             httpsUrl?: string;
             noProxy?: string;
+          };
+          network?: {
+            ipv4?: {
+              ipAddress: string;
+              subnetMask: string;
+              defaultGateway: string;
+              dns: string;
+            };
           };
         } = { name };
 
@@ -96,6 +109,24 @@ export const Provider: React.FC<PropsWithChildren> = (props) => {
         // Only add proxy object if it has at least one field
         if (Object.keys(proxyFields).length > 0) {
           sourceCreate.proxy = proxyFields;
+        }
+
+        // Only include network configuration if static IP is selected and all required fields are provided
+        if (
+          networkConfigType === 'static' &&
+          ipAddress?.trim() &&
+          subnetMask?.trim() &&
+          defaultGateway?.trim() &&
+          dns?.trim()
+        ) {
+          sourceCreate.network = {
+            ipv4: {
+              ipAddress: ipAddress.trim(),
+              subnetMask: subnetMask.trim(),
+              defaultGateway: defaultGateway.trim(),
+              dns: dns.trim(),
+            },
+          };
         }
 
         return await sourceApi.createSource({ sourceCreate });
@@ -134,6 +165,11 @@ export const Provider: React.FC<PropsWithChildren> = (props) => {
       httpProxy: string,
       httpsProxy: string,
       noProxy: string,
+      networkConfigType?: 'dhcp' | 'static',
+      ipAddress?: string,
+      subnetMask?: string,
+      defaultGateway?: string,
+      dns?: string,
     ): Promise<void> => {
       const newSource = await createSource(
         sourceName,
@@ -141,6 +177,11 @@ export const Provider: React.FC<PropsWithChildren> = (props) => {
         httpProxy,
         httpsProxy,
         noProxy,
+        networkConfigType,
+        ipAddress,
+        subnetMask,
+        defaultGateway,
+        dns,
       );
 
       if (!newSource?.id) {
@@ -274,6 +315,11 @@ export const Provider: React.FC<PropsWithChildren> = (props) => {
       httpProxy: string,
       httpsProxy: string,
       noProxy: string,
+      networkConfigType?: 'dhcp' | 'static',
+      ipAddress?: string,
+      subnetMask?: string,
+      defaultGateway?: string,
+      dns?: string,
     ): Promise<void> => {
       // Build the sourceUpdate object conditionally
       const sourceUpdate: {
@@ -282,6 +328,14 @@ export const Provider: React.FC<PropsWithChildren> = (props) => {
           httpUrl?: string;
           httpsUrl?: string;
           noProxy?: string;
+        };
+        network?: {
+          ipv4?: {
+            ipAddress: string;
+            subnetMask: string;
+            defaultGateway: string;
+            dns: string;
+          };
         };
       } = {};
 
@@ -310,6 +364,25 @@ export const Provider: React.FC<PropsWithChildren> = (props) => {
       if (Object.keys(proxyFields).length > 0) {
         sourceUpdate.proxy = proxyFields;
       }
+
+      // Only include network configuration if static IP is selected and all required fields are provided
+      if (
+        networkConfigType === 'static' &&
+        ipAddress?.trim() &&
+        subnetMask?.trim() &&
+        defaultGateway?.trim() &&
+        dns?.trim()
+      ) {
+        sourceUpdate.network = {
+          ipv4: {
+            ipAddress: ipAddress.trim(),
+            subnetMask: subnetMask.trim(),
+            defaultGateway: defaultGateway.trim(),
+            dns: dns.trim(),
+          },
+        };
+      }
+
       const updatedSource = await sourceApi.updateSource({
         id: sourceId,
         sourceUpdate,
