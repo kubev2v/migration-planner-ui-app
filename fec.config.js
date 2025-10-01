@@ -80,8 +80,8 @@ module.exports = {
       './AssessmentUpdate':path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/AssessmentUpdate.js'),
       './Info': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/Info.js'),
       './InfoApi': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/apis/InfoApi.js'),
-
-      
+      './VmNetwork': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/VmNetwork.js'),
+      './Ipv4Config': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/Ipv4Config.js'),
     }, 
   },
   customizeWebpackConfig: (config) => {
