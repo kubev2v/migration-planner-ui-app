@@ -29,6 +29,7 @@ export namespace AgentStatusView {
     statusInfo?: Agent['statusInfo'];
     credentialUrl?: Agent['credentialUrl'];
     uploadedManually?: boolean;
+    updatedAt?: string | Date;
   };
 }
 
@@ -53,7 +54,8 @@ const StatusInfoWaitingForCredentials: React.FC<{
 };
 
 export const AgentStatusView: React.FC<AgentStatusView.Props> = (props) => {
-  const { status, statusInfo, credentialUrl, uploadedManually } = props;
+  const { status, statusInfo, credentialUrl, uploadedManually, updatedAt } =
+    props;
   const statusView = useMemo(() => {
     // eslint-disable-next-line prefer-const
     let fake: Agent['status'] | null = null;
@@ -120,20 +122,25 @@ export const AgentStatusView: React.FC<AgentStatusView.Props> = (props) => {
       <SplitItem>{statusView && statusView.icon}</SplitItem>
       <SplitItem>
         {statusInfo ||
-        (statusView && statusView.text === 'Waiting for credentials') ? (
+        (statusView && statusView.text === 'Waiting for credentials') ||
+        (uploadedManually && !statusInfo) ? (
           <Popover
             aria-label={statusView && statusView.text}
             headerContent={statusView && statusView.text}
             headerComponent="h1"
             bodyContent={
-              statusView && statusView.text !== 'Waiting for credentials' ? (
-                <TextContent>
-                  <Text>{statusInfo}</Text>
-                </TextContent>
-              ) : (
+              statusView && statusView.text === 'Waiting for credentials' ? (
                 <StatusInfoWaitingForCredentials
                   credentialUrl={credentialUrl}
                 />
+              ) : uploadedManually && !statusInfo ? (
+                <TextContent>
+                  <Text>{`Last updated via inventory file on ${updatedAt ? new Date(updatedAt).toLocaleString() : '-'}`}</Text>
+                </TextContent>
+              ) : (
+                <TextContent>
+                  <Text>{statusInfo}</Text>
+                </TextContent>
               )
             }
           >

@@ -304,13 +304,19 @@ export const SourcesTable: React.FC<SourceTableProps> = ({
                         <AgentStatusView
                           status={agent ? agent.status : 'not-connected'}
                           statusInfo={
-                            agent ? agent.statusInfo : 'Not connected'
+                            source?.onPremises &&
+                            source?.inventory !== undefined
+                              ? undefined
+                              : agent
+                                ? agent.statusInfo
+                                : 'Not connected'
                           }
                           credentialUrl={agent ? agent.credentialUrl : ''}
                           uploadedManually={
                             source?.onPremises &&
                             source?.inventory !== undefined
                           }
+                          updatedAt={source?.updatedAt}
                         />
                       </Td>
                       <Td dataLabel={Columns.Hosts}>
