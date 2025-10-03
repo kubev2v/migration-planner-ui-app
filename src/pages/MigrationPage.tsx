@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 import {
   Button,
@@ -23,6 +24,7 @@ const MigrationPage: React.FC<Props> = ({ initialTabKey }) => {
     typeof initialTabKey === 'number' ? initialTabKey : 0,
   );
   const [isStartingPageModalOpen, setIsStartingPageModalOpen] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     setActiveTabKey(typeof initialTabKey === 'number' ? initialTabKey : 0);
@@ -45,6 +47,12 @@ const MigrationPage: React.FC<Props> = ({ initialTabKey }) => {
     tabIndex: string | number,
   ): void => {
     setActiveTabKey(tabIndex);
+    const indexNumber = typeof tabIndex === 'number' ? tabIndex : Number(tabIndex);
+    if (indexNumber === 1) {
+      navigate('/openshift/migration-assessment/environments/');
+    } else {
+      navigate('/openshift/migration-assessment/assessments/');
+    }
   };
 
   return (
