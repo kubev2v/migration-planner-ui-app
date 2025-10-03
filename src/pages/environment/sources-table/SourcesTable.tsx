@@ -246,7 +246,7 @@ export const SourcesTable: React.FC<SourceTableProps> = ({
           </div>
         )}
         <div
-          style={{ maxHeight: '300px', overflowY: 'auto', overflowX: 'auto' }}
+          style={{ maxHeight: '400px', overflowY: 'auto', overflowX: 'auto' }}
         >
           <Table aria-label="Sources table" variant="compact" borders={false}>
             {filteredSources && filteredSources.length > 0 && (

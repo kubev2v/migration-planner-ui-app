@@ -317,7 +317,7 @@ export const AssessmentsTable: React.FC<Props> = ({
   }
 
   return (
-    <div style={{ width: '100%' }}>
+    <div style={{ width: '100%',maxHeight: '450px',overflow: 'auto'}}>
       <Table
         aria-label="Assessments table"
         variant="compact"
