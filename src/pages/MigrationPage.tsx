@@ -47,7 +47,8 @@ const MigrationPage: React.FC<Props> = ({ initialTabKey }) => {
     tabIndex: string | number,
   ): void => {
     setActiveTabKey(tabIndex);
-    const indexNumber = typeof tabIndex === 'number' ? tabIndex : Number(tabIndex);
+    const indexNumber =
+      typeof tabIndex === 'number' ? tabIndex : Number(tabIndex);
     if (indexNumber === 1) {
       navigate('/openshift/migration-assessment/environments/');
     } else {

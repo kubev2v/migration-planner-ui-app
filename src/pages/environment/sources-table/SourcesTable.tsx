@@ -358,6 +358,7 @@ export const SourcesTable: React.FC<SourceTableProps> = ({
                         ) : (
                           <Dropdown
                             isOpen={openDropdowns[source.id] || false}
+                            popperProps={{ appendTo: () => document.body }}
                             onOpenChange={(isOpen) =>
                               setOpenDropdowns((prev) => ({
                                 ...prev,
