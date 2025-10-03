@@ -28,6 +28,18 @@ const MigrationPage: React.FC<Props> = ({ initialTabKey }) => {
     setActiveTabKey(typeof initialTabKey === 'number' ? initialTabKey : 0);
   }, [initialTabKey]);
 
+  const breadcrumbs = [
+    {
+      key: 1,
+      children: 'Migration assessment',
+    },
+    {
+      key: 2,
+      children: activeTabKey === 1 ? 'environments' : 'assessments',
+      isActive: true,
+    },
+  ];
+
   const handleTabClick = (
     _event: React.MouseEvent<HTMLElement> | React.KeyboardEvent | MouseEvent,
     tabIndex: string | number,
@@ -38,14 +50,7 @@ const MigrationPage: React.FC<Props> = ({ initialTabKey }) => {
   return (
     <>
       <AppPage
-        breadcrumbs={[
-          {
-            key: 1,
-            to: '#',
-            children: 'Migration assessment',
-            isActive: true,
-          },
-        ]}
+        breadcrumbs={breadcrumbs}
         title="Welcome, let's start your migration journey from VMware to OpenShift."
         caption={
           <Button
