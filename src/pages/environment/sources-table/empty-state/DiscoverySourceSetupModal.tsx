@@ -173,6 +173,7 @@ export const DiscoverySourceSetupModal: React.FC<
     discoverySourcesContext.setDownloadUrl('');
     discoverySourcesContext.deleteSourceCreated();
     discoverySourcesContext.errorDownloadingSource = null;
+    discoverySourcesContext.errorUpdatingSource = null;
   };
 
   const backToOvaConfiguration = (): void => {
@@ -186,7 +187,7 @@ export const DiscoverySourceSetupModal: React.FC<
       event.preventDefault();
 
       if (!discoverySourcesContext.downloadSourceUrl) {
-        if (isEditingConfiguration) {
+        if (isEditingConfiguration || editSourceId) {
           const sourceIdToUpdate =
             editSourceId || discoverySourcesContext.sourceCreatedId;
           if (!sourceIdToUpdate) {
@@ -205,6 +206,8 @@ export const DiscoverySourceSetupModal: React.FC<
             defaultGateway,
             dns,
           );
+          // Refresh sources to update the table immediately after a successful update
+          await discoverySourcesContext.listSources();
         } else {
           const keyValidationError = validateSshKey(sshKey);
           if (keyValidationError) {
@@ -343,7 +346,9 @@ export const DiscoverySourceSetupModal: React.FC<
       aria-describedby="modal-box-body-discovery-source-setup"
     >
       <ModalHeader
-        title="Add Environment"
+        title={
+          isEditingConfiguration ? 'Update Environment' : 'Add Environment'
+        }
         labelId="discovery-source-setup-modal-title"
         description={
           !showUrl
@@ -628,6 +633,11 @@ export const DiscoverySourceSetupModal: React.FC<
         {discoverySourcesContext.errorDownloadingSource && (
           <Alert isInline variant="danger" title="Add Environment error">
             {discoverySourcesContext.errorDownloadingSource.message}
+          </Alert>
+        )}
+        {discoverySourcesContext.errorUpdatingSource && (
+          <Alert isInline variant="danger" title="Update Environment error">
+            {discoverySourcesContext.errorUpdatingSource.message}
           </Alert>
         )}
       </ModalBody>

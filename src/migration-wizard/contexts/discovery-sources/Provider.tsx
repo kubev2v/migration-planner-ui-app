@@ -315,7 +315,6 @@ export const Provider: React.FC<PropsWithChildren> = (props) => {
       const imageUrl = await imageApi.getSourceDownloadURL({
         id: newSource.id,
       });
-      downloadSourceState.loading = true;
 
       storeDownloadUrlForSource(newSource.id, imageUrl.url);
       setDownloadSourceUrl(imageUrl.url);
@@ -447,80 +446,110 @@ export const Provider: React.FC<PropsWithChildren> = (props) => {
       defaultGateway?: string,
       dns?: string,
     ): Promise<void> => {
-      // Build the sourceUpdate object conditionally
-      const sourceUpdate: {
-        sshPublicKey?: string;
-        proxy?: {
+      try {
+        // Build the sourceUpdate object conditionally
+        const sourceUpdate: {
+          sshPublicKey?: string;
+          proxy?: {
+            httpUrl?: string;
+            httpsUrl?: string;
+            noProxy?: string;
+          };
+          network?: {
+            ipv4?: {
+              ipAddress: string;
+              subnetMask: string;
+              defaultGateway: string;
+              dns: string;
+            };
+          };
+        } = {};
+
+        // Only include sshPublicKey if it has a value
+        if (sshPublicKey && sshPublicKey.trim()) {
+          sourceUpdate.sshPublicKey = sshPublicKey;
+        }
+
+        // Only include proxy if at least one proxy field has a value
+        const proxyFields: {
           httpUrl?: string;
           httpsUrl?: string;
           noProxy?: string;
-        };
-        network?: {
-          ipv4?: {
-            ipAddress: string;
-            subnetMask: string;
-            defaultGateway: string;
-            dns: string;
+        } = {};
+        if (httpProxy && httpProxy.trim()) {
+          proxyFields.httpUrl = httpProxy;
+        }
+        if (httpsProxy && httpsProxy.trim()) {
+          proxyFields.httpsUrl = httpsProxy;
+        }
+        if (noProxy && noProxy.trim()) {
+          proxyFields.noProxy = noProxy;
+        }
+
+        // Only add proxy object if it has at least one field
+        if (Object.keys(proxyFields).length > 0) {
+          sourceUpdate.proxy = proxyFields;
+        }
+
+        // Only include network configuration if static IP is selected and all required fields are provided
+        if (
+          networkConfigType === 'static' &&
+          ipAddress?.trim() &&
+          subnetMask?.trim() &&
+          defaultGateway?.trim() &&
+          dns?.trim()
+        ) {
+          sourceUpdate.network = {
+            ipv4: {
+              ipAddress: ipAddress.trim(),
+              subnetMask: subnetMask.trim(),
+              defaultGateway: defaultGateway.trim(),
+              dns: dns.trim(),
+            },
           };
-        };
-      } = {};
+        }
 
-      // Only include sshPublicKey if it has a value
-      if (sshPublicKey && sshPublicKey.trim()) {
-        sourceUpdate.sshPublicKey = sshPublicKey;
+        const updatedSource = await sourceApi.updateSource({
+          id: sourceId,
+          sourceUpdate,
+        });
+
+        await imageApi.headImage({ id: updatedSource.id });
+        const imageUrl = await imageApi.getSourceDownloadURL({
+          id: updatedSource.id,
+        });
+
+        setDownloadSourceUrl(imageUrl.url);
+      } catch (error: unknown) {
+        console.error('Error updating source:', error);
+
+        if (
+          typeof error === 'object' &&
+          error !== null &&
+          'response' in error
+        ) {
+          const response = (error as { response: Response }).response;
+
+          let message: string;
+          try {
+            const errorText = await response.text(); // Read as text first
+            try {
+              const errorData = JSON.parse(errorText); // Attempt to parse JSON
+              message =
+                (errorData &&
+                  (errorData.message || (errorData as any).error)) ||
+                errorText;
+            } catch {
+              message = errorText || 'Failed to parse API error response.';
+            }
+          } catch {
+            message = 'Error response could not be read.';
+          }
+          throw new Error(message);
+        }
+
+        throw new Error('Unexpected error occurred while updating the source.');
       }
-
-      // Only include proxy if at least one proxy field has a value
-      const proxyFields: {
-        httpUrl?: string;
-        httpsUrl?: string;
-        noProxy?: string;
-      } = {};
-      if (httpProxy && httpProxy.trim()) {
-        proxyFields.httpUrl = httpProxy;
-      }
-      if (httpsProxy && httpsProxy.trim()) {
-        proxyFields.httpsUrl = httpsProxy;
-      }
-      if (noProxy && noProxy.trim()) {
-        proxyFields.noProxy = noProxy;
-      }
-
-      // Only add proxy object if it has at least one field
-      if (Object.keys(proxyFields).length > 0) {
-        sourceUpdate.proxy = proxyFields;
-      }
-
-      // Only include network configuration if static IP is selected and all required fields are provided
-      if (
-        networkConfigType === 'static' &&
-        ipAddress?.trim() &&
-        subnetMask?.trim() &&
-        defaultGateway?.trim() &&
-        dns?.trim()
-      ) {
-        sourceUpdate.network = {
-          ipv4: {
-            ipAddress: ipAddress.trim(),
-            subnetMask: subnetMask.trim(),
-            defaultGateway: defaultGateway.trim(),
-            dns: dns.trim(),
-          },
-        };
-      }
-
-      const updatedSource = await sourceApi.updateSource({
-        id: sourceId,
-        sourceUpdate,
-      });
-
-      await imageApi.headImage({ id: updatedSource.id });
-      const imageUrl = await imageApi.getSourceDownloadURL({
-        id: updatedSource.id,
-      });
-      downloadSourceState.loading = true;
-
-      setDownloadSourceUrl(imageUrl.url);
     },
   );
 
@@ -532,7 +561,8 @@ export const Provider: React.FC<PropsWithChildren> = (props) => {
     errorDeletingSource: deleteSourceState.error,
     isCreatingSource: createSourceState.loading,
     errorCreatingSource: createSourceState.error,
-    isDownloadingSource: downloadSourceState.loading,
+    isDownloadingSource:
+      downloadSourceState.loading || updateSourceState.loading,
     errorDownloadingSource: downloadSourceState.error,
     isPolling,
     listSources,

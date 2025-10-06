@@ -169,6 +169,7 @@ export const DiscoverySourceSetupModal: React.FC<
     discoverySourcesContext.setDownloadUrl('');
     discoverySourcesContext.deleteSourceCreated();
     discoverySourcesContext.errorDownloadingSource = null;
+    discoverySourcesContext.errorUpdatingSource = null;
   };
 
   const backToOvaConfiguration = (): void => {
@@ -183,12 +184,15 @@ export const DiscoverySourceSetupModal: React.FC<
 
       if (!discoverySourcesContext.downloadSourceUrl) {
         if (isEditingConfiguration) {
-          if (!discoverySourcesContext.sourceCreatedId) {
+          const sourceIdToUpdate =
+            discoverySourcesContext.sourceCreatedId ||
+            discoverySourcesContext.sourceSelected?.id;
+          if (!sourceIdToUpdate) {
             console.error('No source ID available for editing');
             return;
           }
           await discoverySourcesContext.updateSource(
-            discoverySourcesContext.sourceCreatedId,
+            sourceIdToUpdate,
             sshKey,
             httpProxy,
             httpsProxy,
@@ -199,6 +203,8 @@ export const DiscoverySourceSetupModal: React.FC<
             defaultGateway,
             dns,
           );
+          // Refresh sources to update any dependent views immediately
+          await discoverySourcesContext.listSources();
         } else {
           const keyValidationError = validateSshKey(sshKey);
           if (keyValidationError) {
@@ -565,6 +571,11 @@ export const DiscoverySourceSetupModal: React.FC<
         {discoverySourcesContext.errorDownloadingSource && (
           <Alert isInline variant="danger" title="Add Environment error">
             {discoverySourcesContext.errorDownloadingSource.message}
+          </Alert>
+        )}
+        {discoverySourcesContext.errorUpdatingSource && (
+          <Alert isInline variant="danger" title="Update Environment error">
+            {discoverySourcesContext.errorUpdatingSource.message}
           </Alert>
         )}
       </ModalBody>
