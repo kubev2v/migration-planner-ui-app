@@ -182,6 +182,16 @@ export const DiscoverySourceSetupModal: React.FC<
     setIsEditingConfiguration(true);
   };
 
+  const clearErrors = (): void => {
+    setSshKeyError(null);
+    setIpAddressError(null);
+    setSubnetMaskError(null);
+    setDefaultGatewayError(null);
+    setDnsError(null);
+    discoverySourcesContext.errorDownloadingSource = null;
+    discoverySourcesContext.errorUpdatingSource = null;
+  };
+
   const handleSubmit = useCallback<React.FormEventHandler<HTMLFormElement>>(
     async (event) => {
       event.preventDefault();
@@ -306,6 +316,7 @@ export const DiscoverySourceSetupModal: React.FC<
   useEffect(() => {
     if (isOpen) {
       resetForm();
+      clearErrors();
       if (editSourceId) {
         setIsEditingConfiguration(true);
         const src = discoverySourcesContext.getSourceById?.(editSourceId) as
@@ -340,10 +351,14 @@ export const DiscoverySourceSetupModal: React.FC<
     <Modal
       variant="small"
       isOpen={isOpen}
-      onClose={onClose}
+      onClose={() => {
+        onClose();
+        clearErrors();
+      }}
       ouiaId="DiscoverySourceSetupModal"
       aria-labelledby="discovery-source-setup-modal-title"
       aria-describedby="modal-box-body-discovery-source-setup"
+      onChange={clearErrors}
     >
       <ModalHeader
         title={
