@@ -72,6 +72,34 @@ export const DiscoverySourceSetupModal: React.FC<
   const [defaultGateway, setDefaultGateway] = useState<string>('');
   const [ipAddress, setIpAddress] = useState<string>('');
 
+  type FormValues = {
+    sshKey: string;
+    environmentName: string;
+    httpProxy: string;
+    httpsProxy: string;
+    noProxy: string;
+    enableProxy: boolean;
+    networkConfigType: 'dhcp' | 'static';
+    dns: string;
+    subnetMask: string;
+    defaultGateway: string;
+    ipAddress: string;
+  };
+
+  const [initialValues, setInitialValues] = useState<FormValues>({
+    sshKey: '',
+    environmentName: '',
+    httpProxy: '',
+    httpsProxy: '',
+    noProxy: '',
+    enableProxy: false,
+    networkConfigType: 'dhcp',
+    dns: '',
+    subnetMask: '',
+    defaultGateway: '',
+    ipAddress: '',
+  });
+
   const validateSshKey = useCallback((key: string): string | null => {
     const SSH_KEY_PATTERNS = {
       RSA: /^ssh-rsa\s+[A-Za-z0-9+/]+[=]{0,2}(\s+.*)?$/,
@@ -170,6 +198,19 @@ export const DiscoverySourceSetupModal: React.FC<
     setSubnetMask('');
     setDefaultGateway('');
     setIpAddress('');
+    setInitialValues({
+      sshKey: '',
+      environmentName: '',
+      httpProxy: '',
+      httpsProxy: '',
+      noProxy: '',
+      enableProxy: false,
+      networkConfigType: 'dhcp',
+      dns: '',
+      subnetMask: '',
+      defaultGateway: '',
+      ipAddress: '',
+    });
     discoverySourcesContext.setDownloadUrl('');
     discoverySourcesContext.deleteSourceCreated();
     discoverySourcesContext.errorDownloadingSource = null;
@@ -341,11 +382,37 @@ export const DiscoverySourceSetupModal: React.FC<
           setHttpsProxy(httpsUrl);
           setNoProxy(noProxyVal);
           setEnableProxy(Boolean(httpUrl || httpsUrl || noProxyVal));
+          setInitialValues({
+            sshKey: '',
+            environmentName: src.name || '',
+            httpProxy: httpUrl,
+            httpsProxy: httpsUrl,
+            noProxy: noProxyVal,
+            enableProxy: Boolean(httpUrl || httpsUrl || noProxyVal),
+            networkConfigType: 'dhcp',
+            dns: '',
+            subnetMask: '',
+            defaultGateway: '',
+            ipAddress: '',
+          });
         }
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, editSourceId]);
+
+  const hasFormChanges = isEditingConfiguration
+    ? sshKey !== initialValues.sshKey ||
+      httpProxy !== initialValues.httpProxy ||
+      httpsProxy !== initialValues.httpsProxy ||
+      noProxy !== initialValues.noProxy ||
+      enableProxy !== initialValues.enableProxy ||
+      networkConfigType !== initialValues.networkConfigType ||
+      dns !== initialValues.dns ||
+      subnetMask !== initialValues.subnetMask ||
+      defaultGateway !== initialValues.defaultGateway ||
+      ipAddress !== initialValues.ipAddress
+    : true;
 
   return (
     <Modal
@@ -674,7 +741,8 @@ export const DiscoverySourceSetupModal: React.FC<
               (!dns.trim() ||
                 !subnetMask.trim() ||
                 !defaultGateway.trim() ||
-                !ipAddress.trim()))
+                !ipAddress.trim())) ||
+            (isEditingConfiguration && !hasFormChanges)
           }
         >
           {!showUrl
