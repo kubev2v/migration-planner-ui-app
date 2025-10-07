@@ -30,6 +30,7 @@ export namespace AgentStatusView {
     credentialUrl?: Agent['credentialUrl'];
     uploadedManually?: boolean;
     updatedAt?: string | Date;
+    disableInteractions?: boolean;
   };
 }
 
@@ -54,8 +55,14 @@ const StatusInfoWaitingForCredentials: React.FC<{
 };
 
 export const AgentStatusView: React.FC<AgentStatusView.Props> = (props) => {
-  const { status, statusInfo, credentialUrl, uploadedManually, updatedAt } =
-    props;
+  const {
+    status,
+    statusInfo,
+    credentialUrl,
+    uploadedManually,
+    updatedAt,
+    disableInteractions,
+  } = props;
   const statusView = useMemo(() => {
     // eslint-disable-next-line prefer-const
     let fake: Agent['status'] | null = null;
@@ -116,6 +123,15 @@ export const AgentStatusView: React.FC<AgentStatusView.Props> = (props) => {
         };
     }
   }, [status, uploadedManually]);
+
+  if (disableInteractions) {
+    return (
+      <Split hasGutter style={{ gap: '0.66rem' }}>
+        <SplitItem>{statusView && statusView.icon}</SplitItem>
+        <SplitItem>{statusView && statusView.text}</SplitItem>
+      </Split>
+    );
+  }
 
   return (
     <Split hasGutter style={{ gap: '0.66rem' }}>

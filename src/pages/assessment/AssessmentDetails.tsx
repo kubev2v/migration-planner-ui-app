@@ -16,11 +16,12 @@ import {
   Text,
   TextContent,
 } from '@patternfly/react-core';
-import { ChartLineIcon, CheckCircleIcon } from '@patternfly/react-icons';
+import { MonitoringIcon } from '@patternfly/react-icons';
 import { Table, Tbody, Td, Th, Thead, Tr } from '@patternfly/react-table';
 
 import { AppPage } from '../../components/AppPage';
 import { useDiscoverySources } from '../../migration-wizard/contexts/discovery-sources/Context';
+import { AgentStatusView } from '../environment/sources-table/AgentStatusView';
 
 import { parseLatestSnapshot } from './utils/snapshotParser';
 
@@ -34,6 +35,12 @@ const AssessmentDetails: React.FC = () => {
       discoverySourcesContext.assessments.length === 0
     ) {
       await discoverySourcesContext.listAssessments();
+    }
+    if (
+      !discoverySourcesContext.sources ||
+      discoverySourcesContext.sources.length === 0
+    ) {
+      await discoverySourcesContext.listSources();
     }
   });
 
@@ -61,12 +68,16 @@ const AssessmentDetails: React.FC = () => {
     );
   }, [assessment?.snapshots]);
 
-  const statusText = useMemo(() => {
-    return assessment?.sourceType?.toLowerCase() === 'discovery' &&
-      snapshotsSorted.length > 0
-      ? 'Connected'
-      : 'Not connected';
-  }, [assessment?.sourceType, snapshotsSorted.length]);
+  const source = useMemo(() => {
+    if (!assessment?.sourceId) return undefined;
+    try {
+      return discoverySourcesContext.getSourceById(assessment.sourceId);
+    } catch (e) {
+      return undefined;
+    }
+  }, [assessment?.sourceId, discoverySourcesContext]);
+
+  const agent = useMemo(() => source?.agent, [source]);
 
   if (discoverySourcesContext.isLoadingAssessments && !assessment) {
     return (
@@ -168,16 +179,22 @@ const AssessmentDetails: React.FC = () => {
           <div>
             <TextContent>
               <Text component="small">Discover VM status</Text>
-              <div
-                style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
-              >
-                {statusText === 'Connected' ? (
-                  <Icon size="md" isInline>
-                    <CheckCircleIcon />
-                  </Icon>
-                ) : null}
-                <Text component="p">{statusText}</Text>
-              </div>
+              <AgentStatusView
+                status={agent ? agent.status : 'not-connected'}
+                statusInfo={
+                  source?.onPremises && source?.inventory !== undefined
+                    ? undefined
+                    : agent
+                      ? agent.statusInfo
+                      : 'Not connected'
+                }
+                credentialUrl={agent ? agent.credentialUrl : ''}
+                uploadedManually={Boolean(
+                  source?.onPremises && source?.inventory !== undefined,
+                )}
+                updatedAt={source?.updatedAt as unknown as string}
+                disableInteractions
+              />
             </TextContent>
           </div>
           <div>
@@ -279,7 +296,7 @@ const AssessmentDetails: React.FC = () => {
                     >
                       <Button variant="plain" aria-label="Open report">
                         <Icon isInline>
-                          <ChartLineIcon />
+                          <MonitoringIcon style={{ color: '#0066cc' }} />
                         </Icon>
                       </Button>
                     </Link>
