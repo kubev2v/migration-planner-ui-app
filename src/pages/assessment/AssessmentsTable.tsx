@@ -19,6 +19,7 @@ import {
 } from '@patternfly/react-icons';
 import { Table, Tbody, Td, Th, Thead, Tr } from '@patternfly/react-table';
 
+import { openAssistedInstaller } from './utils/functions';
 import { parseLatestSnapshot } from './utils/snapshotParser';
 
 type Props = {
@@ -450,10 +451,7 @@ export const AssessmentsTable: React.FC<Props> = ({
                       >
                         Edit assessment
                       </DropdownItem>
-                      <DropdownItem
-                        onClick={() => alert('Edit functionality coming soon!')}
-                        isDisabled={true}
-                      >
+                      <DropdownItem onClick={openAssistedInstaller}>
                         Create a target cluster
                       </DropdownItem>
                       <DropdownItem onClick={() => handleDelete(row.id)}>

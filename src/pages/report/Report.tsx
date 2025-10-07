@@ -25,25 +25,10 @@ import { AppPage } from '../../components/AppPage';
 import { useDiscoverySources } from '../../migration-wizard/contexts/discovery-sources/Context';
 import { Provider as DiscoverySourcesProvider } from '../../migration-wizard/contexts/discovery-sources/Provider';
 import EnhancedDownloadButton from '../../migration-wizard/steps/discovery/EnhancedDownloadButton';
+import { openAssistedInstaller } from '../assessment/utils/functions';
 import { parseLatestSnapshot } from '../assessment/utils/snapshotParser';
 
 import { Dashboard } from './assessment-report/Dashboard';
-
-const openAssistedInstaller = (): void => {
-  const currentHost = window.location.hostname;
-
-  if (currentHost === 'console.stage.redhat.com') {
-    window.open(
-      'https://console.dev.redhat.com/openshift/assisted-installer/clusters/~new?source=assisted_migration',
-      '_blank',
-    );
-  } else {
-    window.open(
-      '/openshift/assisted-installer/clusters/~new?source=assisted_migration',
-      '_blank',
-    );
-  }
-};
 
 export type SnapshotLike = {
   infra?: Infra;
