@@ -62,6 +62,7 @@ export const DiscoverySourceSetupModal: React.FC<
   const [enableProxy, setEnableProxy] = useState(false);
   const [httpProxyError, setHttpProxyError] = useState<string | null>(null);
   const [httpsProxyError, setHttpsProxyError] = useState<string | null>(null);
+  const [proxyGroupError, setProxyGroupError] = useState<string | null>(null);
   const [isEditingConfiguration, setIsEditingConfiguration] = useState(false);
   const [networkConfigType, setNetworkConfigType] = useState<'dhcp' | 'static'>(
     'dhcp',
@@ -165,6 +166,7 @@ export const DiscoverySourceSetupModal: React.FC<
     setEnableProxy(false);
     setHttpProxyError(null);
     setHttpsProxyError(null);
+    setProxyGroupError(null);
     setNetworkConfigType('dhcp');
     setDns('');
     setSubnetMask('');
@@ -172,8 +174,11 @@ export const DiscoverySourceSetupModal: React.FC<
     setIpAddress('');
     discoverySourcesContext.setDownloadUrl('');
     discoverySourcesContext.deleteSourceCreated();
-    discoverySourcesContext.errorDownloadingSource = null;
-    discoverySourcesContext.errorUpdatingSource = null;
+    discoverySourcesContext.clearErrors?.({
+      downloading: true,
+      updating: true,
+      creating: true,
+    });
   };
 
   const backToOvaConfiguration = (): void => {
@@ -189,24 +194,33 @@ export const DiscoverySourceSetupModal: React.FC<
       if (!discoverySourcesContext.downloadSourceUrl) {
         // Proxy validation when enabled
         if (enableProxy) {
-          const httpErr = !httpProxy.trim()
-            ? 'HTTP proxy URL is required when proxy is enabled'
-            : /^http:\/\//i.test(httpProxy.trim())
+          const hasAnyProxyValue = Boolean(
+            httpProxy.trim() || httpsProxy.trim() || noProxy.trim(),
+          );
+          const httpErr = httpProxy.trim()
+            ? /^http:\/\//i.test(httpProxy.trim())
               ? null
-              : 'URL must start with http://';
-          const httpsErr = !httpsProxy.trim()
-            ? null
-            : /^https:\/\//i.test(httpsProxy.trim())
+              : 'URL must start with http://'
+            : null;
+          const httpsErr = httpsProxy.trim()
+            ? /^https:\/\//i.test(httpsProxy.trim())
               ? null
-              : 'URL must start with https://';
+              : 'URL must start with https://'
+            : null;
           setHttpProxyError(httpErr);
           setHttpsProxyError(httpsErr);
-          if (httpErr || httpsErr) {
+          setProxyGroupError(
+            hasAnyProxyValue
+              ? null
+              : 'At least one proxy field is required when proxy is enabled',
+          );
+          if (!hasAnyProxyValue || httpErr || httpsErr) {
             return;
           }
         } else {
           setHttpProxyError(null);
           setHttpsProxyError(null);
+          setProxyGroupError(null);
         }
         if (isEditingConfiguration) {
           const sourceIdToUpdate =
@@ -333,10 +347,24 @@ export const DiscoverySourceSetupModal: React.FC<
     <Modal
       variant="small"
       isOpen={isOpen}
-      onClose={onClose}
+      onClose={() => {
+        onClose?.();
+        discoverySourcesContext.clearErrors?.({
+          downloading: true,
+          updating: true,
+          creating: true,
+        });
+      }}
       ouiaId="DiscoverySourceSetupModal"
       aria-labelledby="discovery-source-setup-modal-title"
       aria-describedby="modal-box-body-discovery-source-setup"
+      onChange={() =>
+        discoverySourcesContext.clearErrors?.({
+          downloading: true,
+          updating: true,
+          creating: true,
+        })
+      }
     >
       <ModalHeader
         title="Add Environment"
@@ -414,7 +442,21 @@ export const DiscoverySourceSetupModal: React.FC<
                   id="enable-proxy"
                   label="Enable proxy"
                   isChecked={enableProxy}
-                  onChange={(_, checked) => setEnableProxy(checked)}
+                  onChange={(_, checked) => {
+                    setEnableProxy(checked);
+                    if (!checked) {
+                      setProxyGroupError(null);
+                    } else {
+                      const hasAny = Boolean(
+                        httpProxy.trim() || httpsProxy.trim() || noProxy.trim(),
+                      );
+                      setProxyGroupError(
+                        hasAny
+                          ? null
+                          : 'At least one proxy field is required when proxy is enabled',
+                      );
+                    }
+                  }}
                 />
               </FormGroup>
 
@@ -428,18 +470,23 @@ export const DiscoverySourceSetupModal: React.FC<
                       placeholder="http://proxy.example.com:8080"
                       onChange={(_, value) => {
                         setHttpProxy(value);
-                        if (enableProxy) {
-                          if (!value.trim()) {
-                            setHttpProxyError(
-                              'HTTP proxy URL is required when proxy is enabled',
-                            );
-                          } else if (!/^http:\/\//i.test(value.trim())) {
-                            setHttpProxyError('URL must start with http://');
-                          } else {
-                            setHttpProxyError(null);
-                          }
+                        const trimmed = value.trim();
+                        if (trimmed && !/^http:\/\//i.test(trimmed)) {
+                          setHttpProxyError('URL must start with http://');
                         } else {
                           setHttpProxyError(null);
+                        }
+                        if (enableProxy) {
+                          const hasAny = Boolean(
+                            trimmed || httpsProxy.trim() || noProxy.trim(),
+                          );
+                          setProxyGroupError(
+                            hasAny
+                              ? null
+                              : 'At least one proxy field is required when proxy is enabled',
+                          );
+                        } else {
+                          setProxyGroupError(null);
                         }
                       }}
                       validated={httpProxyError ? 'error' : 'default'}
@@ -463,12 +510,23 @@ export const DiscoverySourceSetupModal: React.FC<
                       placeholder="https://proxy.example.com:8443"
                       onChange={(_, value) => {
                         setHttpsProxy(value);
-                        if (!value.trim()) {
-                          setHttpsProxyError(null);
-                        } else if (!/^https:\/\//i.test(value.trim())) {
+                        const trimmed = value.trim();
+                        if (trimmed && !/^https:\/\//i.test(trimmed)) {
                           setHttpsProxyError('URL must start with https://');
                         } else {
                           setHttpsProxyError(null);
+                        }
+                        if (enableProxy) {
+                          const hasAny = Boolean(
+                            httpProxy.trim() || trimmed || noProxy.trim(),
+                          );
+                          setProxyGroupError(
+                            hasAny
+                              ? null
+                              : 'At least one proxy field is required when proxy is enabled',
+                          );
+                        } else {
+                          setProxyGroupError(null);
                         }
                       }}
                       validated={httpsProxyError ? 'error' : 'default'}
@@ -490,7 +548,22 @@ export const DiscoverySourceSetupModal: React.FC<
                       type="text"
                       value={noProxy}
                       placeholder="one.domain.com,second.domain.com"
-                      onChange={(_, value) => setNoProxy(value)}
+                      onChange={(_, value) => {
+                        setNoProxy(value);
+                        if (enableProxy) {
+                          const trimmed = value.trim();
+                          const hasAny = Boolean(
+                            httpProxy.trim() || httpsProxy.trim() || trimmed,
+                          );
+                          setProxyGroupError(
+                            hasAny
+                              ? null
+                              : 'At least one proxy field is required when proxy is enabled',
+                          );
+                        } else {
+                          setProxyGroupError(null);
+                        }
+                      }}
                       onBlur={() =>
                         setNoProxy(
                           noProxy
@@ -624,6 +697,11 @@ export const DiscoverySourceSetupModal: React.FC<
             </TextContent>
           )}
         </Form>
+        {proxyGroupError && (
+          <Alert isInline variant="danger" title="Proxy configuration error">
+            {proxyGroupError}
+          </Alert>
+        )}
         {discoverySourcesContext.errorDownloadingSource && (
           <Alert isInline variant="danger" title="Add Environment error">
             {discoverySourcesContext.errorDownloadingSource.message}
@@ -650,8 +728,10 @@ export const DiscoverySourceSetupModal: React.FC<
             !!dnsError ||
             !!httpProxyError ||
             !!httpsProxyError ||
+            !!proxyGroupError ||
             !environmentName.trim() ||
-            (enableProxy && !httpProxy.trim()) ||
+            (enableProxy &&
+              !(httpProxy.trim() || httpsProxy.trim() || noProxy.trim())) ||
             (networkConfigType === 'static' &&
               (!dns.trim() ||
                 !subnetMask.trim() ||

@@ -1,5 +1,11 @@
-import React, { type PropsWithChildren, useCallback, useState } from 'react';
-import { useAsyncFn, useInterval } from 'react-use';
+import React, {
+  type PropsWithChildren,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
+import { useAsyncFn, useInterval, useMountedState } from 'react-use';
 
 import {
   type AgentApiInterface,
@@ -23,6 +29,46 @@ import { Context } from './Context';
 
 // Use a shared constant to avoid recreating empty array references on each render
 const EMPTY_ARRAY: unknown[] = [];
+
+// Local hook similar to react-use's useAsyncFn but clears error at start
+type AsyncState<TReturn> = {
+  loading: boolean;
+  value?: TReturn;
+  error?: unknown;
+};
+const useAsyncFnResetError = <TArgs extends unknown[], TReturn>(
+  fn: (...args: TArgs) => Promise<TReturn>,
+  deps: React.DependencyList = [],
+) => {
+  const lastCallId = useRef(0);
+  const isMounted = useMountedState();
+  const [state, setState] = useState<AsyncState<TReturn>>({ loading: false });
+
+  const callback = React.useCallback(
+    (...args: TArgs) => {
+      const callId = ++lastCallId.current;
+      setState((prev) => ({ ...prev, loading: true, error: undefined }));
+      return fn(...args).then(
+        (value) => {
+          if (isMounted() && callId === lastCallId.current) {
+            setState({ value, loading: false });
+          }
+          return value;
+        },
+        (error) => {
+          if (isMounted() && callId === lastCallId.current) {
+            setState({ error, loading: false });
+          }
+          return error as unknown as TReturn;
+        },
+      );
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    deps,
+  );
+
+  return [state, callback] as const;
+};
 
 export const Provider: React.FC<PropsWithChildren> = (props) => {
   const { children } = props;
@@ -89,10 +135,12 @@ export const Provider: React.FC<PropsWithChildren> = (props) => {
     return [];
   }
 
-  const [listAssessmentsState, listAssessments] = useAsyncFn(async () => {
-    const response = await assessmentApi.listAssessments();
-    return normalizeAssessmentsResponse(response);
-  });
+  const [listAssessmentsState, listAssessments] = useAsyncFnResetError(
+    async () => {
+      const response = await assessmentApi.listAssessments();
+      return normalizeAssessmentsResponse(response);
+    },
+  );
 
   const [createAssessmentState, createAssessment] = useAsyncFn(
     async (
@@ -169,7 +217,7 @@ export const Provider: React.FC<PropsWithChildren> = (props) => {
     return deletedSource;
   });
 
-  const [createSourceState, createSource] = useAsyncFn(
+  const [createSourceState, createSource] = useAsyncFnResetError(
     async (
       name: string,
       sshPublicKey: string,
@@ -275,7 +323,7 @@ export const Provider: React.FC<PropsWithChildren> = (props) => {
     },
   );
 
-  const [downloadSourceState, createDownloadSource] = useAsyncFn(
+  const [downloadSourceState, createDownloadSource] = useAsyncFnResetError(
     async (
       sourceName: string,
       sourceSshKey: string,
@@ -341,6 +389,12 @@ export const Provider: React.FC<PropsWithChildren> = (props) => {
 
   const [isPolling, setIsPolling] = useState(false);
   const [pollingDelay, setPollingDelay] = useState<number | null>(null);
+  // UI-level error dismiss flags
+  const [dismissDownloadError, setDismissDownloadError] = useState(false);
+  const [dismissUpdateError, setDismissUpdateError] = useState(false);
+  const [dismissCreateError, setDismissCreateError] = useState(false);
+  const [dismissAssessmentsLoadError, setDismissAssessmentsLoadError] =
+    useState(false);
   const startPolling = useCallback(
     (delay: number) => {
       if (!isPolling) {
@@ -365,6 +419,8 @@ export const Provider: React.FC<PropsWithChildren> = (props) => {
       listSources();
     }
   }, pollingDelay);
+
+  // Reset dismiss flags on new attempts (effects placed after the corresponding states are declared)
 
   const selectSource = useCallback((source: Source | null) => {
     setSourceSelected(source);
@@ -433,7 +489,7 @@ export const Provider: React.FC<PropsWithChildren> = (props) => {
     setSourceCreatedId(null);
   }, []);
 
-  const [updateSourceState, updateSource] = useAsyncFn(
+  const [updateSourceState, updateSource] = useAsyncFnResetError(
     async (
       sourceId: string,
       sshPublicKey: string,
@@ -553,17 +609,41 @@ export const Provider: React.FC<PropsWithChildren> = (props) => {
     },
   );
 
+  // Reset dismiss flags on new attempts (effects placed after states are declared)
+  useEffect(() => {
+    if (downloadSourceState.loading) setDismissDownloadError(false);
+  }, [downloadSourceState.loading]);
+  useEffect(() => {
+    if (updateSourceState.loading) setDismissUpdateError(false);
+  }, [updateSourceState.loading]);
+  useEffect(() => {
+    if (createSourceState.loading) setDismissCreateError(false);
+  }, [createSourceState.loading]);
+  useEffect(() => {
+    if (listAssessmentsState.loading) setDismissAssessmentsLoadError(false);
+  }, [listAssessmentsState.loading]);
+
   const ctx: DiscoverySources.Context = {
     sources: listSourcesState.value || (EMPTY_ARRAY as Source[]),
     isLoadingSources: listSourcesState.loading,
     errorLoadingSources: listSourcesState.error,
     isDeletingSource: deleteSourceState.loading,
-    errorDeletingSource: deleteSourceState.error,
+    errorDeletingSource: deleteSourceState.loading
+      ? undefined
+      : (deleteSourceState.error as Error | undefined),
     isCreatingSource: createSourceState.loading,
-    errorCreatingSource: createSourceState.error,
+    errorCreatingSource:
+      createSourceState.loading || dismissCreateError
+        ? undefined
+        : (createSourceState.error as Error | undefined),
     isDownloadingSource:
       downloadSourceState.loading || updateSourceState.loading,
-    errorDownloadingSource: downloadSourceState.error,
+    errorDownloadingSource:
+      downloadSourceState.loading ||
+      updateSourceState.loading ||
+      dismissDownloadError
+        ? undefined
+        : (downloadSourceState.error as Error | undefined),
     isPolling,
     listSources,
     deleteSource,
@@ -585,7 +665,6 @@ export const Provider: React.FC<PropsWithChildren> = (props) => {
     getSourceById,
     updateSource,
     isUpdatingSource: updateSourceState.loading,
-    errorUpdatingSource: updateSourceState.error,
     downloadSourceUrl,
     setDownloadUrl,
     sourceCreatedId,
@@ -601,7 +680,15 @@ export const Provider: React.FC<PropsWithChildren> = (props) => {
     storeDownloadUrlForSource,
     assessments: listAssessmentsState.value || (EMPTY_ARRAY as Assessment[]),
     isLoadingAssessments: listAssessmentsState.loading,
-    errorLoadingAssessments: listAssessmentsState.error,
+    // Clear errors while a new request is in-flight to avoid showing stale errors
+    errorUpdatingSource:
+      updateSourceState.loading || dismissUpdateError
+        ? undefined
+        : (updateSourceState.error as Error | undefined),
+    errorLoadingAssessments:
+      listAssessmentsState.loading || dismissAssessmentsLoadError
+        ? undefined
+        : (listAssessmentsState.error as Error | undefined),
     listAssessments,
     createAssessment,
     isCreatingAssessment: createAssessmentState.loading,
@@ -619,6 +706,14 @@ export const Provider: React.FC<PropsWithChildren> = (props) => {
     errorSharingAssessment: undefined,
     assessmentFromAgentState,
     setAssessmentFromAgent,
+    clearErrors: (options) => {
+      const { downloading, updating, creating, loadingAssessments } =
+        options || {};
+      if (!options || downloading) setDismissDownloadError(true);
+      if (!options || updating) setDismissUpdateError(true);
+      if (!options || creating) setDismissCreateError(true);
+      if (!options || loadingAssessments) setDismissAssessmentsLoadError(true);
+    },
   };
 
   return <Context.Provider value={ctx}>{children}</Context.Provider>;

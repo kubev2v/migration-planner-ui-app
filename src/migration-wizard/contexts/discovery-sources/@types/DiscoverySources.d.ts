@@ -55,6 +55,12 @@ declare namespace DiscoverySources {
     setDownloadUrl?: (url: string) => void;
     sourceCreatedId?: string;
     deleteSourceCreated: () => void;
+    clearErrors: (options?: {
+      downloading?: boolean;
+      updating?: boolean;
+      creating?: boolean;
+      loadingAssessments?: boolean;
+    }) => void;
     updateSource: (
       sourceId: string,
       sourceSshKey: string,
