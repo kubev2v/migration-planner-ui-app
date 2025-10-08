@@ -63,6 +63,8 @@ export const DiscoverySourceSetupModal: React.FC<
   const [httpsProxy, setHttpsProxy] = useState<string>('');
   const [noProxy, setNoProxy] = useState<string>('');
   const [enableProxy, setEnableProxy] = useState(false);
+  const [httpProxyError, setHttpProxyError] = useState<string | null>(null);
+  const [httpsProxyError, setHttpsProxyError] = useState<string | null>(null);
   const [isEditingConfiguration, setIsEditingConfiguration] = useState(false);
   const [networkConfigType, setNetworkConfigType] = useState<'dhcp' | 'static'>(
     'dhcp',
@@ -192,6 +194,8 @@ export const DiscoverySourceSetupModal: React.FC<
     setHttpsProxy('');
     setNoProxy('');
     setEnableProxy(false);
+    setHttpProxyError(null);
+    setHttpsProxyError(null);
     setIsEditingConfiguration(false);
     setNetworkConfigType('dhcp');
     setDns('');
@@ -238,6 +242,27 @@ export const DiscoverySourceSetupModal: React.FC<
       event.preventDefault();
 
       if (!discoverySourcesContext.downloadSourceUrl) {
+        // Proxy validation when enabled
+        if (enableProxy) {
+          const httpErr = !httpProxy.trim()
+            ? 'HTTP proxy URL is required when proxy is enabled'
+            : /^http:\/\//i.test(httpProxy.trim())
+              ? null
+              : 'URL must start with http://';
+          const httpsErr = !httpsProxy.trim()
+            ? null
+            : /^https:\/\//i.test(httpsProxy.trim())
+              ? null
+              : 'URL must start with https://';
+          setHttpProxyError(httpErr);
+          setHttpsProxyError(httpsErr);
+          if (httpErr || httpsErr) {
+            return;
+          }
+        } else {
+          setHttpProxyError(null);
+          setHttpsProxyError(null);
+        }
         if (isEditingConfiguration || editSourceId) {
           const sourceIdToUpdate =
             editSourceId || discoverySourcesContext.sourceCreatedId;
@@ -517,12 +542,30 @@ export const DiscoverySourceSetupModal: React.FC<
                       type="text"
                       value={httpProxy}
                       placeholder="http://proxy.example.com:8080"
-                      onChange={(_, value) => setHttpProxy(value)}
+                      onChange={(_, value) => {
+                        setHttpProxy(value);
+                        if (enableProxy) {
+                          if (!value.trim()) {
+                            setHttpProxyError(
+                              'HTTP proxy URL is required when proxy is enabled',
+                            );
+                          } else if (!/^http:\/\//i.test(value.trim())) {
+                            setHttpProxyError('URL must start with http://');
+                          } else {
+                            setHttpProxyError(null);
+                          }
+                        } else {
+                          setHttpProxyError(null);
+                        }
+                      }}
+                      validated={httpProxyError ? 'error' : 'default'}
                     />
                     <FormHelperText>
                       <HelperText>
-                        <HelperTextItem>
-                          URL must start with http.
+                        <HelperTextItem
+                          variant={httpProxyError ? 'error' : 'default'}
+                        >
+                          {httpProxyError || 'URL must start with http.'}
                         </HelperTextItem>
                       </HelperText>
                     </FormHelperText>
@@ -534,12 +577,24 @@ export const DiscoverySourceSetupModal: React.FC<
                       type="text"
                       value={httpsProxy}
                       placeholder="https://proxy.example.com:8443"
-                      onChange={(_, value) => setHttpsProxy(value)}
+                      onChange={(_, value) => {
+                        setHttpsProxy(value);
+                        if (!value.trim()) {
+                          setHttpsProxyError(null);
+                        } else if (!/^https:\/\//i.test(value.trim())) {
+                          setHttpsProxyError('URL must start with https://');
+                        } else {
+                          setHttpsProxyError(null);
+                        }
+                      }}
+                      validated={httpsProxyError ? 'error' : 'default'}
                     />
                     <FormHelperText>
                       <HelperText>
-                        <HelperTextItem>
-                          URL must start with https.
+                        <HelperTextItem
+                          variant={httpsProxyError ? 'error' : 'default'}
+                        >
+                          {httpsProxyError || 'URL must start with https.'}
                         </HelperTextItem>
                       </HelperText>
                     </FormHelperText>
@@ -736,7 +791,10 @@ export const DiscoverySourceSetupModal: React.FC<
             !!subnetMaskError ||
             !!defaultGatewayError ||
             !!dnsError ||
+            !!httpProxyError ||
+            !!httpsProxyError ||
             !environmentName.trim() ||
+            (enableProxy && !httpProxy.trim()) ||
             (networkConfigType === 'static' &&
               (!dns.trim() ||
                 !subnetMask.trim() ||
