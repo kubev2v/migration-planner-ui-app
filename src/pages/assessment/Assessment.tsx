@@ -393,6 +393,9 @@ const Assessment: React.FC<Props> = ({ assessments, isLoading }) => {
                       onClick={() =>
                         navigate(
                           '/openshift/migration-assessment/assessments/create',
+                          {
+                            state: { reset: true },
+                          },
                         )
                       }
                     >

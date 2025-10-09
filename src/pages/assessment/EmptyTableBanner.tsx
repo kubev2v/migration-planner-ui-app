@@ -129,7 +129,9 @@ const EmptyTableBanner: React.FC<Props> = ({ onOpenModal }) => {
               key="agent"
               component="button"
               onClick={() =>
-                navigate('/openshift/migration-assessment/assessments/create')
+                navigate('/openshift/migration-assessment/assessments/create', {
+                  state: { reset: true },
+                })
               }
             >
               With discovery OVA

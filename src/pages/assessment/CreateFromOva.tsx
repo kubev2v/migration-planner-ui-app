@@ -1,5 +1,5 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 import {
   Alert,
@@ -14,6 +14,7 @@ import {
   HelperTextItem,
   InputGroup,
   InputGroupItem,
+  Spinner,
   Text,
   TextContent,
   TextInput,
@@ -26,7 +27,10 @@ import { SourcesTable } from '../environment/sources-table/SourcesTable';
 
 const CreateFromOva: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const discoverySourcesContext = useDiscoverySources();
+  const DRAFT_KEY = 'migration-assessment:create-from-ova-draft';
+  const hasInitializedRef = React.useRef<boolean>(false);
 
   const [name, setName] = React.useState<string>('');
   const [useExisting, setUseExisting] = React.useState<boolean>(false);
@@ -36,16 +40,66 @@ const CreateFromOva: React.FC = () => {
     React.useState<boolean>(false);
   const [isCreatingAssessment, setIsCreatingAssessment] =
     React.useState<boolean>(false);
+  const [isCreatingSource, setIsCreatingSource] =
+    React.useState<boolean>(false);
 
   const createdSourceId = discoverySourcesContext.sourceCreatedId || '';
   const createdSource = createdSourceId
     ? discoverySourcesContext.getSourceById?.(createdSourceId)
     : undefined;
 
+  // Initialize form: reset when navigated with reset flag, otherwise restore from session
+  React.useEffect(() => {
+    if (hasInitializedRef.current) return;
+    hasInitializedRef.current = true;
+    const shouldReset = Boolean(
+      (location as typeof location & { state?: { reset?: boolean } })?.state
+        ?.reset,
+    );
+    if (shouldReset) {
+      setName('');
+      setUseExisting(false);
+      setSelectedEnvironmentId('');
+      try {
+        sessionStorage.removeItem(DRAFT_KEY);
+      } catch (e) {
+        // ignore
+      }
+      return;
+    }
+    try {
+      const raw = sessionStorage.getItem(DRAFT_KEY);
+      if (!raw) return;
+      const draft = JSON.parse(raw) as {
+        name?: string;
+        useExisting?: boolean;
+        selectedEnvironmentId?: string;
+      };
+      if (typeof draft.name === 'string') setName(draft.name);
+      if (typeof draft.useExisting === 'boolean')
+        setUseExisting(draft.useExisting);
+      if (typeof draft.selectedEnvironmentId === 'string')
+        setSelectedEnvironmentId(draft.selectedEnvironmentId);
+    } catch (e) {
+      // ignore invalid storage contents
+    }
+  }, [location]);
+
+  // Persist draft to session on change
+  React.useEffect(() => {
+    try {
+      const draft = { name, useExisting, selectedEnvironmentId };
+      sessionStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
+    } catch {
+      // ignore storage failures
+    }
+  }, [name, useExisting, selectedEnvironmentId]);
+
   React.useEffect(() => {
     if (discoverySourcesContext.assessmentFromAgentState) {
       const preselected = discoverySourcesContext.sourceSelected;
-      if (preselected?.id) {
+      // Only apply preselection if user has not already chosen/restored a value
+      if (preselected?.id && !useExisting && !selectedEnvironmentId) {
         setUseExisting(true);
         setSelectedEnvironmentId(preselected.id);
       }
@@ -54,6 +108,8 @@ const CreateFromOva: React.FC = () => {
     discoverySourcesContext.assessmentFromAgentState,
     discoverySourcesContext.sourceSelected,
     discoverySourcesContext.sources,
+    useExisting,
+    selectedEnvironmentId,
   ]);
 
   const availableEnvironments = React.useMemo(
@@ -102,10 +158,24 @@ const CreateFromOva: React.FC = () => {
       navigate(
         `/openshift/migration-assessment/assessments/${assessment.id}/report`,
       );
+      try {
+        sessionStorage.removeItem(DRAFT_KEY);
+      } catch (e) {
+        // ignore
+      }
     } finally {
       setIsCreatingAssessment(false);
     }
   };
+
+  const handleCancel = React.useCallback(() => {
+    try {
+      sessionStorage.removeItem(DRAFT_KEY);
+    } catch (e) {
+      // ignore
+    }
+    navigate(-1);
+  }, [navigate]);
 
   const isSubmitDisabled =
     !name || (useExisting ? !selectedEnvironmentId : !createdSourceId);
@@ -211,8 +281,12 @@ const CreateFromOva: React.FC = () => {
               </FormSelect>
             </FormGroup>
           )}
-
-          {useExisting && selectedEnvironmentId && (
+          {isCreatingSource && (
+            <div style={{ marginTop: '16px' }}>
+              <Spinner />
+            </div>
+          )}
+          {useExisting && selectedEnvironmentId && !isCreatingSource && (
             <div style={{ marginTop: '16px' }}>
               <SourcesTable
                 onlySourceId={selectedEnvironmentId}
@@ -223,17 +297,17 @@ const CreateFromOva: React.FC = () => {
               />
             </div>
           )}
-
-          <div style={{ marginTop: '8px' }}>
-            <Button
-              variant="secondary"
-              onClick={() => setIsSetupModalOpen(true)}
-              isDisabled={useExisting}
-            >
-              Add environment
-            </Button>
-          </div>
-
+          {!isCreatingSource && (
+            <div style={{ marginTop: '8px' }}>
+              <Button
+                variant="secondary"
+                onClick={() => setIsSetupModalOpen(true)}
+                isDisabled={useExisting}
+              >
+                Add environment
+              </Button>
+            </div>
+          )}
           {createdSource?.agent?.status === 'waiting-for-credentials' && (
             <div style={{ marginTop: '16px' }}>
               <Alert
@@ -274,7 +348,7 @@ const CreateFromOva: React.FC = () => {
             >
               Create assessment report
             </Button>
-            <Button variant="link" onClick={() => navigate(-1)}>
+            <Button variant="link" onClick={handleCancel}>
               Cancel
             </Button>
           </div>
@@ -286,12 +360,14 @@ const CreateFromOva: React.FC = () => {
             onClose={async () => {
               // Close immediately to avoid flashing the empty form while async work runs
               setIsSetupModalOpen(false);
+              setIsCreatingSource(true);
               const newId = discoverySourcesContext.sourceCreatedId;
               await discoverySourcesContext.listSources();
               if (newId) {
                 setUseExisting(true);
                 setSelectedEnvironmentId(newId);
               }
+              setIsCreatingSource(false);
             }}
             isDisabled={discoverySourcesContext.isDownloadingSource}
             onStartDownload={() => discoverySourcesContext.setDownloadUrl?.('')}

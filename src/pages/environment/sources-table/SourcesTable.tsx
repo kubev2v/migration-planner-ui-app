@@ -212,7 +212,9 @@ export const SourcesTable: React.FC<SourceTableProps> = ({
   const handleCreateAssessment = (sourceId: string): void => {
     discoverySourcesContext.setAssessmentFromAgent?.(true);
     discoverySourcesContext.selectSourceById?.(sourceId);
-    navigate('/openshift/migration-assessment/assessments/create');
+    navigate('/openshift/migration-assessment/assessments/create', {
+      state: { reset: true },
+    });
   };
 
   // Show spinner until all data is loaded
