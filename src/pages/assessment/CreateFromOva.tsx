@@ -284,13 +284,14 @@ const CreateFromOva: React.FC = () => {
           <DiscoverySourceSetupModal
             isOpen={isSetupModalOpen}
             onClose={async () => {
+              // Close immediately to avoid flashing the empty form while async work runs
+              setIsSetupModalOpen(false);
               const newId = discoverySourcesContext.sourceCreatedId;
               await discoverySourcesContext.listSources();
               if (newId) {
                 setUseExisting(true);
                 setSelectedEnvironmentId(newId);
               }
-              setIsSetupModalOpen(false);
             }}
             isDisabled={discoverySourcesContext.isDownloadingSource}
             onStartDownload={() => discoverySourcesContext.setDownloadUrl?.('')}
