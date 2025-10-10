@@ -65,6 +65,17 @@ const CreateFromOva: React.FC = () => {
       } catch (e) {
         // ignore
       }
+      // Clear the reset flag from history so future visits don't re-reset
+      try {
+        navigate(
+          `${location.pathname}${location.search}${location.hash || ''}`,
+          {
+            replace: true,
+          },
+        );
+      } catch (e) {
+        // ignore navigation issues
+      }
       return;
     }
     try {
@@ -83,7 +94,7 @@ const CreateFromOva: React.FC = () => {
     } catch (e) {
       // ignore invalid storage contents
     }
-  }, [location]);
+  }, [location, navigate]);
 
   // Persist draft to session on change
   React.useEffect(() => {
