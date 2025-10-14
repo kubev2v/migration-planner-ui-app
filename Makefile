@@ -34,7 +34,7 @@ endif
 # Downloads and sets up all the packages, based on your package.json
 install:
 	@echo "📦 Update all packages..."
-	npm install
+	npm install --legacy-peer-deps
 	@echo "✅ All packages are updated successfully..."
 
 # Build the standalone application locally
