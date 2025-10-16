@@ -119,13 +119,6 @@ const EmptyTableBanner: React.FC<Props> = ({ onOpenModal }) => {
         >
           <DropdownList>
             <DropdownItem
-              key="rvtools"
-              component="button"
-              onClick={() => handleOpenModal('rvtools')}
-            >
-              From RVTools (XLS/X)
-            </DropdownItem>
-            <DropdownItem
               key="agent"
               component="button"
               onClick={() =>
@@ -135,6 +128,13 @@ const EmptyTableBanner: React.FC<Props> = ({ onOpenModal }) => {
               }
             >
               With discovery OVA
+            </DropdownItem>
+            <DropdownItem
+              key="rvtools"
+              component="button"
+              onClick={() => handleOpenModal('rvtools')}
+            >
+              From RVTools (XLS/X)
             </DropdownItem>
           </DropdownList>
         </Dropdown>

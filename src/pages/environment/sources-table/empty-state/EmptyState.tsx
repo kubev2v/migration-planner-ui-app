@@ -41,19 +41,19 @@ export const EmptyState: React.FC = () => {
   let emptyStateNode: React.ReactNode = (
     <PFEmptyState variant="sm">
       <EmptyStateHeader
-        titleText="No discovery environment found"
+        titleText="No environments found"
         headingLevel="h4"
         icon={<EmptyStateIcon icon={SearchIcon} />}
       />
       <EmptyStateBody>
-        Begin by creating a discovery environment. Then download and import the
-        OVA file into your VMware environment.
+        Begin by adding an environment, then download and import the OVA file
+        into your VMware environment.
       </EmptyStateBody>
 
       <EmptyStateFooter>
         <EmptyStateActions>
           <Button variant="secondary" onClick={toggleDiscoverySourceSetupModal}>
-            Create
+            Add environment
           </Button>
         </EmptyStateActions>
         <StackItem>

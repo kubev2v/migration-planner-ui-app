@@ -68,7 +68,7 @@ export const CreateAssessmentModal: React.FC<CreateAssessmentModalProps> = ({
         };
       case 'rvtools':
         return {
-          title: 'Create Assessment from RVTools',
+          title: 'Create migration assessment from RVTools',
           fileLabel: 'RVTools File (Excel)',
           fileDescription: 'Upload an Excel file from RVTools (max 12 MiB)',
           accept: '.xlsx,.xls',
@@ -76,7 +76,7 @@ export const CreateAssessmentModal: React.FC<CreateAssessmentModalProps> = ({
         };
       case 'agent':
         return {
-          title: 'Create Assessment from Environment',
+          title: 'Create migration assessment from Environment',
           fileLabel: 'Environment',
           fileDescription: 'Select an environment to create assessment from',
           accept: '',

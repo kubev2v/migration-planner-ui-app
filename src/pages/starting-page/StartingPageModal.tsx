@@ -74,11 +74,11 @@ const StartingPageModal: React.FC<Props> = ({
           )}
         >
           <DropdownList>
-            <DropdownItem key="rvtools" onClick={handleCreateFromRVTools}>
-              From RVTools (XLS/X)
-            </DropdownItem>
             <DropdownItem key="ova" onClick={handleCreateFromOVA}>
               With discovery OVA
+            </DropdownItem>
+            <DropdownItem key="rvtools" onClick={handleCreateFromRVTools}>
+              From RVTools (XLS/X)
             </DropdownItem>
           </DropdownList>
         </Dropdown>,

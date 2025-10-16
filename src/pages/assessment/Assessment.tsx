@@ -381,13 +381,6 @@ const Assessment: React.FC<Props> = ({ assessments, isLoading }) => {
                 >
                   <DropdownList>
                     <DropdownItem
-                      key="rvtools"
-                      component="button"
-                      onClick={() => handleOpenModal('rvtools')}
-                    >
-                      From RVTools (XLS/X)
-                    </DropdownItem>
-                    <DropdownItem
                       key="agent"
                       component="button"
                       onClick={() =>
@@ -400,6 +393,13 @@ const Assessment: React.FC<Props> = ({ assessments, isLoading }) => {
                       }
                     >
                       With discovery OVA
+                    </DropdownItem>
+                    <DropdownItem
+                      key="rvtools"
+                      component="button"
+                      onClick={() => handleOpenModal('rvtools')}
+                    >
+                      From RVTools (XLS/X)
                     </DropdownItem>
                   </DropdownList>
                 </Dropdown>

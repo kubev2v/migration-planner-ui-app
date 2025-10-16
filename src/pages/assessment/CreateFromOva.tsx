@@ -261,7 +261,7 @@ const CreateFromOva: React.FC = () => {
           <div style={{ marginTop: '16px' }}>
             <Checkbox
               id="use-existing-env"
-              label="For an existing environment"
+              label="Select existing environment"
               isChecked={useExisting}
               onChange={(_, checked) => setUseExisting(checked)}
             />
