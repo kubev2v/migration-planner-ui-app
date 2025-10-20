@@ -1,11 +1,6 @@
 import React, { useCallback, useState } from 'react';
 
-import {
-  Button,
-  Content,
-  Icon,
-  Tooltip,
-} from '@patternfly/react-core';
+import { Button, Content, Icon, Tooltip } from '@patternfly/react-core';
 import { TrashIcon } from '@patternfly/react-icons';
 
 import { ConfirmationModal } from '../../../../../components/ConfirmationModal';
@@ -75,11 +70,11 @@ export const RemoveSourceAction: React.FC<RemoveSourceAction.Props> = (
           onClose={dismissConfirmationModal}
         >
           <Content id="confirmation-modal-description">
-              Are you sure you want to delete{' '}
-              <b>{sourceName ? sourceName : 'this environment'}</b>?
-              <br />
-              To use it again, create a new discovery image and redeploy it.
-            </Content>
+            Are you sure you want to delete{' '}
+            <b>{sourceName ? sourceName : 'this environment'}</b>?
+            <br />
+            To use it again, create a new discovery image and redeploy it.
+          </Content>
         </ConfirmationModal>
       )}
     </>

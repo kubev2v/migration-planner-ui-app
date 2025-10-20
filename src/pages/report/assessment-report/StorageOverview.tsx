@@ -52,7 +52,9 @@ export const StorageOverview: React.FC<DiskHistogramProps> = ({
         <i className="fas fa-database" /> Disks
       </CardTitle>
       <CardBody>
-        <Content component={ContentVariants.small}>Disk Size Distribution</Content>
+        <Content component={ContentVariants.small}>
+          Disk Size Distribution
+        </Content>
         <MigrationChart data={chartData} maxHeight={tableHeight} />
       </CardBody>
     </Card>

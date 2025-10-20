@@ -1,11 +1,6 @@
 import React from 'react';
 
-import {
-  Content,
-  Radio,
-  Stack,
-  StackItem,
-} from '@patternfly/react-core';
+import { Content, Radio, Stack, StackItem } from '@patternfly/react-core';
 
 export const PrepareMigrationStep: React.FC = () => {
   return (
@@ -44,7 +39,9 @@ export const PrepareMigrationStep: React.FC = () => {
         />
       </StackItem>
       <StackItem>
-        <Content component="h3" style={{ paddingBlock: '1rem' }}>Target cluster</Content>        
+        <Content component="h3" style={{ paddingBlock: '1rem' }}>
+          Target cluster
+        </Content>
       </StackItem>
       <StackItem>
         <Radio

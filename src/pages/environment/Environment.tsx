@@ -1,24 +1,25 @@
 import React, { useCallback, useEffect, useState } from 'react';
 
 import {
-	Label, LabelGroup, Alert,
-	AlertActionLink,
-	Button,
-	Dropdown,
-	DropdownItem,
-	DropdownList,
-	InputGroup,
-	InputGroupItem,
-	MenuToggle,
-	MenuToggleElement,
-	SearchInput,
-	StackItem,
-	Content,
-	Toolbar,
-	ToolbarContent,
-	ToolbarItem
+  Alert,
+  AlertActionLink,
+  Button,
+  Content,
+  Dropdown,
+  DropdownItem,
+  DropdownList,
+  InputGroup,
+  InputGroupItem,
+  Label,
+  LabelGroup,
+  MenuToggle,
+  MenuToggleElement,
+  SearchInput,
+  StackItem,
+  Toolbar,
+  ToolbarContent,
+  ToolbarItem,
 } from '@patternfly/react-core';
-
 import { FilterIcon, PlusCircleIcon, TimesIcon } from '@patternfly/react-icons';
 
 import { useDiscoverySources } from '../../migration-wizard/contexts/discovery-sources/Context';
@@ -231,7 +232,8 @@ export const Environment: React.FC = () => {
                   return (
                     <>
                       {visible.map((key) => (
-                        <Label variant="outline"
+                        <Label
+                          variant="outline"
                           key={`chip-status-${key}`}
                           onClose={() => toggleStatus(key)}
                           closeBtnAriaLabel={`Remove status ${key}`}
@@ -240,8 +242,8 @@ export const Environment: React.FC = () => {
                         </Label>
                       ))}
                       {overflow > 0 && (
-                        <Label variant="outline"
-                          
+                        <Label
+                          variant="outline"
                           key="status-overflow"
                         >{`${overflow} more`}</Label>
                       )}
@@ -250,11 +252,12 @@ export const Environment: React.FC = () => {
                 })()}
               </LabelGroup>
 
-              <Button icon={<TimesIcon />}
+              <Button
+                icon={<TimesIcon />}
                 variant="plain"
                 aria-label="Clear all filters"
                 onClick={() => clearStatuses()}
-               />
+              />
             </div>
           </div>
         )}

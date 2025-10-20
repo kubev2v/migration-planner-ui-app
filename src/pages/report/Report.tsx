@@ -16,7 +16,7 @@ import {
   Spinner,
   Stack,
   StackItem,
-  } from '@patternfly/react-core';
+} from '@patternfly/react-core';
 import { CheckCircleIcon } from '@patternfly/react-icons';
 import { t_global_color_status_success_default as globalSuccessColor100 } from '@patternfly/react-tokens/dist/js/t_global_color_status_success_default';
 
@@ -86,7 +86,9 @@ const Inner: React.FC = () => {
         <Stack hasGutter>
           <StackItem>
             <Content>
-              <Content component="p">The requested assessment was not found.</Content>
+              <Content component="p">
+                The requested assessment was not found.
+              </Content>
             </Content>
           </StackItem>
           <StackItem>

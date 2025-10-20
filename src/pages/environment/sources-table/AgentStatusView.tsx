@@ -10,7 +10,7 @@ import {
   Spinner,
   Split,
   SplitItem,
-  } from '@patternfly/react-core';
+} from '@patternfly/react-core';
 import {
   CheckCircleIcon,
   DisconnectedIcon,

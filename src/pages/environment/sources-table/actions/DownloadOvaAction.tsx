@@ -39,14 +39,17 @@ export const DownloadOvaAction: React.FC<DownloadOvaAction.Props> = (props) => {
 
   return (
     <Tooltip content="Download OVA File">
-      <Button icon={<Icon size="md" isInline>
-          <DownloadIcon />
-        </Icon>}
+      <Button
+        icon={
+          <Icon size="md" isInline>
+            <DownloadIcon />
+          </Icon>
+        }
         data-source-id={sourceId}
         variant="plain"
         isDisabled={isDisabled || isDownloading || !url}
         onClick={handleDownload}
-       />
+      />
     </Tooltip>
   );
 };

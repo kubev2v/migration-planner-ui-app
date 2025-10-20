@@ -1,10 +1,10 @@
 import React, { useMemo } from 'react';
 
 import {
-  Flex,
-  FlexItem,
   Content,
   ContentVariants,
+  Flex,
+  FlexItem,
   Tooltip,
 } from '@patternfly/react-core';
 import { Table, Tbody, Td, Tr } from '@patternfly/react-table';
@@ -156,7 +156,8 @@ const MigrationChart: React.FC<MigrationChartProps> = ({
                       width={10}
                       style={{ paddingRight: '0px', textAlign: 'center' }}
                     >
-                      <Content component="p"
+                      <Content
+                        component="p"
                         style={{ fontSize: 'clamp(0.4rem, 0.7vw, 1.1rem)' }}
                       >
                         {item.count}

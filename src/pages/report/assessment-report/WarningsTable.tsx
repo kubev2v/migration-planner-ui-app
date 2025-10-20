@@ -3,7 +3,7 @@ import React from 'react';
 import { MigrationIssue } from '@migration-planner-ui/api-client/models';
 import { Card, CardBody, CardTitle, Icon } from '@patternfly/react-core';
 import { ExclamationTriangleIcon } from '@patternfly/react-icons';
-import { global_warning_color_100 as globalWarningColor100 } from '@patternfly/react-tokens/dist/js/global_warning_color_100';
+import { t_global_icon_color_status_warning_default as globalWarningColor100 } from '@patternfly/react-tokens/dist/js/t_global_icon_color_status_warning_default';
 
 import { ReportTable } from '../ReportTable';
 

@@ -8,12 +8,12 @@ import {
   CardBody,
   CardFooter,
   CardHeader,
+  Content,
   Flex,
   FlexItem,
   Label,
   Split,
   SplitItem,
-  Content,
   Title,
 } from '@patternfly/react-core';
 

@@ -1,16 +1,13 @@
 import React, { useEffect, useState } from 'react';
 
 import {
-	Button,
-	FileUpload,
-	Form,
-	FormGroup,
-	TextInput
+  Button,
+  FileUpload,
+  Form,
+  FormGroup,
+  TextInput,
 } from '@patternfly/react-core';
-import {
-	Modal,
-	ModalVariant
-} from '@patternfly/react-core/deprecated';
+import { Modal, ModalVariant } from '@patternfly/react-core/deprecated';
 
 interface UpdateAssessmentProps {
   isOpen: boolean;

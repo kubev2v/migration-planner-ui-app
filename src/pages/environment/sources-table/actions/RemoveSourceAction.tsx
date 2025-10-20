@@ -1,11 +1,6 @@
 import React, { useCallback, useState } from 'react';
 
-import {
-  Button,
-  Icon,
-  Content,
-  Tooltip,
-} from '@patternfly/react-core';
+import { Button, Content, Icon, Tooltip } from '@patternfly/react-core';
 import { TrashIcon } from '@patternfly/react-icons';
 
 import { ConfirmationModal } from '../../../../components/ConfirmationModal';
@@ -53,14 +48,17 @@ export const RemoveSourceAction: React.FC<RemoveSourceAction.Props> = (
   return (
     <>
       <Tooltip content="Remove">
-        <Button icon={<Icon size="md" isInline>
-            <TrashIcon />
-          </Icon>}
+        <Button
+          icon={
+            <Icon size="md" isInline>
+              <TrashIcon />
+            </Icon>
+          }
           data-source-id={sourceId}
           variant="plain"
           isDisabled={isDisabled}
           onClick={showConfirmationModal}
-         />
+        />
       </Tooltip>
       {onConfirm && shouldShowConfirmationModal && (
         <ConfirmationModal

@@ -36,7 +36,12 @@ export const EmptyState: React.FC = () => {
   const [isOvaDownloading, setIsOvaDownloading] = useState(false);
 
   let emptyStateNode: React.ReactNode = (
-    <PFEmptyState  headingLevel="h4" icon={SearchIcon}  titleText="No environments found" variant="sm">
+    <PFEmptyState
+      headingLevel="h4"
+      icon={SearchIcon}
+      titleText="No environments found"
+      variant="sm"
+    >
       <EmptyStateBody>
         Begin by adding an environment, then download and import the OVA file
         into your VMware environment.
@@ -61,7 +66,12 @@ export const EmptyState: React.FC = () => {
 
   if (discoverySourcesContext.errorLoadingSources) {
     emptyStateNode = (
-      <PFEmptyState  headingLevel="h4" icon={ExclamationCircleIcon}  titleText="Something went wrong..." variant="sm">
+      <PFEmptyState
+        headingLevel="h4"
+        icon={ExclamationCircleIcon}
+        titleText="Something went wrong..."
+        variant="sm"
+      >
         <EmptyStateBody>
           An error occurred while attempting to detect existing discovery
           sources

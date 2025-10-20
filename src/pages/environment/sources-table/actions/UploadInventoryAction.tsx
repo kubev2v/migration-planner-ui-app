@@ -41,9 +41,15 @@ export const UploadInventoryAction: React.FC<UploadInventoryProps> = ({
     </Button>
   ) : (
     <Tooltip content="Upload JSON file">
-      <Button icon={<Icon size="md" isInline>
-          <UploadIcon />
-        </Icon>} variant="plain" onClick={handleUploadSource} />
+      <Button
+        icon={
+          <Icon size="md" isInline>
+            <UploadIcon />
+          </Icon>
+        }
+        variant="plain"
+        onClick={handleUploadSource}
+      />
     </Tooltip>
   );
 };

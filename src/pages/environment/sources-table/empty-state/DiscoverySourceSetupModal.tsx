@@ -2,26 +2,25 @@ import React, { useCallback, useEffect, useState } from 'react';
 
 import { Source } from '@migration-planner-ui/api-client/models';
 import {
-	Alert,
-	Button,
-	Checkbox,
-	ClipboardCopy,
-	clipboardCopyFunc,
-	Form,
-	FormGroup,
-	FormHelperText,
-	HelperText,
-	HelperTextItem,
-	Radio,
-	TextArea,
-	Content,
-	TextInput,
-	Modal /* data-codemods */,
-	ModalBody /* data-codemods */,
-	ModalFooter /* data-codemods */,
-	ModalHeader /* data-codemods */
+  Alert,
+  Button,
+  Checkbox,
+  ClipboardCopy,
+  clipboardCopyFunc,
+  Content,
+  Form,
+  FormGroup,
+  FormHelperText,
+  HelperText,
+  HelperTextItem,
+  Modal /* data-codemods */,
+  ModalBody /* data-codemods */,
+  ModalFooter /* data-codemods */,
+  ModalHeader /* data-codemods */,
+  Radio,
+  TextArea,
+  TextInput,
 } from '@patternfly/react-core';
-
 
 import { useDiscoverySources } from '../../../../migration-wizard/contexts/discovery-sources/Context';
 

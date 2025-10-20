@@ -9,12 +9,12 @@ import {
 import {
   Bullseye,
   Button,
+  Content,
   Icon,
   Spinner,
   Stack,
   StackItem,
-  Content,
-  } from '@patternfly/react-core';
+} from '@patternfly/react-core';
 import { MonitoringIcon } from '@patternfly/react-icons';
 import { Table, Tbody, Td, Th, Thead, Tr } from '@patternfly/react-table';
 
@@ -106,7 +106,9 @@ const AssessmentDetails: React.FC = () => {
         <Stack hasGutter>
           <StackItem>
             <Content>
-              <Content component="p">The requested assessment was not found.</Content>
+              <Content component="p">
+                The requested assessment was not found.
+              </Content>
             </Content>
           </StackItem>
           <StackItem>
@@ -293,9 +295,15 @@ const AssessmentDetails: React.FC = () => {
                     <Link
                       to={`/openshift/migration-assessment/assessments/${assessment.id}/report`}
                     >
-                      <Button icon={<Icon isInline>
-                          <MonitoringIcon style={{ color: '#0066cc' }} />
-                        </Icon>} variant="plain" aria-label="Open report" />
+                      <Button
+                        icon={
+                          <Icon isInline>
+                            <MonitoringIcon style={{ color: '#0066cc' }} />
+                          </Icon>
+                        }
+                        variant="plain"
+                        aria-label="Open report"
+                      />
                     </Link>
                   </Td>
                 </Tr>

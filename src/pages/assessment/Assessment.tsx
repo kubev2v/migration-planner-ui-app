@@ -3,18 +3,20 @@ import { useNavigate } from 'react-router-dom';
 
 import { Assessment as AssessmentModel } from '@migration-planner-ui/api-client/models';
 import {
-Button,
-	Dropdown,
-	DropdownItem,
-	DropdownList,
-	InputGroup,
-	InputGroupItem,
-	Label, LabelGroup, 	MenuToggle,
-	MenuToggleElement,
-	SearchInput,
-	Toolbar,
-	ToolbarContent,
-	ToolbarItem
+  Button,
+  Dropdown,
+  DropdownItem,
+  DropdownList,
+  InputGroup,
+  InputGroupItem,
+  Label,
+  LabelGroup,
+  MenuToggle,
+  MenuToggleElement,
+  SearchInput,
+  Toolbar,
+  ToolbarContent,
+  ToolbarItem,
 } from '@patternfly/react-core';
 import { FilterIcon, TimesIcon } from '@patternfly/react-icons';
 
@@ -275,7 +277,7 @@ const Assessment: React.FC<Props> = ({
                         }
                         isExpanded={isFilterDropdownOpen}
                         style={{ minWidth: '220px', width: '220px' }}
-                        icon={<FilterIcon style={{ marginRight: '8px' }}/>}
+                        icon={<FilterIcon style={{ marginRight: '8px' }} />}
                       >
                         Filters
                       </MenuToggle>
@@ -376,7 +378,7 @@ const Assessment: React.FC<Props> = ({
               </InputGroup>
             </ToolbarItem>
             {!isTableEmpty() ? (
-              <ToolbarItem align={{ default: "alignStart" }}>
+              <ToolbarItem align={{ default: 'alignStart' }}>
                 <Dropdown
                   isOpen={isDropdownOpen}
                   onOpenChange={setIsDropdownOpen}
@@ -449,7 +451,8 @@ const Assessment: React.FC<Props> = ({
 
               <LabelGroup>
                 {selectedSourceTypes.map((t) => (
-                  <Label variant="outline"
+                  <Label
+                    variant="outline"
                     key={`chip-st-${t}`}
                     onClose={() =>
                       toggleSourceType(t as 'discovery' | 'rvtools')
@@ -470,7 +473,8 @@ const Assessment: React.FC<Props> = ({
                   return (
                     <>
                       {visibleOwners.map((owner) => (
-                        <Label variant="outline"
+                        <Label
+                          variant="outline"
                           key={`chip-owner-${owner}`}
                           onClose={() => toggleOwner(owner)}
                           closeBtnAriaLabel={`Remove owner ${owner}`}
@@ -479,8 +483,8 @@ const Assessment: React.FC<Props> = ({
                         </Label>
                       ))}
                       {overflow > 0 && (
-                        <Label variant="outline"
-                          
+                        <Label
+                          variant="outline"
                           key="owners-overflow"
                         >{`${overflow} more`}</Label>
                       )}
@@ -489,14 +493,15 @@ const Assessment: React.FC<Props> = ({
                 })()}
               </LabelGroup>
 
-              <Button icon={<TimesIcon />}
+              <Button
+                icon={<TimesIcon />}
                 variant="plain"
                 aria-label="Clear all filters"
                 onClick={() => {
                   clearSourceTypes();
                   clearOwners();
                 }}
-               />
+              />
             </div>
           </div>
         )}

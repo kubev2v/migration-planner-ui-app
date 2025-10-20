@@ -8,7 +8,7 @@ import {
   Divider,
   PageBreadcrumb,
   PageSection,
-  } from '@patternfly/react-core';
+} from '@patternfly/react-core';
 import {
   PageHeader,
   PageHeaderTitle,
@@ -55,7 +55,7 @@ export const AppPage: React.FC<React.PropsWithChildren<AppPage.Props>> = (
             {headerActions}
           </div>
           <Content
-            style={{ paddingBlockStart: "var(--pf-t--global--spacer--md)" }}
+            style={{ paddingBlockStart: 'var(--pf-t--global--spacer--md)' }}
           >
             <Content component="small">{caption}</Content>
           </Content>

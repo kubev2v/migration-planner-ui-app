@@ -11,7 +11,7 @@ import {
   Grid,
   GridItem,
   PageSection,
-  } from '@patternfly/react-core';
+} from '@patternfly/react-core';
 
 import { Datastores } from './Datastores';
 import { ErrorTable } from './ErrorTable';
@@ -63,7 +63,7 @@ export const Dashboard: React.FC<Props> = ({
       );
 
   return (
-    <PageSection hasBodyWrapper={false} >
+    <PageSection hasBodyWrapper={false}>
       <Grid hasGutter>
         <GridItem span={12} id="infrastructure-overview">
           <InfrastructureOverview

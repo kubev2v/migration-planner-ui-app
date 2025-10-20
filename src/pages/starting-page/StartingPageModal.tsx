@@ -2,18 +2,15 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import {
-	Button,
-	Dropdown,
-	DropdownItem,
-	DropdownList,
-	MenuToggle,
-	MenuToggleElement,
-	Title
+  Button,
+  Dropdown,
+  DropdownItem,
+  DropdownList,
+  MenuToggle,
+  MenuToggleElement,
+  Title,
 } from '@patternfly/react-core';
-import {
-	Modal,
-	ModalVariant
-} from '@patternfly/react-core/deprecated';
+import { Modal, ModalVariant } from '@patternfly/react-core/deprecated';
 
 import StartingPage from './StartingPage';
 

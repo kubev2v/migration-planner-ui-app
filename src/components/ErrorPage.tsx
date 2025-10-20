@@ -14,7 +14,10 @@ import {
   EmptyStateBody,
   EmptyStateFooter,
 } from '@patternfly/react-core';
-import { ExclamationCircleIcon, ExclamationTriangleIcon } from '@patternfly/react-icons';
+import {
+  ExclamationCircleIcon,
+  ExclamationTriangleIcon,
+} from '@patternfly/react-icons';
 
 const _bounce = keyframes``; // placeholder to keep emotion import references if needed later
 
@@ -48,7 +51,11 @@ const ErrorPage: React.FC<Props> = (props) => {
           <EmptyState
             headingLevel="h1"
             titleText={code}
-            icon={parseInt(code) < 500 ? ExclamationTriangleIcon : ExclamationCircleIcon}
+            icon={
+              parseInt(code) < 500
+                ? ExclamationTriangleIcon
+                : ExclamationCircleIcon
+            }
           >
             <EmptyStateBody>
               <Content>

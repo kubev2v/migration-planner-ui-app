@@ -1,11 +1,11 @@
 import React from 'react';
 
 import {
-	Chart,
-	ChartAxis,
-	ChartBar,
-	ChartGroup,
-	ChartVoronoiContainer
+  Chart,
+  ChartAxis,
+  ChartBar,
+  ChartGroup,
+  ChartVoronoiContainer,
 } from '@patternfly/react-charts';
 import { Content } from '@patternfly/react-core';
 

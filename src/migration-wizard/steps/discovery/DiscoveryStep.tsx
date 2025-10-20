@@ -29,8 +29,8 @@ import {
   NetworkIcon,
   VirtualMachineIcon,
 } from '@patternfly/react-icons';
-import { global_danger_color_100 as globalDangerColor100 } from '@patternfly/react-tokens/dist/js/global_danger_color_100';
-import { global_warning_color_100 as globalWarningColor100 } from '@patternfly/react-tokens/dist/js/global_warning_color_100';
+import { t_global_icon_color_status_danger_default as globalDangerColor100 } from '@patternfly/react-tokens/dist/js/t_global_icon_color_status_danger_default';
+import { t_global_icon_color_status_warning_default as globalWarningColor100 } from '@patternfly/react-tokens/dist/js/t_global_icon_color_status_warning_default';
 
 import { Dashboard } from '../../../pages/report/assessment-report/Dashboard';
 import { ReportPieChart } from '../../../pages/report/ReportPieChart';
@@ -186,13 +186,13 @@ export const DiscoveryStep: React.FC = () => {
       {
         name: (
           <Content>
-              Warnings{' '}
-              <Badge isRead>
-                {vms.migrationWarnings
-                  .map(({ count }) => count)
-                  .reduce((sum, n) => sum + n, 0)}
-              </Badge>
-            </Content>
+            Warnings{' '}
+            <Badge isRead>
+              {vms.migrationWarnings
+                .map(({ count }) => count)
+                .reduce((sum, n) => sum + n, 0)}
+            </Badge>
+          </Content>
         ),
         icon: (
           <Icon style={{ color: globalWarningColor100.value }}>
@@ -217,13 +217,13 @@ export const DiscoveryStep: React.FC = () => {
         ? {
             name: (
               <Content>
-                  Not migratable reasons{' '}
-                  <Badge isRead>
-                    {vms.migrationWarnings
-                      .map(({ count }) => count)
-                      .reduce((sum, n) => sum + n, 0)}
-                  </Badge>
-                </Content>
+                Not migratable reasons{' '}
+                <Badge isRead>
+                  {vms.migrationWarnings
+                    .map(({ count }) => count)
+                    .reduce((sum, n) => sum + n, 0)}
+                </Badge>
+              </Content>
             ),
             icon: (
               <Icon style={{ color: globalDangerColor100.value }}>
