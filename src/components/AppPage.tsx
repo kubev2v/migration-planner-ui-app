@@ -4,11 +4,10 @@ import {
   Breadcrumb,
   BreadcrumbItem,
   BreadcrumbItemProps,
+  Content,
   Divider,
-  Page,
   PageBreadcrumb,
   PageSection,
-  Content,
   } from '@patternfly/react-core';
 import {
   PageHeader,
@@ -31,7 +30,7 @@ export const AppPage: React.FC<React.PropsWithChildren<AppPage.Props>> = (
   const { title, caption, breadcrumbs, children, headerActions } = props;
 
   return (
-    <Page style={{ height: '100%' }}>
+    <div>
       <div id="base-page__header">
         <PageBreadcrumb hasBodyWrapper={false}>
           <Breadcrumb>
@@ -64,7 +63,7 @@ export const AppPage: React.FC<React.PropsWithChildren<AppPage.Props>> = (
         <Divider />
       </div>
       <PageSection hasBodyWrapper={false}>{children}</PageSection>
-    </Page>
+    </div>
   );
 };
 
