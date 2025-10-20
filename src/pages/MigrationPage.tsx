@@ -24,6 +24,9 @@ const MigrationPage: React.FC<Props> = ({ initialTabKey }) => {
     typeof initialTabKey === 'number' ? initialTabKey : 0,
   );
   const [isStartingPageModalOpen, setIsStartingPageModalOpen] = useState(false);
+  const [rvtoolsOpenToken, setRvtoolsOpenToken] = useState<string | undefined>(
+    undefined,
+  );
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -87,7 +90,9 @@ const MigrationPage: React.FC<Props> = ({ initialTabKey }) => {
               id="assessments-tab-content"
               style={{ padding: 0, marginTop: '24px' }}
             >
-              <MigrationAssessmentPageContent />
+              <MigrationAssessmentPageContent
+                rvtoolsOpenToken={rvtoolsOpenToken}
+              />
             </TabContent>
           </Tab>
 
@@ -110,7 +115,11 @@ const MigrationPage: React.FC<Props> = ({ initialTabKey }) => {
       <StartingPageModal
         isOpen={isStartingPageModalOpen}
         onClose={() => setIsStartingPageModalOpen(false)}
-        onOpenRVToolsModal={() => setActiveTabKey(0)}
+        onOpenRVToolsModal={() => {
+          // Switch to Assessments tab and trigger RVTools modal opening
+          setActiveTabKey(0);
+          setRvtoolsOpenToken(`${Date.now()}-${Math.random()}`);
+        }}
       />
     </>
   );

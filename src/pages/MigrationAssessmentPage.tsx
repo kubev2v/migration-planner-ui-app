@@ -142,7 +142,9 @@ const _WelcomePage: React.FC = () => (
   </Bullseye>
 );
 
-export const MigrationAssessmentPageContent: React.FC = () => {
+export const MigrationAssessmentPageContent: React.FC<{
+  rvtoolsOpenToken?: string;
+}> = ({ rvtoolsOpenToken }) => {
   const discoverySourcesContext = useDiscoverySources();
   const [assessments, setAssessments] = useState<Assessment[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -208,7 +210,13 @@ export const MigrationAssessmentPageContent: React.FC = () => {
   }
 
   // Always show assessment component
-  return <AssessmentPage assessments={assessments} isLoading={isLoading} />;
+  return (
+    <AssessmentPage
+      assessments={assessments}
+      isLoading={isLoading}
+      rvtoolsOpenToken={rvtoolsOpenToken}
+    />
+  );
 };
 
 const MigrationAssessmentPage: React.FC = () => (

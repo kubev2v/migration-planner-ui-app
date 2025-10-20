@@ -32,9 +32,15 @@ import UpdateAssessment from './UpdateAssessment';
 type Props = {
   assessments: AssessmentModel[];
   isLoading?: boolean;
+  // When this token changes, the component should open the RVTools modal.
+  rvtoolsOpenToken?: string;
 };
 
-const Assessment: React.FC<Props> = ({ assessments, isLoading }) => {
+const Assessment: React.FC<Props> = ({
+  assessments,
+  isLoading,
+  rvtoolsOpenToken,
+}) => {
   const navigate = useNavigate();
   const discoverySourcesContext = useDiscoverySources();
   const [search, setSearch] = useState('');
@@ -137,6 +143,15 @@ const Assessment: React.FC<Props> = ({ assessments, isLoading }) => {
   const handleCloseModal = (): void => {
     setIsModalOpen(false);
   };
+
+  // Open RVTools modal when the trigger token changes
+  React.useEffect(() => {
+    if (rvtoolsOpenToken) {
+      handleOpenModal('rvtools');
+    }
+    // We intentionally only react to token changes
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rvtoolsOpenToken]);
 
   const handleUpdateAssessment = (assessmentId: string): void => {
     const assessment = assessments.find(
