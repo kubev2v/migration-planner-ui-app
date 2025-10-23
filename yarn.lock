@@ -637,33 +637,33 @@
     "@parcel/watcher-win32-ia32" "2.5.1"
     "@parcel/watcher-win32-x64" "2.5.1"
 
-"@patternfly/react-charts@7.4.1":
-  version "7.4.1"
-  resolved "https://registry.npmjs.org/@patternfly/react-charts/-/react-charts-7.4.1.tgz"
-  integrity sha512-mjB61tMY2ApcmPP+02Vr4sY1s/Q1qfM8qufIxPiHcAfvW9aK2govrSiOKYpeof4/upOVSEbWpCPqEMA7EM8TMw==
+"@patternfly/react-charts@7.4.9":
+  version "7.4.9"
+  resolved "https://registry.npmjs.org/@patternfly/react-charts/-/react-charts-7.4.9.tgz"
+  integrity sha512-kFnl4al8A5rRyvp13xpPhP4fnIhpAr3KQzAJEfznk2JdrYMnKmNdxF3HH8KHplwH5gG4nmUWzX60lpNaFKn1/A==
   dependencies:
-    "@patternfly/react-styles" "^5.4.0"
-    "@patternfly/react-tokens" "^5.4.0"
+    "@patternfly/react-styles" "^5.4.1"
+    "@patternfly/react-tokens" "^5.4.1"
     hoist-non-react-statics "^3.3.2"
     lodash "^4.17.21"
-    tslib "^2.6.3"
-    victory-area "^37.1.1"
-    victory-axis "^37.1.1"
-    victory-bar "^37.1.1"
-    victory-box-plot "^37.1.1"
-    victory-chart "^37.1.1"
-    victory-core "^37.1.1"
-    victory-create-container "^37.1.1"
-    victory-cursor-container "^37.1.1"
-    victory-group "^37.1.1"
-    victory-legend "^37.1.1"
-    victory-line "^37.1.1"
-    victory-pie "^37.1.1"
-    victory-scatter "^37.1.1"
-    victory-stack "^37.1.1"
-    victory-tooltip "^37.1.1"
-    victory-voronoi-container "^37.1.1"
-    victory-zoom-container "^37.1.1"
+    tslib "^2.7.0"
+    victory-area "^37.3.6"
+    victory-axis "^37.3.6"
+    victory-bar "^37.3.6"
+    victory-box-plot "^37.3.6"
+    victory-chart "^37.3.6"
+    victory-core "^37.3.6"
+    victory-create-container "^37.3.6"
+    victory-cursor-container "^37.3.6"
+    victory-group "^37.3.6"
+    victory-legend "^37.3.6"
+    victory-line "^37.3.6"
+    victory-pie "^37.3.6"
+    victory-scatter "^37.3.6"
+    victory-stack "^37.3.6"
+    victory-tooltip "^37.3.6"
+    victory-voronoi-container "^37.3.6"
+    victory-zoom-container "^37.3.6"
 
 "@patternfly/react-component-groups@^6.0.0":
   version "6.3.0"
@@ -698,10 +698,10 @@
   resolved "https://registry.npmjs.org/@patternfly/react-icons/-/react-icons-6.3.1.tgz"
   integrity sha512-uiMounSIww1iZLM4pq+X8c3upzwl9iowXRPjR5CA8entb70lwgAXg3PqvypnuTAcilTq1Y3k5sFTqkhz7rgKcQ==
 
-"@patternfly/react-styles@^5.4.0":
-  version "5.4.0"
-  resolved "https://registry.npmjs.org/@patternfly/react-styles/-/react-styles-5.4.0.tgz"
-  integrity sha512-4ZE0s6LkX/0KsN0FOeogrDoj18m+BPA73YKnabZGB4SDRzrBNeBh2a6bSt546ZseEjkoJ+S81kOG0G8YckPQYg==
+"@patternfly/react-styles@^5.4.1":
+  version "5.4.1"
+  resolved "https://registry.npmjs.org/@patternfly/react-styles/-/react-styles-5.4.1.tgz"
+  integrity sha512-XA8PXksD8uiA3RTwxdUwJXOCf+V6sVd+2HKapWAdRLvtSV+Sdk7NgCvalb4IAQncsddLopjPQD8gAHA298+N8w==
 
 "@patternfly/react-styles@^6.0.0", "@patternfly/react-styles@^6.3.1":
   version "6.3.1"
@@ -720,7 +720,7 @@
     lodash "^4.17.21"
     tslib "^2.8.1"
 
-"@patternfly/react-tokens@^5.4.0":
+"@patternfly/react-tokens@^5.4.1":
   version "5.4.1"
   resolved "https://registry.npmjs.org/@patternfly/react-tokens/-/react-tokens-5.4.1.tgz"
   integrity sha512-eygdHE7Krta1mijAv/E8RHiKIgysD0eeNTo8EXUYC8/M4e5K6sqpr2p6rQBF8QiRMN8FnbXvZT3K2OQ28pYt9Q==
@@ -8347,7 +8347,7 @@ ts-patch@^3.2.1:
     semver "^7.5.4"
     strip-ansi "^6.0.1"
 
-tslib@^2.0.0, tslib@^2.0.3, tslib@^2.1.0, tslib@^2.6.2, tslib@^2.6.3, tslib@^2.7.0, tslib@^2.8.1:
+tslib@^2.0.0, tslib@^2.0.3, tslib@^2.1.0, tslib@^2.6.2, tslib@^2.7.0, tslib@^2.8.1:
   version "2.8.1"
   resolved "https://registry.npmjs.org/tslib/-/tslib-2.8.1.tgz"
   integrity sha512-oJFu94HQb+KVduSUQL7wnpmqnfmLsOA/nAh6b6EH0wCEoK0/mPeXU6c3wKDV83MkOuHPRHtSXKKU99IBazS/2w==
@@ -8635,7 +8635,7 @@ vfile@^6.0.0:
     "@types/unist" "^3.0.0"
     vfile-message "^4.0.0"
 
-victory-area@^37.1.1:
+victory-area@^37.3.6:
   version "37.3.6"
   resolved "https://registry.npmjs.org/victory-area/-/victory-area-37.3.6.tgz"
   integrity sha512-wVC8LKrZJLiSySNuJLRCB449qZTsPiRyzLlNoJwe21y+XA/a2HJbmJSeywmo8P153aX8viKe1H8ygDsTFXQhHw==
@@ -8644,7 +8644,7 @@ victory-area@^37.1.1:
     victory-core "37.3.6"
     victory-vendor "37.3.6"
 
-victory-axis@37.3.6, victory-axis@^37.1.1:
+victory-axis@37.3.6, victory-axis@^37.3.6:
   version "37.3.6"
   resolved "https://registry.npmjs.org/victory-axis/-/victory-axis-37.3.6.tgz"
   integrity sha512-Vi0dZvgmXmnCdoqc49WckeG5cMXnl7FTtqVhXu9JweA9cgCnkZabBd5mRvAjblb3Lo4j0HZCSPKHYWUPW70qZg==
@@ -8652,7 +8652,7 @@ victory-axis@37.3.6, victory-axis@^37.1.1:
     lodash "^4.17.19"
     victory-core "37.3.6"
 
-victory-bar@^37.1.1:
+victory-bar@^37.3.6:
   version "37.3.6"
   resolved "https://registry.npmjs.org/victory-bar/-/victory-bar-37.3.6.tgz"
   integrity sha512-jdATFRWL1LUW/yEpKWx/aId2BiU2o1pPF9+Kh1TFISBduJoI4ZqvZD90H1QK4f/z50PikqiqiDECaKoKM1jfOQ==
@@ -8661,7 +8661,7 @@ victory-bar@^37.1.1:
     victory-core "37.3.6"
     victory-vendor "37.3.6"
 
-victory-box-plot@^37.1.1:
+victory-box-plot@^37.3.6:
   version "37.3.6"
   resolved "https://registry.npmjs.org/victory-box-plot/-/victory-box-plot-37.3.6.tgz"
   integrity sha512-GOucnD63h14ScBuISC/nd1GBTEx6gIZfLE+0P0gyeH1poBKq0trTTvpQDvAMuGR8zICfEETG3ltmUMCwRrFyUg==
@@ -8679,7 +8679,7 @@ victory-brush-container@37.3.6:
     react-fast-compare "^3.2.0"
     victory-core "37.3.6"
 
-victory-chart@^37.1.1:
+victory-chart@^37.3.6:
   version "37.3.6"
   resolved "https://registry.npmjs.org/victory-chart/-/victory-chart-37.3.6.tgz"
   integrity sha512-IkPo/W4AJ7bPu902TGER09OseR9ODm+FQAKfOBw4JsdEhZZ7BiG9zgd/25+x0r5EsTLu81CYGQVkBa+ZazcOlA==
@@ -8691,7 +8691,7 @@ victory-chart@^37.1.1:
     victory-polar-axis "37.3.6"
     victory-shared-events "37.3.6"
 
-victory-core@37.3.6, victory-core@^37.1.1:
+victory-core@37.3.6, victory-core@^37.3.6:
   version "37.3.6"
   resolved "https://registry.npmjs.org/victory-core/-/victory-core-37.3.6.tgz"
   integrity sha512-aFgO6KokxPbUCPznZP5UPhOdI22pMuwDXKDt6eoQOnkVim66Ia+K95TQar2nwVKGYV5j26aKVf/n9blwphGJRw==
@@ -8700,7 +8700,7 @@ victory-core@37.3.6, victory-core@^37.1.1:
     react-fast-compare "^3.2.0"
     victory-vendor "37.3.6"
 
-victory-create-container@^37.1.1:
+victory-create-container@^37.3.6:
   version "37.3.6"
   resolved "https://registry.npmjs.org/victory-create-container/-/victory-create-container-37.3.6.tgz"
   integrity sha512-Uf5bFQvqUsXCjqpvBW4LhrdrHkM6dBqxYgub6FCsBb86f84xZQ3vY7jFkg/JfvF0oGKMoWXYYrYLC1sk+fcWVA==
@@ -8713,7 +8713,7 @@ victory-create-container@^37.1.1:
     victory-voronoi-container "37.3.6"
     victory-zoom-container "37.3.6"
 
-victory-cursor-container@37.3.6, victory-cursor-container@^37.1.1:
+victory-cursor-container@37.3.6, victory-cursor-container@^37.3.6:
   version "37.3.6"
   resolved "https://registry.npmjs.org/victory-cursor-container/-/victory-cursor-container-37.3.6.tgz"
   integrity sha512-+Oiw57d5nE+iq8As8RvepknzmNtKq1Gsc50u1X3IRd4jXtX8zqZrgXGlVZ+BP/tkLsWnGYVjKulwKBf2oaEUuw==
@@ -8721,7 +8721,7 @@ victory-cursor-container@37.3.6, victory-cursor-container@^37.1.1:
     lodash "^4.17.19"
     victory-core "37.3.6"
 
-victory-group@^37.1.1:
+victory-group@^37.3.6:
   version "37.3.6"
   resolved "https://registry.npmjs.org/victory-group/-/victory-group-37.3.6.tgz"
   integrity sha512-kgy/Azl5BxwlJAV0KDPGypv35TMrOD1J2ZxnJW2Wyyq+e8i0GGBIv5MoBzou64BRsDlS9V0CYRIjnkHgrBpB5w==
@@ -8731,7 +8731,7 @@ victory-group@^37.1.1:
     victory-core "37.3.6"
     victory-shared-events "37.3.6"
 
-victory-legend@^37.1.1:
+victory-legend@^37.3.6:
   version "37.3.6"
   resolved "https://registry.npmjs.org/victory-legend/-/victory-legend-37.3.6.tgz"
   integrity sha512-vRRrhj3/ENqKVLdaBMzEmR83N6BOjox1bthYT1eJjN2H5SIK35bxn30IkiV/Pz3y627EqZe4TAWaxc0jiJlCiA==
@@ -8739,7 +8739,7 @@ victory-legend@^37.1.1:
     lodash "^4.17.19"
     victory-core "37.3.6"
 
-victory-line@^37.1.1:
+victory-line@^37.3.6:
   version "37.3.6"
   resolved "https://registry.npmjs.org/victory-line/-/victory-line-37.3.6.tgz"
   integrity sha512-Ke817uf/qFbN9jU7Dba7CrcHXYO5wAZuKKnyeHJmLDeQeFST0773xejnIuC+dBgZipjFr4KIbSd+VcUafFNE1g==
@@ -8748,7 +8748,7 @@ victory-line@^37.1.1:
     victory-core "37.3.6"
     victory-vendor "37.3.6"
 
-victory-pie@^37.1.1:
+victory-pie@^37.3.6:
   version "37.3.6"
   resolved "https://registry.npmjs.org/victory-pie/-/victory-pie-37.3.6.tgz"
   integrity sha512-tvdgAZ/HQWlo3KDDe0XAVbizHuaNMbgkkiF7zfA7Ww+3bHSs+0P9dsDtK2xP365D8gBCOv8pWmuzvKRhzNbqeA==
@@ -8765,7 +8765,7 @@ victory-polar-axis@37.3.6:
     lodash "^4.17.19"
     victory-core "37.3.6"
 
-victory-scatter@^37.1.1:
+victory-scatter@^37.3.6:
   version "37.3.6"
   resolved "https://registry.npmjs.org/victory-scatter/-/victory-scatter-37.3.6.tgz"
   integrity sha512-fp95zMTPXgW1cmTowzDXhn+KxePMVDrzU0lotsHQMdBV7eB+ioXdu9hORlx4VHmMYg2ihsGwRTF+VAZ7rGxphA==
@@ -8791,7 +8791,7 @@ victory-shared-events@37.3.6:
     react-fast-compare "^3.2.0"
     victory-core "37.3.6"
 
-victory-stack@^37.1.1:
+victory-stack@^37.3.6:
   version "37.3.6"
   resolved "https://registry.npmjs.org/victory-stack/-/victory-stack-37.3.6.tgz"
   integrity sha512-ldod04RdqGJGH5p5eWXCofdTkbhZqIp3iwW7NpxSbMDLs8zPQIVvDFVtuJgMwQiC5vnIpbhMmxVeFbr8m64ZKA==
@@ -8801,7 +8801,7 @@ victory-stack@^37.1.1:
     victory-core "37.3.6"
     victory-shared-events "37.3.6"
 
-victory-tooltip@37.3.6, victory-tooltip@^37.1.1:
+victory-tooltip@37.3.6, victory-tooltip@^37.3.6:
   version "37.3.6"
   resolved "https://registry.npmjs.org/victory-tooltip/-/victory-tooltip-37.3.6.tgz"
   integrity sha512-vqaJS9noauOqDDBBAV9Ln9duOY/i17h1DCfCPAqhwPFyvFbwKvAub9zPTeYWAm/14VvWX5O/0yekFCVbcC7hjg==
@@ -8829,7 +8829,7 @@ victory-vendor@37.3.6:
     d3-time "^3.0.0"
     d3-timer "^3.0.1"
 
-victory-voronoi-container@37.3.6, victory-voronoi-container@^37.1.1:
+victory-voronoi-container@37.3.6, victory-voronoi-container@^37.3.6:
   version "37.3.6"
   resolved "https://registry.npmjs.org/victory-voronoi-container/-/victory-voronoi-container-37.3.6.tgz"
   integrity sha512-qAAG0rMuK7A4EoJ4cyUk5wNdOW+HuCXNKPOko+hYK6wWOYXJvFhiglYyA85a695YyAXECc6JyJS/crm4IOEFag==
@@ -8840,7 +8840,7 @@ victory-voronoi-container@37.3.6, victory-voronoi-container@^37.1.1:
     victory-core "37.3.6"
     victory-tooltip "37.3.6"
 
-victory-zoom-container@37.3.6, victory-zoom-container@^37.1.1:
+victory-zoom-container@37.3.6, victory-zoom-container@^37.3.6:
   version "37.3.6"
   resolved "https://registry.npmjs.org/victory-zoom-container/-/victory-zoom-container-37.3.6.tgz"
   integrity sha512-AGL+k20mI44OL5b0VgIxlmnNSefIoFmbbim5NraPmIxbtns9qQW/56ivIncJcYomBungIx99gUpsEpcQaMNHgQ==
