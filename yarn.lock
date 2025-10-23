@@ -7000,10 +7000,10 @@ rc@^1.0.1, rc@^1.1.6:
     minimist "^1.2.0"
     strip-json-comments "~2.0.1"
 
-react-content-loader@^6.2.0:
-  version "6.2.0"
-  resolved "https://registry.npmjs.org/react-content-loader/-/react-content-loader-6.2.0.tgz"
-  integrity sha512-r1dI6S+uHNLW68qraLE2njJYOuy6976PpCExuCZUcABWbfnF3FMcmuESRI8L4Bj45wnZ7n8g71hkPLzbma7/Cw==
+react-content-loader@^6.2.0, react-content-loader@^6.2.1:
+  version "6.2.1"
+  resolved "https://registry.npmjs.org/react-content-loader/-/react-content-loader-6.2.1.tgz"
+  integrity sha512-6ONbFX+Hi3SHuP66JB8CPvJn372pj+qwltJV0J8z/8MFrq98I1cbFdZuhDWeQXu3CFxiiDTXJn7DFxx2ZvrO7g==
 
 react-display-name@^0.2.4:
   version "0.2.5"
