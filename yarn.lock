@@ -491,10 +491,10 @@
   resolved "https://registry.npmjs.org/@migration-planner-ui/agent-client/-/agent-client-0.0.20.tgz"
   integrity sha512-etc84l2GPDnL87x7Buek5mO9vbj9tWWPG1B/h3dDm0lyvOEunWQIyHjkLRS/V4G/uL24eyEtiMXORXcbvVVXVg==
 
-"@migration-planner-ui/api-client@^0.0.20":
-  version "0.0.20"
-  resolved "https://registry.npmjs.org/@migration-planner-ui/api-client/-/api-client-0.0.20.tgz"
-  integrity sha512-eV9XuXhq7lq1ciLo+pFnqO7NYv+5+oGK0eBGbV4MR8ozhppQBHzOz9I7cLFjf4jvbZIekjeRga3GeEe0vikVjg==
+"@migration-planner-ui/api-client@^0.1.0":
+  version "0.1.1"
+  resolved "https://registry.npmjs.org/@migration-planner-ui/api-client/-/api-client-0.1.1.tgz"
+  integrity sha512-GZqGCe9SijIOAnmKrXCmZvvfhrgkNugIMG6Zf561pjVC2Ghs7WWmX2zWYNAJmnzJ9kJ11mJYNivwlcTEOuo4JQ==
 
 "@migration-planner-ui/ioc@^0.0.20":
   version "0.0.20"
