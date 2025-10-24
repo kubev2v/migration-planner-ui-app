@@ -137,7 +137,7 @@ export const Provider: React.FC<PropsWithChildren> = (props) => {
 
   const [listAssessmentsState, listAssessments] = useAsyncFnResetError(
     async () => {
-      const response = await assessmentService.listAssessments();
+      const response = await assessmentApi.listAssessments();
       return normalizeAssessmentsResponse(response);
     },
   );
