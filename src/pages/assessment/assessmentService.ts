@@ -18,6 +18,27 @@ export class AssessmentService {
   }
 
   /**
+   * List assessments
+   */
+  async listAssessments(): Promise<Assessment[]> {
+    const response = await this.fetchApi(`${this.baseUrl}/api/v1/assessments`, {
+      method: 'GET',
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Failed to list assessments: ${errorText}`);
+    }
+
+    const json = await response.json();
+    if (!Array.isArray(json)) return [];
+    return json.map((item) => ({
+      ...item,
+      createdAt: item?.createdAt ? new Date(item.createdAt) : undefined,
+    })) as Assessment[];
+  }
+
+  /**
    * Create assessment from RVTools file (Excel)
    */
   async createFromRVTools(name: string, rvToolFile: File): Promise<Assessment> {
