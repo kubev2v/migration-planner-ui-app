@@ -824,6 +824,11 @@ export const DiscoverySourceSetupModal: React.FC<
               >
                 {generatedUrl}
               </ClipboardCopy>
+              <Alert
+                isInline
+                variant="info"
+                title="Never share your downloaded ISO with anyone else. Forwarding it might put your credentials and personal data at risk."
+              />
             </Content>
           )}
         </Form>
