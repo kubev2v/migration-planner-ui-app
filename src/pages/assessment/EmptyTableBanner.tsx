@@ -110,6 +110,7 @@ const EmptyTableBanner: React.FC<Props> = ({ onOpenModal }) => {
               variant="primary"
               onClick={onDropdownToggle}
               isExpanded={isDropdownOpen}
+              style={{ minWidth: '290px' }}
             >
               Create new migration assessment
             </MenuToggle>

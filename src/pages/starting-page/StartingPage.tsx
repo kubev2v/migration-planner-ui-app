@@ -18,7 +18,7 @@ import {
   MigrationIcon,
   QuestionCircleIcon,
 } from '@patternfly/react-icons';
-import { t_global_icon_color_300 as globalActiveColor300 } from '@patternfly/react-tokens/dist/js/t_global_icon_color_300';
+import { global_active_color_300 as globalActiveColor300 } from '@patternfly/react-tokens/dist/js/global_active_color_300';
 
 import { CustomEnterpriseIcon } from '../../components/CustomEnterpriseIcon';
 
@@ -43,7 +43,7 @@ const createCards = (
     </CardHeader>
     <CardBody>
       <Content style={{ textAlign: 'center' }}>
-        <Content component="p">
+        <Content style={{ minHeight: '60px' }}>
           Run the discovery process or upload an inventory file to create a full
           migration assessment report.
         </Content>
@@ -55,6 +55,7 @@ const createCards = (
               '/openshift/migration-assessment/assessments/example-report',
             )
           }
+          style={{ marginTop: '16px', display: 'inline-block' }}
         >
           See an example report
         </Button>
@@ -63,39 +64,56 @@ const createCards = (
   </Card>,
 
   <Card isFullHeight isPlain key="card-2">
-    <CardHeader>
+    <CardHeader style={{ height: '210px' }}>
       <Content style={{ textAlign: 'center' }}>
         <Icon size="xl" style={{ color: globalActiveColor300.var }}>
           <ClusterIcon />
         </Icon>
-        <Content component="h2">Select a target cluster</Content>
+        <Content component="h2">
+          Select a target cluster
+          <br />
+        </Content>
       </Content>
     </CardHeader>
     <CardBody>
       <Content style={{ textAlign: 'center' }}>
-        <Content component="p">
+        <Content style={{ minHeight: '60px' }}>
           Select your target OpenShift Cluster to fit your migration data
         </Content>
+        <span
+          className="pf-v5-c-label pf-m-purple pf-m-compact"
+          style={{ marginTop: '6px', display: 'inline-block' }}
+        >
+          Coming soon
+        </span>
       </Content>
     </CardBody>
   </Card>,
 
   <Card isFullHeight isPlain key="card-3">
-    <CardHeader>
+    <CardHeader style={{ height: '210px' }}>
       <Content style={{ textAlign: 'center' }}>
         <Icon size="xl" style={{ color: globalActiveColor300.var }}>
           <MigrationIcon />
         </Icon>
-        <Content component="h2">Create a migration plan</Content>
+        <Content component="h2">
+          Create a migration plan
+          <br />
+        </Content>
       </Content>
     </CardHeader>
     <CardBody>
       <Content style={{ textAlign: 'center' }}>
-        <Content component="p">
+        <Content style={{ minHeight: '60px' }}>
           Select your VMs, create a network and storage mapping and schedule
           your migration timeline
         </Content>
-        <Button icon="Coming soon" size="sm" variant="plain" isDisabled />
+        <span
+          className="pf-v5-c-label pf-m-purple pf-m-compact"
+          style={{ marginTop: '6px', display: 'inline-block' }}
+        >
+          Coming soon
+        </span>
       </Content>
     </CardBody>
   </Card>,

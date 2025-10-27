@@ -67,6 +67,7 @@ const StartingPageModal: React.FC<Props> = ({
               variant="primary"
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
               isExpanded={isDropdownOpen}
+              style={{ minWidth: '290px' }}
             >
               Create new migration assessment
             </MenuToggle>

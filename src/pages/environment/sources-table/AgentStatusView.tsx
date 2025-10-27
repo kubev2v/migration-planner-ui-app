@@ -132,13 +132,16 @@ export const AgentStatusView: React.FC<AgentStatusView.Props> = (props) => {
     );
   }
 
+  const hasStatusInfo = !!(statusInfo && String(statusInfo).trim());
+  const isWaitingForCredentials = status === 'waiting-for-credentials';
+
   return (
     <Split hasGutter style={{ gap: '0.66rem' }}>
       <SplitItem>{statusView && statusView.icon}</SplitItem>
       <SplitItem>
-        {statusInfo ||
-        (statusView && statusView.text === 'Waiting for credentials') ||
-        (uploadedManually && !statusInfo && status !== 'not-connected') ? (
+        {isWaitingForCredentials ||
+        uploadedManually ||
+        (hasStatusInfo && status !== 'not-connected') ? (
           <Popover
             aria-label={statusView && statusView.text}
             headerContent={statusView && statusView.text}
@@ -159,7 +162,7 @@ export const AgentStatusView: React.FC<AgentStatusView.Props> = (props) => {
               )
             }
           >
-            <Button variant="link" isInline>
+            <Button variant="link" isInline style={{ textDecoration: 'none' }}>
               {statusView && statusView.text}
             </Button>
           </Popover>

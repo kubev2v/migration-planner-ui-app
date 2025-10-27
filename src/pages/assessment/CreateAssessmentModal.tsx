@@ -191,7 +191,7 @@ export const CreateAssessmentModal: React.FC<CreateAssessmentModalProps> = ({
       isDisabled={isLoading || !isFormValid}
       isLoading={isLoading}
     >
-      Create Assessment
+      Create Migration Assessment
     </Button>,
     <Button
       key="cancel"
