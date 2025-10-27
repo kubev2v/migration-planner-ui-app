@@ -10,8 +10,6 @@ import {
   DropdownList,
   InputGroup,
   InputGroupItem,
-  Label,
-  LabelGroup,
   MenuToggle,
   MenuToggleElement,
   SearchInput,
@@ -22,6 +20,7 @@ import {
 } from '@patternfly/react-core';
 import { FilterIcon, PlusCircleIcon, TimesIcon } from '@patternfly/react-icons';
 
+import FilterPill from '../../components/FilterPill';
 import { useDiscoverySources } from '../../migration-wizard/contexts/discovery-sources/Context';
 
 import { DiscoverySourceSetupModal } from './sources-table/empty-state/DiscoverySourceSetupModal';
@@ -221,36 +220,37 @@ export const Environment: React.FC = () => {
                 Filters
               </span>
 
-              <LabelGroup>
-                {(() => {
-                  const MAX_STATUS_CHIPS = 1;
-                  const visible = selectedStatuses.slice(0, MAX_STATUS_CHIPS);
-                  const overflow = selectedStatuses.length - visible.length;
-                  const labelMap = new Map(
-                    statusOptions.map((s) => [s.key, s.label]),
-                  );
-                  return (
-                    <>
-                      {visible.map((key) => (
-                        <Label
-                          variant="outline"
-                          key={`chip-status-${key}`}
-                          onClose={() => toggleStatus(key)}
-                          closeBtnAriaLabel={`Remove status ${key}`}
-                        >
-                          {`status=${labelMap.get(key) ?? key}`}
-                        </Label>
-                      ))}
-                      {overflow > 0 && (
-                        <Label
-                          variant="outline"
-                          key="status-overflow"
-                        >{`${overflow} more`}</Label>
-                      )}
-                    </>
-                  );
-                })()}
-              </LabelGroup>
+              {((): JSX.Element => {
+                const MAX_STATUS_CHIPS = 6;
+                const visible = selectedStatuses.slice(0, MAX_STATUS_CHIPS);
+                const overflow = selectedStatuses.length - visible.length;
+                const hidden = selectedStatuses.slice(MAX_STATUS_CHIPS);
+                const labelMap = new Map(
+                  statusOptions.map((s) => [s.key, s.label]),
+                );
+                return (
+                  <>
+                    {visible.map((key) => (
+                      <FilterPill
+                        key={`chip-status-${key}`}
+                        label={`status=${labelMap.get(key) ?? key}`}
+                        ariaLabel={`Remove status ${labelMap.get(key) ?? key}`}
+                        onClear={() => toggleStatus(key)}
+                      />
+                    ))}
+                    {overflow > 0 && (
+                      <FilterPill
+                        key="status-overflow"
+                        label={`${overflow} more`}
+                        ariaLabel="Remove hidden statuses"
+                        onClear={() => {
+                          hidden.forEach((k) => toggleStatus(k));
+                        }}
+                      />
+                    )}
+                  </>
+                );
+              })()}
 
               <Button
                 icon={<TimesIcon />}

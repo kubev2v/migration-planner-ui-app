@@ -9,8 +9,6 @@ import {
   DropdownList,
   InputGroup,
   InputGroupItem,
-  Label,
-  LabelGroup,
   MenuToggle,
   MenuToggleElement,
   SearchInput,
@@ -21,6 +19,7 @@ import {
 import { FilterIcon, TimesIcon } from '@patternfly/react-icons';
 
 import { ConfirmationModal } from '../../components/ConfirmationModal';
+import FilterPill from '../../components/FilterPill';
 import { useDiscoverySources } from '../../migration-wizard/contexts/discovery-sources/Context';
 import StartingPageModal from '../starting-page/StartingPageModal';
 
@@ -449,49 +448,33 @@ const Assessment: React.FC<Props> = ({
                 Filters
               </span>
 
-              <LabelGroup>
-                {selectedSourceTypes.map((t) => (
-                  <Label
-                    variant="outline"
-                    key={`chip-st-${t}`}
-                    onClose={() =>
+              {selectedSourceTypes
+                .filter((t) => t === 'discovery' || t === 'rvtools')
+                .map((t) => (
+                  <FilterPill
+                    key={t}
+                    label={`source type=${
+                      t === 'discovery' ? 'discovery ova' : 'rvtools'
+                    }`}
+                    ariaLabel={`Remove source type ${
+                      t === 'discovery' ? 'discovery ova' : 'rvtools'
+                    }`}
+                    onClear={() =>
                       toggleSourceType(t as 'discovery' | 'rvtools')
                     }
-                    closeBtnAriaLabel={`Remove source type ${t}`}
-                  >
-                    {`source type=${t === 'discovery' ? 'discovery ova' : 'rvtools'}`}
-                  </Label>
+                  />
                 ))}
 
-                {(() => {
-                  const MAX_OWNER_CHIPS = 1;
-                  const visibleOwners = selectedOwners.slice(
-                    0,
-                    MAX_OWNER_CHIPS,
-                  );
-                  const overflow = selectedOwners.length - visibleOwners.length;
-                  return (
-                    <>
-                      {visibleOwners.map((owner) => (
-                        <Label
-                          variant="outline"
-                          key={`chip-owner-${owner}`}
-                          onClose={() => toggleOwner(owner)}
-                          closeBtnAriaLabel={`Remove owner ${owner}`}
-                        >
-                          {`owner=${owner}`}
-                        </Label>
-                      ))}
-                      {overflow > 0 && (
-                        <Label
-                          variant="outline"
-                          key="owners-overflow"
-                        >{`${overflow} more`}</Label>
-                      )}
-                    </>
-                  );
-                })()}
-              </LabelGroup>
+              {selectedOwners
+                .filter((o) => typeof o === 'string' && o.trim() !== '')
+                .map((owner) => (
+                  <FilterPill
+                    key={owner}
+                    label={`owner=${owner}`}
+                    ariaLabel={`Remove owner ${owner}`}
+                    onClear={() => toggleOwner(owner)}
+                  />
+                ))}
 
               <Button
                 icon={<TimesIcon />}
