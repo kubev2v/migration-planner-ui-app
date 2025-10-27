@@ -18,7 +18,7 @@ import {
   MigrationIcon,
   QuestionCircleIcon,
 } from '@patternfly/react-icons';
-import { global_active_color_300 as globalActiveColor300 } from '@patternfly/react-tokens/dist/js/global_active_color_300';
+import { t_global_text_color_link_default as globalActiveColor300 } from '@patternfly/react-tokens/dist/js/t_global_text_color_link_default';
 
 import { CustomEnterpriseIcon } from '../../components/CustomEnterpriseIcon';
 
@@ -28,14 +28,14 @@ const createCards = (
   <Card isFullHeight isPlain key="card-1">
     <CardHeader>
       <Content style={{ textAlign: 'center' }}>
-        <Icon size="xl" style={{ color: globalActiveColor300.var }}>
-          <CustomEnterpriseIcon />
+        <Icon size="xl">
+          <CustomEnterpriseIcon color={globalActiveColor300.value} />
         </Icon>
         <Content component="h2">
           Assess your VMware environment{' '}
           <Tooltip content="As part of the discovery process, we're collecting aggregated data about your VMware environment. This includes information such as the number of clusters, hosts, and VMs; VM counts per operating system type; total CPU cores and memory; network types and VLANs; and a list of datastores.">
-            <Icon style={{ color: globalActiveColor300.var }} size="sm">
-              <QuestionCircleIcon />
+            <Icon size="sm">
+              <QuestionCircleIcon color={globalActiveColor300.value} />
             </Icon>
           </Tooltip>
         </Content>
@@ -66,8 +66,8 @@ const createCards = (
   <Card isFullHeight isPlain key="card-2">
     <CardHeader style={{ height: '210px' }}>
       <Content style={{ textAlign: 'center' }}>
-        <Icon size="xl" style={{ color: globalActiveColor300.var }}>
-          <ClusterIcon />
+        <Icon size="xl">
+          <ClusterIcon color={globalActiveColor300.value} />
         </Icon>
         <Content component="h2">
           Select a target cluster
@@ -93,8 +93,8 @@ const createCards = (
   <Card isFullHeight isPlain key="card-3">
     <CardHeader style={{ height: '210px' }}>
       <Content style={{ textAlign: 'center' }}>
-        <Icon size="xl" style={{ color: globalActiveColor300.var }}>
-          <MigrationIcon />
+        <Icon size="xl">
+          <MigrationIcon color={globalActiveColor300.value} />
         </Icon>
         <Content component="h2">
           Create a migration plan
