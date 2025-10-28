@@ -99,6 +99,13 @@ export const Environment: React.FC = () => {
     }
   }, [isOvaDownloading]);
 
+  // Close filter dropdown whenever any modal in this page opens
+  useEffect(() => {
+    if (shouldShowDiscoverySourceSetupModal || isTroubleshootingOpen) {
+      setIsFilterDropdownOpen(false);
+    }
+  }, [shouldShowDiscoverySourceSetupModal, isTroubleshootingOpen]);
+
   return (
     <>
       <div

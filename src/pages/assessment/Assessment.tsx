@@ -152,6 +152,23 @@ const Assessment: React.FC<Props> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [rvtoolsOpenToken]);
 
+  // Close filter dropdown whenever any modal in this page opens
+  React.useEffect(() => {
+    if (
+      isModalOpen ||
+      isUpdateModalOpen ||
+      isDeleteModalOpen ||
+      isStartingPageModalOpen
+    ) {
+      setIsFilterDropdownOpen(false);
+    }
+  }, [
+    isModalOpen,
+    isUpdateModalOpen,
+    isDeleteModalOpen,
+    isStartingPageModalOpen,
+  ]);
+
   const handleUpdateAssessment = (assessmentId: string): void => {
     const assessment = assessments.find(
       (a) => (a as AssessmentModel).id === assessmentId,
