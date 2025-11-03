@@ -134,6 +134,42 @@ export const SourcesTable: React.FC<SourceTableProps> = ({
     discoverySourcesContext.stopPolling();
   });
 
+  // Refresh immediately when returning to the tab/window (no manual reload needed)
+  useEffect(() => {
+    const refreshNow = async (): Promise<void> => {
+      try {
+        await Promise.all([
+          discoverySourcesContext.listSources(),
+          discoverySourcesContext.listAssessments?.(),
+        ]);
+      } catch {
+        // ignore
+      }
+    };
+
+    const onFocus = (): void => {
+      void refreshNow();
+    };
+
+    const onVisibilityChange = (): void => {
+      if (document.visibilityState === 'visible') {
+        void refreshNow();
+      }
+    };
+
+    window.addEventListener('focus', onFocus);
+    document.addEventListener('visibilitychange', onVisibilityChange);
+
+    return () => {
+      window.removeEventListener('focus', onFocus);
+      document.removeEventListener('visibilitychange', onVisibilityChange);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    discoverySourcesContext.listSources,
+    discoverySourcesContext.listAssessments,
+  ]);
+
   useEffect(
     () => {
       if (!discoverySourcesContext.sourceSelected && firstSource) {
