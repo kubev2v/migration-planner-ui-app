@@ -327,31 +327,31 @@ export const AssessmentsTable: React.FC<Props> = ({
       >
         <Thead>
           <Tr>
-            <Th sort={nameSortParams} style={{ whiteSpace: 'nowrap' }}>
+            <Th sort={nameSortParams} modifier="wrap">
               {Columns.Name}
             </Th>
-            <Th sort={sourceTypeSortParams} style={{ whiteSpace: 'nowrap' }}>
+            <Th sort={sourceTypeSortParams} modifier="wrap">
               {Columns.SourceType}
             </Th>
-            <Th sort={lastUpdatedSortParams} style={{ whiteSpace: 'nowrap' }}>
+            <Th sort={lastUpdatedSortParams} modifier="wrap">
               {Columns.LastUpdated}
             </Th>
-            <Th sort={ownerSortParams} style={{ whiteSpace: 'nowrap' }}>
+            <Th sort={ownerSortParams} modifier="wrap">
               {Columns.Owner}
             </Th>
-            <Th sort={hostsSortParams} style={{ whiteSpace: 'nowrap' }}>
+            <Th sort={hostsSortParams} modifier="wrap">
               {Columns.Hosts}
             </Th>
-            <Th sort={vmsSortParams} style={{ whiteSpace: 'nowrap' }}>
+            <Th sort={vmsSortParams} modifier="wrap">
               {Columns.VMs}
             </Th>
-            <Th sort={networksSortParams} style={{ whiteSpace: 'nowrap' }}>
+            <Th sort={networksSortParams} modifier="wrap">
               {Columns.Networks}
             </Th>
-            <Th sort={datastoresSortParams} style={{ whiteSpace: 'nowrap' }}>
+            <Th sort={datastoresSortParams} modifier="wrap">
               {Columns.Datastores}
             </Th>
-            <Th style={{ whiteSpace: 'nowrap' }} screenReaderText="Actions">
+            <Th modifier="wrap" screenReaderText="Actions">
               {Columns.Actions}
             </Th>
           </Tr>
