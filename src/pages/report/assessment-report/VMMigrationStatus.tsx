@@ -22,7 +22,10 @@ export const VMMigrationStatus: React.FC<VmMigrationStatusProps> = ({
   ];
 
   return (
-    <Card className={isExportMode ? 'dashboard-card-print' : 'dashboard-card'}>
+    <Card
+      className={isExportMode ? 'dashboard-card-print' : 'dashboard-card'}
+      style={{ height: '340px !important', overflow: 'hidden' }}
+    >
       <CardTitle>
         <VirtualMachineIcon /> VM Migration Status
       </CardTitle>
@@ -36,7 +39,6 @@ export const VMMigrationStatus: React.FC<VmMigrationStatusProps> = ({
         >
           <ChartDonut
             ariaDesc="VM Migration Status"
-            ariaTitle="VM Migration"
             data={chartData}
             labels={({ datum }) => `${datum.x}: ${datum.y}`}
             colorScale={['#28a745', '#dc3545']}
