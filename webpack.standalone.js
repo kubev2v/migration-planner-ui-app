@@ -38,6 +38,16 @@ module.exports = (env, argv) => {
           // path.resolve(__dirname, 'node_modules/@migration-planner-ui/agent-client/src'),
         ],
       },
+      // Allow extensionless ESM imports (e.g., './Label') inside the api-client dist
+      {
+        test: /\.js$/,
+        include: [
+          path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist')
+        ],
+        resolve: {
+          fullySpecified: false,
+        },
+      },
       {
         test: /\.css$/,
         use: ['style-loader', 'css-loader'],
@@ -102,7 +112,6 @@ module.exports = (env, argv) => {
       './UploadRvtoolsFile200Response': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/UploadRvtoolsFile200Response.js'),
       './Network': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/Network.js'),
       './Host': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/Host.js'),
-      './Label': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/Label.js'),
       './Histogram': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/Histogram.js'),
       './MigrationIssue': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/MigrationIssue.js'),
       './OsInfo': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/OsInfo.js'),
