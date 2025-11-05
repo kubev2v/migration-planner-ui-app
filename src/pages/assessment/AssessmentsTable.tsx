@@ -10,6 +10,7 @@ import {
   MenuToggle,
   MenuToggleElement,
   Spinner,
+  Tooltip,
 } from '@patternfly/react-core';
 import {
   ConnectedIcon,
@@ -351,7 +352,11 @@ export const AssessmentsTable: React.FC<Props> = ({
             <Th sort={datastoresSortParams} modifier="wrap">
               {Columns.Datastores}
             </Th>
-            <Th modifier="wrap" screenReaderText="Actions">
+            <Th
+              modifier="fitContent"
+              screenReaderText="Actions"
+              style={{ whiteSpace: 'nowrap' }}
+            >
               {Columns.Actions}
             </Th>
           </Tr>
@@ -396,25 +401,35 @@ export const AssessmentsTable: React.FC<Props> = ({
               <Td dataLabel={Columns.VMs}>{row.vms}</Td>
               <Td dataLabel={Columns.Networks}>{row.networks}</Td>
               <Td dataLabel={Columns.Datastores}>{row.datastores}</Td>
-              <Td dataLabel={Columns.Actions}>
+              <Td
+                dataLabel={Columns.Actions}
+                style={{
+                  verticalAlign: 'middle',
+                  paddingTop: 0,
+                  paddingBottom: 0,
+                }}
+              >
                 <div
                   style={{
                     display: 'flex',
                     alignItems: 'center',
                     gap: '8px',
+                    height: '100%',
                   }}
                 >
-                  <Button
-                    variant="plain"
-                    aria-label="Open assessment"
-                    icon={<MonitoringIcon />}
-                    style={{ color: '#0066cc' }}
-                    onClick={() =>
-                      navigate(
-                        `/openshift/migration-assessment/assessments/${row.id}/report`,
-                      )
-                    }
-                  />
+                  <Tooltip content="Show assessment report">
+                    <Button
+                      variant="plain"
+                      aria-label="Open assessment"
+                      icon={<MonitoringIcon style={{ color: '#0066cc' }} />}
+                      style={{ padding: 0 }}
+                      onClick={() =>
+                        navigate(
+                          `/openshift/migration-assessment/assessments/${row.id}/report`,
+                        )
+                      }
+                    />
+                  </Tooltip>
                   <Dropdown
                     isOpen={openDropdowns[row.id] || false}
                     popperProps={{ appendTo: () => document.body }}
@@ -431,6 +446,7 @@ export const AssessmentsTable: React.FC<Props> = ({
                         variant="plain"
                         onClick={() => toggleDropdown(row.id)}
                         icon={<EllipsisVIcon />}
+                        style={{ padding: 0 }}
                       ></MenuToggle>
                     )}
                   >

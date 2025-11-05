@@ -245,7 +245,7 @@ const Assessment: React.FC<Props> = ({
       if (!file) throw new Error('File is required for RVTools assessment');
 
       // Create the assessment with RVTools file (only RVTools mode supported)
-      await discoverySourcesContext.createAssessment(
+      const assessment = await discoverySourcesContext.createAssessment(
         name,
         'rvtools',
         undefined, // jsonValue not used for rvtools mode
@@ -253,8 +253,9 @@ const Assessment: React.FC<Props> = ({
         file, // rvToolFile
       );
 
-      // Refresh assessments list after successful creation
-      await discoverySourcesContext.listAssessments();
+      navigate(
+        `/openshift/migration-assessment/assessments/${assessment.id}/report`,
+      );
     } catch (error) {
       console.error('Failed to create assessment:', error);
       throw error; // Re-throw so the modal can handle it

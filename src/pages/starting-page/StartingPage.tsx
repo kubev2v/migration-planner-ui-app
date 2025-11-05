@@ -81,10 +81,10 @@ const createCards = (
           Select your target OpenShift Cluster to fit your migration data
         </Content>
         <span
-          className="pf-v5-c-label pf-m-purple pf-m-compact"
+          className="pf-v6-c-label pf-m-purple pf-m-compact"
           style={{ marginTop: '6px', display: 'inline-block' }}
         >
-          Coming soon
+          <span className="pf-v6-c-label__content">Coming soon</span>
         </span>
       </Content>
     </CardBody>
@@ -109,10 +109,10 @@ const createCards = (
           your migration timeline
         </Content>
         <span
-          className="pf-v5-c-label pf-m-purple pf-m-compact"
+          className="pf-v6-c-label pf-m-purple pf-m-compact"
           style={{ marginTop: '6px', display: 'inline-block' }}
         >
-          Coming soon
+          <span className="pf-v6-c-label__content">Coming soon</span>
         </span>
       </Content>
     </CardBody>

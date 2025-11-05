@@ -141,7 +141,9 @@ export const AgentStatusView: React.FC<AgentStatusView.Props> = (props) => {
       <SplitItem>
         {isWaitingForCredentials ||
         uploadedManually ||
-        (hasStatusInfo && status !== 'not-connected') ? (
+        (hasStatusInfo &&
+          status !== 'not-connected' &&
+          status !== 'up-to-date') ? (
           <Popover
             aria-label={statusView && statusView.text}
             headerContent={statusView && statusView.text}
