@@ -113,7 +113,7 @@ export const Provider: React.FC<PropsWithChildren> = (props) => {
   }, [sourcesLoaded]);
 
   const [listSourcesState, listSources] = useAsyncFn(async () => {
-    const sources = await sourceApi.listSources({ includeDefault: true });
+    const sources = await sourceApi.listSources();
     setSourcesLoaded(true);
     return sources;
   });
@@ -472,15 +472,6 @@ export const Provider: React.FC<PropsWithChildren> = (props) => {
     },
   );
 
-  const [uploadRvtoolsFileState, uploadRvtoolsFile] = useAsyncFn(
-    async (sourceId: string, file: File): Promise<void> => {
-      await sourceApi.uploadRvtoolsFile({
-        id: sourceId,
-        file: file,
-      });
-    },
-  );
-
   const setDownloadUrl = useCallback((url: string) => {
     setDownloadSourceUrl(url);
   }, []);
@@ -672,9 +663,6 @@ export const Provider: React.FC<PropsWithChildren> = (props) => {
     updateInventory,
     isUpdatingInventory: updateInventoryState.loading,
     errorUpdatingInventory: updateInventoryState.error,
-    uploadRvtoolsFile,
-    isUploadingRvtoolsFile: uploadRvtoolsFileState.loading,
-    errorUploadingRvtoolsFile: uploadRvtoolsFileState.error,
     sourceDownloadUrls,
     getDownloadUrlForSource,
     storeDownloadUrlForSource,

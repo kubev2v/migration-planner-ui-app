@@ -2,7 +2,6 @@
 import {
   CreateSourceRequest,
   DeleteSourceRequest,
-  ListSourcesRequest,
   SourceApiInterface,
 } from '@migration-planner-ui/api-client/apis';
 import {
@@ -10,11 +9,7 @@ import {
   UpdateInventoryRequest,
   UpdateSourceRequest,
 } from '@migration-planner-ui/api-client/apis';
-import {
-  Source,
-  Status,
-  UploadRvtoolsFile200Response,
-} from '@migration-planner-ui/api-client/models';
+import { Source, Status } from '@migration-planner-ui/api-client/models';
 import {
   ApiResponse,
   ConfigurationParameters,
@@ -24,6 +19,16 @@ import {
 export class MockSourceApi implements SourceApiInterface {
   constructor(_configuration: ConfigurationParameters) {
     console.warn('#### CAUTION: Using MockSourceApi ####');
+  }
+  listSourcesRaw(
+    _initOverrides?: RequestInit | InitOverrideFunction,
+  ): Promise<ApiResponse<Array<Source>>> {
+    throw new Error('Method not implemented.');
+  }
+  listSources(
+    _initOverrides?: RequestInit | InitOverrideFunction,
+  ): Promise<Array<Source>> {
+    throw new Error('Method not implemented.');
   }
 
   async createSourceRaw(
@@ -61,20 +66,6 @@ export class MockSourceApi implements SourceApiInterface {
     _initOverrides?: RequestInit | InitOverrideFunction,
   ): Promise<Status> {
     throw new Error('Method not implemented.');
-  }
-  async listSourcesRaw(
-    _requestParameters: ListSourcesRequest,
-    _initOverrides?: RequestInit | InitOverrideFunction,
-  ): Promise<ApiResponse<Array<Source>>> {
-    throw new Error('Method not implemented.');
-  }
-  async listSources(
-    _requestParameters: ListSourcesRequest,
-    _initOverrides?: RequestInit | InitOverrideFunction,
-  ): Promise<Array<Source>> {
-    // await sleep(3 * Time.Second);
-    const { default: json } = await import('./responses/up-to-date.json');
-    return json as unknown as Array<Source>;
   }
 
   async headSourceImage(
@@ -124,20 +115,6 @@ export class MockSourceApi implements SourceApiInterface {
     _requestParameters: UpdateSourceRequest,
     _initOverrides?: RequestInit | InitOverrideFunction,
   ): Promise<Source> {
-    throw new Error('Method not implemented.');
-  }
-
-  async uploadRvtoolsFileRaw(
-    _requestParameters: unknown,
-    _initOverrides?: RequestInit | InitOverrideFunction,
-  ): Promise<ApiResponse<UploadRvtoolsFile200Response>> {
-    throw new Error('Method not implemented.');
-  }
-
-  async uploadRvtoolsFile(
-    _requestParameters: unknown,
-    _initOverrides?: RequestInit | InitOverrideFunction,
-  ): Promise<UploadRvtoolsFile200Response> {
     throw new Error('Method not implemented.');
   }
 

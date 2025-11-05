@@ -33,8 +33,8 @@ module.exports = {
     ],
   },
   resolve: {
-    extensions: ['.ts', '.tsx', '.js', '.json'], // Asegúrate de que Webpack puede resolver .js, .ts, .tsx
-    fullySpecified: false, // Permite Webpack resolver sin extensión
+    extensions: ['.ts', '.tsx', '.js', '.json'], 
+    fullySpecified: false, 
     alias: {
       './MigrationIssuesInner': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/MigrationIssuesInner.js'),
       './VMResourceBreakdownHistogram': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/VMResourceBreakdownHistogram.js'),
@@ -83,6 +83,8 @@ module.exports = {
       './InfoApi': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/apis/InfoApi.js'),
       './VmNetwork': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/VmNetwork.js'),
       './Ipv4Config': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/Ipv4Config.js'),
+      './SourceInfra': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/SourceInfra.js'),
+      './DiskSizeTierSummary': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/DiskSizeTierSummary.js'),
     }, 
   },
   customizeWebpackConfig: (config) => {

@@ -73,60 +73,12 @@ module.exports = (env, argv) => {
   resolve: {
     extensions: ['.ts', '.tsx', '.js', '.jsx', '.json'],
     fullySpecified: false,
+    byDependency: {
+      esm: {
+        fullySpecified: false,
+      },
+    },
     alias: {
-      './MigrationIssuesInner': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/MigrationIssuesInner.js'),
-      './VMResourceBreakdownHistogram': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/VMResourceBreakdownHistogram.js'),
-      './Inventory': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/Inventory.js'),
-      './AgentProxy': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/AgentProxy.js'),
-      './Agent': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/Agent.js'),
-      './InfraDatastoresInner': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/InfraDatastoresInner.js'),
-      './InfraNetworksInner': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/InfraNetworksInner.js'),
-      './EventData': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/EventData.js'),
-      './VMs': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/VMs.js'),
-      './MigrationIssuesInner': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/MigrationIssuesInner.js'),
-      './VMResourceBreakdownHistogram': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/VMResourceBreakdownHistogram.js'),
-      './Inventory': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/Inventory.js'),
-      './AgentProxy': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/AgentProxy.js'),
-      './Agent': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/Agent.js'),
-      './InfraDatastoresInner': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/InfraDatastoresInner.js'),
-      './InfraNetworksInner': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/InfraNetworksInner.js'),
-      './EventData': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/EventData.js'),
-      './VMs': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/VMs.js'),
-      './VMResourceBreakdown': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/VMResourceBreakdown.js'),
-      './VCenter': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/VCenter.js'),
-      './Status': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/Status.js'),
-      './SourceUpdateOnPrem': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/SourceUpdateOnPrem.js'),
-      './SourceCreate': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/SourceCreate.js'),
-      './Source': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/Source.js'),
-      './PresignedUrl': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/PresignedUrl.js'),
-      './ModelError': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/ModelError.js'),
-      './Infra': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/Infra.js'),
-      './Event': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/Event.js'),
-      './AgentApi': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/apis/AgentApi.js'),
-      './SourceApi': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/apis/SourceApi.js'),
-      './ImageApi': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/apis/ImageApi.js'),
-      '../models/index': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/index.js'),
-      '../runtime': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/runtime.js'),
-      './HealthApi': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/apis/HealthApi.js'),
-      './Datastore': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/Datastore.js'),
-      './UploadRvtoolsFile200Response': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/UploadRvtoolsFile200Response.js'),
-      './Network': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/Network.js'),
-      './Host': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/Host.js'),
-      './Histogram': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/Histogram.js'),
-      './MigrationIssue': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/MigrationIssue.js'),
-      './OsInfo': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/OsInfo.js'),
-      './SourceUpdate': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/SourceUpdate.js'),
-      './UpdateInventory': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/UpdateInventory.js'),
-      './Assessment': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/Assessment.js'),
-      './AssessmentForm': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/AssessmentForm.js'),
-      './AssessmentApi': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/apis/AssessmentApi.js'),
-      './SourceAgentItem':path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/SourceAgentItem.js'),
-      './Snapshot':path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/Snapshot.js'),
-      './AssessmentUpdate':path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/AssessmentUpdate.js'),
-      './Info': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/Info.js'),
-      './InfoApi': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/apis/InfoApi.js'),
-      './VmNetwork': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/VmNetwork.js'),
-      './Ipv4Config': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/Ipv4Config.js'),
       '@redhat-cloud-services/frontend-components/useChrome': path.resolve(__dirname, 'src/standalone-mocks/useChrome-mock.ts'),
       '@redhat-cloud-services/frontend-components/InvalidObject': path.resolve(__dirname, 'src/standalone-mocks/frontend-components-mock.tsx'),
       '@redhat-cloud-services/frontend-components/PageHeader': path.resolve(__dirname, 'src/standalone-mocks/frontend-components-mock.tsx'),
@@ -150,6 +102,25 @@ module.exports = (env, argv) => {
       ),
       'process.env.MIGRATION_PLANNER_UI_GIT_COMMIT': JSON.stringify(process.env.MIGRATION_PLANNER_UI_GIT_COMMIT),
       'process.env.MIGRATION_PLANNER_UI_VERSION': JSON.stringify(process.env.MIGRATION_PLANNER_UI_VERSION),
+    }),
+    // Append .js to extensionless relative imports, but only within the api-client dist
+    new webpack.NormalModuleReplacementPlugin(/.*/, (resource) => {
+      try {
+        const inApiClientDist =
+          resource.context &&
+          (
+            resource.context.includes('/node_modules/@migration-planner-ui/api-client/dist/models') ||
+            resource.context.includes('/node_modules/@migration-planner-ui/api-client/dist/apis') ||
+            resource.context.includes('/node_modules/@migration-planner-ui/api-client/dist')
+          );
+        const isRelative = typeof resource.request === 'string' && resource.request.startsWith('./');
+        const hasExtension = typeof resource.request === 'string' && path.extname(resource.request) !== '';
+        if (inApiClientDist && isRelative && !hasExtension) {
+          resource.request = `${resource.request}.js`;
+        }
+      } catch (_) {
+        // no-op
+      }
     }),
   ],
 
