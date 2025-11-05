@@ -11,6 +11,7 @@ import {
   MenuToggle,
   MenuToggleElement,
   Spinner,
+  Tooltip,
 } from '@patternfly/react-core';
 import { ArrowLeftIcon, EllipsisVIcon } from '@patternfly/react-icons';
 import { Table, Tbody, Td, Th, Thead, Tr } from '@patternfly/react-table';
@@ -44,6 +45,53 @@ export const SourcesTable: React.FC<SourceTableProps> = ({
   uploadOnly = false,
   onEditEnvironment,
 }) => {
+  const formatRelativeTime = (updatedAt?: string | number | Date): string => {
+    if (!updatedAt) return '-';
+    const date = new Date(updatedAt);
+    if (isNaN(date.getTime())) return '-';
+
+    const now = new Date();
+    const diffMs = date.getTime() - now.getTime();
+    const absMs = Math.abs(diffMs);
+
+    const minute = 60 * 1000;
+    const hour = 60 * minute;
+    const day = 24 * hour;
+    const week = 7 * day;
+    const month = 30 * day;
+    const year = 365 * day;
+
+    let unit: Intl.RelativeTimeFormatUnit = 'second';
+    let value = 0;
+
+    if (absMs < minute) {
+      unit = 'second';
+      value = Math.round(diffMs / 1000);
+    } else if (absMs < hour) {
+      unit = 'minute';
+      value = Math.round(diffMs / minute);
+    } else if (absMs < day) {
+      unit = 'hour';
+      value = Math.round(diffMs / hour);
+    } else if (absMs < week) {
+      unit = 'day';
+      value = Math.round(diffMs / day);
+    } else if (absMs < month) {
+      unit = 'week';
+      value = Math.round(diffMs / week);
+    } else if (absMs < year) {
+      unit = 'month';
+      value = Math.round(diffMs / month);
+    } else {
+      unit = 'year';
+      value = Math.round(diffMs / year);
+    }
+
+    return new Intl.RelativeTimeFormat('en', { numeric: 'auto' }).format(
+      value,
+      unit,
+    );
+  };
   const discoverySourcesContext = useDiscoverySources();
   const [isLoading, setIsLoading] = useState(true);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -373,9 +421,17 @@ export const SourcesTable: React.FC<SourceTableProps> = ({
                           VALUE_NOT_AVAILABLE}
                       </Td>
                       <Td dataLabel={Columns.LastSeen}>
-                        {source?.updatedAt
-                          ? new Date(source?.updatedAt).toLocaleString()
-                          : '-'}
+                        {source?.updatedAt ? (
+                          <Tooltip
+                            content={new Date(
+                              source.updatedAt,
+                            ).toLocaleString()}
+                          >
+                            <span>{formatRelativeTime(source.updatedAt)}</span>
+                          </Tooltip>
+                        ) : (
+                          '-'
+                        )}
                       </Td>
                       <Td dataLabel={Columns.Actions}>
                         {uploadOnly ? (

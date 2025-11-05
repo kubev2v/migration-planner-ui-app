@@ -7,5 +7,5 @@ export const enum Columns {
   Networks = 'Networks',
   Datastores = 'Datastores',
   Actions = 'Actions',
-  LastSeen = 'Last seen',
+  LastSeen = 'Last updated',
 }
