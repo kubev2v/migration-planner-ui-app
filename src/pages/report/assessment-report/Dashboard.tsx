@@ -92,9 +92,7 @@ export const Dashboard: React.FC<Props> = ({
           <Gallery hasGutter minWidths={{ default: '40%' }}>
             <GalleryItem>
               <StorageOverview
-                data={vms.diskGB.histogram.data}
-                minValue={vms.diskGB.histogram.minValue}
-                step={vms.diskGB.histogram.step}
+                DiskSizeTierSummary={vms.diskSizeTier}
                 isExportMode={isExportMode}
               />
             </GalleryItem>

@@ -1,61 +1,171 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 
+import { DiskSizeTierSummary } from '@migration-planner-ui/api-client/models';
 import {
   Card,
   CardBody,
   CardTitle,
-  Content,
-  ContentVariants,
+  Dropdown,
+  DropdownItem,
+  DropdownList,
+  Flex,
+  FlexItem,
+  MenuToggle,
+  MenuToggleElement,
 } from '@patternfly/react-core';
 
-import MigrationChart from '../../../components/MigrationChart';
+import MigrationDonutChart from '../../../components/MigrationDonutChart';
 
-interface DiskHistogramProps {
-  data: number[];
-  minValue: number;
-  step: number;
+interface StorageOverviewProps {
+  DiskSizeTierSummary: { [key: string]: DiskSizeTierSummary };
   isExportMode?: boolean;
 }
 
-export const StorageOverview: React.FC<DiskHistogramProps> = ({
-  data,
-  minValue,
-  step,
+type ViewMode = 'totalSize' | 'vmCount';
+
+const VIEW_MODE_LABELS: Record<ViewMode, string> = {
+  totalSize: 'Total disk size by tier',
+  vmCount: 'VM count by disk size tier',
+};
+
+const TIER_CONFIG: Record<
+  string,
+  { order: number; label: string; legendCategory: string }
+> = {
+  Easy: { order: 0, label: '0-10 TB', legendCategory: 'Easy' },
+  Medium: { order: 1, label: '10-20 TB', legendCategory: 'Medium' },
+  Hard: { order: 2, label: '20-50 TB', legendCategory: 'Hard' },
+  White: { order: 3, label: '> 50 TB', legendCategory: 'White glove' },
+};
+
+export const StorageOverview: React.FC<StorageOverviewProps> = ({
+  DiskSizeTierSummary,
   isExportMode = false,
 }) => {
-  const tableHeight = isExportMode ? '100%' : '180px';
+  const [viewMode, setViewMode] = useState<ViewMode>('vmCount');
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
+  const totals = useMemo(() => {
+    if (!DiskSizeTierSummary) return { totalSize: 0, totalVMs: 0 };
+
+    return Object.values(DiskSizeTierSummary).reduce(
+      (acc, tier) => ({
+        totalSize: acc.totalSize + tier.totalSizeTB,
+        totalVMs: acc.totalVMs + tier.vmCount,
+      }),
+      { totalSize: 0, totalVMs: 0 },
+    );
+  }, [DiskSizeTierSummary]);
+
   const chartData = useMemo(() => {
-    return data
-      .map((count, index) => {
-        const rangeStart = minValue + step * index;
-        const rangeEnd = rangeStart + step;
-        return {
-          name: `${rangeStart}–${rangeEnd} GB`,
-          count: count,
-          legendCategory:
-            rangeStart < 500
-              ? 'Small'
-              : rangeStart <= 1000
-                ? 'Medium'
-                : 'Large',
-          rangeStart,
-        };
+    if (!DiskSizeTierSummary) return [];
+
+    const getTierPrefix = (key: string): string | null => {
+      for (const prefix of Object.keys(TIER_CONFIG)) {
+        if (key.startsWith(prefix)) return prefix;
+      }
+      return null;
+    };
+
+    return Object.entries(DiskSizeTierSummary)
+      .sort(([keyA], [keyB]) => {
+        const prefixA = getTierPrefix(keyA);
+        const prefixB = getTierPrefix(keyB);
+        const orderA = prefixA ? TIER_CONFIG[prefixA].order : 999;
+        const orderB = prefixB ? TIER_CONFIG[prefixB].order : 999;
+        return orderA - orderB;
       })
-      .filter((entry) => entry.count > 0)
-      .sort((a, b) => a.rangeStart - b.rangeStart)
-      .map(({ rangeStart, ...rest }) => rest);
-  }, [data, minValue, step]);
+      .map(([key, tier]) => {
+        const prefix = getTierPrefix(key);
+        const config = prefix
+          ? TIER_CONFIG[prefix]
+          : { label: key, legendCategory: 'Unknown' };
+
+        const count =
+          viewMode === 'totalSize' ? tier.totalSizeTB : tier.vmCount;
+        const countDisplay =
+          viewMode === 'totalSize' ? `${count} TB` : `${count} VMs`;
+
+        return {
+          name: config.label,
+          count,
+          countDisplay,
+          legendCategory: config.legendCategory,
+        };
+      });
+  }, [DiskSizeTierSummary, viewMode]);
+
+  const onDropdownToggle = (): void => {
+    setIsDropdownOpen(!isDropdownOpen);
+  };
+
+  const onSelect = (
+    _event: React.MouseEvent<Element, MouseEvent> | undefined,
+    value: string | number | undefined,
+  ): void => {
+    if (value === 'totalSize' || value === 'vmCount') {
+      setViewMode(value);
+    }
+    setIsDropdownOpen(false);
+  };
 
   return (
-    <Card className={isExportMode ? 'dashboard-card-print' : 'dashboard-card'}>
+    <Card
+      className={isExportMode ? 'dashboard-card-print' : 'dashboard-card'}
+      style={{ overflow: 'hidden' }}
+    >
       <CardTitle>
-        <i className="fas fa-database" /> Disks
+        <Flex
+          justifyContent={{ default: 'justifyContentSpaceBetween' }}
+          alignItems={{ default: 'alignItemsCenter' }}
+          style={{ width: '100%' }}
+        >
+          <FlexItem>
+            <i className="fas fa-database" /> Disks
+          </FlexItem>
+          {!isExportMode && (
+            <FlexItem>
+              <Dropdown
+                isOpen={isDropdownOpen}
+                onSelect={onSelect}
+                onOpenChange={(isOpen: boolean) => setIsDropdownOpen(isOpen)}
+                toggle={(toggleRef: React.Ref<MenuToggleElement>) => (
+                  <MenuToggle
+                    ref={toggleRef}
+                    onClick={onDropdownToggle}
+                    isExpanded={isDropdownOpen}
+                    style={{ minWidth: '250px' }}
+                  >
+                    {VIEW_MODE_LABELS[viewMode]}
+                  </MenuToggle>
+                )}
+              >
+                <DropdownList>
+                  <DropdownItem key="vmCount" value="vmCount">
+                    VM count by disk size tier
+                  </DropdownItem>
+                  <DropdownItem key="totalSize" value="totalSize">
+                    Total disk size by tier
+                  </DropdownItem>
+                </DropdownList>
+              </Dropdown>
+            </FlexItem>
+          )}
+        </Flex>
       </CardTitle>
       <CardBody>
-        <Content component={ContentVariants.small}>
-          Disk Size Distribution
-        </Content>
-        <MigrationChart data={chartData} maxHeight={tableHeight} />
+        <MigrationDonutChart
+          data={chartData}
+          height={195}
+          title={
+            viewMode === 'totalSize'
+              ? `${totals.totalSize.toFixed(2)} TB`
+              : `${totals.totalVMs}`
+          }
+          subTitle={viewMode === 'totalSize' ? `${totals.totalVMs} VMs` : `VMs`}
+          subTitleColor="#9a9da0"
+          itemsPerRow={Math.ceil(chartData.length / 2)}
+        />
       </CardBody>
     </Card>
   );
