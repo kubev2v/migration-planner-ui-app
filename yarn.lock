@@ -486,10 +486,10 @@
   resolved "https://registry.npmjs.org/@leichtgewicht/ip-codec/-/ip-codec-2.0.5.tgz"
   integrity sha512-Vo+PSpZG2/fmgmiNzYK9qWRh8h/CHrwD0mo1h1DzL4yzHNSfWYujGTYsWGreD000gcgmZ7K4Ys6Tx9TxtsKdDw==
 
-"@migration-planner-ui/agent-client@^0.0.20":
-  version "0.0.20"
-  resolved "https://registry.npmjs.org/@migration-planner-ui/agent-client/-/agent-client-0.0.20.tgz"
-  integrity sha512-etc84l2GPDnL87x7Buek5mO9vbj9tWWPG1B/h3dDm0lyvOEunWQIyHjkLRS/V4G/uL24eyEtiMXORXcbvVVXVg==
+"@migration-planner-ui/agent-client@^0.0.21":
+  version "0.0.21"
+  resolved "https://registry.npmjs.org/@migration-planner-ui/agent-client/-/agent-client-0.0.21.tgz"
+  integrity sha512-C4mKs2hZMaB6pCfbnvUDKA0DMg7Qx7B6F925mvaSphhr1Y6UEQJJxKqGbIW/wNO9L1VW9H/cmbbgb4N30VD/6A==
 
 "@migration-planner-ui/api-client@^0.0.22":
   version "0.0.22"
