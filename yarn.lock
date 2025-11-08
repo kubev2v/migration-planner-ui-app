@@ -496,10 +496,10 @@
   resolved "https://registry.npmjs.org/@migration-planner-ui/api-client/-/api-client-0.0.22.tgz"
   integrity sha512-HRJv3JlB1NyxTmxx25TK17LtpXUAogTik7eLWWmN9YvrqRmfut+wHW5dYYY2GBnakiIDZnNGF4QAi5yGLaQGRA==
 
-"@migration-planner-ui/ioc@^0.0.20":
-  version "0.0.20"
-  resolved "https://registry.npmjs.org/@migration-planner-ui/ioc/-/ioc-0.0.20.tgz"
-  integrity sha512-l3U2iVSVrjKXbME1TeiViXCms6GEH+zM0Rplf8J06kBPsGFoCfY+qXmzsfLALDtjJrO/ZsK/aLWxqixKHMBOSA==
+"@migration-planner-ui/ioc@^0.0.21":
+  version "0.0.21"
+  resolved "https://registry.npmjs.org/@migration-planner-ui/ioc/-/ioc-0.0.21.tgz"
+  integrity sha512-XEfySBKGt83YV4JbI/ZABVW1N9bMcQIxIhtbgoOYX2JLtvFlEHkpI7qV0hzaPQg5+WUnN/+1buSufjMAFl0RRw==
 
 "@nicolo-ribaudo/eslint-scope-5-internals@5.1.1-v1":
   version "5.1.1-v1"

@@ -30,7 +30,7 @@
     "@emotion/css": "^11.13.0",
     "@migration-planner-ui/agent-client": "^0.0.21",
     "@migration-planner-ui/api-client": "^0.0.22",
-    "@migration-planner-ui/ioc": "^0.0.20",
+    "@migration-planner-ui/ioc": "^0.0.21",
     "@patternfly/react-charts": "7.4.9",
     "@patternfly/react-core": "^6.2.2",
     "@patternfly/react-icons": "6.4.0",
