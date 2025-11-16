@@ -60,6 +60,12 @@ const MigrationChart: React.FC<MigrationChartProps> = ({
     ).result;
   }, [data]);
 
+  // Calculate the sum of all count values to normalize bar widths
+  const sumOfAllCounts = useMemo(() => {
+    if (!data || data.length === 0) return 1;
+    return data.reduce((sum, item) => sum + item.count, 0) || 1;
+  }, [data]);
+
   const chartLegend = legend ? legend : Object.assign({}, ...dynamicLegend);
   const getColor = (name: string): string => chartLegend[name];
 
@@ -139,16 +145,24 @@ const MigrationChart: React.FC<MigrationChartProps> = ({
                             overflow: 'hidden',
                           }}
                         >
-                          <div
-                            style={{
-                              height: '100%',
-                              width: `${item.count}%`,
-                              backgroundColor: `${getColor(
-                                item.legendCategory,
-                              )}`,
-                              transition: 'width 0.3s ease',
-                            }}
-                          />
+                          {(() => {
+                            const barWidth =
+                              sumOfAllCounts > 0
+                                ? (item.count / sumOfAllCounts) * 100
+                                : 0;
+                            return (
+                              <div
+                                style={{
+                                  height: '100%',
+                                  width: `${barWidth}%`,
+                                  backgroundColor: `${getColor(
+                                    item.legendCategory,
+                                  )}`,
+                                  transition: 'width 0.3s ease',
+                                }}
+                              />
+                            );
+                          })()}
                         </div>
                       </div>
                     </Td>
