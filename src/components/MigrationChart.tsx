@@ -63,6 +63,12 @@ const MigrationChart: React.FC<MigrationChartProps> = ({
   const chartLegend = legend ? legend : Object.assign({}, ...dynamicLegend);
   const getColor = (name: string): string => chartLegend[name];
 
+  // Calculate the sum of all count values to normalize bar widths
+  const sumOfAllCounts = useMemo(() => {
+    if (!data || data.length === 0) return 1;
+    return data.reduce((sum, item) => sum + item.count, 0) || 1;
+  }, [data]);
+
   return (
     <Flex
       direction={{ default: 'column' }}
@@ -107,64 +113,70 @@ const MigrationChart: React.FC<MigrationChartProps> = ({
           <div style={{ maxHeight: maxHeight, overflowY: 'auto' }}>
             <Table variant="compact" borders={false}>
               <Tbody>
-                {data.map((item, index) => (
-                  <Tr key={index}>
-                    <Td width={dataLength} style={{ paddingLeft: '0px' }}>
-                      <Tooltip content={<div>{item.name}</div>} exitDelay={0}>
-                        <Content
-                          component={ContentVariants.p}
-                          style={{
-                            fontSize: 'clamp(0.4rem, 0.7vw, 1.1rem)',
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                            wordBreak: 'break-word',
-                            display: '-webkit-box',
-                            WebkitLineClamp: 1, // Number of lines to show
-                            textTransform: 'capitalize',
-                            WebkitBoxOrient: 'vertical',
-                          }}
-                        >
-                          {item.name}
-                        </Content>
-                      </Tooltip>
-                    </Td>
-                    <Td>
-                      {/* Visual Bar */}
-                      <div>
-                        <div
-                          style={{
-                            position: 'relative',
-                            height: '8px',
-                            backgroundColor: '#F5F5F5',
-                            overflow: 'hidden',
-                          }}
-                        >
+                {data.map((item, index) => {
+                  const barWidth =
+                    sumOfAllCounts > 0
+                      ? (item.count / sumOfAllCounts) * 100
+                      : 0;
+                  return (
+                    <Tr key={index}>
+                      <Td width={dataLength} style={{ paddingLeft: '0px' }}>
+                        <Tooltip content={<div>{item.name}</div>} exitDelay={0}>
+                          <Content
+                            component={ContentVariants.p}
+                            style={{
+                              fontSize: 'clamp(0.4rem, 0.7vw, 1.1rem)',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              wordBreak: 'break-word',
+                              display: '-webkit-box',
+                              WebkitLineClamp: 1, // Number of lines to show
+                              textTransform: 'capitalize',
+                              WebkitBoxOrient: 'vertical',
+                            }}
+                          >
+                            {item.name}
+                          </Content>
+                        </Tooltip>
+                      </Td>
+                      <Td>
+                        {/* Visual Bar */}
+                        <div>
                           <div
                             style={{
-                              height: '100%',
-                              width: `${item.count}%`,
-                              backgroundColor: `${getColor(
-                                item.legendCategory,
-                              )}`,
-                              transition: 'width 0.3s ease',
+                              position: 'relative',
+                              height: '8px',
+                              backgroundColor: '#F5F5F5',
+                              overflow: 'hidden',
                             }}
-                          />
+                          >
+                            <div
+                              style={{
+                                height: '100%',
+                                width: `${barWidth}%`,
+                                backgroundColor: `${getColor(
+                                  item.legendCategory,
+                                )}`,
+                                transition: 'width 0.3s ease',
+                              }}
+                            />
+                          </div>
                         </div>
-                      </div>
-                    </Td>
-                    <Td
-                      width={10}
-                      style={{ paddingRight: '0px', textAlign: 'center' }}
-                    >
-                      <Content
-                        component="p"
-                        style={{ fontSize: 'clamp(0.4rem, 0.7vw, 1.1rem)' }}
+                      </Td>
+                      <Td
+                        width={10}
+                        style={{ paddingRight: '0px', textAlign: 'center' }}
                       >
-                        {item.count}
-                      </Content>
-                    </Td>
-                  </Tr>
-                ))}
+                        <Content
+                          component="p"
+                          style={{ fontSize: 'clamp(0.4rem, 0.7vw, 1.1rem)' }}
+                        >
+                          {item.count}
+                        </Content>
+                      </Td>
+                    </Tr>
+                  );
+                })}
               </Tbody>
             </Table>
           </div>
