@@ -1,4 +1,12 @@
-import { Assessment } from '@migration-planner-ui/api-client/models';
+import { Assessment, Inventory } from '@migration-planner-ui/api-client/models';
+
+export interface CreateAssessmentRequest {
+  name: string;
+  sourceType: 'inventory' | 'rvtools' | 'agent';
+  inventory?: Inventory;
+  sourceId?: string;
+  rvToolFile?: File;
+}
 
 export class AssessmentService {
   private baseUrl: string;
@@ -29,33 +37,23 @@ export class AssessmentService {
     });
 
     if (!response.ok) {
-      let errorMessage = 'Failed to create assessment from RVTools';
-
-      try {
-        const errorText = await response.text();
-        if (errorText) {
-          try {
-            const errorData = JSON.parse(errorText);
-            errorMessage = errorData.message || errorData.error || errorText;
-          } catch {
-            errorMessage = errorText;
-          }
-        }
-      } catch {
-        // Fallback handled below
-      }
-
-      // Handle specific status codes
-      if (response.status === 409) {
-        errorMessage =
-          errorMessage ||
-          'An assessment with this name already exists. Please choose a different name.';
-      }
-
-      throw new Error(errorMessage);
+      const errorText = await response.text();
+      throw new Error(`Failed to create assessment from RVTools: ${errorText}`);
     }
 
     return response.json();
+  }
+
+  async createAssessment(
+    request: CreateAssessmentRequest,
+  ): Promise<Assessment> {
+    const assessmentName =
+      request.name || `Assessment-${new Date().toISOString()}`;
+
+    if (!request.rvToolFile) {
+      throw new Error('RVTools file is required for RVTools assessment');
+    }
+    return this.createFromRVTools(assessmentName, request.rvToolFile);
   }
 }
 

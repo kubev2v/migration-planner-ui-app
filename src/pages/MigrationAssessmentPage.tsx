@@ -166,7 +166,7 @@ export const MigrationAssessmentPageContent: React.FC<{
 
   useMount(async () => {
     discoverySourcesContext.startPolling(DEFAULT_POLLING_DELAY);
-    void (async (): Promise<void> => {
+    void (async () => {
       try {
         await updateAssessments();
         await discoverySourcesContext.listSources(); // Load sources to check for up-to-date status
