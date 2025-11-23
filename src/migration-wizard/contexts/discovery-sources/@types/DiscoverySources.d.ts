@@ -91,16 +91,12 @@ declare namespace DiscoverySources {
     deleteAssessment: (assessmentId: string) => Promise<Assessment>;
     isDeletingAssessment: boolean;
     errorDeletingAssessment?: Error;
-    getAssessment: (assessmentId: string) => Promise<Assessment>;
     updateAssessment: (
       assessmentId: string,
       name: string,
     ) => Promise<Assessment>;
     isUpdatingAssessment: boolean;
     errorUpdatingAssessment?: Error;
-    cancelAssessmentJob: (assessmentId: string) => Promise<void>;
-    isCancellingAssessmentJob: boolean;
-    errorCancellingAssessmentJob?: Error;
     shareAssessment: (
       assessmentId: string,
       shareData: { userId?: string; orgId?: string },

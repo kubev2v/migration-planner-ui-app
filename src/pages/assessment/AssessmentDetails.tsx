@@ -121,7 +121,7 @@ const AssessmentDetails: React.FC = () => {
     );
   }
 
-  const ownerFullName = ((): string => {
+  const ownerFullName = (() => {
     const formatName = (name?: string): string | undefined =>
       name
         ?.split(' ')

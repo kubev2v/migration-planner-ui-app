@@ -143,11 +143,6 @@ const Assessment: React.FC<Props> = ({
     setIsModalOpen(false);
   };
 
-  const handleRefreshAfterCancel = async (): Promise<void> => {
-    // Refresh assessments list after cancelling an assessment job
-    await discoverySourcesContext.listAssessments();
-  };
-
   // Open RVTools modal when the trigger token changes
   React.useEffect(() => {
     if (rvtoolsOpenToken) {
@@ -245,7 +240,7 @@ const Assessment: React.FC<Props> = ({
   const handleSubmitAssessment = async (
     name: string,
     file: File | null,
-  ): Promise<AssessmentModel> => {
+  ): Promise<void> => {
     try {
       if (!file) throw new Error('File is required for RVTools assessment');
 
@@ -258,8 +253,9 @@ const Assessment: React.FC<Props> = ({
         file, // rvToolFile
       );
 
-      // Return the assessment so modal can start polling
-      return assessment;
+      navigate(
+        `/openshift/migration-assessment/assessments/${assessment.id}/report`,
+      );
     } catch (error) {
       console.error('Failed to create assessment:', error);
       throw error; // Re-throw so the modal can handle it
@@ -536,11 +532,9 @@ const Assessment: React.FC<Props> = ({
       <CreateAssessmentModal
         isOpen={isModalOpen}
         onClose={handleCloseModal}
-        onCancel={handleRefreshAfterCancel}
         onSubmit={handleSubmitAssessment}
         mode={modalMode}
         isLoading={discoverySourcesContext.isCreatingAssessment}
-        error={discoverySourcesContext.errorCreatingAssessment}
         selectedEnvironment={null}
       />
 
