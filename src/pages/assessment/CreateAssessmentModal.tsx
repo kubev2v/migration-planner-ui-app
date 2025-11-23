@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 
+import { Assessment } from '@migration-planner-ui/api-client/models';
 import {
+  Alert,
   Button,
   FileUpload,
   Form,
@@ -11,18 +13,20 @@ import {
 } from '@patternfly/react-core';
 import { Modal, ModalVariant } from '@patternfly/react-core/deprecated';
 
+import { AssessmentStatusIndicator } from '../../components/AssessmentStatusIndicator';
+
+import { useAssessmentStatusPolling } from './hooks/useAssessmentStatusPolling';
+
 export type AssessmentMode = 'inventory' | 'rvtools' | 'agent';
 
 interface CreateAssessmentModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (
-    name: string,
-    file: File | null,
-    mode: AssessmentMode,
-  ) => Promise<void>;
+  onCancel?: () => void;
+  onSubmit: (name: string, file: File | null) => Promise<Assessment>;
   mode: AssessmentMode;
   isLoading?: boolean;
+  error?: Error | null;
   selectedEnvironment?: { id: string; name: string } | null;
   onSelectEnvironment?: (assessmentName: string) => void;
 }
@@ -30,12 +34,15 @@ interface CreateAssessmentModalProps {
 export const CreateAssessmentModal: React.FC<CreateAssessmentModalProps> = ({
   isOpen,
   onClose,
+  onCancel,
   onSubmit,
   mode,
   isLoading = false,
+  error = null,
   selectedEnvironment = null,
   onSelectEnvironment: _onSelectEnvironment,
 }) => {
+  // Form state
   const [assessmentName, setAssessmentName] = useState('');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [filename, setFilename] = useState('');
@@ -44,7 +51,8 @@ export const CreateAssessmentModal: React.FC<CreateAssessmentModalProps> = ({
   const [fileError, setFileError] = useState('');
   const [selectedEnvironmentId, setSelectedEnvironmentId] = useState('');
 
-  // Mock available environments - in real implementation this would come from props or context
+  const statusPolling = useAssessmentStatusPolling(onCancel);
+
   const availableEnvironments = selectedEnvironment
     ? [selectedEnvironment]
     : [];
@@ -61,7 +69,7 @@ export const CreateAssessmentModal: React.FC<CreateAssessmentModalProps> = ({
         return {
           title: 'Create Assessment from Inventory',
           fileLabel: 'Inventory File (JSON)',
-          fileDescription: 'Upload a JSON inventory file (max 12 MiB)',
+          fileDescription: 'Select a JSON inventory file (max 50 MiB)',
           accept: '.json',
           allowedExtensions: ['json'],
         };
@@ -69,7 +77,7 @@ export const CreateAssessmentModal: React.FC<CreateAssessmentModalProps> = ({
         return {
           title: 'Create migration assessment from RVTools',
           fileLabel: 'RVTools File (Excel)',
-          fileDescription: 'Upload an Excel file from RVTools (max 12 MiB)',
+          fileDescription: 'Select an Excel file from RVTools (max 50 MiB)',
           accept: '.xlsx,.xls',
           allowedExtensions: ['xlsx', 'xls'],
         };
@@ -85,7 +93,7 @@ export const CreateAssessmentModal: React.FC<CreateAssessmentModalProps> = ({
         return {
           title: 'Create Assessment',
           fileLabel: 'File',
-          fileDescription: 'Upload a file (max 12 MiB)',
+          fileDescription: 'Select a file (max 50 MiB)',
           accept: '*',
           allowedExtensions: [],
         };
@@ -98,15 +106,8 @@ export const CreateAssessmentModal: React.FC<CreateAssessmentModalProps> = ({
     _event: React.ChangeEvent<HTMLInputElement> | React.DragEvent<HTMLElement>,
     file: File,
   ): void => {
-    const maxSize = 12582912; // 12 MiB
+    const maxSize = 52428800; // 50 MiB
     const fileExtension = file.name.toLowerCase().split('.').pop();
-
-    if (file.size > maxSize) {
-      setFileError('The file is too big. Upload a file up to 12 MiB.');
-      setSelectedFile(null);
-      setFilename('');
-      return;
-    }
 
     if (
       config.allowedExtensions.length > 0 &&
@@ -114,8 +115,15 @@ export const CreateAssessmentModal: React.FC<CreateAssessmentModalProps> = ({
     ) {
       const extensionList = config.allowedExtensions.join(', ');
       setFileError(
-        `Unsupported file format. Please upload a ${extensionList} file.`,
+        `Unsupported file format. Please select a ${extensionList} file.`,
       );
+      setSelectedFile(null);
+      setFilename('');
+      return;
+    }
+
+    if (file.size > maxSize) {
+      setFileError('The file is too big. Select a file up to 50 MiB.');
       setSelectedFile(null);
       setFilename('');
       return;
@@ -158,49 +166,89 @@ export const CreateAssessmentModal: React.FC<CreateAssessmentModalProps> = ({
   const handleSubmit = async (): Promise<void> => {
     if (validateForm()) {
       try {
-        await onSubmit(assessmentName.trim(), selectedFile, mode);
-        handleClose();
-      } catch (error) {
-        console.error('Error creating assessment:', error);
-        // Error handling is managed by the parent component
+        const assessment = await onSubmit(assessmentName.trim(), selectedFile);
+
+        if (mode === 'rvtools' && assessment) {
+          statusPolling.startPolling(assessment.id);
+        } else {
+          handleClose();
+        }
+      } catch (err) {
+        console.error('Error creating assessment:', err);
+        // Error is handled by the parent component and passed as prop
+        // The error will be displayed in the modal
       }
     }
   };
 
-  const handleClose = (): void => {
-    // Reset form when closing
+  const handleClose = useCallback((): void => {
+    statusPolling.stopPolling();
+    statusPolling.reset();
     setAssessmentName('');
     setSelectedFile(null);
     setFilename('');
     setNameError('');
     setFileError('');
     setSelectedEnvironmentId('');
+
     onClose();
+  }, [statusPolling, onClose]);
+
+  const handleCancel = async (): Promise<void> => {
+    if (statusPolling.isPolling) {
+      try {
+        await statusPolling.cancelJob();
+        handleClose();
+      } catch (error) {
+        console.error('Error cancelling assessment job:', error);
+      }
+    } else {
+      handleClose();
+    }
   };
 
-  // Check if form is valid for button state
+  useEffect(() => {
+    if (statusPolling.status === 'ready') {
+      handleClose();
+    }
+  }, [statusPolling.status, handleClose]);
+
   const isFormValid =
     assessmentName.trim() &&
     (mode === 'agent' ? selectedEnvironment : selectedFile);
+
+  // Enable button when error occurs so user can retry
+  const hasError = !!error || !!statusPolling.error;
+  const isButtonDisabled =
+    !isFormValid ||
+    (isLoading && !hasError) ||
+    (statusPolling.isPolling && !hasError);
+  const isButtonLoading =
+    (isLoading && !hasError) || (statusPolling.isPolling && !hasError);
 
   const actions = [
     <Button
       key="create"
       variant="primary"
       onClick={handleSubmit}
-      isDisabled={isLoading || !isFormValid}
-      isLoading={isLoading}
+      isDisabled={isButtonDisabled}
+      isLoading={isButtonLoading}
     >
       Create Migration Assessment
     </Button>,
-    <Button
-      key="cancel"
-      variant="link"
-      onClick={handleClose}
-      isDisabled={isLoading}
-    >
+    <Button key="cancel" variant="link" onClick={handleCancel}>
       Cancel
     </Button>,
+    ...(statusPolling.status
+      ? [
+          <span
+            key="status"
+            style={{ marginLeft: 'auto', alignSelf: 'center' }}
+          >
+            <AssessmentStatusIndicator status={statusPolling.status} />
+          </span>,
+        ]
+      : []),
   ];
 
   return (
@@ -224,8 +272,9 @@ export const CreateAssessmentModal: React.FC<CreateAssessmentModalProps> = ({
               if (nameError && value.trim()) {
                 setNameError('');
               }
+              // Clear error when user starts typing (error will be cleared by context on next attempt)
             }}
-            validated={nameError ? 'error' : 'default'}
+            validated={nameError || error ? 'error' : 'default'}
             placeholder="Enter assessment name"
           />
           {nameError && (
@@ -307,12 +356,12 @@ export const CreateAssessmentModal: React.FC<CreateAssessmentModalProps> = ({
               type="text"
               value=""
               filename={filename}
-              filenamePlaceholder="Drag and drop a file or upload one"
+              filenamePlaceholder="Drag and drop a file or select one"
               onFileInputChange={handleFileChange}
               onClearClick={handleFileClear}
               isLoading={isFileLoading}
               allowEditingUploadedText={false}
-              browseButtonText="Upload"
+              browseButtonText="Select"
               validated={fileError ? 'error' : 'default'}
               accept={config.accept}
               hideDefaultPreview
@@ -331,6 +380,24 @@ export const CreateAssessmentModal: React.FC<CreateAssessmentModalProps> = ({
           </FormGroup>
         )}
       </Form>
+
+      {/* API and Processing Errors - displayed above the Create button */}
+      {(error || statusPolling.error) && (
+        <Alert
+          variant="danger"
+          title={
+            statusPolling.error
+              ? 'Processing failed'
+              : 'Failed to create assessment'
+          }
+          style={{ marginTop: '16px', marginBottom: '0' }}
+          isInline
+        >
+          {statusPolling.error ||
+            error?.message ||
+            'An error occurred while creating the assessment'}
+        </Alert>
+      )}
     </Modal>
   );
 };

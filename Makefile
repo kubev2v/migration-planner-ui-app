@@ -60,6 +60,7 @@ run-standalone: install
 build: install
 	@echo "Building federated module..."
 	rm -rf dist
+	mkdir -p dist
 	MIGRATION_PLANNER_UI_GIT_COMMIT=$(SOURCE_GIT_COMMIT) \
 	 MIGRATION_PLANNER_UI_VERSION=$(SOURCE_GIT_TAG) \
 	 npm run build
