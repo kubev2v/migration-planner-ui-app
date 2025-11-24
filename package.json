@@ -22,20 +22,20 @@
     "verify": "npm-run-all build lint test",
     "prettier": "prettier --write src",
     "prettier:check": "prettier --check src",
-    "start:standalone": "webpack serve --config webpack.standalone.js",
-    "build:standalone": "webpack --config webpack.standalone.js --mode production",
+    "start:standalone": "NODE_OPTIONS='--localstorage-file=.tmp/webpack-localstorage.json' webpack serve --config webpack.standalone.js",
+    "build:standalone": "NODE_OPTIONS='--localstorage-file=.tmp/webpack-localstorage.json' webpack --config webpack.standalone.js --mode production",
     "serve:standalone": "serve dist-standalone -p 3001"
   },
   "dependencies": {
     "@emotion/css": "^11.13.0",
     "@migration-planner-ui/agent-client": "^0.0.20",
-    "@migration-planner-ui/api-client": "^0.0.21",
+    "@migration-planner-ui/api-client": "^0.0.22",
     "@migration-planner-ui/ioc": "^0.0.20",
     "@patternfly/react-charts": "7.4.9",
     "@patternfly/react-core": "^6.2.2",
+    "@patternfly/react-icons": "6.4.0",
     "@patternfly/react-table": "^6.2.2",
     "@patternfly/react-tokens": "^6.2.2",
-    "@patternfly/react-icons": "6.4.0",
     "@redhat-cloud-services/frontend-components": "^6.0.7",
     "@redhat-cloud-services/frontend-components-notifications": "^6.0.7",
     "@redhat-cloud-services/frontend-components-utilities": "^6.0.7",
@@ -60,7 +60,7 @@
     "@babel/core": "^7.26.0",
     "@babel/eslint-parser": "^7.26.0",
     "@redhat-cloud-services/eslint-config-redhat-cloud-services": "^2.0.4",
-    "@redhat-cloud-services/frontend-components-config": "^6.3.0",
+    "@redhat-cloud-services/frontend-components-config": "^6.7.4",
     "@redhat-cloud-services/tsc-transform-imports": "^1.0.16",
     "@testing-library/jest-dom": "^6.5.0",
     "@testing-library/react": "^14.3.1",
@@ -82,7 +82,7 @@
     "jest-environment-jsdom": "^29.7.0",
     "npm-run-all2": "^5.0.0",
     "postcss-loader": "^8.1.1",
-    "prettier": "^3.3.3",
+    "prettier": "^3.6.2",
     "rimraf": "^5.0.10",
     "sass-loader": "^13.3.3",
     "serve": "^14.x.x",
@@ -100,7 +100,12 @@
     "prismjs": ">=1.30.0",
     "@redhat-cloud-services/frontend-components-config": {
       "webpack-dev-server": ">=5.2.1"
-    }
+    },
+    "axios": ">=1.7.0",
+    "glob": ">=10.4.6",
+    "braces": ">=3.0.3",
+    "micromatch": ">=4.0.8",
+    "del": "^6.1.1"
   },
   "insights": {
     "appname": "assisted-migration-app"

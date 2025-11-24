@@ -88,12 +88,12 @@ export const UpdateAssessment: React.FC<UpdateAssessmentProps> = ({
             type="text"
             value=""
             filename={selectedFile?.name || ''}
-            filenamePlaceholder="Drag and drop a file or upload one"
+            filenamePlaceholder="Drag and drop a file or select one"
             onFileInputChange={handleFileChange}
             onClearClick={handleFileClear}
             isLoading={false}
             allowEditingUploadedText={false}
-            browseButtonText="Upload file"
+            browseButtonText="Select file"
             hideDefaultPreview
           />
         </FormGroup>
