@@ -7,8 +7,11 @@ import {
   FileUpload,
   Form,
   FormGroup,
+  FormHelperText,
   FormSelect,
   FormSelectOption,
+  HelperText,
+  HelperTextItem,
   TextInput,
 } from '@patternfly/react-core';
 import { Modal, ModalVariant } from '@patternfly/react-core/deprecated';
@@ -49,9 +52,43 @@ export const CreateAssessmentModal: React.FC<CreateAssessmentModalProps> = ({
   const [isFileLoading, _setIsFileLoading] = useState(false);
   const [nameError, setNameError] = useState('');
   const [fileError, setFileError] = useState('');
+  const [inlineError, setInlineError] = useState('');
   const [selectedEnvironmentId, setSelectedEnvironmentId] = useState('');
 
   const statusPolling = useAssessmentStatusPolling(onCancel);
+
+  React.useEffect(() => {
+    if (error) {
+      const message = error.message || '';
+      // Do not surface aborted request errors to the user
+      const isAbortError =
+        (typeof (error as { name?: unknown }).name === 'string' &&
+          (error as { name: string }).name === 'AbortError') ||
+        (error instanceof DOMException &&
+          typeof error.message === 'string' &&
+          /aborted/i.test(error.message)) ||
+        /aborted/i.test(message);
+      if (isAbortError) {
+        return;
+      }
+      const isDuplicate = /assessment with name '.*' already exists/i.test(
+        message,
+      );
+      if (isDuplicate) {
+        setNameError(message);
+        setInlineError('');
+      } else {
+        setInlineError(
+          message ||
+            'An unexpected error occurred while creating the assessment.',
+        );
+      }
+    } else {
+      // Clear any stale local errors when incoming error prop is cleared
+      setNameError('');
+      setInlineError('');
+    }
+  }, [error]);
 
   const availableEnvironments = selectedEnvironment
     ? [selectedEnvironment]
@@ -109,6 +146,14 @@ export const CreateAssessmentModal: React.FC<CreateAssessmentModalProps> = ({
     const maxSize = 52428800; // 50 MiB
     const fileExtension = file.name.toLowerCase().split('.').pop();
 
+    // Clear any previous processing or inline errors when a new file is chosen
+    if (statusPolling.error) {
+      statusPolling.reset();
+    }
+    if (inlineError) {
+      setInlineError('');
+    }
+
     if (
       config.allowedExtensions.length > 0 &&
       !config.allowedExtensions.includes(fileExtension || '')
@@ -138,6 +183,9 @@ export const CreateAssessmentModal: React.FC<CreateAssessmentModalProps> = ({
     setSelectedFile(null);
     setFilename('');
     setFileError('');
+    setInlineError('');
+    // Clear any processing errors shown in the modal footer
+    statusPolling.reset();
   };
 
   const validateForm = (): boolean => {
@@ -190,7 +238,7 @@ export const CreateAssessmentModal: React.FC<CreateAssessmentModalProps> = ({
     setNameError('');
     setFileError('');
     setSelectedEnvironmentId('');
-
+    setInlineError('');
     onClose();
   }, [statusPolling, onClose]);
 
@@ -222,7 +270,10 @@ export const CreateAssessmentModal: React.FC<CreateAssessmentModalProps> = ({
   const isButtonDisabled =
     !isFormValid ||
     (isLoading && !hasError) ||
-    (statusPolling.isPolling && !hasError);
+    (statusPolling.isPolling && !hasError) ||
+    !!inlineError ||
+    !!nameError ||
+    !!fileError;
   const isButtonLoading =
     (isLoading && !hasError) || (statusPolling.isPolling && !hasError);
 
@@ -272,21 +323,17 @@ export const CreateAssessmentModal: React.FC<CreateAssessmentModalProps> = ({
               if (nameError && value.trim()) {
                 setNameError('');
               }
-              // Clear error when user starts typing (error will be cleared by context on next attempt)
+              if (inlineError) {
+                setInlineError('');
+              }
             }}
-            validated={nameError || error ? 'error' : 'default'}
+            validated={nameError ? 'error' : 'default'}
             placeholder="Enter assessment name"
           />
           {nameError && (
-            <div
-              style={{
-                color: 'var(--pf-global--danger-color--100)',
-                fontSize: '14px',
-                marginTop: '4px',
-              }}
-            >
-              {nameError}
-            </div>
+            <HelperText>
+              <HelperTextItem variant="error">{nameError}</HelperTextItem>
+            </HelperText>
           )}
         </FormGroup>
 
@@ -312,6 +359,9 @@ export const CreateAssessmentModal: React.FC<CreateAssessmentModalProps> = ({
                 if (fileError && value) {
                   setFileError('');
                 }
+                if (inlineError) {
+                  setInlineError('');
+                }
               }}
               validated={fileError ? 'error' : 'default'}
             >
@@ -325,15 +375,16 @@ export const CreateAssessmentModal: React.FC<CreateAssessmentModalProps> = ({
               ))}
             </FormSelect>
             {fileError && (
-              <div
-                style={{
-                  color: 'var(--pf-global--danger-color--100)',
-                  fontSize: '14px',
-                  marginTop: '4px',
-                }}
-              >
-                {fileError}
-              </div>
+              <FormHelperText>
+                <HelperText>
+                  <HelperTextItem
+                    variant="error"
+                    data-testid="upload-field-helper-text"
+                  >
+                    {fileError}
+                  </HelperTextItem>
+                </HelperText>
+              </FormHelperText>
             )}
           </FormGroup>
         ) : (
@@ -365,16 +416,27 @@ export const CreateAssessmentModal: React.FC<CreateAssessmentModalProps> = ({
               validated={fileError ? 'error' : 'default'}
               accept={config.accept}
               hideDefaultPreview
+              onTextChange={() => {
+                if (inlineError) {
+                  setInlineError('');
+                }
+              }}
             />
             {fileError && (
-              <div
-                style={{
-                  color: 'var(--pf-global--danger-color--100)',
-                  fontSize: '14px',
-                  marginTop: '4px',
-                }}
-              >
-                {fileError}
+              <FormHelperText>
+                <HelperText>
+                  <HelperTextItem
+                    variant="error"
+                    data-testid="upload-field-helper-text"
+                  >
+                    {fileError}
+                  </HelperTextItem>
+                </HelperText>
+              </FormHelperText>
+            )}
+            {inlineError && (
+              <div style={{ marginTop: '16px' }}>
+                <Alert isInline variant="danger" title={inlineError} />
               </div>
             )}
           </FormGroup>
@@ -382,7 +444,11 @@ export const CreateAssessmentModal: React.FC<CreateAssessmentModalProps> = ({
       </Form>
 
       {/* API and Processing Errors - displayed above the Create button */}
-      {(error || statusPolling.error) && (
+      {(!!statusPolling.error ||
+        (!!error &&
+          !/assessment with name '.*' already exists/i.test(
+            error.message || '',
+          ))) && (
         <Alert
           variant="danger"
           title={
