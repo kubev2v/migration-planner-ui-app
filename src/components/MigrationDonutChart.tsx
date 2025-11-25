@@ -20,6 +20,8 @@ interface MigrationDonutChartProps {
   titleColor?: string;
   subTitleColor?: string;
   itemsPerRow?: number;
+  marginLeft?: string;
+  labelFontSize?: number;
 }
 
 const legendColors = ['#0066cc', '#5e40be', '#b6a6e9', '#b98412'];
@@ -35,6 +37,8 @@ const MigrationDonutChart: React.FC<MigrationDonutChartProps> = ({
   titleColor = '#000000',
   subTitleColor = '#000000',
   itemsPerRow = 1,
+  marginLeft = '34%',
+  labelFontSize = 25,
 }: MigrationDonutChartProps) => {
   const dynamicLegend = useMemo(() => {
     return data.reduce(
@@ -78,6 +82,14 @@ const MigrationDonutChart: React.FC<MigrationDonutChartProps> = ({
       symbol: { fill: getColor(item.legendCategory) },
     }));
   }, [chartData, getColor]);
+
+  if (!data || data.length === 0) {
+    return (
+      <div style={{ padding: '20px', textAlign: 'center' }}>
+        No data available
+      </div>
+    );
+  }
 
   return (
     <div
@@ -130,7 +142,7 @@ const MigrationDonutChart: React.FC<MigrationDonutChartProps> = ({
           ) : undefined
         }
       />
-      <div style={{ marginLeft: '34%' }}>
+      <div style={{ marginLeft: marginLeft }}>
         <ChartLegend
           data={legendData}
           orientation="horizontal"
@@ -138,7 +150,7 @@ const MigrationDonutChart: React.FC<MigrationDonutChartProps> = ({
           width={1000}
           itemsPerRow={itemsPerRow}
           style={{
-            labels: { fontSize: 25 },
+            labels: { fontSize: labelFontSize as number },
           }}
         />
       </div>

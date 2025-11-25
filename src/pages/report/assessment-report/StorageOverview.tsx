@@ -165,6 +165,7 @@ export const StorageOverview: React.FC<StorageOverviewProps> = ({
           subTitle={viewMode === 'totalSize' ? `${totals.totalVMs} VMs` : `VMs`}
           subTitleColor="#9a9da0"
           itemsPerRow={Math.ceil(chartData.length / 2)}
+          labelFontSize={25}
         />
       </CardBody>
     </Card>

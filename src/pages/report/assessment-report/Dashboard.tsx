@@ -13,6 +13,7 @@ import {
   PageSection,
 } from '@patternfly/react-core';
 
+import { ClustersOverview } from './ClustersOverview';
 import { Datastores } from './Datastores';
 import { ErrorTable } from './ErrorTable';
 import { InfrastructureOverview } from './InfastructureOverview';
@@ -75,6 +76,23 @@ export const Dashboard: React.FC<Props> = ({
         <GridItem span={12}>
           <Gallery hasGutter minWidths={{ default: '40%' }}>
             <GalleryItem>
+              <ClustersOverview
+                vmsPerCluster={infra.vmsPerCluster}
+                clustersPerDatacenter={infra.clustersPerDatacenter}
+                isExportMode={isExportMode}
+              />
+            </GalleryItem>
+            <GalleryItem>
+              <Datastores
+                datastores={infra.datastores}
+                isExportMode={isExportMode}
+              />
+            </GalleryItem>
+          </Gallery>
+        </GridItem>
+        <GridItem span={12}>
+          <Gallery hasGutter minWidths={{ default: '40%' }}>
+            <GalleryItem>
               <VMMigrationStatus
                 data={{
                   migratable: vms.totalMigratable,
@@ -99,16 +117,6 @@ export const Dashboard: React.FC<Props> = ({
             <GalleryItem>
               <NetworkTopology
                 networks={infra.networks}
-                isExportMode={isExportMode}
-              />
-            </GalleryItem>
-          </Gallery>
-        </GridItem>
-        <GridItem span={12}>
-          <Gallery hasGutter minWidths={{ default: '80%' }}>
-            <GalleryItem>
-              <Datastores
-                datastores={infra.datastores}
                 isExportMode={isExportMode}
               />
             </GalleryItem>

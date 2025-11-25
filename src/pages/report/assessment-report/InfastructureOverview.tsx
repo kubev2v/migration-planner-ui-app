@@ -13,7 +13,6 @@ import {
   GalleryItem,
 } from '@patternfly/react-core';
 import ClusterIcon from '@patternfly/react-icons/dist/esm/icons/cluster-icon';
-import NetworkIcon from '@patternfly/react-icons/dist/esm/icons/network-icon';
 
 interface Props {
   infra: Infra;
@@ -26,15 +25,7 @@ export const InfrastructureOverview: React.FC<Props> = ({
   cpuCores,
   ramGB,
 }) => (
-  <Gallery hasGutter minWidths={{ default: '20%' }}>
-    <GalleryItem>
-      <Card className="dashboard-card-border">
-        <CardTitle>
-          <NetworkIcon /> Clusters
-        </CardTitle>
-        <CardBody>{infra.totalClusters}</CardBody>
-      </Card>
-    </GalleryItem>
+  <Gallery hasGutter minWidths={{ default: '30%' }}>
     <GalleryItem>
       <Card className="dashboard-card-border">
         <CardTitle>
