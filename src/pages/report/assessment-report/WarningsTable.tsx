@@ -16,7 +16,7 @@ export const WarningsTable: React.FC<WarningsTableProps> = ({
   warnings,
   isExportMode = false,
 }) => {
-  const tableHeight = isExportMode ? '100%' : '250px';
+  const tableHeight = isExportMode ? '100%' : '325px';
   return (
     <Card className={isExportMode ? 'dashboard-card-print' : 'dashboard-card'}>
       <CardTitle>
@@ -36,10 +36,9 @@ export const WarningsTable: React.FC<WarningsTableProps> = ({
         >
           <ReportTable<MigrationIssue>
             data={warnings}
-            columns={['Description', 'Total']}
+            columns={['Description', 'Total VMs']}
             fields={['assessment', 'count']}
             withoutBorder
-            caption="Virtual machine validations"
           />
         </div>
       </CardBody>

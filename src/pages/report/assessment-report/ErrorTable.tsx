@@ -16,7 +16,7 @@ export const ErrorTable: React.FC<ErrorTableProps> = ({
   errors,
   isExportMode = false,
 }) => {
-  const tableHeight = isExportMode ? '100%' : '250px';
+  const tableHeight = isExportMode ? '100%' : '325px';
   return (
     <Card className={isExportMode ? 'dashboard-card-print' : 'dashboard-card'}>
       <CardTitle>
@@ -48,10 +48,9 @@ export const ErrorTable: React.FC<ErrorTableProps> = ({
           >
             <ReportTable<MigrationIssue>
               data={errors}
-              columns={['Description', 'Total']}
+              columns={['Description', 'Total VMs']}
               fields={['assessment', 'count']}
               withoutBorder
-              caption="Virtual machine validations"
             />
           </div>
         )}

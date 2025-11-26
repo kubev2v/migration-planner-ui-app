@@ -1,8 +1,9 @@
 import React from 'react';
 
-import { ChartDonut, ChartLegend } from '@patternfly/react-charts';
 import { Card, CardBody, CardTitle } from '@patternfly/react-core';
 import VirtualMachineIcon from '@patternfly/react-icons/dist/esm/icons/virtual-machine-icon';
+
+import MigrationDonutChart from '../../../components/MigrationDonutChart';
 
 interface VmMigrationStatusProps {
   data: {
@@ -16,10 +17,25 @@ export const VMMigrationStatus: React.FC<VmMigrationStatusProps> = ({
   data,
   isExportMode = false,
 }) => {
-  const chartData = [
-    { x: 'Migratable', y: data.migratable },
-    { x: 'Non-Migratable', y: data.nonMigratable },
+  const donutData = [
+    {
+      name: 'Migratable',
+      count: data.migratable,
+      countDisplay: `${data.migratable} VMs`,
+      legendCategory: 'Migratable',
+    },
+    {
+      name: 'Non-Migratable',
+      count: data.nonMigratable,
+      countDisplay: `${data.nonMigratable} VMs`,
+      legendCategory: 'Non-Migratable',
+    },
   ];
+
+  const legend = {
+    Migratable: '#28a745',
+    'Non-Migratable': '#dc3545',
+  };
 
   return (
     <Card
@@ -30,46 +46,21 @@ export const VMMigrationStatus: React.FC<VmMigrationStatusProps> = ({
         <VirtualMachineIcon /> VM Migration Status
       </CardTitle>
       <CardBody>
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-          }}
-        >
-          <ChartDonut
-            ariaDesc="VM Migration Status"
-            data={chartData}
-            labels={({ datum }) => `${datum.x}: ${datum.y}`}
-            colorScale={['#28a745', '#dc3545']}
-            constrainToVisibleArea
-            title={`${data.migratable + data.nonMigratable}`}
-            subTitle="VMs"
-          />
-          <div
-            style={{
-              marginLeft: '20%',
-            }}
-          >
-            <ChartLegend
-              data={[
-                {
-                  name: `Migratable: ${data.migratable} VMs`,
-                  symbol: { fill: '#28a745' },
-                },
-                {
-                  name: `Non-Migratable: ${data.nonMigratable} VMs`,
-                  symbol: { fill: '#dc3545' },
-                },
-              ]}
-              orientation="horizontal"
-              style={{
-                labels: { fontSize: 14 },
-                parent: { marginTop: 8 },
-              }}
-            />
-          </div>
-        </div>
+        <MigrationDonutChart
+          data={donutData}
+          legend={legend}
+          height={300}
+          width={420}
+          donutThickness={9}
+          padAngle={1}
+          title={`${data.migratable + data.nonMigratable}`}
+          subTitle="VMs"
+          subTitleColor="#9a9da0"
+          titleFontSize={34}
+          labelFontSize={18}
+          itemsPerRow={2}
+          marginLeft="40%"
+        />
       </CardBody>
     </Card>
   );

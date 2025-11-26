@@ -33,8 +33,8 @@ const TIER_CONFIG: Record<
   { order: number; label: string; legendCategory: string }
 > = {
   Easy: { order: 0, label: '0-10 TB', legendCategory: 'Easy' },
-  Medium: { order: 1, label: '10-20 TB', legendCategory: 'Medium' },
-  Hard: { order: 2, label: '20-50 TB', legendCategory: 'Hard' },
+  Medium: { order: 1, label: '11-20 TB', legendCategory: 'Medium' },
+  Hard: { order: 2, label: '21-50 TB', legendCategory: 'Hard' },
   White: { order: 3, label: '> 50 TB', legendCategory: 'White glove' },
 };
 
@@ -156,16 +156,27 @@ export const StorageOverview: React.FC<StorageOverviewProps> = ({
       <CardBody>
         <MigrationDonutChart
           data={chartData}
-          height={195}
+          height={300}
+          width={420}
+          donutThickness={9}
+          titleFontSize={34}
           title={
             viewMode === 'totalSize'
               ? `${totals.totalSize.toFixed(2)} TB`
-              : `${totals.totalVMs}`
+              : `${totals.totalVMs} VMs`
           }
-          subTitle={viewMode === 'totalSize' ? `${totals.totalVMs} VMs` : `VMs`}
+          subTitle={
+            viewMode === 'totalSize'
+              ? `${totals.totalVMs} VMs`
+              : `${totals.totalSize.toFixed(2)} TB`
+          }
           subTitleColor="#9a9da0"
           itemsPerRow={Math.ceil(chartData.length / 2)}
-          labelFontSize={25}
+          labelFontSize={18}
+          marginLeft={viewMode === 'totalSize' ? '42%' : '52%'}
+          tooltipLabelFormatter={({ datum, percent }) =>
+            `${datum.countDisplay}\n${percent.toFixed(1)}%`
+          }
         />
       </CardBody>
     </Card>

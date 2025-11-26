@@ -170,8 +170,8 @@ export const ClustersOverview: React.FC<ClustersOverviewProps> = ({
               {!isExportMode && (
                 <div style={{ color: '#6a6e73', fontSize: '0.85rem' }}>
                   {viewMode === 'vmByCluster'
-                    ? 'Top clusters'
-                    : `Total ${clustersPerDatacenter?.length ?? 0} datacenters`}
+                    ? 'Top 5 clusters'
+                    : `Top 5 datacenters`}
                 </div>
               )}
             </div>
@@ -212,14 +212,20 @@ export const ClustersOverview: React.FC<ClustersOverviewProps> = ({
       <CardBody>
         <MigrationDonutChart
           data={chartData}
-          height={195}
+          height={300}
+          width={420}
+          donutThickness={9}
+          titleFontSize={34}
           legend={legend}
           title={title}
           subTitle={subTitle}
           subTitleColor="#9a9da0"
           itemsPerRow={Math.ceil(chartData.length / 2)}
-          marginLeft={viewMode === 'vmByCluster' ? '14%' : '5%'}
-          labelFontSize={viewMode === 'vmByCluster' ? 25 : 20}
+          labelFontSize={viewMode === 'vmByCluster' ? 18 : 17}
+          marginLeft={viewMode === 'vmByCluster' ? '12%' : '0%'}
+          tooltipLabelFormatter={({ datum, percent }) =>
+            `${datum.countDisplay}\n${percent.toFixed(1)}%`
+          }
         />
       </CardBody>
     </Card>

@@ -22,6 +22,16 @@ interface MigrationDonutChartProps {
   itemsPerRow?: number;
   marginLeft?: string;
   labelFontSize?: number;
+  titleFontSize?: number;
+  subTitleFontSize?: number;
+  donutThickness?: number;
+  padAngle?: number;
+  // Optional custom formatter for the tooltip/labels shown on slice hover
+  tooltipLabelFormatter?: (args: {
+    datum: { x: string; y: number; countDisplay?: string; legendCategory: string };
+    percent: number;
+    total: number;
+  }) => string;
 }
 
 const legendColors = ['#0066cc', '#5e40be', '#b6a6e9', '#b98412'];
@@ -30,15 +40,20 @@ const MigrationDonutChart: React.FC<MigrationDonutChartProps> = ({
   data,
   legend,
   customColors,
-  height = 200,
-  width = 300,
+  height = 260,
+  width = 420,
   title,
   subTitle,
   titleColor = '#000000',
   subTitleColor = '#000000',
   itemsPerRow = 1,
-  marginLeft = '34%',
+  marginLeft = '0%',
   labelFontSize = 25,
+  titleFontSize = 28,
+  subTitleFontSize = 14,
+  donutThickness = 45,
+  padAngle = 1,
+  tooltipLabelFormatter,
 }: MigrationDonutChartProps) => {
   const dynamicLegend = useMemo(() => {
     return data.reduce(
@@ -83,6 +98,16 @@ const MigrationDonutChart: React.FC<MigrationDonutChartProps> = ({
     }));
   }, [chartData, getColor]);
 
+  const innerRadius = useMemo(() => {
+    const outerApprox = Math.min(width, height) / 2;
+    const computed = outerApprox - donutThickness;
+    return computed > 0 ? computed : 0;
+  }, [width, height, donutThickness]);
+
+  const totalY = useMemo(() => {
+    return chartData.reduce((sum, item) => sum + (Number(item.y) || 0), 0);
+  }, [chartData]);
+
   if (!data || data.length === 0) {
     return (
       <div style={{ padding: '20px', textAlign: 'center' }}>
@@ -103,9 +128,26 @@ const MigrationDonutChart: React.FC<MigrationDonutChartProps> = ({
         ariaDesc="Migration data donut chart"
         ariaTitle="Migration data donut chart"
         data={chartData}
-        labels={({ datum }) => `${datum.x}: ${datum.countDisplay ?? datum.y}`}
+        labels={({ datum }) => {
+          const percent =
+            totalY > 0 ? (Number(datum.y) / totalY) * 100 : 0;
+          return tooltipLabelFormatter
+            ? tooltipLabelFormatter({
+                datum: {
+                  x: datum.x,
+                  y: Number(datum.y),
+                  countDisplay: datum.countDisplay,
+                  legendCategory: datum.legendCategory,
+                },
+                percent,
+                total: totalY,
+              })
+            : `${datum.x}: ${datum.countDisplay ?? datum.y}`;
+        }}
         colorScale={colorScale}
         constrainToVisibleArea
+        innerRadius={innerRadius}
+        padAngle={padAngle}
         title={title}
         subTitle={subTitle}
         height={height}
@@ -122,7 +164,7 @@ const MigrationDonutChart: React.FC<MigrationDonutChartProps> = ({
               style={[
                 {
                   fill: titleColor,
-                  fontSize: 22,
+                  fontSize: titleFontSize,
                   fontWeight: 'bold',
                 },
               ]}
@@ -135,19 +177,26 @@ const MigrationDonutChart: React.FC<MigrationDonutChartProps> = ({
               style={[
                 {
                   fill: subTitleColor,
-                  fontSize: 12,
+                  fontSize: subTitleFontSize,
                 },
               ]}
             />
           ) : undefined
         }
       />
-      <div style={{ marginLeft: marginLeft }}>
+      <div
+        style={{
+          width: '100%',
+          display: 'flex',
+          justifyContent: 'center',
+          marginLeft: marginLeft,
+        }}
+      >
         <ChartLegend
           data={legendData}
           orientation="horizontal"
           height={200}
-          width={1000}
+          width={800}
           itemsPerRow={itemsPerRow}
           style={{
             labels: { fontSize: labelFontSize as number },
