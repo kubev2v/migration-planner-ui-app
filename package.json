@@ -105,7 +105,8 @@
     "glob": ">=10.4.6",
     "braces": ">=3.0.3",
     "micromatch": ">=4.0.8",
-    "del": "^6.1.1"
+    "del": "^6.1.1",
+    "node-forge": ">=1.3.2"
   },
   "insights": {
     "appname": "assisted-migration-app"

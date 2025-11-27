@@ -28,7 +28,12 @@ interface MigrationDonutChartProps {
   padAngle?: number;
   // Optional custom formatter for the tooltip/labels shown on slice hover
   tooltipLabelFormatter?: (args: {
-    datum: { x: string; y: number; countDisplay?: string; legendCategory: string };
+    datum: {
+      x: string;
+      y: number;
+      countDisplay?: string;
+      legendCategory: string;
+    };
     percent: number;
     total: number;
   }) => string;
@@ -129,8 +134,7 @@ const MigrationDonutChart: React.FC<MigrationDonutChartProps> = ({
         ariaTitle="Migration data donut chart"
         data={chartData}
         labels={({ datum }) => {
-          const percent =
-            totalY > 0 ? (Number(datum.y) / totalY) * 100 : 0;
+          const percent = totalY > 0 ? (Number(datum.y) / totalY) * 100 : 0;
           return tooltipLabelFormatter
             ? tooltipLabelFormatter({
                 datum: {
@@ -199,7 +203,7 @@ const MigrationDonutChart: React.FC<MigrationDonutChartProps> = ({
           width={800}
           itemsPerRow={itemsPerRow}
           style={{
-            labels: { fontSize: labelFontSize as number },
+            labels: { fontSize: labelFontSize },
           }}
         />
       </div>
