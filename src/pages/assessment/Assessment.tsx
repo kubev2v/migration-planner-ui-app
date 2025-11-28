@@ -245,7 +245,7 @@ const Assessment: React.FC<Props> = ({
   const handleSubmitAssessment = async (
     name: string,
     file: File | null,
-  ): Promise<AssessmentModel> => {
+  ): Promise<void> => {
     try {
       if (!file) throw new Error('File is required for RVTools assessment');
 
@@ -258,8 +258,11 @@ const Assessment: React.FC<Props> = ({
         file, // rvToolFile
       );
 
-      // Return the assessment so modal can start polling
-      return assessment;
+      if (assessment.id !== undefined) {
+        navigate(
+          `/openshift/migration-assessment/assessments/${assessment.id}/report`,
+        );
+      }
     } catch (error) {
       console.error('Failed to create assessment:', error);
       throw error; // Re-throw so the modal can handle it

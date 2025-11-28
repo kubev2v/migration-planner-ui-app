@@ -152,39 +152,78 @@ export const Provider: React.FC<PropsWithChildren> = (props) => {
     ) => {
       const assessmentName = name || `Assessment-${new Date().toISOString()}`;
 
-      // Create different request based on sourceType
-      if (sourceType === 'inventory' && jsonValue) {
-        const assessment = await assessmentApi.createAssessment({
-          assessmentForm: {
-            name: assessmentName,
-            sourceType: sourceType,
-            inventory:
-              typeof jsonValue === 'string' ? JSON.parse(jsonValue) : jsonValue,
-          },
-        });
-        await listAssessments();
-        return assessment;
-      } else if (sourceType === 'rvtools' && rvToolFile) {
-        const assessment = await assessmentService.createFromRVTools(
-          assessmentName,
-          rvToolFile,
-        );
-        await listAssessments();
-        return assessment;
-      } else if (sourceType === 'agent' && sourceId) {
-        const assessment = await assessmentApi.createAssessment({
-          assessmentForm: {
-            sourceId: sourceId,
-            name: assessmentName,
-            sourceType: sourceType,
-          },
-        });
-        await listAssessments();
-        return assessment;
-      } else {
-        throw new Error(
-          `Invalid parameters for assessment creation: ${sourceType}`,
-        );
+      try {
+        // Create different request based on sourceType
+        if (sourceType === 'inventory' && jsonValue) {
+          const assessment = await assessmentApi.createAssessment({
+            assessmentForm: {
+              name: assessmentName,
+              sourceType: sourceType,
+              inventory:
+                typeof jsonValue === 'string'
+                  ? JSON.parse(jsonValue)
+                  : jsonValue,
+            },
+          });
+          await listAssessments();
+          return assessment;
+        } else if (sourceType === 'rvtools' && rvToolFile) {
+          const assessment = await assessmentService.createFromRVTools(
+            assessmentName,
+            rvToolFile,
+          );
+          await listAssessments();
+          return assessment;
+        } else if (sourceType === 'agent' && sourceId) {
+          const assessment = await assessmentApi.createAssessment({
+            assessmentForm: {
+              sourceId: sourceId,
+              name: assessmentName,
+              sourceType: sourceType,
+            },
+          });
+          await listAssessments();
+          return assessment;
+        } else {
+          throw new Error(
+            `Invalid parameters for assessment creation: ${sourceType}`,
+          );
+        }
+      } catch (error: unknown) {
+        if (
+          typeof error === 'object' &&
+          error !== null &&
+          'response' in error
+        ) {
+          const response = (error as { response: Response }).response;
+          let errorText: string | undefined;
+          try {
+            errorText = await response.text();
+          } catch {
+            throw new Error('Error response could not be read.');
+          }
+          if (typeof errorText === 'string' && errorText.length > 0) {
+            try {
+              const errorData = JSON.parse(errorText);
+              const message =
+                (errorData &&
+                  (errorData.message || (errorData as any).error)) ||
+                errorText ||
+                'API error occurred while creating the assessment.';
+              throw new Error(message);
+            } catch {
+              throw new Error(
+                errorText || 'Failed to parse API error response.',
+              );
+            }
+          }
+          throw new Error('API error occurred while creating the assessment.');
+        }
+        throw error instanceof Error
+          ? error
+          : new Error(
+              'Unexpected error occurred while creating the assessment.',
+            );
       }
     },
   );
@@ -209,23 +248,6 @@ export const Provider: React.FC<PropsWithChildren> = (props) => {
       });
       await listAssessments();
       return deletedAssessment;
-    },
-  );
-
-  const [getAssessmentState, getAssessment] = useAsyncFn(
-    async (assessmentId: string) => {
-      const assessment = await assessmentApi.getAssessment({
-        id: assessmentId,
-      });
-      return assessment;
-    },
-  );
-
-  const [cancelAssessmentJobState, cancelAssessmentJob] = useAsyncFn(
-    async (assessmentId: string) => {
-      await assessmentApi.cancelAssessmentJob({
-        id: assessmentId,
-      });
     },
   );
 
@@ -701,13 +723,9 @@ export const Provider: React.FC<PropsWithChildren> = (props) => {
     deleteAssessment: deleteAssessment,
     isDeletingAssessment: deleteAssessmentState.loading,
     errorDeletingAssessment: deleteAssessmentState.error,
-    getAssessment: getAssessment,
     updateAssessment: updateAssessment,
     isUpdatingAssessment: updateAssessmentState.loading,
     errorUpdatingAssessment: updateAssessmentState.error,
-    cancelAssessmentJob: cancelAssessmentJob,
-    isCancellingAssessmentJob: cancelAssessmentJobState.loading,
-    errorCancellingAssessmentJob: cancelAssessmentJobState.error,
     shareAssessment: async () => {
       throw new Error('Not implemented');
     },
