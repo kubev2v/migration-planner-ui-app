@@ -145,7 +145,7 @@ const MigrationChart: React.FC<MigrationChartProps> = ({
                             overflow: 'hidden',
                           }}
                         >
-                          {(() => {
+                          {((): React.ReactNode => {
                             const barWidth =
                               sumOfAllCounts > 0
                                 ? (item.count / sumOfAllCounts) * 100

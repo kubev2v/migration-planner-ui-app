@@ -1,4 +1,12 @@
-import { Assessment } from '@migration-planner-ui/api-client/models';
+import { Assessment, Inventory } from '@migration-planner-ui/api-client/models';
+
+export interface CreateAssessmentRequest {
+  name: string;
+  sourceType: 'inventory' | 'rvtools' | 'agent';
+  inventory?: Inventory;
+  sourceId?: string;
+  rvToolFile?: File;
+}
 
 export class AssessmentService {
   private baseUrl: string;
@@ -45,17 +53,28 @@ export class AssessmentService {
         // Fallback handled below
       }
 
-      // Handle specific status codes
-      if (response.status === 409) {
-        errorMessage =
-          errorMessage ||
-          'An assessment with this name already exists. Please choose a different name.';
+      // Extract the last meaningful part after ":"
+      const lastColonIndex = errorMessage.lastIndexOf(':');
+      if (lastColonIndex !== -1) {
+        errorMessage = errorMessage.substring(lastColonIndex + 1).trim();
       }
 
       throw new Error(errorMessage);
     }
 
     return response.json();
+  }
+
+  async createAssessment(
+    request: CreateAssessmentRequest,
+  ): Promise<Assessment> {
+    const assessmentName =
+      request.name || `Assessment-${new Date().toISOString()}`;
+
+    if (!request.rvToolFile) {
+      throw new Error('RVTools file is required for RVTools assessment');
+    }
+    return this.createFromRVTools(assessmentName, request.rvToolFile);
   }
 }
 

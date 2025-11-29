@@ -212,23 +212,6 @@ export const Provider: React.FC<PropsWithChildren> = (props) => {
     },
   );
 
-  const [getAssessmentState, getAssessment] = useAsyncFn(
-    async (assessmentId: string) => {
-      const assessment = await assessmentApi.getAssessment({
-        id: assessmentId,
-      });
-      return assessment;
-    },
-  );
-
-  const [cancelAssessmentJobState, cancelAssessmentJob] = useAsyncFn(
-    async (assessmentId: string) => {
-      await assessmentApi.cancelAssessmentJob({
-        id: assessmentId,
-      });
-    },
-  );
-
   const [deleteSourceState, deleteSource] = useAsyncFn(async (id: string) => {
     const deletedSource = await sourceApi.deleteSource({ id });
     return deletedSource;
@@ -701,13 +684,9 @@ export const Provider: React.FC<PropsWithChildren> = (props) => {
     deleteAssessment: deleteAssessment,
     isDeletingAssessment: deleteAssessmentState.loading,
     errorDeletingAssessment: deleteAssessmentState.error,
-    getAssessment: getAssessment,
     updateAssessment: updateAssessment,
     isUpdatingAssessment: updateAssessmentState.loading,
     errorUpdatingAssessment: updateAssessmentState.error,
-    cancelAssessmentJob: cancelAssessmentJob,
-    isCancellingAssessmentJob: cancelAssessmentJobState.loading,
-    errorCancellingAssessmentJob: cancelAssessmentJobState.error,
     shareAssessment: async () => {
       throw new Error('Not implemented');
     },

@@ -143,11 +143,6 @@ const Assessment: React.FC<Props> = ({
     setIsModalOpen(false);
   };
 
-  const handleRefreshAfterCancel = async (): Promise<void> => {
-    // Refresh assessments list after cancelling an assessment job
-    await discoverySourcesContext.listAssessments();
-  };
-
   // Open RVTools modal when the trigger token changes
   React.useEffect(() => {
     if (rvtoolsOpenToken) {
@@ -245,24 +240,23 @@ const Assessment: React.FC<Props> = ({
   const handleSubmitAssessment = async (
     name: string,
     file: File | null,
-  ): Promise<AssessmentModel> => {
-    try {
-      if (!file) throw new Error('File is required for RVTools assessment');
+  ): Promise<void> => {
+    if (!file) throw new Error('File is required for RVTools assessment');
 
-      // Create the assessment with RVTools file (only RVTools mode supported)
-      const assessment = await discoverySourcesContext.createAssessment(
-        name,
-        'rvtools',
-        undefined, // jsonValue not used for rvtools mode
-        undefined, // sourceId not used for rvtools mode
-        file, // rvToolFile
+    // Create the assessment with RVTools file (only RVTools mode supported)
+    const assessment = await discoverySourcesContext.createAssessment(
+      name,
+      'rvtools',
+      undefined, // jsonValue not used for rvtools mode
+      undefined, // sourceId not used for rvtools mode
+      file, // rvToolFile
+    );
+
+    // Only navigate if assessment was successfully created
+    if (assessment && assessment.id) {
+      navigate(
+        `/openshift/migration-assessment/assessments/${assessment.id}/report`,
       );
-
-      // Return the assessment so modal can start polling
-      return assessment;
-    } catch (error) {
-      console.error('Failed to create assessment:', error);
-      throw error; // Re-throw so the modal can handle it
     }
   };
 
@@ -536,7 +530,6 @@ const Assessment: React.FC<Props> = ({
       <CreateAssessmentModal
         isOpen={isModalOpen}
         onClose={handleCloseModal}
-        onCancel={handleRefreshAfterCancel}
         onSubmit={handleSubmitAssessment}
         mode={modalMode}
         isLoading={discoverySourcesContext.isCreatingAssessment}
