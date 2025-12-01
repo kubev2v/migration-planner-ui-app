@@ -397,8 +397,8 @@ function getExampleInventory(): Inventory {
 
 const ExampleReport: React.FC = () => {
   const inventory = getExampleInventory();
-  const infra = inventory.infra as Infra;
-  const vms = inventory.vms as VMs;
+  const infra = inventory.vcenter?.infra as Infra;
+  const vms = inventory.vcenter?.vms as VMs;
   const cpuCores = vms.cpuCores as VMResourceBreakdown;
   const ramGB = vms.ramGB as VMResourceBreakdown;
 

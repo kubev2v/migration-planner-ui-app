@@ -276,13 +276,17 @@ const AssessmentDetails: React.FC = () => {
               const date = s.createdAt
                 ? new Date(s.createdAt).toLocaleString()
                 : '-';
-              const hosts = s.inventory?.infra?.totalHosts ?? '-';
-              const vms = s.inventory?.vms?.total ?? '-';
-              const networks = Array.isArray(s.inventory?.infra?.networks)
-                ? s.inventory?.infra?.networks?.length
+              const hosts = s.inventory?.vcenter?.infra?.totalHosts ?? '-';
+              const vms = s.inventory?.vcenter?.vms?.total ?? '-';
+              const networks = Array.isArray(
+                s.inventory?.vcenter?.infra?.networks,
+              )
+                ? s.inventory?.vcenter?.infra?.networks?.length
                 : '-';
-              const datastores = Array.isArray(s.inventory?.infra?.datastores)
-                ? s.inventory?.infra?.datastores?.length
+              const datastores = Array.isArray(
+                s.inventory?.vcenter?.infra?.datastores,
+              )
+                ? s.inventory?.vcenter?.infra?.datastores?.length
                 : '-';
               return (
                 <Tr key={`${s.createdAt ?? idx}`}>

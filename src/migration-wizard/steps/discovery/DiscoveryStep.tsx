@@ -42,7 +42,7 @@ import EnhancedDownloadButton from './EnhancedDownloadButton';
 export const DiscoveryStep: React.FC = () => {
   const discoverSourcesContext = useDiscoverySources();
   const { inventory } = discoverSourcesContext.sourceSelected as Source;
-  const { infra, vms } = inventory!;
+  const { infra, vms } = inventory!.vcenter!;
   const { datastores, networks } = infra;
   const { cpuCores, ramGB, diskCount, diskGB, os } = vms;
 

@@ -32,19 +32,23 @@ export const parseLatestSnapshot = (
   const lastSnapshot = sortedSnapshots[0];
 
   // Extract hosts data from inventory.infra.totalHosts
-  const hosts = lastSnapshot.inventory?.infra?.totalHosts ?? '-';
+  const hosts = lastSnapshot.inventory?.vcenter?.infra?.totalHosts ?? '-';
 
   // Extract VMs data from inventory.vms.total
-  const vms = lastSnapshot.inventory?.vms?.total ?? '-';
+  const vms = lastSnapshot.inventory?.vcenter?.vms?.total ?? '-';
 
   // Extract networks data from inventory.infra.networks array length
-  const networks = Array.isArray(lastSnapshot.inventory?.infra?.networks)
-    ? lastSnapshot.inventory.infra.networks.length
+  const networks = Array.isArray(
+    lastSnapshot.inventory?.vcenter?.infra?.networks,
+  )
+    ? lastSnapshot.inventory.vcenter?.infra?.networks.length
     : '-';
 
   // Extract datastores data from inventory.infra.datastores array length
-  const datastores = Array.isArray(lastSnapshot.inventory?.infra?.datastores)
-    ? lastSnapshot.inventory.infra.datastores.length
+  const datastores = Array.isArray(
+    lastSnapshot.inventory?.vcenter?.infra?.datastores,
+  )
+    ? lastSnapshot.inventory.vcenter?.infra?.datastores.length
     : '-';
 
   // Format last updated date

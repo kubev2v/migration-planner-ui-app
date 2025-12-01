@@ -317,7 +317,6 @@ export const AssessmentsTable: React.FC<Props> = ({
       </Table>
     );
   }
-
   return (
     <div style={{ width: '100%', maxHeight: '450px', overflow: 'auto' }}>
       <Table

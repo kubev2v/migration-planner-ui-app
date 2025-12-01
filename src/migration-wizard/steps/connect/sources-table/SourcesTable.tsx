@@ -211,18 +211,19 @@ export const SourcesTable: React.FC<{
                         />
                       </Td>
                       <Td dataLabel={Columns.Hosts}>
-                        {source?.inventory?.infra.totalHosts ??
+                        {source?.inventory?.vcenter?.infra.totalHosts ??
                           VALUE_NOT_AVAILABLE}
                       </Td>
                       <Td dataLabel={Columns.VMs}>
-                        {source?.inventory?.vms.total ?? VALUE_NOT_AVAILABLE}
+                        {source?.inventory?.vcenter?.vms.total ??
+                          VALUE_NOT_AVAILABLE}
                       </Td>
                       <Td dataLabel={Columns.Networks}>
-                        {source?.inventory?.infra.networks?.length ??
+                        {source?.inventory?.vcenter?.infra.networks?.length ??
                           VALUE_NOT_AVAILABLE}
                       </Td>
                       <Td dataLabel={Columns.Datastores}>
-                        {source?.inventory?.infra.datastores?.length ??
+                        {source?.inventory?.vcenter?.infra.datastores?.length ??
                           VALUE_NOT_AVAILABLE}
                       </Td>
                       <Td dataLabel={Columns.Actions}>

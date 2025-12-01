@@ -4,7 +4,10 @@ import jsPDF from 'jspdf';
 import type { Root } from 'react-dom/client';
 import { createRoot } from 'react-dom/client';
 
-import type { Source } from '@migration-planner-ui/api-client/models';
+import type {
+  Inventory,
+  Source,
+} from '@migration-planner-ui/api-client/models';
 import {
   Alert,
   Dropdown,
@@ -257,10 +260,11 @@ const EnhancedDownloadButton: React.FC<EnhancedDownloadButtonProps> = ({
   };
 
   // Generate chart data from inventory
-  const generateChartData = (
-    inventory: InventoryData | SnapshotLike,
-  ): ChartData => {
-    const { infra, vms } = inventory as InventoryData;
+  const generateChartData = (inventory: Inventory): ChartData => {
+    if (!inventory.vcenter) {
+      throw new Error('VCenter inventory data is not available');
+    }
+    const { infra, vms } = inventory.vcenter as InventoryData;
 
     const powerStateData = [
       ['Powered On', vms.powerStates.poweredOn || 0],
@@ -477,9 +481,12 @@ const EnhancedDownloadButton: React.FC<EnhancedDownloadButtonProps> = ({
   // Generate complete HTML template with data and scripts
   const generateHTMLTemplate = (
     chartData: ChartData,
-    inventory: InventoryData | SnapshotLike,
+    inventory: Inventory,
   ): string => {
-    const { infra, vms } = inventory;
+    if (!inventory.vcenter) {
+      throw new Error('VCenter inventory data is not available');
+    }
+    const { infra, vms } = inventory.vcenter as InventoryData;
     const {
       powerStateData,
       resourceData,
@@ -864,8 +871,11 @@ const EnhancedDownloadButton: React.FC<EnhancedDownloadButtonProps> = ({
       }
 
       const { inventory } = sourceData || snapshot;
-      const chartData = generateChartData(inventory);
-      const htmlContent = generateHTMLTemplate(chartData, inventory);
+      const chartData = generateChartData(inventory as Inventory);
+      const htmlContent = generateHTMLTemplate(
+        chartData,
+        inventory as Inventory,
+      );
       downloadHTMLFile(htmlContent, EXPORT_CONFIG.HTML_FILENAME);
       console.log(
         '✅ Comprehensive HTML file with enhanced charts and tables downloaded successfully!',

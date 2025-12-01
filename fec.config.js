@@ -85,6 +85,7 @@ module.exports = {
       './Ipv4Config': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/Ipv4Config.js'),
       './SourceInfra': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/SourceInfra.js'),
       './DiskSizeTierSummary': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/DiskSizeTierSummary.js'),
+      './InventoryData': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/InventoryData.js'),
     }, 
   },
   customizeWebpackConfig: (config) => {

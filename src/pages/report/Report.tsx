@@ -30,9 +30,21 @@ import { parseLatestSnapshot } from '../assessment/utils/snapshotParser';
 import { Dashboard } from './assessment-report/Dashboard';
 
 export type SnapshotLike = {
+  // New preferred structure
+  createdAt?: string | Date;
+  vcenterId?: string;
+  // Backward-compatible fields
   infra?: Infra;
   vms?: VMs;
-  inventory?: { infra?: Infra; vms?: VMs };
+  inventory?: {
+    infra?: Infra; // legacy
+    vms?: VMs; // legacy
+    vcenter?: {
+      id?: string;
+      infra?: Infra;
+      vms?: VMs;
+    };
+  };
 };
 
 type AssessmentLike = {
@@ -106,8 +118,14 @@ const Inner: React.FC = () => {
     snapshots.length > 0
       ? (snapshots[snapshots.length - 1] as SnapshotLike)
       : ({} as SnapshotLike);
-  const infra = last.infra || last.inventory?.infra;
-  const vms = last.vms || last.inventory?.vms;
+  const infra =
+    last.infra ||
+    last.inventory?.infra || // legacy
+    last.inventory?.vcenter?.infra;
+  const vms =
+    last.vms ||
+    last.inventory?.vms || // legacy
+    last.inventory?.vcenter?.vms;
   const cpuCores = (vms as VMs | undefined)?.cpuCores as
     | VMResourceBreakdown
     | undefined;
