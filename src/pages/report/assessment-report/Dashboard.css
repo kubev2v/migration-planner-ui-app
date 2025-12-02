@@ -48,7 +48,33 @@
 }
 .dashboard-card-print {
   height: 100%;
+  max-height: 1000px;
+  overflow: hidden;
+}
+#vm-migration-status {
+  height: 500px !important;
+  overflow: hidden;
+}
+.dashboard-card-print #os-distribution {
+  height: 2000px !important;
+  max-height: 2000px !important;
+  overflow: hidden;
+}
+.dashboard-card-print #warnings-table {
+  height: 600px !important;
+  overflow: hidden;
+}
+.dashboard-card-print #errors-table {
+  height: 600px !important;
+  overflow: hidden;
 }
 .table-without-border {
   border: none !important;
+}
+#hosts,
+#cpu-cores,
+#total-memory {
+  height: 100px !important;
+  max-height: 100px !important;
+  overflow: hidden;
 }

@@ -18,7 +18,10 @@ export const ErrorTable: React.FC<ErrorTableProps> = ({
 }) => {
   const tableHeight = isExportMode ? '100%' : '325px';
   return (
-    <Card className={isExportMode ? 'dashboard-card-print' : 'dashboard-card'}>
+    <Card
+      className={isExportMode ? 'dashboard-card-print' : 'dashboard-card'}
+      id="errors-table"
+    >
       <CardTitle>
         <Icon style={{ color: globalDangerColor100.value }}>
           <ExclamationCircleIcon />

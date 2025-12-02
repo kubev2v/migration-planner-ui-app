@@ -19,6 +19,7 @@ import MigrationDonutChart from '../../../components/MigrationDonutChart';
 interface StorageOverviewProps {
   DiskSizeTierSummary: { [key: string]: DiskSizeTierSummary };
   isExportMode?: boolean;
+  exportAllViews?: boolean;
 }
 
 type ViewMode = 'totalSize' | 'vmCount';
@@ -38,9 +39,60 @@ const TIER_CONFIG: Record<
   White: { order: 3, label: '> 50 TB', legendCategory: 'White glove' },
 };
 
+type TierChartDatum = {
+  name: string;
+  count: number;
+  countDisplay: string;
+  legendCategory: string;
+};
+
+function buildTierChartData(
+  summary: { [key: string]: DiskSizeTierSummary },
+  tierConfig: Record<
+    string,
+    { order: number; label: string; legendCategory: string }
+  >,
+  selector: (tier: DiskSizeTierSummary) => {
+    count: number;
+    countDisplay: string;
+  },
+): TierChartDatum[] {
+  if (!summary) return [];
+
+  const getTierPrefix = (key: string): string | null => {
+    for (const prefix of Object.keys(tierConfig)) {
+      if (key.startsWith(prefix)) return prefix;
+    }
+    return null;
+  };
+
+  return Object.entries(summary)
+    .sort(([keyA], [keyB]) => {
+      const prefixA = getTierPrefix(keyA);
+      const prefixB = getTierPrefix(keyB);
+      const orderA = prefixA ? tierConfig[prefixA].order : 999;
+      const orderB = prefixB ? tierConfig[prefixB].order : 999;
+      return orderA - orderB;
+    })
+    .map(([key, tier]) => {
+      const prefix = getTierPrefix(key);
+      const display = prefix
+        ? tierConfig[prefix]
+        : { label: key, legendCategory: 'Unknown' };
+      const { count, countDisplay } = selector(tier);
+      return {
+        name: display.label,
+        count,
+        countDisplay,
+        legendCategory: display.legendCategory,
+      };
+    });
+}
+
 export const StorageOverview: React.FC<StorageOverviewProps> = ({
   DiskSizeTierSummary,
   isExportMode = false,
+  exportAllViews = false,
 }) => {
   const [viewMode, setViewMode] = useState<ViewMode>('vmCount');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -59,41 +111,30 @@ export const StorageOverview: React.FC<StorageOverviewProps> = ({
 
   const chartData = useMemo(() => {
     if (!DiskSizeTierSummary) return [];
-
-    const getTierPrefix = (key: string): string | null => {
-      for (const prefix of Object.keys(TIER_CONFIG)) {
-        if (key.startsWith(prefix)) return prefix;
-      }
-      return null;
-    };
-
-    return Object.entries(DiskSizeTierSummary)
-      .sort(([keyA], [keyB]) => {
-        const prefixA = getTierPrefix(keyA);
-        const prefixB = getTierPrefix(keyB);
-        const orderA = prefixA ? TIER_CONFIG[prefixA].order : 999;
-        const orderB = prefixB ? TIER_CONFIG[prefixB].order : 999;
-        return orderA - orderB;
-      })
-      .map(([key, tier]) => {
-        const prefix = getTierPrefix(key);
-        const config = prefix
-          ? TIER_CONFIG[prefix]
-          : { label: key, legendCategory: 'Unknown' };
-
-        const count =
-          viewMode === 'totalSize' ? tier.totalSizeTB : tier.vmCount;
-        const countDisplay =
-          viewMode === 'totalSize' ? `${count} TB` : `${count} VMs`;
-
-        return {
-          name: config.label,
-          count,
-          countDisplay,
-          legendCategory: config.legendCategory,
-        };
-      });
+    return buildTierChartData(DiskSizeTierSummary, TIER_CONFIG, (tier) => {
+      const count = viewMode === 'totalSize' ? tier.totalSizeTB : tier.vmCount;
+      return {
+        count,
+        countDisplay: viewMode === 'totalSize' ? `${count} TB` : `${count} VMs`,
+      };
+    });
   }, [DiskSizeTierSummary, viewMode]);
+
+  const chartDataForVmCount = useMemo(() => {
+    if (!exportAllViews || !DiskSizeTierSummary) return [];
+    return buildTierChartData(DiskSizeTierSummary, TIER_CONFIG, (tier) => {
+      const count = tier.vmCount;
+      return { count, countDisplay: `${count} VMs` };
+    });
+  }, [exportAllViews, DiskSizeTierSummary]);
+
+  const chartDataForTotalSize = useMemo(() => {
+    if (!exportAllViews || !DiskSizeTierSummary) return [];
+    return buildTierChartData(DiskSizeTierSummary, TIER_CONFIG, (tier) => {
+      const count = tier.totalSizeTB;
+      return { count, countDisplay: `${count} TB` };
+    });
+  }, [exportAllViews, DiskSizeTierSummary]);
 
   const onDropdownToggle = (): void => {
     setIsDropdownOpen(!isDropdownOpen);
@@ -154,30 +195,77 @@ export const StorageOverview: React.FC<StorageOverviewProps> = ({
         </Flex>
       </CardTitle>
       <CardBody>
-        <MigrationDonutChart
-          data={chartData}
-          height={300}
-          width={420}
-          donutThickness={9}
-          titleFontSize={34}
-          title={
-            viewMode === 'totalSize'
-              ? `${totals.totalSize.toFixed(2)} TB`
-              : `${totals.totalVMs} VMs`
-          }
-          subTitle={
-            viewMode === 'totalSize'
-              ? `${totals.totalVMs} VMs`
-              : `${totals.totalSize.toFixed(2)} TB`
-          }
-          subTitleColor="#9a9da0"
-          itemsPerRow={Math.ceil(chartData.length / 2)}
-          labelFontSize={18}
-          marginLeft={viewMode === 'totalSize' ? '42%' : '52%'}
-          tooltipLabelFormatter={({ datum, percent }) =>
-            `${datum.countDisplay}\n${percent.toFixed(1)}%`
-          }
-        />
+        {!isExportMode || !exportAllViews ? (
+          <MigrationDonutChart
+            data={chartData}
+            height={300}
+            width={420}
+            donutThickness={9}
+            titleFontSize={34}
+            title={
+              viewMode === 'totalSize'
+                ? `${totals.totalSize.toFixed(2)} TB`
+                : `${totals.totalVMs} VMs`
+            }
+            subTitle={
+              viewMode === 'totalSize'
+                ? `${totals.totalVMs} VMs`
+                : `${totals.totalSize.toFixed(2)} TB`
+            }
+            subTitleColor="#9a9da0"
+            itemsPerRow={Math.ceil(chartData.length / 2)}
+            labelFontSize={18}
+            marginLeft={viewMode === 'totalSize' ? '42%' : '52%'}
+            tooltipLabelFormatter={({ datum, percent }) =>
+              `${datum.countDisplay}\n${percent.toFixed(1)}%`
+            }
+          />
+        ) : (
+          <>
+            <div style={{ marginBottom: '24px' }}>
+              <div style={{ fontWeight: 600, marginBottom: 8 }}>
+                {VIEW_MODE_LABELS['vmCount']}
+              </div>
+              <MigrationDonutChart
+                data={chartDataForVmCount}
+                height={300}
+                width={420}
+                donutThickness={9}
+                titleFontSize={34}
+                title={`${totals.totalVMs} VMs`}
+                subTitle={`${totals.totalSize.toFixed(2)} TB`}
+                subTitleColor="#9a9da0"
+                itemsPerRow={Math.ceil(chartDataForVmCount.length / 2)}
+                labelFontSize={18}
+                marginLeft="52%"
+                tooltipLabelFormatter={({ datum, percent }) =>
+                  `${datum.countDisplay}\n${percent.toFixed(1)}%`
+                }
+              />
+            </div>
+            <div>
+              <div style={{ fontWeight: 600, marginBottom: 8 }}>
+                {VIEW_MODE_LABELS['totalSize']}
+              </div>
+              <MigrationDonutChart
+                data={chartDataForTotalSize}
+                height={300}
+                width={420}
+                donutThickness={9}
+                titleFontSize={34}
+                title={`${totals.totalSize.toFixed(2)} TB`}
+                subTitle={`${totals.totalVMs} VMs`}
+                subTitleColor="#9a9da0"
+                itemsPerRow={Math.ceil(chartDataForTotalSize.length / 2)}
+                labelFontSize={18}
+                marginLeft="42%"
+                tooltipLabelFormatter={({ datum, percent }) =>
+                  `${datum.countDisplay}\n${percent.toFixed(1)}%`
+                }
+              />
+            </div>
+          </>
+        )}
       </CardBody>
     </Card>
   );

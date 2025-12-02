@@ -27,7 +27,7 @@ export const InfrastructureOverview: React.FC<Props> = ({
 }) => (
   <Gallery hasGutter minWidths={{ default: '30%' }}>
     <GalleryItem>
-      <Card className="dashboard-card-border">
+      <Card className="dashboard-card-border" id="hosts">
         <CardTitle>
           <ClusterIcon /> Hosts
         </CardTitle>
@@ -35,7 +35,7 @@ export const InfrastructureOverview: React.FC<Props> = ({
       </Card>
     </GalleryItem>
     <GalleryItem>
-      <Card className="dashboard-card-border">
+      <Card className="dashboard-card-border" id="cpu-cores">
         <CardTitle>
           <i className="fas fa-microchip" /> CPU Cores
         </CardTitle>
@@ -43,7 +43,7 @@ export const InfrastructureOverview: React.FC<Props> = ({
       </Card>
     </GalleryItem>
     <GalleryItem>
-      <Card className="dashboard-card-border">
+      <Card className="dashboard-card-border" id="total-memory">
         <CardTitle>
           <i className="fas fa-memory" /> Total Memory
         </CardTitle>

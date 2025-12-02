@@ -4,10 +4,7 @@ import jsPDF from 'jspdf';
 import type { Root } from 'react-dom/client';
 import { createRoot } from 'react-dom/client';
 
-import type {
-  Inventory,
-  Source,
-} from '@migration-planner-ui/api-client/models';
+import type { Source } from '@migration-planner-ui/api-client/models';
 import {
   Alert,
   Dropdown,
@@ -131,6 +128,7 @@ interface EnhancedDownloadButtonProps {
   componentToRender: React.ReactNode;
   sourceData?: Source;
   snapshot?: SnapshotLike;
+  documentTitle?: string;
 }
 
 const EnhancedDownloadButton: React.FC<EnhancedDownloadButtonProps> = ({
@@ -138,6 +136,7 @@ const EnhancedDownloadButton: React.FC<EnhancedDownloadButtonProps> = ({
   componentToRender,
   sourceData,
   snapshot,
+  documentTitle,
 }): JSX.Element => {
   const hiddenContainerRef = useRef<HTMLDivElement | null>(null);
   const [loadingState, setLoadingState] = useState<LoadingState>('idle');
@@ -168,6 +167,7 @@ const EnhancedDownloadButton: React.FC<EnhancedDownloadButtonProps> = ({
       hiddenContainer.innerHTML = '';
 
       tempDiv = document.createElement('div');
+      tempDiv.id = 'hidden-container';
       hiddenContainer.appendChild(tempDiv);
       root = createRoot(tempDiv);
       root.render(componentToRender);
@@ -176,8 +176,45 @@ const EnhancedDownloadButton: React.FC<EnhancedDownloadButtonProps> = ({
         setTimeout(resolve, EXPORT_CONFIG.CANVAS_TIMEOUT),
       );
 
+      const style = document.createElement('style');
+      style.textContent = `
+        #hidden-container .dashboard-card-print, #hidden-container .pf-v6-c-card, #hidden-container [data-export-block] {
+          page-break-inside: avoid !important;
+          break-inside: avoid !important;
+          margin-top: 80px !important;
+          border: none !important;
+          box-shadow: none !important;
+          padding: 0 !important;
+        }
+        #hidden-container .dashboard-card, #hidden-container .pf-v6-c-card, #hidden-container [data-export-block] {
+          page-break-inside: avoid !important;
+          break-inside: avoid !important;
+          margin-top: 80px !important;
+          border: none !important;
+          box-shadow: none !important;
+          padding: 0 !important;
+        }
+      `;
+      hiddenContainer.appendChild(style);
+      // Collect DOM block boundaries to avoid slicing charts/cards across pages
+      const hiddenContainerRect =
+        hiddenContainer.getBoundingClientRect() as DOMRect;
+      const domBlocks = Array.from(
+        hiddenContainer.querySelectorAll<HTMLElement>(
+          '.dashboard-card-print, .pf-v6-c-card',
+        ),
+      )
+        .map((el) => {
+          const r = el.getBoundingClientRect();
+          const top = Math.max(0, r.top - hiddenContainerRect.top);
+          const bottom = Math.max(top, r.bottom - hiddenContainerRect.top);
+          const height = bottom - top;
+          return { top, bottom, height };
+        })
+        .filter((b) => b.height > 4) // ignore trivial blocks
+        .sort((a, b) => a.top - b.top);
+
       const canvas = await html2canvas(hiddenContainer, { useCORS: true });
-      const imgData = canvas.toDataURL('image/png');
       const pdf = new jsPDF('p', 'mm', 'a4');
 
       const pageWidth = pdf.internal.pageSize.getWidth();
@@ -190,20 +227,285 @@ const EnhancedDownloadButton: React.FC<EnhancedDownloadButtonProps> = ({
       const imgWidth = canvas.width;
       const imgHeight = canvas.height;
 
-      const scaleFactor = Math.min(
-        contentWidth / imgWidth,
-        contentHeight / imgHeight,
-      );
+      // Scale so the width fits the printable area.
+      const scaleFactor = contentWidth / imgWidth;
+      const pageHeightPx = contentHeight / scaleFactor; // height in source pixels that fits one page
+      const domToCanvasScale =
+        imgWidth / Math.max(1, hiddenContainer.clientWidth);
+      const blocksPx = domBlocks.map((b) => ({
+        top: b.top * domToCanvasScale,
+        bottom: b.bottom * domToCanvasScale,
+        height: b.height * domToCanvasScale,
+      }));
+      // Small guard to avoid bleeding of the next block's border/shadow into the current page
+      const BLEED_GUARD_PX = Math.max(0, Math.round(6 * domToCanvasScale));
 
-      pdf.addImage(
-        imgData,
-        'PNG',
-        margin,
-        margin,
-        imgWidth * scaleFactor,
-        imgHeight * scaleFactor,
+      // 1) Cover + TOC page
+      pdf.setFillColor(255, 255, 255);
+      pdf.rect(0, 0, pageWidth, pageHeight, 'F');
+      pdf.setFontSize(18);
+      const headerTitle =
+        documentTitle && documentTitle.trim().length > 0
+          ? documentTitle
+          : 'VMware Infrastructure Assessment Report';
+      pdf.text(headerTitle, pageWidth / 2, margin + 8, {
+        align: 'center',
+      });
+      pdf.setFontSize(11);
+      pdf.text(
+        `Generated: ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}`,
+        pageWidth / 2,
+        margin + 18,
+        { align: 'center' },
       );
-      pdf.save(EXPORT_CONFIG.PDF_FILENAME);
+      pdf.setFontSize(14);
+      pdf.text('Table of contents', margin, margin + 32);
+      pdf.setFontSize(11);
+      const tocItems = [
+        '- Infrastructure overview',
+        '- VM migration status',
+        '- Operating system distribution',
+        '- Disks (VM count by disk size tier)',
+        '- Disks (Total disk size by tier)',
+        '- Clusters (VM distribution by cluster)',
+        '- Clusters (Cluster distribution by data center)',
+        '- Migration warnings',
+        '- Errors',
+      ];
+      let tocY = margin + 42;
+      tocItems.forEach((line) => {
+        if (tocY > pageHeight - margin - 10) {
+          pdf.addPage();
+          tocY = margin;
+        }
+        pdf.text(line, margin, tocY);
+        tocY += 7;
+      });
+
+      // Move to first content page
+      pdf.addPage();
+
+      // Try to segment by specific GridItems if present:
+      // Page 2: blocks 1+2; Page 3: block 3; Page 4: block 4
+      type Segment = { top: number; height: number };
+      const SEGMENT_PADDING_PX = 12 * domToCanvasScale;
+      const getBlockByIndex = (
+        idx: number,
+      ): { top: number; bottom: number } | null => {
+        const el = hiddenContainer.querySelector<HTMLElement>(
+          `[data-export-block="${idx}"]`,
+        );
+        if (!el) return null;
+        const r = el.getBoundingClientRect();
+        const top =
+          Math.max(0, r.top - hiddenContainerRect.top) * domToCanvasScale;
+        const bottom =
+          Math.max(top, r.bottom - hiddenContainerRect.top) * domToCanvasScale;
+        return { top, bottom };
+      };
+      const b1 = getBlockByIndex(1);
+      const b2 = getBlockByIndex(2);
+      const b3 = getBlockByIndex(3);
+      const b4 = getBlockByIndex(4);
+
+      let customSegments: Segment[] | null = null;
+      if (b1 && b2 && b3 && b4) {
+        const firstTop = Math.max(
+          0,
+          Math.min(b1.top, b2.top) - SEGMENT_PADDING_PX,
+        );
+        const firstBottom = Math.min(
+          imgHeight,
+          Math.max(b1.bottom, b2.bottom) + SEGMENT_PADDING_PX,
+        );
+        customSegments = [
+          {
+            top: firstTop,
+            height: Math.max(1, firstBottom - firstTop),
+          },
+          {
+            top: Math.max(0, b3.top - SEGMENT_PADDING_PX),
+            height: Math.max(
+              1,
+              Math.min(imgHeight, b3.bottom + SEGMENT_PADDING_PX) -
+                Math.max(0, b3.top - SEGMENT_PADDING_PX),
+            ),
+          },
+          {
+            top: Math.max(0, b4.top - SEGMENT_PADDING_PX),
+            height: Math.max(
+              1,
+              Math.min(imgHeight, b4.bottom + SEGMENT_PADDING_PX) -
+                Math.max(0, b4.top - SEGMENT_PADDING_PX),
+            ),
+          },
+        ];
+      }
+
+      // Compute slice heights choosing the nearest block boundary to each page target.
+      // This minimizes large blanks while still avoiding cutting through blocks.
+      const sliceHeights: number[] = [];
+      if (blocksPx.length === 0) {
+        let remaining = imgHeight;
+        while (remaining > 0) {
+          const h = Math.min(pageHeightPx, remaining);
+          sliceHeights.push(h);
+          remaining -= h;
+        }
+      } else {
+        // Pre-compute unique block bottoms for quick lookups
+        const boundaries = Array.from(
+          new Set(blocksPx.map((b) => Math.round(b.bottom))),
+        )
+          .filter((v) => v > 0 && v <= imgHeight)
+          .sort((a, b) => a - b);
+        if (boundaries[boundaries.length - 1] !== imgHeight) {
+          boundaries.push(imgHeight);
+        }
+        let y = 0;
+        const MIN_ADVANCE = 32; // px in canvas space to always move forward
+        const MAX_LOOP_GUARD = 2000;
+        let guard = 0;
+        while (y < imgHeight && guard++ < MAX_LOOP_GUARD) {
+          const target = y + pageHeightPx;
+          // Choose the bottom of the LAST block that STARTS before the target.
+          // This guarantees we never include the start of the next block on the current page.
+          const eligibleBottoms = blocksPx
+            .filter(
+              (b) =>
+                b.top <= target - MIN_ADVANCE && b.bottom >= y + MIN_ADVANCE,
+            )
+            .map((b) => Math.round(b.bottom))
+            .sort((a, b) => a - b);
+          let cut: number;
+          if (eligibleBottoms.length > 0) {
+            const lastBottom = eligibleBottoms[eligibleBottoms.length - 1];
+            const guarded = Math.max(
+              y + MIN_ADVANCE,
+              lastBottom - BLEED_GUARD_PX,
+            );
+            cut = Math.min(imgHeight, guarded);
+          } else {
+            // Fallback: cut at target (may split a very tall single block)
+            cut = Math.min(
+              imgHeight,
+              Math.max(y + MIN_ADVANCE, Math.round(target)),
+            );
+          }
+          const height = Math.max(1, cut - y);
+          sliceHeights.push(height);
+          y += height;
+        }
+      }
+
+      if (customSegments && customSegments.length === 3) {
+        for (let i = 0; i < customSegments.length; i++) {
+          const { top, height } = customSegments[i];
+          const sliceHeightPx = Math.max(1, Math.min(height, imgHeight - top));
+          const pageCanvas = document.createElement('canvas');
+          pageCanvas.width = imgWidth;
+          pageCanvas.height = sliceHeightPx;
+          const ctx = pageCanvas.getContext('2d');
+          if (!ctx) throw new Error('Canvas 2D context unavailable');
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(0, 0, pageCanvas.width, pageCanvas.height);
+          ctx.drawImage(
+            canvas,
+            0,
+            top,
+            imgWidth,
+            sliceHeightPx,
+            0,
+            0,
+            imgWidth,
+            sliceHeightPx,
+          );
+          const imgDataPage = pageCanvas.toDataURL('image/png');
+          const pageScale = Math.min(
+            contentWidth / imgWidth,
+            contentHeight / sliceHeightPx,
+          );
+          const renderWidthMm = imgWidth * pageScale;
+          const renderHeightMm = sliceHeightPx * pageScale;
+          pdf.addImage(
+            imgDataPage,
+            'PNG',
+            margin + (contentWidth - renderWidthMm) / 2,
+            margin,
+            renderWidthMm,
+            renderHeightMm,
+          );
+          if (i < customSegments.length - 1) {
+            pdf.addPage();
+          }
+        }
+      } else {
+        let consumedPx = 0;
+        for (let pageIndex = 0; pageIndex < sliceHeights.length; pageIndex++) {
+          const sliceHeightPx = sliceHeights[pageIndex];
+          const pageCanvas = document.createElement('canvas');
+          pageCanvas.width = imgWidth;
+          pageCanvas.height = sliceHeightPx;
+          const ctx = pageCanvas.getContext('2d');
+          if (!ctx) throw new Error('Canvas 2D context unavailable');
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(0, 0, pageCanvas.width, pageCanvas.height);
+          const sy = consumedPx;
+          ctx.drawImage(
+            canvas,
+            0,
+            sy,
+            imgWidth,
+            sliceHeightPx,
+            0,
+            0,
+            imgWidth,
+            sliceHeightPx,
+          );
+          const imgDataPage = pageCanvas.toDataURL('image/png');
+          const pageScale = Math.min(
+            contentWidth / imgWidth,
+            contentHeight / sliceHeightPx,
+          );
+          const renderWidthMm = imgWidth * pageScale;
+          const renderHeightMm = sliceHeightPx * pageScale;
+          pdf.addImage(
+            imgDataPage,
+            'PNG',
+            margin + (contentWidth - renderWidthMm) / 2,
+            margin,
+            renderWidthMm,
+            renderHeightMm,
+          );
+          consumedPx += sliceHeightPx;
+          if (consumedPx < imgHeight) {
+            pdf.addPage();
+          }
+        }
+      }
+
+      // 3) Footer page numbering
+      // Determine total pages in a TS-safe way
+      // Prefer public getNumberOfPages() when available; fallback to internal pages length
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const anyPdf = pdf as any;
+      const totalPages =
+        typeof anyPdf.getNumberOfPages === 'function'
+          ? anyPdf.getNumberOfPages()
+          : Array.isArray(anyPdf.internal?.pages)
+            ? anyPdf.internal.pages.length
+            : 1;
+      pdf.setFontSize(9);
+      for (let i = 1; i <= totalPages; i++) {
+        pdf.setPage(i);
+        pdf.text(`Page ${i} of ${totalPages}`, pageWidth / 2, pageHeight - 6, {
+          align: 'center',
+        });
+      }
+      const pdfFilename = documentTitle
+        ? `${documentTitle.replace(/\.pdf$/i, '')}.pdf`
+        : EXPORT_CONFIG.PDF_FILENAME;
+      pdf.save(pdfFilename);
 
       setLoadingState('idle');
     } catch (error) {
@@ -260,12 +562,21 @@ const EnhancedDownloadButton: React.FC<EnhancedDownloadButtonProps> = ({
   };
 
   // Generate chart data from inventory
-  const generateChartData = (inventory: Inventory): ChartData => {
-    if (!inventory.vcenter) {
-      throw new Error('VCenter inventory data is not available');
-    }
-    const { infra, vms } = inventory.vcenter as InventoryData;
+  const generateChartData = (
+    inventory: InventoryData | SnapshotLike,
+  ): ChartData => {
+    // Normalize SnapshotLike structure to extract infra/vms
+    const snapshotLike = inventory as SnapshotLike;
+    const infra = (snapshotLike.infra ||
+      snapshotLike.inventory?.infra ||
+      snapshotLike.inventory?.vcenter?.infra) as InfraData;
+    const vms = (snapshotLike.vms ||
+      snapshotLike.inventory?.vms ||
+      snapshotLike.inventory?.vcenter?.vms) as VMsData;
 
+    if (!infra || !vms) {
+      throw new Error('Invalid inventory data structure');
+    }
     const powerStateData = [
       ['Powered On', vms.powerStates.poweredOn || 0],
       ['Powered Off', vms.powerStates.poweredOff || 0],
@@ -481,12 +792,9 @@ const EnhancedDownloadButton: React.FC<EnhancedDownloadButtonProps> = ({
   // Generate complete HTML template with data and scripts
   const generateHTMLTemplate = (
     chartData: ChartData,
-    inventory: Inventory,
+    inventory: InventoryData | SnapshotLike,
   ): string => {
-    if (!inventory.vcenter) {
-      throw new Error('VCenter inventory data is not available');
-    }
-    const { infra, vms } = inventory.vcenter as InventoryData;
+    const { infra, vms } = inventory;
     const {
       powerStateData,
       resourceData,
@@ -871,11 +1179,8 @@ const EnhancedDownloadButton: React.FC<EnhancedDownloadButtonProps> = ({
       }
 
       const { inventory } = sourceData || snapshot;
-      const chartData = generateChartData(inventory as Inventory);
-      const htmlContent = generateHTMLTemplate(
-        chartData,
-        inventory as Inventory,
-      );
+      const chartData = generateChartData(inventory);
+      const htmlContent = generateHTMLTemplate(chartData, inventory);
       downloadHTMLFile(htmlContent, EXPORT_CONFIG.HTML_FILENAME);
       console.log(
         '✅ Comprehensive HTML file with enhanced charts and tables downloaded successfully!',
@@ -906,7 +1211,7 @@ const EnhancedDownloadButton: React.FC<EnhancedDownloadButtonProps> = ({
       label: 'Export HTML',
       description: 'Interactive charts',
       action: handleHTMLExport,
-      disabled: !hasInventoryData,
+      disabled: true,
     },
   ];
 

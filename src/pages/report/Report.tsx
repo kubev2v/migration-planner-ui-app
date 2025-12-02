@@ -193,10 +193,12 @@ const Inner: React.FC = () => {
                     ramGB={ramGB}
                     vms={vms}
                     isExportMode={true}
+                    exportAllViews={true}
                   />
                 }
                 sourceData={discoverySourcesContext.sourceSelected as Source}
                 snapshot={last}
+                documentTitle={`${assessment.name || `Assessment ${id}`}`}
               />
               <Button variant="primary" onClick={openAssistedInstaller}>
                 Create a target cluster

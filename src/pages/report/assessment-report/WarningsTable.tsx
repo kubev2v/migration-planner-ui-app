@@ -18,7 +18,10 @@ export const WarningsTable: React.FC<WarningsTableProps> = ({
 }) => {
   const tableHeight = isExportMode ? '100%' : '325px';
   return (
-    <Card className={isExportMode ? 'dashboard-card-print' : 'dashboard-card'}>
+    <Card
+      className={isExportMode ? 'dashboard-card-print' : 'dashboard-card'}
+      id="warnings-table"
+    >
       <CardTitle>
         <Icon style={{ color: globalWarningColor100.value }}>
           <ExclamationTriangleIcon />

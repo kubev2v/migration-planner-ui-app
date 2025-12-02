@@ -19,7 +19,10 @@ export const OSDistribution: React.FC<OSDistributionProps> = ({
   isExportMode = false,
 }) => {
   return (
-    <Card className={isExportMode ? 'dashboard-card-print' : 'dashboard-card'}>
+    <Card
+      className={isExportMode ? 'dashboard-card-print' : 'dashboard-card'}
+      id="os-distribution"
+    >
       <CardTitle>
         <i className="fas fa-database" /> Operating Systems
       </CardTitle>

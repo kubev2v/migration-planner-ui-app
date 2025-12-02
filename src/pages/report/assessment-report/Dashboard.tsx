@@ -29,6 +29,7 @@ interface Props {
   ramGB: VMResourceBreakdown;
   vms: VMs;
   isExportMode?: boolean;
+  exportAllViews?: boolean;
 }
 
 export const Dashboard: React.FC<Props> = ({
@@ -37,6 +38,7 @@ export const Dashboard: React.FC<Props> = ({
   ramGB,
   vms,
   isExportMode,
+  exportAllViews,
 }) => {
   // Transform osInfo to include both count and supported fields, fallback to os with supported=true if osInfo is undefined
   const osData = vms.osInfo
@@ -64,14 +66,18 @@ export const Dashboard: React.FC<Props> = ({
   return (
     <PageSection hasBodyWrapper={false}>
       <Grid hasGutter>
-        <GridItem span={12} id="infrastructure-overview">
+        <GridItem
+          span={12}
+          id="infrastructure-overview"
+          data-export-block={isExportMode ? '1' : undefined}
+        >
           <InfrastructureOverview
             infra={infra}
             cpuCores={cpuCores}
             ramGB={ramGB}
           />
         </GridItem>
-        <GridItem span={12}>
+        <GridItem span={12} data-export-block={isExportMode ? '2' : undefined}>
           <Gallery hasGutter minWidths={{ default: '40%' }}>
             <GalleryItem>
               <VMMigrationStatus
@@ -87,12 +93,13 @@ export const Dashboard: React.FC<Props> = ({
             </GalleryItem>
           </Gallery>
         </GridItem>
-        <GridItem span={12}>
+        <GridItem span={12} data-export-block={isExportMode ? '3' : undefined}>
           <Gallery hasGutter minWidths={{ default: '40%' }}>
             <GalleryItem>
               <StorageOverview
                 DiskSizeTierSummary={vms.diskSizeTier}
                 isExportMode={isExportMode}
+                exportAllViews={exportAllViews}
               />
             </GalleryItem>
             <GalleryItem>
@@ -100,11 +107,12 @@ export const Dashboard: React.FC<Props> = ({
                 vmsPerCluster={infra.vmsPerCluster}
                 clustersPerDatacenter={infra.clustersPerDatacenter}
                 isExportMode={isExportMode}
+                exportAllViews={exportAllViews}
               />
             </GalleryItem>
           </Gallery>
         </GridItem>
-        <GridItem span={12}>
+        <GridItem span={12} data-export-block={isExportMode ? '4' : undefined}>
           <Gallery hasGutter minWidths={{ default: '300px', md: '45%' }}>
             <GalleryItem>
               <WarningsTable

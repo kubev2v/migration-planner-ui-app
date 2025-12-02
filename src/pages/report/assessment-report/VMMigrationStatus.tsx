@@ -40,6 +40,7 @@ export const VMMigrationStatus: React.FC<VmMigrationStatusProps> = ({
   return (
     <Card
       className={isExportMode ? 'dashboard-card-print' : 'dashboard-card'}
+      id="vm-migration-status"
       style={{ height: '340px !important', overflow: 'hidden' }}
     >
       <CardTitle>
