@@ -46,35 +46,27 @@
   border-radius: 10px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
-.dashboard-card-print {
-  height: 100%;
-  max-height: 1000px;
-  overflow: hidden;
-}
+
 #vm-migration-status {
   height: 500px !important;
   overflow: hidden;
 }
-.dashboard-card-print #os-distribution {
-  height: 2000px !important;
-  max-height: 2000px !important;
+#os-distribution {
+  height: 1500px !important;
+  max-height: 1500px !important;
   overflow: hidden;
 }
-.dashboard-card-print #warnings-table {
-  height: 600px !important;
-  overflow: hidden;
-}
-.dashboard-card-print #errors-table {
-  height: 600px !important;
-  overflow: hidden;
-}
-.table-without-border {
-  border: none !important;
-}
-#clusters-overview.dashboard-card-print {
+
+#clusters-overview,
+#storage-overview,
+#warnings-table,
+#errors-table {
   height: auto !important;
   max-height: none !important;
   overflow: visible !important;
+}
+.table-without-border {
+  border: none !important;
 }
 #hosts,
 #cpu-cores,

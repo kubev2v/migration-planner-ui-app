@@ -58,7 +58,7 @@ export const OSBarChart: React.FC<OSBarChartProps> = ({
     'Not Supported': '#d9534f', // Red
   };
 
-  const tableHeight = isExportMode ? '100%' : '350px';
+  const tableHeight = isExportMode ? 'auto !important' : '350px';
   return (
     <MigrationChart
       data={chartData}

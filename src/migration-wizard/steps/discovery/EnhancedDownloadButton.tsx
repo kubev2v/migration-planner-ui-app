@@ -1208,7 +1208,7 @@ const EnhancedDownloadButton: React.FC<EnhancedDownloadButtonProps> = ({
     },
     {
       key: 'html-interactive',
-      label: 'Export HTML',
+      label: 'Export HTML (coming soon)',
       description: 'Interactive charts',
       action: handleHTMLExport,
       disabled: true,

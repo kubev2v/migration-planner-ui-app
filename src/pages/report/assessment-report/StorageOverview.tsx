@@ -153,6 +153,7 @@ export const StorageOverview: React.FC<StorageOverviewProps> = ({
   return (
     <Card
       className={isExportMode ? 'dashboard-card-print' : 'dashboard-card'}
+      id="storage-overview"
       style={{ overflow: 'hidden' }}
     >
       <CardTitle>
