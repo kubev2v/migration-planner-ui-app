@@ -478,32 +478,80 @@ export const ClustersOverview: React.FC<ClustersOverviewProps> = ({
                 <div style={{ fontWeight: 600, marginBottom: 8 }}>
                   {VIEW_MODE_LABELS['cpuOverCommitment']}
                 </div>
+                {cpuOverCommitmentData.chartData.length === 0 ? (
+                  <div style={{ color: '#6a6e73', textAlign: 'center' }}>
+                    This inventory has no cpuOverCommitment information.
+                  </div>
+                ) : (
+                  <>
+                    <div className="cpu-overcommit__boxes">
+                      {cpuOverCommitmentData.chartData.map((item, idx) => (
+                        <div
+                          key={`cpu-box-export-${idx}`}
+                          className="cpu-overcommit__box"
+                          style={{
+                            background:
+                              cpuOverCommitmentData.legend[item.legendCategory],
+                          }}
+                        >
+                          {item.countDisplay}
+                        </div>
+                      ))}
+                    </div>
+                    <div className="cpu-overcommit__legend">
+                      {cpuOverCommitmentData.chartData.map((item, idx) => (
+                        <div
+                          key={`cpu-legend-export-${idx}`}
+                          className="cpu-overcommit__legend-item"
+                        >
+                          <span
+                            className="cpu-overcommit__legend-swatch"
+                            style={{
+                              background:
+                                cpuOverCommitmentData.legend[
+                                  item.legendCategory
+                                ],
+                            }}
+                          />
+                          <span className="cpu-overcommit__legend-text">
+                            {item.legendCategory} ({item.countDisplay})
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
+          </>
+        ) : viewMode === 'cpuOverCommitment' ? (
+          <>
+            {chartData.length === 0 ? (
+              <div style={{ color: '#6a6e73', textAlign: 'center' }}>
+                This inventory has no cpuOverCommitment information.
+              </div>
+            ) : (
+              <>
                 <div className="cpu-overcommit__boxes">
-                  {cpuOverCommitmentData.chartData.map((item, idx) => (
+                  {chartData.map((item, idx) => (
                     <div
-                      key={`cpu-box-export-${idx}`}
+                      key={`cpu-box-${idx}`}
                       className="cpu-overcommit__box"
-                      style={{
-                        background:
-                          cpuOverCommitmentData.legend[item.legendCategory],
-                      }}
+                      style={{ background: legend[item.legendCategory] }}
                     >
                       {item.countDisplay}
                     </div>
                   ))}
                 </div>
                 <div className="cpu-overcommit__legend">
-                  {cpuOverCommitmentData.chartData.map((item, idx) => (
+                  {chartData.map((item, idx) => (
                     <div
-                      key={`cpu-legend-export-${idx}`}
+                      key={`cpu-legend-${idx}`}
                       className="cpu-overcommit__legend-item"
                     >
                       <span
                         className="cpu-overcommit__legend-swatch"
-                        style={{
-                          background:
-                            cpuOverCommitmentData.legend[item.legendCategory],
-                        }}
+                        style={{ background: legend[item.legendCategory] }}
                       />
                       <span className="cpu-overcommit__legend-text">
                         {item.legendCategory} ({item.countDisplay})
@@ -511,38 +559,8 @@ export const ClustersOverview: React.FC<ClustersOverviewProps> = ({
                     </div>
                   ))}
                 </div>
-              </div>
+              </>
             )}
-          </>
-        ) : viewMode === 'cpuOverCommitment' ? (
-          <>
-            <div className="cpu-overcommit__boxes">
-              {chartData.map((item, idx) => (
-                <div
-                  key={`cpu-box-${idx}`}
-                  className="cpu-overcommit__box"
-                  style={{ background: legend[item.legendCategory] }}
-                >
-                  {item.countDisplay}
-                </div>
-              ))}
-            </div>
-            <div className="cpu-overcommit__legend">
-              {chartData.map((item, idx) => (
-                <div
-                  key={`cpu-legend-${idx}`}
-                  className="cpu-overcommit__legend-item"
-                >
-                  <span
-                    className="cpu-overcommit__legend-swatch"
-                    style={{ background: legend[item.legendCategory] }}
-                  />
-                  <span className="cpu-overcommit__legend-text">
-                    {item.legendCategory} ({item.countDisplay})
-                  </span>
-                </div>
-              ))}
-            </div>
           </>
         ) : (
           <MigrationDonutChart
