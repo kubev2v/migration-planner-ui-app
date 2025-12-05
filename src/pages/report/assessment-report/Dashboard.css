@@ -71,6 +71,11 @@
 .table-without-border {
   border: none !important;
 }
+#clusters-overview.dashboard-card-print {
+  height: auto !important;
+  max-height: none !important;
+  overflow: visible !important;
+}
 #hosts,
 #cpu-cores,
 #total-memory {

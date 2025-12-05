@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
 
+import { InventoryData } from '@migration-planner-ui/api-client/models';
 import {
   Card,
   CardBody,
@@ -15,18 +16,22 @@ import {
 
 import MigrationDonutChart from '../../../components/MigrationDonutChart';
 
+import './ClustersOverview.css';
+
 interface ClustersOverviewProps {
   vmsPerCluster: number[];
   clustersPerDatacenter: number[];
   isExportMode?: boolean;
   exportAllViews?: boolean;
+  clusters?: { [key: string]: InventoryData };
 }
 
-type ViewMode = 'dataCenterDistribution' | 'vmByCluster';
+type ViewMode = 'dataCenterDistribution' | 'vmByCluster' | 'cpuOverCommitment';
 
 const VIEW_MODE_LABELS: Record<ViewMode, string> = {
   dataCenterDistribution: 'Cluster distribution by data center',
   vmByCluster: 'VM distribution by cluster',
+  cpuOverCommitment: 'Cluster CPU over commitment',
 };
 
 // Extended palette to avoid repeating colors when we have >4 slices
@@ -48,6 +53,7 @@ export const ClustersOverview: React.FC<ClustersOverviewProps> = ({
   clustersPerDatacenter,
   isExportMode = false,
   exportAllViews = false,
+  clusters,
 }) => {
   const [viewMode, setViewMode] = useState<ViewMode>('vmByCluster');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -60,6 +66,58 @@ export const ClustersOverview: React.FC<ClustersOverviewProps> = ({
       });
       return legendMap;
     };
+
+    if (viewMode === 'cpuOverCommitment') {
+      const entries = clusters ? Object.entries(clusters) : [];
+
+      const parseCpuOverCommitment = (raw: unknown): number => {
+        if (raw == null) return NaN;
+        if (typeof raw === 'number') return raw;
+        if (typeof raw === 'string') {
+          const match = raw.match(/^\s*\d+\s*:\s*(\d+(?:\.\d+)?)\s*$/);
+          if (match) return Number(match[1]);
+          const asNum = Number(raw);
+          return Number.isFinite(asNum) ? asNum : NaN;
+        }
+        return NaN;
+      };
+
+      const withValue = entries
+        .map(([clusterName, data]) => {
+          const raw = (
+            (data as InventoryData)?.infra as unknown as {
+              cpuOverCommitment?: unknown;
+            }
+          )?.cpuOverCommitment;
+          const value = parseCpuOverCommitment(raw);
+          return { clusterName, value };
+        })
+        .filter((item) => Number.isFinite(item.value) && item.value >= 0)
+        .sort((a, b) => b.value - a.value);
+
+      const TOP_N = 5;
+      const top = withValue.slice(0, TOP_N);
+
+      const formatRatio = (r: number): string => {
+        const formatted = r % 1 === 0 ? r.toFixed(0) : r.toFixed(2);
+        return `1:${formatted.replace(/(?:\.0+|(\.\d*[1-9]))0+$/, '$1')}`;
+      };
+
+      const slices = top.map((item, idx) => ({
+        name: formatRatio(item.value),
+        count: item.value,
+        countDisplay: formatRatio(item.value),
+        legendCategory: `Cluster ${idx + 1}`,
+      }));
+
+      const legendCategories = slices.map((s) => s.legendCategory);
+      return {
+        chartData: slices,
+        legend: buildLegend(legendCategories),
+        title: '',
+        subTitle: '',
+      };
+    }
 
     if (viewMode === 'vmByCluster') {
       const counts = Array.isArray(vmsPerCluster) ? [...vmsPerCluster] : [];
@@ -137,7 +195,7 @@ export const ClustersOverview: React.FC<ClustersOverviewProps> = ({
       title: `${totalClusters}`,
       subTitle: 'Clusters',
     };
-  }, [viewMode, vmsPerCluster, clustersPerDatacenter]);
+  }, [viewMode, vmsPerCluster, clustersPerDatacenter, clusters]);
 
   const vmByClusterData = useMemo(() => {
     if (!exportAllViews) return null;
@@ -229,6 +287,55 @@ export const ClustersOverview: React.FC<ClustersOverviewProps> = ({
     };
   }, [exportAllViews, clustersPerDatacenter]);
 
+  const cpuOverCommitmentData = useMemo(() => {
+    if (!exportAllViews) return null;
+    const entries = clusters ? Object.entries(clusters) : [];
+    const parseCpuOverCommitment = (raw: unknown): number => {
+      if (raw == null) return NaN;
+      if (typeof raw === 'number') return raw;
+      if (typeof raw === 'string') {
+        const match = raw.match(/^\s*\d+\s*:\s*(\d+(?:\.\d+)?)\s*$/);
+        if (match) return Number(match[1]);
+        const asNum = Number(raw);
+        return Number.isFinite(asNum) ? asNum : NaN;
+      }
+      return NaN;
+    };
+    const withValue = entries
+      .map(([clusterName, data]) => {
+        const raw = (
+          (data as InventoryData)?.infra as unknown as {
+            cpuOverCommitment?: unknown;
+          }
+        )?.cpuOverCommitment;
+        const value = parseCpuOverCommitment(raw);
+        return { clusterName, value };
+      })
+      .filter((item) => Number.isFinite(item.value) && item.value >= 0)
+      .sort((a, b) => b.value - a.value);
+    const TOP_N = 5;
+    const top = withValue.slice(0, TOP_N);
+    const formatRatio = (r: number): string => {
+      const formatted = r % 1 === 0 ? r.toFixed(0) : r.toFixed(2);
+      return `1:${formatted.replace(/(?:\.0+|(\.\d*[1-9]))0+$/, '$1')}`;
+    };
+    const slices = top.map((item, idx) => ({
+      name: formatRatio(item.value),
+      count: item.value,
+      countDisplay: formatRatio(item.value),
+      legendCategory: `Cluster ${idx + 1}`,
+    }));
+    const legendCategories = slices.map((s) => s.legendCategory);
+    const legendMap: Record<string, string> = {};
+    legendCategories.forEach((cat, idx) => {
+      legendMap[cat] = colorPalette[idx % colorPalette.length];
+    });
+    return {
+      chartData: slices,
+      legend: legendMap,
+    };
+  }, [exportAllViews, clusters]);
+
   const onDropdownToggle = (): void => {
     setIsDropdownOpen(!isDropdownOpen);
   };
@@ -237,7 +344,11 @@ export const ClustersOverview: React.FC<ClustersOverviewProps> = ({
     _event: React.MouseEvent<Element, MouseEvent> | undefined,
     value: string | number | undefined,
   ): void => {
-    if (value === 'dataCenterDistribution' || value === 'vmByCluster') {
+    if (
+      value === 'dataCenterDistribution' ||
+      value === 'vmByCluster' ||
+      value === 'cpuOverCommitment'
+    ) {
       setViewMode(value);
     }
     setIsDropdownOpen(false);
@@ -246,6 +357,8 @@ export const ClustersOverview: React.FC<ClustersOverviewProps> = ({
   return (
     <Card
       className={isExportMode ? 'dashboard-card-print' : 'dashboard-card'}
+      id="clusters-overview"
+      data-export-block={isExportMode ? '3.1' : undefined}
       style={{ overflow: 'hidden' }}
     >
       <CardTitle>
@@ -261,9 +374,9 @@ export const ClustersOverview: React.FC<ClustersOverviewProps> = ({
               </div>
               {!isExportMode && (
                 <div style={{ color: '#6a6e73', fontSize: '0.85rem' }}>
-                  {viewMode === 'vmByCluster'
-                    ? 'Top 5 clusters'
-                    : `Top 5 datacenters`}
+                  {viewMode === 'dataCenterDistribution'
+                    ? 'Top 5 datacenters'
+                    : 'Top 5 clusters'}
                 </div>
               )}
             </div>
@@ -290,6 +403,12 @@ export const ClustersOverview: React.FC<ClustersOverviewProps> = ({
                     VM distribution by cluster
                   </DropdownItem>
                   <DropdownItem
+                    key="cpuOverCommitment"
+                    value="cpuOverCommitment"
+                  >
+                    Cluster CPU over commitment
+                  </DropdownItem>
+                  <DropdownItem
                     key="dataCenterDistribution"
                     value="dataCenterDistribution"
                   >
@@ -302,25 +421,7 @@ export const ClustersOverview: React.FC<ClustersOverviewProps> = ({
         </Flex>
       </CardTitle>
       <CardBody>
-        {!isExportMode || !exportAllViews ? (
-          <MigrationDonutChart
-            data={chartData}
-            height={300}
-            width={420}
-            donutThickness={9}
-            titleFontSize={34}
-            legend={legend}
-            title={title}
-            subTitle={subTitle}
-            subTitleColor="#9a9da0"
-            itemsPerRow={Math.ceil(chartData.length / 2)}
-            labelFontSize={viewMode === 'vmByCluster' ? 18 : 17}
-            marginLeft={viewMode === 'vmByCluster' ? '12%' : '0%'}
-            tooltipLabelFormatter={({ datum, percent }) =>
-              `${datum.countDisplay}\n${percent.toFixed(1)}%`
-            }
-          />
-        ) : (
+        {isExportMode && exportAllViews ? (
           <>
             {vmByClusterData && (
               <div style={{ marginBottom: '24px' }}>
@@ -372,7 +473,95 @@ export const ClustersOverview: React.FC<ClustersOverviewProps> = ({
                 />
               </div>
             )}
+            {cpuOverCommitmentData && (
+              <div style={{ marginTop: '24px' }}>
+                <div style={{ fontWeight: 600, marginBottom: 8 }}>
+                  {VIEW_MODE_LABELS['cpuOverCommitment']}
+                </div>
+                <div className="cpu-overcommit__boxes">
+                  {cpuOverCommitmentData.chartData.map((item, idx) => (
+                    <div
+                      key={`cpu-box-export-${idx}`}
+                      className="cpu-overcommit__box"
+                      style={{
+                        background:
+                          cpuOverCommitmentData.legend[item.legendCategory],
+                      }}
+                    >
+                      {item.countDisplay}
+                    </div>
+                  ))}
+                </div>
+                <div className="cpu-overcommit__legend">
+                  {cpuOverCommitmentData.chartData.map((item, idx) => (
+                    <div
+                      key={`cpu-legend-export-${idx}`}
+                      className="cpu-overcommit__legend-item"
+                    >
+                      <span
+                        className="cpu-overcommit__legend-swatch"
+                        style={{
+                          background:
+                            cpuOverCommitmentData.legend[item.legendCategory],
+                        }}
+                      />
+                      <span className="cpu-overcommit__legend-text">
+                        {item.legendCategory} ({item.countDisplay})
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </>
+        ) : viewMode === 'cpuOverCommitment' ? (
+          <>
+            <div className="cpu-overcommit__boxes">
+              {chartData.map((item, idx) => (
+                <div
+                  key={`cpu-box-${idx}`}
+                  className="cpu-overcommit__box"
+                  style={{ background: legend[item.legendCategory] }}
+                >
+                  {item.countDisplay}
+                </div>
+              ))}
+            </div>
+            <div className="cpu-overcommit__legend">
+              {chartData.map((item, idx) => (
+                <div
+                  key={`cpu-legend-${idx}`}
+                  className="cpu-overcommit__legend-item"
+                >
+                  <span
+                    className="cpu-overcommit__legend-swatch"
+                    style={{ background: legend[item.legendCategory] }}
+                  />
+                  <span className="cpu-overcommit__legend-text">
+                    {item.legendCategory} ({item.countDisplay})
+                  </span>
+                </div>
+              ))}
+            </div>
+          </>
+        ) : (
+          <MigrationDonutChart
+            data={chartData}
+            height={300}
+            width={420}
+            donutThickness={9}
+            titleFontSize={34}
+            legend={legend}
+            title={title}
+            subTitle={subTitle}
+            subTitleColor="#9a9da0"
+            itemsPerRow={Math.ceil(chartData.length / 2)}
+            labelFontSize={viewMode === 'vmByCluster' ? 18 : 17}
+            marginLeft={viewMode === 'vmByCluster' ? '12%' : '0%'}
+            tooltipLabelFormatter={({ datum, percent }) =>
+              `${datum.countDisplay}\n${percent.toFixed(1)}%`
+            }
+          />
         )}
       </CardBody>
     </Card>

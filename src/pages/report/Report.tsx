@@ -4,6 +4,7 @@ import { useMount } from 'react-use';
 
 import {
   Infra,
+  InventoryData,
   Source,
   VMResourceBreakdown,
   VMs,
@@ -44,6 +45,7 @@ export type SnapshotLike = {
       infra?: Infra;
       vms?: VMs;
     };
+    clusters?: { [key: string]: InventoryData };
   };
 };
 
@@ -132,6 +134,7 @@ const Inner: React.FC = () => {
   const ramGB = (vms as VMs | undefined)?.ramGB as
     | VMResourceBreakdown
     | undefined;
+  const clusters = last.inventory?.clusters;
 
   // Derive last updated text from latest snapshot
   const lastUpdatedText: string = ((): string => {
@@ -194,6 +197,7 @@ const Inner: React.FC = () => {
                     vms={vms}
                     isExportMode={true}
                     exportAllViews={true}
+                    clusters={clusters}
                   />
                 }
                 sourceData={discoverySourcesContext.sourceSelected as Source}
@@ -209,7 +213,13 @@ const Inner: React.FC = () => {
       }
     >
       {infra && vms && cpuCores && ramGB ? (
-        <Dashboard infra={infra} cpuCores={cpuCores} ramGB={ramGB} vms={vms} />
+        <Dashboard
+          infra={infra}
+          cpuCores={cpuCores}
+          ramGB={ramGB}
+          vms={vms}
+          clusters={clusters}
+        />
       ) : (
         <Bullseye>
           <Content>

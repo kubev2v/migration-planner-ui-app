@@ -2,6 +2,7 @@ import React from 'react';
 
 import {
   Infra,
+  InventoryData,
   VMResourceBreakdown,
   VMs,
 } from '@migration-planner-ui/api-client/models';
@@ -30,6 +31,7 @@ interface Props {
   vms: VMs;
   isExportMode?: boolean;
   exportAllViews?: boolean;
+  clusters?: { [key: string]: InventoryData };
 }
 
 export const Dashboard: React.FC<Props> = ({
@@ -39,6 +41,7 @@ export const Dashboard: React.FC<Props> = ({
   vms,
   isExportMode,
   exportAllViews,
+  clusters,
 }) => {
   // Transform osInfo to include both count and supported fields, fallback to os with supported=true if osInfo is undefined
   const osData = vms.osInfo
@@ -108,6 +111,7 @@ export const Dashboard: React.FC<Props> = ({
                 clustersPerDatacenter={infra.clustersPerDatacenter}
                 isExportMode={isExportMode}
                 exportAllViews={exportAllViews}
+                clusters={clusters}
               />
             </GalleryItem>
           </Gallery>
