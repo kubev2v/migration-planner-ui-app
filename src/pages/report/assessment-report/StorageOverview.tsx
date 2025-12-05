@@ -1,10 +1,23 @@
 import React, { useMemo, useState } from 'react';
 
-import { DiskSizeTierSummary } from '@migration-planner-ui/api-client/models';
+import {
+  DiskSizeTierSummary,
+  DiskTypeSummary,
+} from '@migration-planner-ui/api-client/models';
+import {
+  Chart,
+  ChartAxis,
+  ChartBar,
+  ChartThemeColor,
+  ChartTooltip,
+  ChartVoronoiContainer,
+  getCustomTheme,
+} from '@patternfly/react-charts';
 import {
   Card,
   CardBody,
   CardTitle,
+  Content,
   Dropdown,
   DropdownItem,
   DropdownList,
@@ -20,13 +33,15 @@ interface StorageOverviewProps {
   DiskSizeTierSummary: { [key: string]: DiskSizeTierSummary };
   isExportMode?: boolean;
   exportAllViews?: boolean;
+  diskTypeSummary?: { [key: string]: DiskTypeSummary };
 }
 
-type ViewMode = 'totalSize' | 'vmCount';
+type ViewMode = 'totalSize' | 'vmCount' | 'vmCountByDiskType';
 
 const VIEW_MODE_LABELS: Record<ViewMode, string> = {
   totalSize: 'Total disk size by tier',
   vmCount: 'VM count by disk size tier',
+  vmCountByDiskType: 'VM count by disk type',
 };
 
 const TIER_CONFIG: Record<
@@ -93,6 +108,7 @@ export const StorageOverview: React.FC<StorageOverviewProps> = ({
   DiskSizeTierSummary,
   isExportMode = false,
   exportAllViews = false,
+  diskTypeSummary,
 }) => {
   const [viewMode, setViewMode] = useState<ViewMode>('vmCount');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -120,6 +136,23 @@ export const StorageOverview: React.FC<StorageOverviewProps> = ({
     });
   }, [DiskSizeTierSummary, viewMode]);
 
+  const diskTypeChartData = useMemo(() => {
+    if (!diskTypeSummary || Object.keys(diskTypeSummary).length === 0)
+      return [];
+    const preferredOrder = ['VMFS', 'NFS', 'vSAN', 'RDM', 'vVols'];
+    const orderIndex = (name: string): number => {
+      const idx = preferredOrder.indexOf(name);
+      return idx === -1 ? Number.MAX_SAFE_INTEGER : idx;
+    };
+    return Object.entries(diskTypeSummary)
+      .map(([diskTypeName, summary]) => ({
+        name: diskTypeName,
+        count: summary.vmCount,
+        legendCategory: 'Disk types',
+      }))
+      .sort((a, b) => orderIndex(a.name) - orderIndex(b.name));
+  }, [diskTypeSummary]);
+
   const chartDataForVmCount = useMemo(() => {
     if (!exportAllViews || !DiskSizeTierSummary) return [];
     return buildTierChartData(DiskSizeTierSummary, TIER_CONFIG, (tier) => {
@@ -140,15 +173,50 @@ export const StorageOverview: React.FC<StorageOverviewProps> = ({
     setIsDropdownOpen(!isDropdownOpen);
   };
 
+  const maxDiskTypeCount = useMemo(() => {
+    if (!diskTypeChartData || diskTypeChartData.length === 0) return 0;
+    return diskTypeChartData.reduce(
+      (max, item) => (item.count > max ? item.count : max),
+      0,
+    );
+  }, [diskTypeChartData]);
+
+  // Distinct colors per bar, matching the visual style used elsewhere
+  const diskTypeBarColors = [
+    '#0066cc',
+    '#5e40be',
+    '#b6a6e9',
+    '#b98412',
+    '#73C5C5',
+  ];
+
   const onSelect = (
     _event: React.MouseEvent<Element, MouseEvent> | undefined,
     value: string | number | undefined,
   ): void => {
-    if (value === 'totalSize' || value === 'vmCount') {
+    if (
+      value === 'totalSize' ||
+      value === 'vmCount' ||
+      value === 'vmCountByDiskType'
+    ) {
       setViewMode(value);
     }
     setIsDropdownOpen(false);
   };
+
+  const smallFontTheme = getCustomTheme(ChartThemeColor.multiUnordered, {
+    axis: {
+      style: {
+        tickLabels: { fontSize: 8 },
+        axisLabel: { fontSize: 8 },
+      },
+    },
+    legend: {
+      style: {
+        labels: { fontSize: 8 },
+      },
+    },
+  });
 
   return (
     <Card
@@ -186,6 +254,12 @@ export const StorageOverview: React.FC<StorageOverviewProps> = ({
                   <DropdownItem key="vmCount" value="vmCount">
                     VM count by disk size tier
                   </DropdownItem>
+                  <DropdownItem
+                    key="vmCountByDiskType"
+                    value="vmCountByDiskType"
+                  >
+                    VM count by disk type
+                  </DropdownItem>
                   <DropdownItem key="totalSize" value="totalSize">
                     Total disk size by tier
                   </DropdownItem>
@@ -197,30 +271,98 @@ export const StorageOverview: React.FC<StorageOverviewProps> = ({
       </CardTitle>
       <CardBody>
         {!isExportMode || !exportAllViews ? (
-          <MigrationDonutChart
-            data={chartData}
-            height={300}
-            width={420}
-            donutThickness={9}
-            titleFontSize={34}
-            title={
-              viewMode === 'totalSize'
-                ? `${totals.totalSize.toFixed(2)} TB`
-                : `${totals.totalVMs} VMs`
-            }
-            subTitle={
-              viewMode === 'totalSize'
-                ? `${totals.totalVMs} VMs`
-                : `${totals.totalSize.toFixed(2)} TB`
-            }
-            subTitleColor="#9a9da0"
-            itemsPerRow={Math.ceil(chartData.length / 2)}
-            labelFontSize={18}
-            marginLeft={viewMode === 'totalSize' ? '42%' : '52%'}
-            tooltipLabelFormatter={({ datum, percent }) =>
-              `${datum.countDisplay}\n${percent.toFixed(1)}%`
-            }
-          />
+          viewMode === 'vmCountByDiskType' ? (
+            <>
+              <Chart
+                ariaTitle="VM count by disk type"
+                ariaDesc="Vertical bar chart of VM counts grouped by disk type"
+                theme={smallFontTheme}
+                containerComponent={
+                  <ChartVoronoiContainer
+                    responsive
+                    labels={({ datum }) => `${datum.x}: ${Number(datum.y)} VMs`}
+                    constrainToVisibleArea
+                    labelComponent={<ChartTooltip style={{ fontSize: 8 }} />}
+                  />
+                }
+                domain={{
+                  y: [0, maxDiskTypeCount],
+                }}
+                domainPadding={{ x: [12, 12] }}
+                padding={{ top: 10, bottom: 10, left: 20, right: 20 }}
+                height={isExportMode ? 180 : 220}
+                width={500}
+              >
+                <ChartAxis
+                  dependentAxis
+                  style={{
+                    axis: { stroke: 'none' },
+                    tickLabels: { fill: 'none' },
+                    grid: { stroke: 'none' },
+                  }}
+                />
+                <ChartAxis
+                  tickValues={diskTypeChartData.map((d) => d.name)}
+                  tickFormat={(x) => {
+                    const item = diskTypeChartData.find((d) => d.name === x);
+                    return item ? [`${item.name}`, `(${item.count} VMs)`] : x;
+                  }}
+                  style={{
+                    axis: { stroke: 'none' },
+                    tickLabels: { fontSize: 8 },
+                  }}
+                />
+                <ChartBar
+                  barWidth={28}
+                  data={diskTypeChartData.map((d) => ({
+                    x: d.name,
+                    y: d.count,
+                  }))}
+                  style={{
+                    data: {
+                      fill: ({ index }: { index: number }) =>
+                        diskTypeBarColors[index % diskTypeBarColors.length],
+                    },
+                    labels: { fontSize: 8 },
+                  }}
+                />
+              </Chart>
+              {!isExportMode && (
+                <Content
+                  component="small"
+                  style={{ color: '#6a6e73', marginLeft: '20px' }}
+                >
+                  Totals may exceed the unique VM count because individual VMs
+                  can have multiple disk types
+                </Content>
+              )}
+            </>
+          ) : (
+            <MigrationDonutChart
+              data={chartData}
+              height={300}
+              width={420}
+              donutThickness={9}
+              titleFontSize={34}
+              title={
+                viewMode === 'totalSize'
+                  ? `${totals.totalSize.toFixed(2)} TB`
+                  : `${totals.totalVMs} VMs`
+              }
+              subTitle={
+                viewMode === 'totalSize'
+                  ? `${totals.totalVMs} VMs`
+                  : `${totals.totalSize.toFixed(2)} TB`
+              }
+              subTitleColor="#9a9da0"
+              itemsPerRow={Math.ceil(chartData.length / 2)}
+              labelFontSize={18}
+              marginLeft={viewMode === 'totalSize' ? '42%' : '52%'}
+              tooltipLabelFormatter={({ datum, percent }) =>
+                `${datum.countDisplay}\n${percent.toFixed(1)}%`
+              }
+            />
+          )
         ) : (
           <>
             <div style={{ marginBottom: '24px' }}>

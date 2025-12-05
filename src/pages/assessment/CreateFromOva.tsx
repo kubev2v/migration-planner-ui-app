@@ -141,11 +141,11 @@ const CreateFromOva: React.FC = () => {
 
   const isSelectedNotReady = Boolean(
     useExisting &&
-      selectedEnv &&
-      !(
-        selectedEnv.agent?.status === 'up-to-date' ||
-        (selectedEnv?.onPremises && selectedEnv.inventory !== undefined)
-      ),
+    selectedEnv &&
+    !(
+      selectedEnv.agent?.status === 'up-to-date' ||
+      (selectedEnv?.onPremises && selectedEnv.inventory !== undefined)
+    ),
   );
 
   const handleSubmit = async (): Promise<void> => {
