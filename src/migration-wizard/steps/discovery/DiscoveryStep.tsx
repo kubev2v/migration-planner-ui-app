@@ -44,6 +44,8 @@ export const DiscoveryStep: React.FC = () => {
   const { inventory } = discoverSourcesContext.sourceSelected as Source;
   const { infra, vms } = inventory!.vcenter!;
   const { datastores, networks } = infra;
+  const clusters = inventory!.clusters || {};
+  const totalClusters = Object.keys(clusters).length;
   const { cpuCores, ramGB, diskCount, diskGB, os } = vms;
 
   // Create assessment when DiscoveryStep is accessed (only if source is not "Example")
@@ -84,10 +86,9 @@ export const DiscoveryStep: React.FC = () => {
     icon: <InfrastructureIcon />,
     name: (
       <>
-        We found {infra.totalClusters}{' '}
-        {Humanize.pluralize(infra.totalClusters, 'cluster')} with{' '}
-        {infra.totalHosts} {Humanize.pluralize(infra.totalHosts, 'host')}. The
-        hosts have a total of {cpuCores.total} CPU cores and{' '}
+        We found {totalClusters} {Humanize.pluralize(totalClusters, 'cluster')}{' '}
+        with {infra.totalHosts} {Humanize.pluralize(infra.totalHosts, 'host')}.
+        The hosts have a total of {cpuCores.total} CPU cores and{' '}
         {Humanize.fileSize(ramGB.total * 1024 ** 3, 0)} of memory.
       </>
     ),
@@ -402,6 +403,7 @@ export const DiscoveryStep: React.FC = () => {
                     ramGB={ramGB}
                     vms={vms}
                     isExportMode={true}
+                    clusters={clusters}
                   />
                 }
                 sourceData={discoverSourcesContext.sourceSelected as Source}
@@ -414,7 +416,13 @@ export const DiscoveryStep: React.FC = () => {
         </Content>
       </StackItem>
       <StackItem>
-        <Dashboard infra={infra} cpuCores={cpuCores} ramGB={ramGB} vms={vms} />
+        <Dashboard
+          infra={infra}
+          cpuCores={cpuCores}
+          ramGB={ramGB}
+          vms={vms}
+          clusters={clusters}
+        />
       </StackItem>
     </Stack>
   );

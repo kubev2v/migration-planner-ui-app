@@ -108,7 +108,9 @@ export const Dashboard: React.FC<Props> = ({
             </GalleryItem>
             <GalleryItem>
               <ClustersOverview
-                vmsPerCluster={infra.vmsPerCluster}
+                vmsPerCluster={Object.values(clusters || {}).map(
+                  (c) => c.vms?.total ?? 0,
+                )}
                 clustersPerDatacenter={infra.clustersPerDatacenter}
                 isExportMode={isExportMode}
                 exportAllViews={exportAllViews}

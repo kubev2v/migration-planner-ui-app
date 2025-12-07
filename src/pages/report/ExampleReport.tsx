@@ -17,7 +17,16 @@ import { Dashboard } from './assessment-report/Dashboard';
 
 const inventoryData = {
   vcenterId: '502d878c-af91-4a6f-93e9-61c4a1986172',
-  clusters: {},
+  clusters: {
+    'Cluster 1': {
+      infra: { host: Array(7).fill({}) },
+      vms: { total: 100 },
+    },
+    'Cluster 2': {
+      infra: { host: Array(3).fill({}) },
+      vms: { total: 88 },
+    },
+  },
   vcenter: {
     vcenter: {
       id: '502d878c-af91-4a6f-93e9-61c4a1986172',
@@ -513,6 +522,7 @@ const ExampleReport: React.FC = () => {
   const vms = inventory.vcenter?.vms as VMs;
   const cpuCores = vms.cpuCores as VMResourceBreakdown;
   const ramGB = vms.ramGB as VMResourceBreakdown;
+  const clusters = inventory.clusters;
 
   return (
     <AppPage
@@ -547,7 +557,13 @@ const ExampleReport: React.FC = () => {
         </>
       }
     >
-      <Dashboard infra={infra} cpuCores={cpuCores} ramGB={ramGB} vms={vms} />
+      <Dashboard
+        infra={infra}
+        cpuCores={cpuCores}
+        ramGB={ramGB}
+        vms={vms}
+        clusters={clusters}
+      />
     </AppPage>
   );
 };
