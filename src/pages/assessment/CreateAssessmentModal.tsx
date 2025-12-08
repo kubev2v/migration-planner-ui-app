@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 
+import { Job, JobStatus } from '@migration-planner-ui/api-client/models';
 import {
   Alert,
   Button,
@@ -14,6 +15,12 @@ import {
   TextInput,
 } from '@patternfly/react-core';
 import { Modal, ModalVariant } from '@patternfly/react-core/deprecated';
+
+import {
+  getProgressLabel,
+  getProgressValue,
+  TERMINAL_JOB_STATUSES,
+} from './utils/rvToolsJobUtils';
 
 export type AssessmentMode = 'inventory' | 'rvtools' | 'agent';
 
@@ -30,11 +37,14 @@ interface CreateAssessmentModalProps {
   error?: Error | null;
   selectedEnvironment?: { id: string; name: string } | null;
   onSelectEnvironment?: (assessmentName: string) => void;
+  job?: Job | null;
+  onCancelJob?: () => void;
 }
 
 const isDuplicateNameError = (error: Error | null): boolean =>
   !!error &&
-  /assessment with name '.*' already exists/i.test(error.message || '');
+  (/assessment with name '.*' already exists/i.test(error.message || '') ||
+    /already exists/i.test(error.message || ''));
 
 const isAbortError = (error: Error | null): boolean => {
   if (!error) return false;
@@ -49,6 +59,14 @@ const isAbortError = (error: Error | null): boolean => {
   );
 };
 
+const extractErrorMessage = (message: string): string => {
+  const lastColonIndex = message.lastIndexOf(':');
+
+  return lastColonIndex !== -1
+    ? message.slice(lastColonIndex + 1).trim()
+    : message;
+};
+
 export const CreateAssessmentModal: React.FC<CreateAssessmentModalProps> = ({
   isOpen,
   onClose,
@@ -58,6 +76,8 @@ export const CreateAssessmentModal: React.FC<CreateAssessmentModalProps> = ({
   error = null,
   selectedEnvironment = null,
   onSelectEnvironment: _onSelectEnvironment,
+  job = null,
+  onCancelJob,
 }) => {
   const [assessmentName, setAssessmentName] = useState('');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -72,23 +92,39 @@ export const CreateAssessmentModal: React.FC<CreateAssessmentModalProps> = ({
   const [nameErrorDismissed, setNameErrorDismissed] = useState(false);
   const [fileErrorDismissed, setFileErrorDismissed] = useState(false);
 
+  // Helper to check if job is processing
+  const isJobProcessing = job && !TERMINAL_JOB_STATUSES.includes(job.status);
+
+  // Derive error from job failure - use job.error when job fails
+  // Extract just the message after the last ":" for cleaner display
+  const jobError = React.useMemo(() => {
+    return job?.status === JobStatus.Failed
+      ? new Error(extractErrorMessage(job.error || 'Processing failed'))
+      : null;
+  }, [job]);
+
+  // Combine with existing error logic - job error takes priority when job exists
+  const effectiveError = jobError || error;
+
+  // Reset dismissed flags when a new error occurs (from API or job failure)
   React.useEffect(() => {
-    if (error) {
+    if (error || jobError) {
       setNameErrorDismissed(false);
       setFileErrorDismissed(false);
     }
-  }, [error]);
+  }, [error, jobError]);
 
   const hasDuplicateNameError =
-    !nameErrorDismissed && isDuplicateNameError(error);
+    !nameErrorDismissed && isDuplicateNameError(effectiveError);
   const hasGeneralApiError =
     !fileErrorDismissed &&
-    !!error &&
-    !isDuplicateNameError(error) &&
-    !isAbortError(error);
+    !!effectiveError &&
+    !isDuplicateNameError(effectiveError) &&
+    !isAbortError(effectiveError);
 
   const nameErrorToDisplay =
-    nameValidationError || (hasDuplicateNameError ? error?.message : '');
+    nameValidationError ||
+    (hasDuplicateNameError ? effectiveError?.message : '');
 
   const availableEnvironments = selectedEnvironment
     ? [selectedEnvironment]
@@ -106,7 +142,7 @@ export const CreateAssessmentModal: React.FC<CreateAssessmentModalProps> = ({
         return {
           title: 'Create Assessment from Inventory',
           fileLabel: 'Inventory File (JSON)',
-          fileDescription: 'Select a JSON inventory file (max 12 MiB)',
+          fileDescription: 'Select a JSON inventory file (max 50 MiB)',
           accept: '.json',
           allowedExtensions: ['json'],
         };
@@ -114,7 +150,7 @@ export const CreateAssessmentModal: React.FC<CreateAssessmentModalProps> = ({
         return {
           title: 'Create migration assessment from RVTools',
           fileLabel: 'RVTools File (Excel)',
-          fileDescription: 'Select an Excel file from RVTools (max 12 MiB)',
+          fileDescription: 'Select an Excel file from RVTools (max 50 MiB)',
           accept: '.xlsx,.xls',
           allowedExtensions: ['xlsx', 'xls'],
         };
@@ -130,7 +166,7 @@ export const CreateAssessmentModal: React.FC<CreateAssessmentModalProps> = ({
         return {
           title: 'Create Assessment',
           fileLabel: 'File',
-          fileDescription: 'Select a file (max 12 MiB)',
+          fileDescription: 'Select a file (max 50 MiB)',
           accept: '*',
           allowedExtensions: [],
         };
@@ -145,7 +181,7 @@ export const CreateAssessmentModal: React.FC<CreateAssessmentModalProps> = ({
   ): void => {
     setFileErrorDismissed(true);
 
-    const maxSize = 12582912; // 12 MiB
+    const maxSize = 52428800; // 50 MiB
     const fileExtension = file.name.toLowerCase().split('.').pop();
 
     if (
@@ -163,7 +199,7 @@ export const CreateAssessmentModal: React.FC<CreateAssessmentModalProps> = ({
 
     if (file.size > maxSize) {
       setFileValidationError(
-        'The file is too big. Select a file up to 12 MiB.',
+        'The file is too big. Select a file up to 50 MiB.',
       );
       setSelectedFile(null);
       setFilename('');
@@ -216,6 +252,11 @@ export const CreateAssessmentModal: React.FC<CreateAssessmentModalProps> = ({
   };
 
   const handleClose = (): void => {
+    // Cancel job if processing
+    if (isJobProcessing && onCancelJob) {
+      onCancelJob();
+    }
+    // Reset form state
     setAssessmentName('');
     setSelectedFile(null);
     setFilename('');
@@ -237,7 +278,8 @@ export const CreateAssessmentModal: React.FC<CreateAssessmentModalProps> = ({
     isLoading ||
     !!nameErrorToDisplay ||
     !!fileValidationError ||
-    hasGeneralApiError;
+    hasGeneralApiError ||
+    !!isJobProcessing;
 
   const actions = [
     <Button
@@ -245,7 +287,7 @@ export const CreateAssessmentModal: React.FC<CreateAssessmentModalProps> = ({
       variant="primary"
       onClick={handleSubmit}
       isDisabled={isButtonDisabled}
-      isLoading={isLoading}
+      isLoading={isLoading || isJobProcessing}
     >
       Create Migration Assessment
     </Button>,
@@ -253,11 +295,16 @@ export const CreateAssessmentModal: React.FC<CreateAssessmentModalProps> = ({
       key="cancel"
       variant="link"
       onClick={handleClose}
-      isDisabled={isLoading}
+      isDisabled={isLoading && !isJobProcessing}
     >
       Cancel
     </Button>,
-  ];
+    isJobProcessing && job && (
+      <div key="progress" style={{ marginRight: 'auto' }}>
+        {`${getProgressValue(job.status)}% done. ${getProgressLabel(job.status)}`}
+      </div>
+    ),
+  ].filter(Boolean);
 
   return (
     <Modal
@@ -394,7 +441,8 @@ export const CreateAssessmentModal: React.FC<CreateAssessmentModalProps> = ({
           style={{ marginTop: '16px', marginBottom: '0' }}
           isInline
         >
-          {error?.message || 'An error occurred while creating the assessment'}
+          {effectiveError?.message ||
+            'An error occurred while creating the assessment'}
         </Alert>
       )}
     </Modal>

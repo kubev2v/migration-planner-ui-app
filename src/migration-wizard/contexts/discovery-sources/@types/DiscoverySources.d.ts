@@ -1,6 +1,7 @@
 import {
   Agent,
   Assessment,
+  Job,
   Source,
 } from '@migration-planner-ui/api-client/models';
 
@@ -106,5 +107,13 @@ declare namespace DiscoverySources {
     // Assessment from agent state
     assessmentFromAgentState: boolean;
     setAssessmentFromAgent: (value: boolean) => void;
+    // RVTools Job State
+    currentJob: Job | null;
+    isCreatingRVToolsJob: boolean;
+    errorCreatingRVToolsJob?: Error;
+    // RVTools Job Methods
+    createRVToolsJob: (name: string, file: File) => Promise<Job | unknown>;
+    cancelRVToolsJob: () => Promise<void>;
+    clearRVToolsJob: () => void;
   };
 }

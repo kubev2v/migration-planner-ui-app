@@ -2,73 +2,36 @@ import React, {
   type PropsWithChildren,
   useCallback,
   useEffect,
-  useRef,
   useState,
 } from 'react';
-import { useAsyncFn, useInterval, useMountedState } from 'react-use';
+import { useAsyncFn, useInterval } from 'react-use';
 
 import {
   type AgentApiInterface,
   type AssessmentApiInterface,
   type ImageApiInterface,
+  JobApi,
   type SourceApiInterface,
 } from '@migration-planner-ui/api-client/apis';
 import {
   Agent,
   Assessment,
+  JobStatus,
   Source,
   UpdateInventoryFromJSON,
 } from '@migration-planner-ui/api-client/models';
+import { Configuration } from '@migration-planner-ui/api-client/runtime';
 import { useInjection } from '@migration-planner-ui/ioc';
 
+import { useAsyncFnResetError } from '../../../hooks/useAsyncFnResetError';
 import { Symbols } from '../../../main/Symbols';
-import { AssessmentService } from '../../../pages/assessment/assessmentService';
 
 import { DiscoverySources } from './@types/DiscoverySources';
 import { Context } from './Context';
+import { useRVToolsJob } from '../../../pages/assessment/hooks/useRVToolsJob';
 
 // Use a shared constant to avoid recreating empty array references on each render
 const EMPTY_ARRAY: unknown[] = [];
-
-// Local hook similar to react-use's useAsyncFn but clears error at start
-type AsyncState<TReturn> = {
-  loading: boolean;
-  value?: TReturn;
-  error?: unknown;
-};
-const useAsyncFnResetError = <TArgs extends unknown[], TReturn>(
-  fn: (...args: TArgs) => Promise<TReturn>,
-  deps: React.DependencyList = [],
-) => {
-  const lastCallId = useRef(0);
-  const isMounted = useMountedState();
-  const [state, setState] = useState<AsyncState<TReturn>>({ loading: false });
-
-  const callback = React.useCallback(
-    (...args: TArgs) => {
-      const callId = ++lastCallId.current;
-      setState((prev) => ({ ...prev, loading: true, error: undefined }));
-      return fn(...args).then(
-        (value) => {
-          if (isMounted() && callId === lastCallId.current) {
-            setState({ value, loading: false });
-          }
-          return value;
-        },
-        (error) => {
-          if (isMounted() && callId === lastCallId.current) {
-            setState({ error, loading: false });
-          }
-          return error as unknown as TReturn;
-        },
-      );
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    deps,
-  );
-
-  return [state, callback] as const;
-};
 
 export const Provider: React.FC<PropsWithChildren> = (props) => {
   const { children } = props;
@@ -97,13 +60,14 @@ export const Provider: React.FC<PropsWithChildren> = (props) => {
     Symbols.AssessmentApi,
   );
 
-  // Create assessmentService instance with the same baseUrl and fetchApi as the injected APIs
-  const assessmentService = React.useMemo(() => {
+  // Create jobApi instance (same pattern as assessmentService)
+  const jobApi = React.useMemo(() => {
     const baseUrl =
       process.env.PLANNER_API_BASE_URL || '/api/migration-assessment';
-    // Get the authenticated fetch function from the configuration of an existing API instance
-    const fetchApi = (assessmentApi as any).configuration?.fetchApi || fetch;
-    return new AssessmentService(baseUrl, fetchApi);
+    // Use global fetch - the assessmentApi's fetchApi may not be accessible
+    const fetchApi = fetch;
+    const config = new Configuration({ basePath: baseUrl, fetchApi });
+    return new JobApi(config);
   }, [assessmentApi]);
 
   const [listAgentsState, listAgents] = useAsyncFn(async () => {
@@ -116,7 +80,7 @@ export const Provider: React.FC<PropsWithChildren> = (props) => {
     const sources = await sourceApi.listSources();
     setSourcesLoaded(true);
     return sources;
-  });
+  }, []);
 
   function normalizeAssessmentsResponse(response: unknown): Assessment[] {
     if (Array.isArray(response)) {
@@ -142,13 +106,26 @@ export const Provider: React.FC<PropsWithChildren> = (props) => {
     },
   );
 
+  // RVTools Job State Hook
+  const {
+    currentJob,
+    isCreatingRVToolsJob,
+    errorCreatingRVToolsJob,
+    createRVToolsJob,
+    cancelRVToolsJob,
+    clearRVToolsJob,
+  } = useRVToolsJob({
+    jobApi,
+    onJobCompleted: listAssessments,
+  });
+
   const [createAssessmentState, createAssessment] = useAsyncFn(
     async (
       name: string,
       sourceType: string,
       jsonValue?: string,
       sourceId?: string,
-      rvToolFile?: File,
+      _rvToolFile?: File,
     ) => {
       const assessmentName = name || `Assessment-${new Date().toISOString()}`;
 
@@ -164,13 +141,11 @@ export const Provider: React.FC<PropsWithChildren> = (props) => {
         });
         await listAssessments();
         return assessment;
-      } else if (sourceType === 'rvtools' && rvToolFile) {
-        const assessment = await assessmentService.createFromRVTools(
-          assessmentName,
-          rvToolFile,
+      } else if (sourceType === 'rvtools') {
+        // RVTools assessments should use createRVToolsJob instead
+        throw new Error(
+          'RVTools assessments must be created using createRVToolsJob for async processing',
         );
-        await listAssessments();
-        return assessment;
       } else if (sourceType === 'agent' && sourceId) {
         const assessment = await assessmentApi.createAssessment({
           assessmentForm: {
@@ -419,8 +394,6 @@ export const Provider: React.FC<PropsWithChildren> = (props) => {
       listSources();
     }
   }, pollingDelay);
-
-  // Reset dismiss flags on new attempts (effects placed after the corresponding states are declared)
 
   const selectSource = useCallback((source: Source | null) => {
     setSourceSelected(source);
@@ -702,6 +675,14 @@ export const Provider: React.FC<PropsWithChildren> = (props) => {
       if (!options || creating) setDismissCreateError(true);
       if (!options || loadingAssessments) setDismissAssessmentsLoadError(true);
     },
+    // RVTools Job State
+    currentJob,
+    isCreatingRVToolsJob,
+    errorCreatingRVToolsJob,
+    // RVTools Job Methods
+    createRVToolsJob,
+    cancelRVToolsJob,
+    clearRVToolsJob,
   };
 
   return <Context.Provider value={ctx}>{children}</Context.Provider>;

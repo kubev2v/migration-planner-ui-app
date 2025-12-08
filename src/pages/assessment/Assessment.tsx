@@ -1,7 +1,10 @@
-import React, { useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { Assessment as AssessmentModel } from '@migration-planner-ui/api-client/models';
+import {
+  Assessment as AssessmentModel,
+  JobStatus,
+} from '@migration-planner-ui/api-client/models';
 import {
   Button,
   Dropdown,
@@ -23,6 +26,7 @@ import FilterPill from '../../components/FilterPill';
 import { useDiscoverySources } from '../../migration-wizard/contexts/discovery-sources/Context';
 import StartingPageModal from '../starting-page/StartingPageModal';
 
+import { TERMINAL_JOB_STATUSES } from './utils/rvToolsJobUtils';
 import AssessmentsTable from './AssessmentsTable';
 import CreateAssessmentModal, { AssessmentMode } from './CreateAssessmentModal';
 import EmptyTableBanner from './EmptyTableBanner';
@@ -133,15 +137,52 @@ const Assessment: React.FC<Props> = ({
     setIsDropdownOpen(!isDropdownOpen);
   };
 
+  // Get job state from context
+  const {
+    currentJob,
+    isCreatingRVToolsJob,
+    errorCreatingRVToolsJob,
+    createRVToolsJob,
+    cancelRVToolsJob,
+    clearRVToolsJob,
+  } = discoverySourcesContext;
+
   const handleOpenModal = (mode: AssessmentMode): void => {
     setModalMode(mode);
     setIsModalOpen(true);
     setIsDropdownOpen(false);
   };
 
-  const handleCloseModal = (): void => {
+  // Handle modal close (X button) - should also cancel job if processing
+  const handleCloseModal = useCallback((): void => {
+    if (currentJob && !TERMINAL_JOB_STATUSES.includes(currentJob.status)) {
+      cancelRVToolsJob(); // Cancel in-progress job
+    } else {
+      clearRVToolsJob(); // Just clear state if job is done
+    }
     setIsModalOpen(false);
-  };
+  }, [currentJob, cancelRVToolsJob, clearRVToolsJob]);
+
+  // Cancel handler - actually cancels the job and closes modal
+  const handleCancelJob = useCallback(async (): Promise<void> => {
+    await cancelRVToolsJob();
+    setIsModalOpen(false);
+  }, [cancelRVToolsJob]);
+
+  // Handle job completion - navigate to report ONLY on success
+  useEffect(() => {
+    if (currentJob?.status === JobStatus.Completed && currentJob.assessmentId) {
+      const assessmentId = currentJob.assessmentId;
+      // Clear job state first
+      clearRVToolsJob();
+      // Close modal
+      setIsModalOpen(false);
+      // Navigate to report
+      navigate(
+        `/openshift/migration-assessment/assessments/${assessmentId}/report`,
+      );
+    }
+  }, [currentJob, clearRVToolsJob, navigate]);
 
   // Open RVTools modal when the trigger token changes
   React.useEffect(() => {
@@ -237,27 +278,18 @@ const Assessment: React.FC<Props> = ({
     }
   };
 
+  // Update submit handler for RVTools mode
+  // Modal stays open - progress bar will show job status
   const handleSubmitAssessment = async (
     name: string,
     file: File | null,
   ): Promise<void> => {
     if (!file) throw new Error('File is required for RVTools assessment');
 
-    // Create the assessment with RVTools file (only RVTools mode supported)
-    const assessment = await discoverySourcesContext.createAssessment(
-      name,
-      'rvtools',
-      undefined, // jsonValue not used for rvtools mode
-      undefined, // sourceId not used for rvtools mode
-      file, // rvToolFile
-    );
-
-    // Only navigate if assessment was successfully created
-    if (assessment && assessment.id) {
-      navigate(
-        `/openshift/migration-assessment/assessments/${assessment.id}/report`,
-      );
-    }
+    // Start async job - modal stays open, progress bar appears
+    // Navigation happens via useEffect when job completes
+    await createRVToolsJob(name, file);
+    // NOTE: Do NOT close modal or navigate here - wait for job completion
   };
 
   return (
@@ -532,9 +564,11 @@ const Assessment: React.FC<Props> = ({
         onClose={handleCloseModal}
         onSubmit={handleSubmitAssessment}
         mode={modalMode}
-        isLoading={discoverySourcesContext.isCreatingAssessment}
-        error={discoverySourcesContext.errorCreatingAssessment}
+        isLoading={isCreatingRVToolsJob}
+        error={errorCreatingRVToolsJob}
         selectedEnvironment={null}
+        job={currentJob}
+        onCancelJob={handleCancelJob}
       />
 
       <UpdateAssessment
