@@ -25,7 +25,7 @@
   justify-content: center;
   gap: 6px 24px; /* row-gap, column-gap */
   flex-wrap: wrap;
-  margin-top: 148px;
+  margin-top: 20%;
 }
 
 .cpu-overcommit__legend-item {
@@ -52,7 +52,7 @@
     gap: 20px;
   }
   .cpu-overcommit__legend {
-    margin-top: 64px;
+    margin-top: 20%;
     gap: 6px 20px;
   }
 }
@@ -70,7 +70,7 @@
     border-radius: 10px;
   }
   .cpu-overcommit__legend {
-    margin-top: 32px;
+    margin-top: 20%;
     gap: 6px 16px;
   }
   .cpu-overcommit__legend-text {

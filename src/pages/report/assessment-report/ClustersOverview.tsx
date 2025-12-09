@@ -100,7 +100,7 @@ export const ClustersOverview: React.FC<ClustersOverviewProps> = ({
 
       const formatRatio = (r: number): string => {
         const formatted = r % 1 === 0 ? r.toFixed(0) : r.toFixed(2);
-        return `1:${formatted.replace(/(?:\.0+|(\.\d*[1-9]))0+$/, '$1')}`;
+        return `${formatted.replace(/(?:\.0+|(\.\d*[1-9]))0+$/, '$1')}`;
       };
 
       const slices = top.map((item, idx) => ({
@@ -109,7 +109,6 @@ export const ClustersOverview: React.FC<ClustersOverviewProps> = ({
         countDisplay: formatRatio(item.value),
         legendCategory: `Cluster ${idx + 1}`,
       }));
-
       const legendCategories = slices.map((s) => s.legendCategory);
       return {
         chartData: slices,
@@ -317,7 +316,7 @@ export const ClustersOverview: React.FC<ClustersOverviewProps> = ({
     const top = withValue.slice(0, TOP_N);
     const formatRatio = (r: number): string => {
       const formatted = r % 1 === 0 ? r.toFixed(0) : r.toFixed(2);
-      return `1:${formatted.replace(/(?:\.0+|(\.\d*[1-9]))0+$/, '$1')}`;
+      return `${formatted.replace(/(?:\.0+|(\.\d*[1-9]))0+$/, '$1')}`;
     };
     const slices = top.map((item, idx) => ({
       name: formatRatio(item.value),
