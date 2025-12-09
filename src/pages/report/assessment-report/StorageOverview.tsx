@@ -367,6 +367,65 @@ export const StorageOverview: React.FC<StorageOverviewProps> = ({
           <>
             <div style={{ marginBottom: '24px' }}>
               <div style={{ fontWeight: 600, marginBottom: 8 }}>
+                {VIEW_MODE_LABELS['vmCountByDiskType']}
+              </div>
+              <Chart
+                ariaTitle="VM count by disk type"
+                ariaDesc="Vertical bar chart of VM counts grouped by disk type"
+                theme={smallFontTheme}
+                containerComponent={
+                  <ChartVoronoiContainer
+                    responsive
+                    labels={({ datum }) => `${datum.x}: ${Number(datum.y)} VMs`}
+                    constrainToVisibleArea
+                    labelComponent={<ChartTooltip style={{ fontSize: 8 }} />}
+                  />
+                }
+                domain={{
+                  y: [0, maxDiskTypeCount],
+                }}
+                domainPadding={{ x: [12, 12] }}
+                padding={{ top: 10, bottom: 10, left: 20, right: 20 }}
+                height={180}
+                width={500}
+              >
+                <ChartAxis
+                  dependentAxis
+                  style={{
+                    axis: { stroke: 'none' },
+                    tickLabels: { fill: 'none' },
+                    grid: { stroke: 'none' },
+                  }}
+                />
+                <ChartAxis
+                  tickValues={diskTypeChartData.map((d) => d.name)}
+                  tickFormat={(x) => {
+                    const item = diskTypeChartData.find((d) => d.name === x);
+                    return item ? [`${item.name}`, `(${item.count} VMs)`] : x;
+                  }}
+                  style={{
+                    axis: { stroke: 'none' },
+                    tickLabels: { fontSize: 8 },
+                  }}
+                />
+                <ChartBar
+                  barWidth={28}
+                  data={diskTypeChartData.map((d) => ({
+                    x: d.name,
+                    y: d.count,
+                  }))}
+                  style={{
+                    data: {
+                      fill: ({ index }: { index: number }) =>
+                        diskTypeBarColors[index % diskTypeBarColors.length],
+                    },
+                    labels: { fontSize: 8 },
+                  }}
+                />
+              </Chart>
+            </div>
+            <div style={{ marginBottom: '24px' }}>
+              <div style={{ fontWeight: 600, marginBottom: 8 }}>
                 {VIEW_MODE_LABELS['vmCount']}
               </div>
               <MigrationDonutChart

@@ -46,33 +46,3 @@
   border-radius: 10px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
-
-.dashboard-card-print#vm-migration-status {
-  height: 500px !important;
-  overflow: hidden;
-}
-
-.dashboard-card-print #os-distribution {
-  height: 1500px !important;
-  max-height: 1500px !important;
-  overflow: hidden;
-}
-
-.dashboard-card-print #clusters-overview,
-.dashboard-card-print #storage-overview,
-.dashboard-card-print #warnings-table,
-.dashboard-card-print #errors-table {
-  height: auto !important;
-  max-height: none !important;
-  overflow: visible !important;
-}
-.table-without-border {
-  border: none !important;
-}
-.dashboard-card-print #hosts,
-.dashboard-card-print #cpu-cores,
-.dashboard-card-print #total-memory {
-  height: 100px !important;
-  max-height: 100px !important;
-  overflow: hidden;
-}

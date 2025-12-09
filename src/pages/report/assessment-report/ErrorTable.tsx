@@ -16,7 +16,7 @@ export const ErrorTable: React.FC<ErrorTableProps> = ({
   errors,
   isExportMode = false,
 }) => {
-  const tableHeight = isExportMode ? '100%' : '325px';
+  const tableHeight = isExportMode ? 'none !important' : '325px';
   return (
     <Card
       className={isExportMode ? 'dashboard-card-print' : 'dashboard-card'}
