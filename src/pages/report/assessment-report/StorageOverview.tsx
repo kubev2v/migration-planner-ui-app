@@ -190,6 +190,28 @@ export const StorageOverview: React.FC<StorageOverviewProps> = ({
     '#73C5C5',
   ];
 
+  // Make bar chart width responsive to the number of categories to avoid
+  // extreme spacing when there are only a few disk types (e.g., 1-2).
+  const barChartWidth = useMemo(() => {
+    const itemCount = Math.max(1, diskTypeChartData.length);
+    const perItemWidth = 90; // bar + gap
+    const minWidth = isExportMode ? 220 : 260;
+    const maxWidth = 500;
+    const calculated = itemCount * perItemWidth;
+    return Math.min(maxWidth, Math.max(minWidth, calculated));
+  }, [diskTypeChartData.length, isExportMode]);
+
+  // Slightly thinner bars for very small datasets so they don't look oversized.
+  const computedBarWidth = useMemo(() => {
+    const count = diskTypeChartData.length;
+    return count <= 2 ? 18 : 28;
+  }, [diskTypeChartData.length]);
+
+  // Add extra x padding for 1–2 categories so bars are visually centered.
+  const domainPaddingX = useMemo<[number, number]>(() => {
+    return diskTypeChartData.length <= 2 ? [30, 30] : [12, 12];
+  }, [diskTypeChartData.length]);
+
   const onSelect = (
     _event: React.MouseEvent<Element, MouseEvent> | undefined,
     value: string | number | undefined,
@@ -273,64 +295,77 @@ export const StorageOverview: React.FC<StorageOverviewProps> = ({
         {!isExportMode || !exportAllViews ? (
           viewMode === 'vmCountByDiskType' ? (
             <>
-              <Chart
-                ariaTitle="VM count by disk type"
-                ariaDesc="Vertical bar chart of VM counts grouped by disk type"
-                theme={smallFontTheme}
-                containerComponent={
-                  <ChartVoronoiContainer
-                    responsive
-                    labels={({ datum }) => `${datum.x}: ${Number(datum.y)} VMs`}
-                    constrainToVisibleArea
-                    labelComponent={<ChartTooltip style={{ fontSize: 8 }} />}
-                  />
-                }
-                domain={{
-                  y: [0, maxDiskTypeCount],
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'center',
                 }}
-                domainPadding={{ x: [12, 12] }}
-                padding={{ top: 10, bottom: 10, left: 20, right: 20 }}
-                height={isExportMode ? 180 : 220}
-                width={500}
               >
-                <ChartAxis
-                  dependentAxis
-                  style={{
-                    axis: { stroke: 'none' },
-                    tickLabels: { fill: 'none' },
-                    grid: { stroke: 'none' },
-                  }}
-                />
-                <ChartAxis
-                  tickValues={diskTypeChartData.map((d) => d.name)}
-                  tickFormat={(x) => {
-                    const item = diskTypeChartData.find((d) => d.name === x);
-                    return item ? [`${item.name}`, `(${item.count} VMs)`] : x;
-                  }}
-                  style={{
-                    axis: { stroke: 'none' },
-                    tickLabels: { fontSize: 8 },
-                  }}
-                />
-                <ChartBar
-                  barWidth={28}
-                  data={diskTypeChartData.map((d) => ({
-                    x: d.name,
-                    y: d.count,
-                  }))}
-                  style={{
-                    data: {
-                      fill: ({ index }: { index: number }) =>
-                        diskTypeBarColors[index % diskTypeBarColors.length],
-                    },
-                    labels: { fontSize: 8 },
-                  }}
-                />
-              </Chart>
+                <div style={{ width: `${barChartWidth + 200}px` }}>
+                  <Chart
+                    ariaTitle="VM count by disk type"
+                    ariaDesc="Vertical bar chart of VM counts grouped by disk type"
+                    theme={smallFontTheme}
+                    containerComponent={
+                      <ChartVoronoiContainer
+                        responsive
+                        labels={({ datum }) =>
+                          `${datum.x}: ${Number(datum.y)} VMs`
+                        }
+                        constrainToVisibleArea
+                        labelComponent={
+                          <ChartTooltip style={{ fontSize: 8 }} />
+                        }
+                      />
+                    }
+                    domain={{
+                      y: [0, maxDiskTypeCount],
+                    }}
+                    domainPadding={{ x: domainPaddingX }}
+                    padding={{ top: 10, bottom: 36, left: 20, right: 20 }}
+                    height={isExportMode ? 180 : 220}
+                    width={barChartWidth}
+                  >
+                    <ChartAxis />
+                    <ChartAxis
+                      tickValues={diskTypeChartData.map((d) => d.name)}
+                      tickFormat={(x) => {
+                        const item = diskTypeChartData.find(
+                          (d) => d.name === x,
+                        );
+                        return item
+                          ? [`${item.name}`, `(${item.count} VMs)`]
+                          : x;
+                      }}
+                      style={{
+                        axis: { stroke: 'none' },
+                        tickLabels: { fontSize: 8 },
+                      }}
+                    />
+                    <ChartBar
+                      barWidth={computedBarWidth}
+                      data={diskTypeChartData.map((d) => ({
+                        x: d.name,
+                        y: d.count,
+                      }))}
+                      style={{
+                        data: {
+                          fill: ({ index }: { index: number }) =>
+                            diskTypeBarColors[index % diskTypeBarColors.length],
+                        },
+                        labels: { fontSize: 8 },
+                      }}
+                    />
+                  </Chart>
+                </div>
+              </div>
               {!isExportMode && (
                 <Content
                   component="small"
-                  style={{ color: '#6a6e73', marginLeft: '20px' }}
+                  style={{
+                    color: '#6a6e73',
+                    marginLeft: '20px',
+                  }}
                 >
                   Totals may exceed the unique VM count because individual VMs
                   can have multiple disk types
@@ -369,60 +404,70 @@ export const StorageOverview: React.FC<StorageOverviewProps> = ({
               <div style={{ fontWeight: 600, marginBottom: 8 }}>
                 {VIEW_MODE_LABELS['vmCountByDiskType']}
               </div>
-              <Chart
-                ariaTitle="VM count by disk type"
-                ariaDesc="Vertical bar chart of VM counts grouped by disk type"
-                theme={smallFontTheme}
-                containerComponent={
-                  <ChartVoronoiContainer
-                    responsive
-                    labels={({ datum }) => `${datum.x}: ${Number(datum.y)} VMs`}
-                    constrainToVisibleArea
-                    labelComponent={<ChartTooltip style={{ fontSize: 8 }} />}
-                  />
-                }
-                domain={{
-                  y: [0, maxDiskTypeCount],
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'center',
                 }}
-                domainPadding={{ x: [12, 12] }}
-                padding={{ top: 10, bottom: 10, left: 20, right: 20 }}
-                height={180}
-                width={500}
               >
-                <ChartAxis
-                  dependentAxis
-                  style={{
-                    axis: { stroke: 'none' },
-                    tickLabels: { fill: 'none' },
-                    grid: { stroke: 'none' },
-                  }}
-                />
-                <ChartAxis
-                  tickValues={diskTypeChartData.map((d) => d.name)}
-                  tickFormat={(x) => {
-                    const item = diskTypeChartData.find((d) => d.name === x);
-                    return item ? [`${item.name}`, `(${item.count} VMs)`] : x;
-                  }}
-                  style={{
-                    axis: { stroke: 'none' },
-                    tickLabels: { fontSize: 8 },
-                  }}
-                />
-                <ChartBar
-                  barWidth={28}
-                  data={diskTypeChartData.map((d) => ({
-                    x: d.name,
-                    y: d.count,
-                  }))}
-                  style={{
-                    data: {
-                      fill: ({ index }: { index: number }) =>
-                        diskTypeBarColors[index % diskTypeBarColors.length],
-                    },
-                    labels: { fontSize: 8 },
-                  }}
-                />
-              </Chart>
+                <div style={{ width: `${barChartWidth + 200}px` }}>
+                  <Chart
+                    ariaTitle="VM count by disk type"
+                    ariaDesc="Vertical bar chart of VM counts grouped by disk type"
+                    theme={smallFontTheme}
+                    containerComponent={
+                      <ChartVoronoiContainer
+                        responsive
+                        labels={({ datum }) =>
+                          `${datum.x}: ${Number(datum.y)} VMs`
+                        }
+                        constrainToVisibleArea
+                        labelComponent={
+                          <ChartTooltip style={{ fontSize: 8 }} />
+                        }
+                      />
+                    }
+                    domain={{
+                      y: [0, maxDiskTypeCount],
+                    }}
+                    domainPadding={{ x: domainPaddingX }}
+                    padding={{ top: 10, bottom: 36, left: 20, right: 20 }}
+                    height={180}
+                    width={barChartWidth}
+                  >
+                    <ChartAxis />
+                    <ChartAxis
+                      tickValues={diskTypeChartData.map((d) => d.name)}
+                      tickFormat={(x) => {
+                        const item = diskTypeChartData.find(
+                          (d) => d.name === x,
+                        );
+                        return item
+                          ? [`${item.name}`, `(${item.count} VMs)`]
+                          : x;
+                      }}
+                      style={{
+                        axis: { stroke: 'none' },
+                        tickLabels: { fontSize: 8 },
+                      }}
+                    />
+                    <ChartBar
+                      barWidth={computedBarWidth}
+                      data={diskTypeChartData.map((d) => ({
+                        x: d.name,
+                        y: d.count,
+                      }))}
+                      style={{
+                        data: {
+                          fill: ({ index }: { index: number }) =>
+                            diskTypeBarColors[index % diskTypeBarColors.length],
+                        },
+                        labels: { fontSize: 8 },
+                      }}
+                    />
+                  </Chart>
+                </div>
+              </div>
             </div>
             <div style={{ marginBottom: '24px' }}>
               <div style={{ fontWeight: 600, marginBottom: 8 }}>
