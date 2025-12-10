@@ -64,8 +64,7 @@ export const Provider: React.FC<PropsWithChildren> = (props) => {
   const jobApi = React.useMemo(() => {
     const baseUrl =
       process.env.PLANNER_API_BASE_URL || '/api/migration-assessment';
-    // Use global fetch - the assessmentApi's fetchApi may not be accessible
-    const fetchApi = fetch;
+    const fetchApi = (assessmentApi as any).configuration?.fetchApi || fetch;
     const config = new Configuration({ basePath: baseUrl, fetchApi });
     return new JobApi(config);
   }, [assessmentApi]);
