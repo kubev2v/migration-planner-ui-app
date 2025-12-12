@@ -17,6 +17,7 @@ import {
 import { ClustersOverview } from './ClustersOverview';
 import { ErrorTable } from './ErrorTable';
 import { InfrastructureOverview } from './InfastructureOverview';
+import { NetworkOverview } from './NetworkOverview';
 import { OSDistribution } from './OSDistribution';
 import { StorageOverview } from './StorageOverview';
 import { VMMigrationStatus } from './VMMigrationStatus';
@@ -117,6 +118,14 @@ export const Dashboard: React.FC<Props> = ({
                 clusters={clusters}
               />
             </GalleryItem>
+          </Gallery>
+        </GridItem>
+        <GridItem span={12} data-export-block={isExportMode ? '4' : undefined}>
+          <Gallery hasGutter minWidths={{ default: '300px', md: '45%' }}>
+            <GalleryItem>
+              <NetworkOverview infra={infra} isExportMode={isExportMode} />
+            </GalleryItem>
+            <GalleryItem></GalleryItem>
           </Gallery>
         </GridItem>
         <GridItem span={12} data-export-block={isExportMode ? '4' : undefined}>

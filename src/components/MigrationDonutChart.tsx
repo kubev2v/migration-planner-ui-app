@@ -131,7 +131,6 @@ const MigrationDonutChart: React.FC<MigrationDonutChartProps> = ({
     >
       <ChartDonut
         ariaDesc="Migration data donut chart"
-        ariaTitle="Migration data donut chart"
         data={chartData}
         labels={({ datum }) => {
           const percent = totalY > 0 ? (Number(datum.y) / totalY) * 100 : 0;
