@@ -1,18 +1,23 @@
 import React, { useMemo } from 'react';
 
 import {
+  Button,
   Content,
   ContentVariants,
   Flex,
   FlexItem,
-  Tooltip,
+  Popover,
 } from '@patternfly/react-core';
+import { InfoCircleIcon } from '@patternfly/react-icons';
 import { Table, Tbody, Td, Tr } from '@patternfly/react-table';
+
+import './MigrationChart.css';
 
 interface OSData {
   name: string;
   count: number;
   legendCategory: string;
+  infoText?: string;
 }
 
 interface MigrationChartProps {
@@ -20,6 +25,7 @@ interface MigrationChartProps {
   legend?: Record<string, string>;
   dataLength?: DLength;
   maxHeight?: string;
+  barHeight?: number;
 }
 
 type DLength =
@@ -45,6 +51,7 @@ const MigrationChart: React.FC<MigrationChartProps> = ({
   legend,
   dataLength = 40,
   maxHeight = '200px',
+  barHeight = 8,
 }: MigrationChartProps) => {
   const dynamicLegend = useMemo(() => {
     return data.reduce(
@@ -116,23 +123,54 @@ const MigrationChart: React.FC<MigrationChartProps> = ({
                 {data.map((item, index) => (
                   <Tr key={index}>
                     <Td width={dataLength} style={{ paddingLeft: '0px' }}>
-                      <Tooltip content={<div>{item.name}</div>} exitDelay={0}>
-                        <Content
-                          component={ContentVariants.p}
-                          style={{
-                            fontSize: 'clamp(0.4rem, 0.7vw, 1.1rem)',
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                            wordBreak: 'break-word',
-                            display: '-webkit-box',
-                            WebkitLineClamp: 1, // Number of lines to show
-                            textTransform: 'capitalize',
-                            WebkitBoxOrient: 'vertical',
-                          }}
-                        >
-                          {item.name}
-                        </Content>
-                      </Tooltip>
+                      <Flex
+                        alignItems={{ default: 'alignItemsCenter' }}
+                        spaceItems={{ default: 'spaceItemsSm' }}
+                      >
+                        <FlexItem>
+                          <Content
+                            component={ContentVariants.p}
+                            style={{
+                              fontSize: 'clamp(0.4rem, 0.7vw, 1.1rem)',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              wordBreak: 'break-word',
+                              display: '-webkit-box',
+                              WebkitLineClamp: 1,
+                              textTransform: 'capitalize',
+                              WebkitBoxOrient: 'vertical',
+                            }}
+                          >
+                            {item.name}
+                          </Content>
+                        </FlexItem>
+                        {item.infoText &&
+                        item.infoText !== '' &&
+                        item.infoText !== undefined ? (
+                          <FlexItem>
+                            <Popover
+                              className="upgrade-recommendation-popover"
+                              position="bottom"
+                              headerContent="Upgrade to get support"
+                              bodyContent={
+                                <div>
+                                  This operating system must be upgraded to a
+                                  supported version in order to be supported by
+                                  Red Hat.
+                                </div>
+                              }
+                            >
+                              <Button
+                                type="button"
+                                aria-label="Open operating system upgrade information"
+                                variant="plain"
+                              >
+                                <InfoCircleIcon color="#6a6ec8" />
+                              </Button>
+                            </Popover>
+                          </FlexItem>
+                        ) : null}
+                      </Flex>
                     </Td>
                     <Td>
                       {/* Visual Bar */}
@@ -140,7 +178,7 @@ const MigrationChart: React.FC<MigrationChartProps> = ({
                         <div
                           style={{
                             position: 'relative',
-                            height: '8px',
+                            height: `${barHeight}px`,
                             backgroundColor: '#F5F5F5',
                             overflow: 'hidden',
                           }}

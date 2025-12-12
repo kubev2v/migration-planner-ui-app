@@ -1,6 +1,16 @@
 import React from 'react';
 
-import { Card, CardBody, CardTitle } from '@patternfly/react-core';
+import {
+  Card,
+  CardBody,
+  CardTitle,
+  Content,
+  ContentVariants,
+  Flex,
+  FlexItem,
+  Icon,
+} from '@patternfly/react-core';
+import { InfoCircleIcon } from '@patternfly/react-icons';
 
 import MigrationChart from '../../../components/MigrationChart';
 
@@ -9,6 +19,7 @@ interface OSDistributionProps {
     [osName: string]: {
       count: number;
       supported: boolean;
+      upgradeRecommendation: string;
     };
   };
   isExportMode?: boolean;
@@ -18,6 +29,9 @@ export const OSDistribution: React.FC<OSDistributionProps> = ({
   osData,
   isExportMode = false,
 }) => {
+  const hasUpgradeRecommendation = Object.values(osData).some(
+    (o) => o.upgradeRecommendation && o.upgradeRecommendation.trim() !== '',
+  );
   return (
     <Card
       className={isExportMode ? 'dashboard-card-print' : 'dashboard-card'}
@@ -27,6 +41,27 @@ export const OSDistribution: React.FC<OSDistributionProps> = ({
         <i className="fas fa-database" /> Operating Systems
       </CardTitle>
       <CardBody>
+        {hasUpgradeRecommendation ? (
+          <Flex
+            alignItems={{ default: 'alignItemsCenter' }}
+            spaceItems={{ default: 'spaceItemsSm' }}
+            style={{ marginBottom: '8px' }}
+          >
+            <FlexItem>
+              <Icon>
+                <InfoCircleIcon color="#6a6ec8" />
+              </Icon>
+            </FlexItem>
+            <FlexItem>
+              <Content
+                component={ContentVariants.p}
+                style={{ fontWeight: 500 }}
+              >
+                OS must be upgraded to be supported
+              </Content>
+            </FlexItem>
+          </Flex>
+        ) : null}
         <OSBarChart osData={osData} isExportMode={isExportMode} />
       </CardBody>
     </Card>
@@ -34,7 +69,13 @@ export const OSDistribution: React.FC<OSDistributionProps> = ({
 };
 
 interface OSBarChartProps {
-  osData: { [osName: string]: { count: number; supported: boolean } };
+  osData: {
+    [osName: string]: {
+      count: number;
+      supported: boolean;
+      upgradeRecommendation?: string;
+    };
+  };
   isExportMode?: boolean;
 }
 
@@ -49,13 +90,16 @@ export const OSBarChart: React.FC<OSBarChartProps> = ({
   const chartData = sorted.map(([os, osInfo]) => ({
     name: os,
     count: osInfo.count,
-    legendCategory: osInfo.supported ? 'Supported' : 'Not Supported',
+    legendCategory: osInfo.supported
+      ? 'Supported by Red Hat'
+      : 'Not supported by Red Hat',
+    infoText: osInfo.upgradeRecommendation,
   }));
 
   // Define custom colors: green for supported, red for not supported
   const customLegend = {
-    Supported: '#28a745', // Green
-    'Not Supported': '#d9534f', // Red
+    'Supported by Red Hat': '#28a745', // Green
+    'Not supported by Red Hat': '#d9534f', // Red
   };
 
   const tableHeight = isExportMode ? 'auto !important' : '350px';
@@ -64,6 +108,7 @@ export const OSBarChart: React.FC<OSBarChartProps> = ({
       data={chartData}
       legend={customLegend}
       maxHeight={tableHeight}
+      barHeight={12}
     />
   );
 };

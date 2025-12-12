@@ -50,22 +50,35 @@ export const Dashboard: React.FC<Props> = ({
           acc[osName] = {
             count: osInfo.count,
             supported: osInfo.supported,
+            upgradeRecommendation: osInfo.upgradeRecommendation,
           };
           return acc;
         },
-        {} as { [osName: string]: { count: number; supported: boolean } },
+        {} as {
+          [osName: string]: {
+            count: number;
+            supported: boolean;
+            upgradeRecommendation: string;
+          };
+        },
       )
     : Object.entries(vms.os).reduce(
         (acc, [osName, count]) => {
           acc[osName] = {
             count: count,
             supported: true, // Default to supported when using fallback data
+            upgradeRecommendation: '',
           };
           return acc;
         },
-        {} as { [osName: string]: { count: number; supported: boolean } },
+        {} as {
+          [osName: string]: {
+            count: number;
+            supported: boolean;
+            upgradeRecommendation: string;
+          };
+        },
       );
-
   return (
     <PageSection hasBodyWrapper={false}>
       <Grid hasGutter>
