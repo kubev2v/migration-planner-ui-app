@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useMount } from 'react-use';
 
@@ -10,11 +10,15 @@ import {
   VMs,
 } from '@migration-planner-ui/api-client/models';
 import {
+  Alert,
+  AlertActionCloseButton,
   Bullseye,
   Button,
   Content,
   Icon,
   Spinner,
+  Split,
+  SplitItem,
   Stack,
   StackItem,
 } from '@patternfly/react-core';
@@ -24,7 +28,9 @@ import { t_global_color_status_success_default as globalSuccessColor100 } from '
 import { AppPage } from '../../components/AppPage';
 import { useDiscoverySources } from '../../migration-wizard/contexts/discovery-sources/Context';
 import { Provider as DiscoverySourcesProvider } from '../../migration-wizard/contexts/discovery-sources/Provider';
-import EnhancedDownloadButton from '../../migration-wizard/steps/discovery/EnhancedDownloadButton';
+import EnhancedDownloadButton, {
+  ExportError,
+} from '../../migration-wizard/steps/discovery/EnhancedDownloadButton';
 import { openAssistedInstaller } from '../assessment/utils/functions';
 import { parseLatestSnapshot } from '../assessment/utils/snapshotParser';
 
@@ -58,6 +64,7 @@ type AssessmentLike = {
 const Inner: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const discoverySourcesContext = useDiscoverySources();
+  const [exportError, setExportError] = useState<ExportError | null>(null);
 
   useMount(async () => {
     if (
@@ -168,26 +175,49 @@ const Inner: React.FC = () => {
       ]}
       title={`${assessment.name || `Assessment ${id}`} report`}
       caption={
-        <>
-          Discovery VM status :{' '}
-          <Icon size="md" isInline>
-            <CheckCircleIcon color={globalSuccessColor100.value} />
-          </Icon>{' '}
-          Connected
-          <br />
-          Presenting the information we were able to fetch from the discovery
-          process
-          <br />
-          {lastUpdatedText !== '-'
-            ? `Last updated: ${lastUpdatedText}`
-            : '[Last updated time stamp]'}
-        </>
+        <Stack>
+          <StackItem>
+            Discovery VM status:{' '}
+            <Icon size="md" isInline>
+              <CheckCircleIcon color={globalSuccessColor100.value} />
+            </Icon>{' '}
+            Connected
+          </StackItem>
+
+          <StackItem>
+            <p>
+              Presenting the information we were able to fetch from the
+              discovery process
+            </p>
+          </StackItem>
+
+          <StackItem>
+            {lastUpdatedText !== '-'
+              ? `Last updated: ${lastUpdatedText}`
+              : '[Last updated time stamp]'}
+          </StackItem>
+        </Stack>
+      }
+      alerts={
+        exportError ? (
+          <Alert
+            variant="danger"
+            isInline
+            title="An error occurred"
+            actionClose={
+              <AlertActionCloseButton onClose={() => setExportError(null)} />
+            }
+          >
+            <p>{exportError?.message}</p>
+          </Alert>
+        ) : null
       }
       headerActions={
-        <div style={{ display: 'flex', gap: '0.5rem' }}>
-          {infra && vms && cpuCores && ramGB ? (
-            <>
+        infra && vms && cpuCores && ramGB ? (
+          <Split hasGutter>
+            <SplitItem>
               <EnhancedDownloadButton
+                onError={setExportError}
                 elementId="discovery-report"
                 componentToRender={
                   <Dashboard
@@ -204,12 +234,14 @@ const Inner: React.FC = () => {
                 snapshot={last}
                 documentTitle={`${assessment.name || `Assessment ${id}`}`}
               />
+            </SplitItem>
+            <SplitItem>
               <Button variant="primary" onClick={openAssistedInstaller}>
                 Create a target cluster
               </Button>
-            </>
-          ) : null}
-        </div>
+            </SplitItem>
+          </Split>
+        ) : null
       }
     >
       {infra && vms && cpuCores && ramGB ? (

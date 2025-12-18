@@ -1,13 +1,17 @@
 import React from 'react';
 
 import {
+  AlertGroup,
   Breadcrumb,
   BreadcrumbItem,
   BreadcrumbItemProps,
   Content,
   Divider,
+  Flex,
+  FlexItem,
   PageBreadcrumb,
   PageSection,
+  Stack,
 } from '@patternfly/react-core';
 import {
   PageHeader,
@@ -21,13 +25,15 @@ export namespace AppPage {
     caption?: React.ReactNode;
     breadcrumbs?: Array<BreadcrumbItemProps>;
     headerActions?: React.ReactNode;
+    alerts?: React.ReactNode;
   };
 }
 
 export const AppPage: React.FC<React.PropsWithChildren<AppPage.Props>> = (
   props,
 ) => {
-  const { title, caption, breadcrumbs, children, headerActions } = props;
+  const { title, caption, breadcrumbs, children, headerActions, alerts } =
+    props;
 
   return (
     <div>
@@ -42,23 +48,22 @@ export const AppPage: React.FC<React.PropsWithChildren<AppPage.Props>> = (
           </Breadcrumb>
         </PageBreadcrumb>
         <PageHeader>
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              gap: '1rem',
-              width: '100%',
-            }}
-          >
-            <PageHeaderTitle title={title} />
-            {headerActions}
-          </div>
-          <Content
-            style={{ paddingBlockStart: 'var(--pf-t--global--spacer--md)' }}
-          >
+          <Stack>
+            <Flex justifyContent={{ default: 'justifyContentCenter' }}>
+              <PageHeaderTitle title={title} />
+              {React.Children.map(headerActions, (action, index) => (
+                <FlexItem
+                  {...(index === 0
+                    ? { align: { default: 'alignRight' } }
+                    : null)}
+                >
+                  {action}
+                </FlexItem>
+              ))}
+            </Flex>
             <Content component="small">{caption}</Content>
-          </Content>
+            {alerts && <AlertGroup>{alerts}</AlertGroup>}
+          </Stack>
         </PageHeader>
         <Divider />
       </div>

@@ -1,12 +1,11 @@
-import React, { useRef, useState } from 'react';
-import html2canvas from 'html2canvas';
+import html2canvas from 'html2canvas-pro';
 import jsPDF from 'jspdf';
+import React, { useEffect, useRef, useState } from 'react';
 import type { Root } from 'react-dom/client';
 import { createRoot } from 'react-dom/client';
 
 import type { Source } from '@migration-planner-ui/api-client/models';
 import {
-  Alert,
   Dropdown,
   DropdownItem,
   DropdownList,
@@ -16,8 +15,8 @@ import {
 } from '@patternfly/react-core';
 import { DownloadIcon } from '@patternfly/react-icons';
 
-import './DownloadPDFStyles.css';
 import { SnapshotLike } from '../../../pages/report/Report';
+import './DownloadPDFStyles.css';
 
 // Constants
 const EXPORT_CONFIG = {
@@ -103,7 +102,7 @@ interface ExportOption {
 
 type LoadingState = 'idle' | 'generating-pdf' | 'generating-html' | 'error';
 
-interface ExportError {
+export interface ExportError {
   message: string;
   type: 'pdf' | 'html' | 'general';
 }
@@ -129,6 +128,7 @@ interface EnhancedDownloadButtonProps {
   sourceData?: Source;
   snapshot?: SnapshotLike;
   documentTitle?: string;
+  onError?: (error: ExportError) => void;
 }
 
 const EnhancedDownloadButton: React.FC<EnhancedDownloadButtonProps> = ({
@@ -137,11 +137,18 @@ const EnhancedDownloadButton: React.FC<EnhancedDownloadButtonProps> = ({
   sourceData,
   snapshot,
   documentTitle,
+  onError,
 }): JSX.Element => {
   const hiddenContainerRef = useRef<HTMLDivElement | null>(null);
   const [loadingState, setLoadingState] = useState<LoadingState>('idle');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [error, setError] = useState<ExportError | null>(null);
+
+  useEffect(() => {
+    if (error) {
+      onError?.(error);
+    }
+  }, [error]);
 
   const isLoading =
     loadingState === 'generating-pdf' || loadingState === 'generating-html';
@@ -1267,17 +1274,6 @@ const EnhancedDownloadButton: React.FC<EnhancedDownloadButtonProps> = ({
           ))}
         </DropdownList>
       </Dropdown>
-
-      {error && (
-        <Alert
-          variant="danger"
-          isInline
-          title="An error occurred"
-          style={{ marginTop: '0.5rem' }}
-        >
-          {error.message}
-        </Alert>
-      )}
 
       <div
         id="hidden-container"
