@@ -28,9 +28,8 @@ import { t_global_color_status_success_default as globalSuccessColor100 } from '
 import { AppPage } from '../../components/AppPage';
 import { useDiscoverySources } from '../../migration-wizard/contexts/discovery-sources/Context';
 import { Provider as DiscoverySourcesProvider } from '../../migration-wizard/contexts/discovery-sources/Provider';
-import EnhancedDownloadButton, {
-  ExportError,
-} from '../../migration-wizard/steps/discovery/EnhancedDownloadButton';
+import { EnhancedDownloadButton } from '../../migration-wizard/steps/discovery/EnhancedDownloadButton';
+import { ExportError } from '../../services/report-export/types';
 import { openAssistedInstaller } from '../assessment/utils/functions';
 import { parseLatestSnapshot } from '../assessment/utils/snapshotParser';
 

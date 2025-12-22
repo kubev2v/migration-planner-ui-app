@@ -14,6 +14,7 @@ import { useChrome } from '@redhat-cloud-services/frontend-components/useChrome'
 
 import { exposeVersionInfo } from './common/version';
 import { Symbols } from './main/Symbols';
+import { ReportExportService } from './services/report-export';
 import { createAuthFetch } from './utils/authFetch';
 import Routing from './Routing';
 
@@ -36,6 +37,7 @@ const App: React.FC = () => {
       c.register(Symbols.SourceApi, new SourceApi(plannerApiConfig));
       c.register(Symbols.AgentApi, new AgentApi(plannerApiConfig));
       c.register(Symbols.AssessmentApi, new AssessmentApi(plannerApiConfig));
+      c.register(Symbols.ReportExportService, new ReportExportService());
 
       setContainer(c);
 

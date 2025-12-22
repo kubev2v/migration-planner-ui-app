@@ -1,5 +1,5 @@
-import React from 'react';
 import Humanize from 'humanize-plus';
+import React from 'react';
 
 import type {
   Datastore,
@@ -37,7 +37,7 @@ import { ReportPieChart } from '../../../pages/report/ReportPieChart';
 import { ReportTable } from '../../../pages/report/ReportTable';
 import { useDiscoverySources } from '../../contexts/discovery-sources/Context';
 
-import EnhancedDownloadButton from './EnhancedDownloadButton';
+import { EnhancedDownloadButton } from './EnhancedDownloadButton';
 
 export const DiscoveryStep: React.FC = () => {
   const discoverSourcesContext = useDiscoverySources();
@@ -216,35 +216,35 @@ export const DiscoveryStep: React.FC = () => {
       },
       vms.notMigratableReasons.length > 0
         ? {
-            name: (
-              <Content>
-                Not migratable reasons{' '}
-                <Badge isRead>
-                  {vms.migrationWarnings
-                    .map(({ count }) => count)
-                    .reduce((sum, n) => sum + n, 0)}
-                </Badge>
-              </Content>
-            ),
-            icon: (
-              <Icon style={{ color: globalDangerColor100.value }}>
-                <ExclamationCircleIcon />
-              </Icon>
-            ),
-            id: 'not-migratable',
-            children: [
-              {
-                name: (
-                  <ReportTable<MigrationIssue>
-                    data={vms.notMigratableReasons}
-                    columns={['Total', 'Description']}
-                    fields={['count', 'assessment']}
-                  />
-                ),
-                id: 'not-migratable-details',
-              },
-            ],
-          }
+          name: (
+            <Content>
+              Not migratable reasons{' '}
+              <Badge isRead>
+                {vms.migrationWarnings
+                  .map(({ count }) => count)
+                  .reduce((sum, n) => sum + n, 0)}
+              </Badge>
+            </Content>
+          ),
+          icon: (
+            <Icon style={{ color: globalDangerColor100.value }}>
+              <ExclamationCircleIcon />
+            </Icon>
+          ),
+          id: 'not-migratable',
+          children: [
+            {
+              name: (
+                <ReportTable<MigrationIssue>
+                  data={vms.notMigratableReasons}
+                  columns={['Total', 'Description']}
+                  fields={['count', 'assessment']}
+                />
+              ),
+              id: 'not-migratable-details',
+            },
+          ],
+        }
         : null,
       computeStatsViewData,
       diskStatsViewData,
@@ -298,7 +298,7 @@ export const DiscoveryStep: React.FC = () => {
           datastores
             .map((ds) => ds.totalCapacityGB)
             .reduce((sum, next) => sum + next, 0) *
-            1024 ** 3,
+          1024 ** 3,
         )}
         .
       </>
