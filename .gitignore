@@ -1,7 +1,7 @@
 # See https://help.github.com/ignore-files/ for more about ignoring files.
 
 # vscode config
-.vscode/*
+# .vscode/*
 
 
 # ide config
@@ -17,11 +17,10 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-.DS_Store
 coverage
 
 # cache folder
-.cache
+.cache*
 .swc
 
 .yalc
@@ -33,3 +32,10 @@ docker-config
 
 # lint
 .eslintcache
+
+# Env files
+.envrc
+.env
+
+# MacOS
+.DS_Store
