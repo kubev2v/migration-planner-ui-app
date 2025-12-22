@@ -1202,14 +1202,14 @@ const EnhancedDownloadButton: React.FC<EnhancedDownloadButtonProps> = ({
   const exportOptions: ExportOption[] = [
     {
       key: 'pdf',
-      label: 'PDF (View Only)',
-      description: 'Static PDF report',
+      label: 'PDF',
+      description: 'Export the report as static charts',
       action: handleDownloadPDF,
     },
     {
       key: 'html-interactive',
-      label: 'Export HTML (coming soon)',
-      description: 'Interactive charts',
+      label: 'HTML',
+      description: 'Export the report as interactive charts',
       action: handleHTMLExport,
       disabled: true,
     },
