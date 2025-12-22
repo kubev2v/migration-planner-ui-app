@@ -71,5 +71,4 @@ export const AppPage: React.FC<React.PropsWithChildren<AppPage.Props>> = (
     </div>
   );
 };
-
-AppPage.displayName = 'BasePage';
+AppPage.displayName = 'AppPage';
