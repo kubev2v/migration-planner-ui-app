@@ -105,6 +105,15 @@ export const Provider: React.FC<PropsWithChildren> = (props) => {
     },
   );
 
+  // Callback to delete assessment (used when cancelling a completed job)
+  const handleDeleteAssessment = useCallback(
+    async (assessmentId: string) => {
+      await assessmentApi.deleteAssessment({ id: assessmentId });
+      await listAssessments();
+    },
+    [assessmentApi, listAssessments],
+  );
+
   // RVTools Job State Hook
   const {
     currentJob,
@@ -116,6 +125,7 @@ export const Provider: React.FC<PropsWithChildren> = (props) => {
   } = useRVToolsJob({
     jobApi,
     onJobCompleted: listAssessments,
+    onDeleteAssessment: handleDeleteAssessment,
   });
 
   const [createAssessmentState, createAssessment] = useAsyncFn(
