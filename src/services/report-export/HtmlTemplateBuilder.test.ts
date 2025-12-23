@@ -1,4 +1,4 @@
-import { beforeEach,describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 
 import { DEFAULT_DOCUMENT_TITLE } from './constants';
 import { HtmlTemplateBuilder } from './HtmlTemplateBuilder';
