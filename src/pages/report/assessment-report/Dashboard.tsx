@@ -15,8 +15,8 @@ import {
 } from '@patternfly/react-core';
 
 import { ClustersOverview } from './ClustersOverview';
+import { CpuAndMemoryOverview } from './CpuAndMemoryOverview';
 import { ErrorTable } from './ErrorTable';
-import { InfrastructureOverview } from './InfastructureOverview';
 import { NetworkOverview } from './NetworkOverview';
 import { OSDistribution } from './OSDistribution';
 import { StorageOverview } from './StorageOverview';
@@ -37,8 +37,6 @@ interface Props {
 
 export const Dashboard: React.FC<Props> = ({
   infra,
-  cpuCores,
-  ramGB,
   vms,
   isExportMode,
   exportAllViews,
@@ -83,17 +81,6 @@ export const Dashboard: React.FC<Props> = ({
   return (
     <PageSection hasBodyWrapper={false}>
       <Grid hasGutter>
-        <GridItem
-          span={12}
-          id="infrastructure-overview"
-          data-export-block={isExportMode ? '1' : undefined}
-        >
-          <InfrastructureOverview
-            infra={infra}
-            cpuCores={cpuCores}
-            ramGB={ramGB}
-          />
-        </GridItem>
         <GridItem span={12} data-export-block={isExportMode ? '2' : undefined}>
           <Gallery hasGutter minWidths={{ default: '40%' }}>
             <GalleryItem>
@@ -113,6 +100,14 @@ export const Dashboard: React.FC<Props> = ({
         <GridItem span={12} data-export-block={isExportMode ? '3' : undefined}>
           <Gallery hasGutter minWidths={{ default: '40%' }}>
             <GalleryItem>
+              <CpuAndMemoryOverview
+                isExportMode={isExportMode}
+                exportAllViews={exportAllViews}
+                cpuTierDistribution={vms.distributionByCpuTier}
+                memoryTierDistribution={vms.distributionByMemoryTier}
+              />
+            </GalleryItem>
+            <GalleryItem>
               <StorageOverview
                 DiskSizeTierSummary={vms.diskSizeTier}
                 isExportMode={isExportMode}
@@ -120,6 +115,10 @@ export const Dashboard: React.FC<Props> = ({
                 diskTypeSummary={vms.diskTypes}
               />
             </GalleryItem>
+          </Gallery>
+        </GridItem>
+        <GridItem span={12} data-export-block={isExportMode ? '4' : undefined}>
+          <Gallery hasGutter minWidths={{ default: '300px', md: '45%' }}>
             <GalleryItem>
               <ClustersOverview
                 vmsPerCluster={Object.values(clusters || {}).map(
@@ -131,14 +130,9 @@ export const Dashboard: React.FC<Props> = ({
                 clusters={clusters}
               />
             </GalleryItem>
-          </Gallery>
-        </GridItem>
-        <GridItem span={12} data-export-block={isExportMode ? '4' : undefined}>
-          <Gallery hasGutter minWidths={{ default: '300px', md: '45%' }}>
             <GalleryItem>
               <NetworkOverview infra={infra} isExportMode={isExportMode} />
             </GalleryItem>
-            <GalleryItem></GalleryItem>
           </Gallery>
         </GridItem>
         <GridItem span={12} data-export-block={isExportMode ? '4' : undefined}>
