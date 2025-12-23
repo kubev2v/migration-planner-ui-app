@@ -37,7 +37,6 @@ export class PdfGenerator {
   private hiddenContainer: HTMLDivElement | null = null;
   private root: Root | null = null;
   private tempDiv: HTMLDivElement | null = null;
-  private originalWarn: typeof console.warn = console.warn;
 
   /**
    * Generate a PDF from a React component
@@ -377,7 +376,7 @@ export class PdfGenerator {
         height: Math.max(
           1,
           Math.min(imgHeight, b3.bottom + SEGMENT_PADDING_PX) -
-            Math.max(0, b3.top - SEGMENT_PADDING_PX),
+          Math.max(0, b3.top - SEGMENT_PADDING_PX),
         ),
       },
       {
@@ -385,7 +384,7 @@ export class PdfGenerator {
         height: Math.max(
           1,
           Math.min(imgHeight, b4.bottom + SEGMENT_PADDING_PX) -
-            Math.max(0, b4.top - SEGMENT_PADDING_PX),
+          Math.max(0, b4.top - SEGMENT_PADDING_PX),
         ),
       },
     ];
@@ -610,6 +609,5 @@ export class PdfGenerator {
     this.root = null;
     this.tempDiv = null;
     this.hiddenContainer = null;
-    console.warn = this.originalWarn;
   }
 }

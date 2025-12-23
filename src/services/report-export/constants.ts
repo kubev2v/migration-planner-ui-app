@@ -2,6 +2,8 @@
  * Constants for report export functionality
  */
 
+export const DEFAULT_DOCUMENT_TITLE = 'VMware Infrastructure Assessment Report';
+
 export const EXPORT_CONFIG = {
   PDF_FILENAME: 'Dashboard_Report.pdf',
   HTML_FILENAME: 'VMware_Infrastructure_Assessment_Comprehensive.html',

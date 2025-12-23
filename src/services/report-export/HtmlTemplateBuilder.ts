@@ -5,7 +5,7 @@
 import { escapeHtml, formatNumber } from '../../utils/formatters';
 
 import { ChartDataTransformer } from './ChartDataTransformer';
-import { CHART_COLORS } from './constants';
+import { CHART_COLORS, DEFAULT_DOCUMENT_TITLE } from './constants';
 import type {
   ChartData,
   Datastore,
@@ -24,11 +24,13 @@ export class HtmlTemplateBuilder {
    * @param chartData - Chart data to render
    * @param inventory - Inventory data (either InventoryData or SnapshotLike)
    * @param generatedAt - Optional date for the report timestamp (defaults to current date/time)
+   * @param title - Optional custom title for the report (defaults to DEFAULT_DOCUMENT_TITLE)
    */
   build(
     chartData: ChartData,
     inventory: InventoryData | SnapshotLike,
     generatedAt: Date = new Date(),
+    title: string = DEFAULT_DOCUMENT_TITLE,
   ): string {
     const { infra, vms } = this.chartTransformer.normalizeInventory(inventory);
     const {
@@ -47,7 +49,7 @@ export class HtmlTemplateBuilder {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VMware Infrastructure Assessment Report</title>
+    <title>${escapeHtml(title)}</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js" integrity="sha512-ElRFoEQdI5Ht6kZvyzXhYG9NqjtkmlkfYk0wr6wHxU9JEHakS7UJZNeml5ALk+8IKlU6jDgMabC3vkumRokgJA==" crossorigin="anonymous"></script>
     <style>
         ${this.generateStyles()}
@@ -55,7 +57,7 @@ export class HtmlTemplateBuilder {
 </head>
 <body>
     <div class="container">
-        ${this.buildHeader(generatedAt)}
+        ${this.buildHeader(generatedAt, title)}
         ${this.buildSummaryGrid(infra, vms)}
         ${this.buildChartGrid(vms, infra, powerStateData, resourceData, osData, warningsData, storageLabels, storageUsedData, storageTotalData)}
         ${this.buildDetailedTables(infra, vms)}
@@ -107,10 +109,10 @@ export class HtmlTemplateBuilder {
     }`;
   }
 
-  private buildHeader(generatedAt: Date): string {
+  private buildHeader(generatedAt: Date, title: string): string {
     return `
         <div class="header">
-            <h1>VMware Infrastructure Assessment Report</h1>
+            <h1>${escapeHtml(title)}</h1>
             <p>Generated: ${generatedAt.toLocaleDateString()} at ${generatedAt.toLocaleTimeString()}</p>
         </div>`;
   }
@@ -296,7 +298,8 @@ export class HtmlTemplateBuilder {
 
     return osEntries
       .map(([osName, count]) => {
-        const percentage = ((count / vms.total) * 100).toFixed(1);
+        const percentage =
+          vms.total === 0 ? '0.0' : ((count / vms.total) * 100).toFixed(1);
         const priority = osName.includes('Windows')
           ? 'High'
           : osName.includes('Linux') || osName.includes('Red Hat')
@@ -331,7 +334,8 @@ export class HtmlTemplateBuilder {
               : warning.count > 5
                 ? 'Medium'
                 : 'Low';
-        const percentage = ((warning.count / vms.total) * 100).toFixed(1);
+        const percentage =
+          vms.total > 0 ? ((warning.count / vms.total) * 100).toFixed(1) : '0.0';
         const priority =
           impact === 'Critical'
             ? 'Immediate'

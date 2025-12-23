@@ -3,7 +3,7 @@
  */
 
 import { ChartDataTransformer } from './ChartDataTransformer';
-import { EXPORT_CONFIG } from './constants';
+import { DEFAULT_DOCUMENT_TITLE, EXPORT_CONFIG } from './constants';
 import { HtmlTemplateBuilder } from './HtmlTemplateBuilder';
 import type { InventoryData, SnapshotLike } from './types';
 
@@ -28,7 +28,8 @@ export class HtmlGenerator {
     }
 
     const chartData = this.chartTransformer.transform(inventory);
-    const htmlContent = this.templateBuilder.build(chartData, inventory);
+    const title = options.documentTitle || DEFAULT_DOCUMENT_TITLE;
+    const htmlContent = this.templateBuilder.build(chartData, inventory, new Date(), title);
     const filename = options.filename || EXPORT_CONFIG.HTML_FILENAME;
 
     await this.downloadHtml(htmlContent, filename);

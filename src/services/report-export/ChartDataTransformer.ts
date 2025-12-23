@@ -100,10 +100,11 @@ export class ChartDataTransformer {
   }
 
   private buildPowerStateData(vms: VMsData): Array<[string, number]> {
+    const ps = vms.powerStates ?? {};
     return [
-      ['Powered On', vms.powerStates.poweredOn || 0],
-      ['Powered Off', vms.powerStates.poweredOff || 0],
-      ['Suspended', vms.powerStates.suspended || 0],
+      ['Powered On', ps.poweredOn ?? 0],
+      ['Powered Off', ps.poweredOff ?? 0],
+      ['Suspended', ps.suspended ?? 0],
     ];
   }
 

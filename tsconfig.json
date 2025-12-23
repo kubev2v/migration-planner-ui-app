@@ -20,7 +20,9 @@
   },
   "include": [
     "./src/**/*.ts",
-    "./src/**/*.tsx"
+    "./src/**/*.tsx",
+    "./vitest.config.ts",
+    "./config/vitest.setup.ts"
   ],
   "exclude": [
     "./src/entry.ts",
