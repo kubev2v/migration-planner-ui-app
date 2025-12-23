@@ -86,7 +86,12 @@ describe('HtmlTemplateBuilder', () => {
       });
 
       it('should handle empty string title by using it as-is', () => {
-        const html = builder.build(mockChartData, mockInventory, new Date(), '');
+        const html = builder.build(
+          mockChartData,
+          mockInventory,
+          new Date(),
+          '',
+        );
 
         expect(html).toContain('<title></title>');
         expect(html).toContain('<h1></h1>');

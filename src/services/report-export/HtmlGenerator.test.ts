@@ -1,4 +1,12 @@
-import { describe, it, expect, beforeEach, afterEach, vi, type MockInstance } from 'vitest';
+import {
+  describe,
+  it,
+  expect,
+  beforeEach,
+  afterEach,
+  vi,
+  type MockInstance,
+} from 'vitest';
 import { HtmlGenerator } from './HtmlGenerator';
 import { DEFAULT_DOCUMENT_TITLE } from './constants';
 import type { InventoryData } from './types';
@@ -123,7 +131,9 @@ describe('HtmlGenerator', () => {
     });
 
     it('should use custom filename when provided', async () => {
-      await generator.generate(mockInventory, { filename: 'custom-report.html' });
+      await generator.generate(mockInventory, {
+        filename: 'custom-report.html',
+      });
 
       expect(capturedLink).not.toBeNull();
       expect(capturedLink!.download).toBe('custom-report.html');

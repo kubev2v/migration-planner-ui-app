@@ -29,7 +29,12 @@ export class HtmlGenerator {
 
     const chartData = this.chartTransformer.transform(inventory);
     const title = options.documentTitle || DEFAULT_DOCUMENT_TITLE;
-    const htmlContent = this.templateBuilder.build(chartData, inventory, new Date(), title);
+    const htmlContent = this.templateBuilder.build(
+      chartData,
+      inventory,
+      new Date(),
+      title,
+    );
     const filename = options.filename || EXPORT_CONFIG.HTML_FILENAME;
 
     await this.downloadHtml(htmlContent, filename);

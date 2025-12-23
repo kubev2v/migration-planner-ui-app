@@ -335,7 +335,9 @@ export class HtmlTemplateBuilder {
                 ? 'Medium'
                 : 'Low';
         const percentage =
-          vms.total > 0 ? ((warning.count / vms.total) * 100).toFixed(1) : '0.0';
+          vms.total > 0
+            ? ((warning.count / vms.total) * 100).toFixed(1)
+            : '0.0';
         const priority =
           impact === 'Critical'
             ? 'Immediate'
