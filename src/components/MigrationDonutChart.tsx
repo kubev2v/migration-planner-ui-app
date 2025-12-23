@@ -13,6 +13,7 @@ interface MigrationDonutChartProps {
   data: OSData[];
   legend?: Record<string, string>;
   customColors?: Record<string, string>;
+  legendWidth?: number;
   height?: number;
   width?: number;
   title?: string;
@@ -45,6 +46,7 @@ const MigrationDonutChart: React.FC<MigrationDonutChartProps> = ({
   data,
   legend,
   customColors,
+  legendWidth,
   height = 260,
   width = 420,
   title,
@@ -193,13 +195,15 @@ const MigrationDonutChart: React.FC<MigrationDonutChartProps> = ({
           display: 'flex',
           justifyContent: 'center',
           marginLeft: marginLeft,
+          overflowX: 'hidden',
+          overflowY: 'hidden',
         }}
       >
         <ChartLegend
           data={legendData}
           orientation="horizontal"
           height={200}
-          width={800}
+          width={legendWidth ?? 800}
           itemsPerRow={itemsPerRow}
           style={{
             labels: { fontSize: labelFontSize },
