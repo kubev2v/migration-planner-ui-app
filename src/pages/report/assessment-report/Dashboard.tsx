@@ -105,6 +105,8 @@ export const Dashboard: React.FC<Props> = ({
                 exportAllViews={exportAllViews}
                 cpuTierDistribution={vms.distributionByCpuTier}
                 memoryTierDistribution={vms.distributionByMemoryTier}
+                memoryTotalGB={vms.ramGB?.total}
+                cpuTotalCores={vms.cpuCores?.total}
               />
             </GalleryItem>
             <GalleryItem>
@@ -135,7 +137,7 @@ export const Dashboard: React.FC<Props> = ({
             </GalleryItem>
           </Gallery>
         </GridItem>
-        <GridItem span={12} data-export-block={isExportMode ? '4' : undefined}>
+        <GridItem span={12} data-export-block={isExportMode ? '5' : undefined}>
           <Gallery hasGutter minWidths={{ default: '300px', md: '45%' }}>
             <GalleryItem>
               <WarningsTable

@@ -18,6 +18,8 @@ import MigrationDonutChart from '../../../components/MigrationDonutChart';
 interface CpuAndMemoryOverviewProps {
   cpuTierDistribution?: Record<string, number>;
   memoryTierDistribution?: Record<string, number>;
+  memoryTotalGB?: number;
+  cpuTotalCores?: number;
   isExportMode?: boolean;
   exportAllViews?: boolean;
 }
@@ -87,20 +89,28 @@ function parseDistributionToSlices(
 export const CpuAndMemoryOverview: React.FC<CpuAndMemoryOverviewProps> = ({
   cpuTierDistribution,
   memoryTierDistribution,
+  memoryTotalGB,
+  cpuTotalCores,
   isExportMode = false,
   exportAllViews = false,
 }) => {
   const [viewMode, setViewMode] = useState<ViewMode>('memoryTiers');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
-  const memorySlices = useMemo(
-    () => parseDistributionToSlices(memoryTierDistribution),
-    [memoryTierDistribution],
-  );
-  const vcpuSlices = useMemo(
-    () => parseDistributionToSlices(cpuTierDistribution),
-    [cpuTierDistribution],
-  );
+  const memorySlices = useMemo(() => {
+    const base = parseDistributionToSlices(memoryTierDistribution);
+    return base.map((s) => ({
+      ...s,
+      name: /gb$/i.test(s.name.trim()) ? s.name : `${s.name} GB`,
+    }));
+  }, [memoryTierDistribution]);
+  const vcpuSlices = useMemo(() => {
+    const base = parseDistributionToSlices(cpuTierDistribution);
+    return base.map((s) => ({
+      ...s,
+      name: /cores?$/i.test(s.name.trim()) ? s.name : `${s.name} cores`,
+    }));
+  }, [cpuTierDistribution]);
 
   const activeSlices = viewMode === 'memoryTiers' ? memorySlices : vcpuSlices;
   const legend = useMemo(
@@ -215,8 +225,12 @@ export const CpuAndMemoryOverview: React.FC<CpuAndMemoryOverviewProps> = ({
                 title={`${memorySlices.reduce(
                   (acc, s) => acc + (Number(s.count) || 0),
                   0,
-                )}`}
-                subTitle="VMs"
+                )} VMs`}
+                subTitle={
+                  typeof memoryTotalGB === 'number'
+                    ? `${memoryTotalGB} GB`
+                    : undefined
+                }
                 subTitleColor="#9a9da0"
                 itemsPerRow={Math.ceil(memorySlices.length / 2)}
                 labelFontSize={18}
@@ -240,8 +254,12 @@ export const CpuAndMemoryOverview: React.FC<CpuAndMemoryOverviewProps> = ({
                 title={`${vcpuSlices.reduce(
                   (acc, s) => acc + (Number(s.count) || 0),
                   0,
-                )}`}
-                subTitle="VMs"
+                )} VMs`}
+                subTitle={
+                  typeof cpuTotalCores === 'number'
+                    ? `${cpuTotalCores.toLocaleString()} Cores`
+                    : undefined
+                }
                 subTitleColor="#9a9da0"
                 itemsPerRow={Math.ceil(vcpuSlices.length / 2)}
                 labelFontSize={18}
@@ -260,8 +278,16 @@ export const CpuAndMemoryOverview: React.FC<CpuAndMemoryOverviewProps> = ({
             donutThickness={9}
             titleFontSize={34}
             legend={legend}
-            title={`${totals.totalVMs}`}
-            subTitle="VMs"
+            title={`${totals.totalVMs} VMs`}
+            subTitle={
+              viewMode === 'memoryTiers'
+                ? typeof memoryTotalGB === 'number'
+                  ? `${memoryTotalGB} GB`
+                  : undefined
+                : typeof cpuTotalCores === 'number'
+                  ? `${cpuTotalCores.toLocaleString()} Cores`
+                  : undefined
+            }
             subTitleColor="#9a9da0"
             itemsPerRow={Math.ceil(activeSlices.length / 2)}
             labelFontSize={18}
