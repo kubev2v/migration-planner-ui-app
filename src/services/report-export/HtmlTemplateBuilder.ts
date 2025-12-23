@@ -25,7 +25,11 @@ export class HtmlTemplateBuilder {
    * @param inventory - Inventory data (either InventoryData or SnapshotLike)
    * @param generatedAt - Optional date for the report timestamp (defaults to current date/time)
    */
-  build(chartData: ChartData, inventory: InventoryData | SnapshotLike, generatedAt: Date = new Date()): string {
+  build(
+    chartData: ChartData,
+    inventory: InventoryData | SnapshotLike,
+    generatedAt: Date = new Date(),
+  ): string {
     const { infra, vms } = this.chartTransformer.normalizeInventory(inventory);
     const {
       powerStateData,
@@ -167,27 +171,29 @@ export class HtmlTemplateBuilder {
                 </div>
             </div>
 
-            ${vms.migrationWarnings.length > 0
-        ? `
+            ${
+              vms.migrationWarnings.length > 0
+                ? `
             <div class="chart-container">
                 <h3>Migration Warnings</h3>
                 <div class="chart-wrapper">
                     <canvas id="warningsChart"></canvas>
                 </div>
             </div>`
-        : ''
-      }
+                : ''
+            }
 
-            ${infra.datastores.length > 0
-        ? `
+            ${
+              infra.datastores.length > 0
+                ? `
             <div class="chart-container">
                 <h3>Storage Utilization by Datastore</h3>
                 <div class="chart-wrapper">
                     <canvas id="storageChart"></canvas>
                 </div>
             </div>`
-        : ''
-      }
+                : ''
+            }
         </div>`;
   }
 
@@ -280,9 +286,9 @@ export class HtmlTemplateBuilder {
   }
 
   private generateOSTable(vms: VMsData): string {
-    const osEntries = this.chartTransformer.extractOSData(vms).sort(
-      ([, a], [, b]) => b - a,
-    );
+    const osEntries = this.chartTransformer
+      .extractOSData(vms)
+      .sort(([, a], [, b]) => b - a);
 
     if (osEntries.length === 0) {
       return '<tr><td colspan="4">No operating system data available</td></tr>';
@@ -383,10 +389,10 @@ export class HtmlTemplateBuilder {
         const utilization =
           ds.totalCapacityGB > 0
             ? (
-              ((ds.totalCapacityGB - ds.freeCapacityGB) /
-                ds.totalCapacityGB) *
-              100
-            ).toFixed(1)
+                ((ds.totalCapacityGB - ds.freeCapacityGB) /
+                  ds.totalCapacityGB) *
+                100
+              ).toFixed(1)
             : '0.0';
         const hwAccel = ds.hardwareAcceleratedMove ? '✅ Yes' : '❌ No';
 
@@ -473,15 +479,15 @@ export class HtmlTemplateBuilder {
                         datasets: [{
                             data: ${JSON.stringify(osData.map((d) => d[1]))},
                             backgroundColor: ${JSON.stringify([
-      CHART_COLORS.PRIMARY,
-      CHART_COLORS.DANGER,
-      CHART_COLORS.SUCCESS,
-      CHART_COLORS.WARNING,
-      CHART_COLORS.INFO,
-      CHART_COLORS.SECONDARY,
-      CHART_COLORS.DARK,
-      CHART_COLORS.ORANGE,
-    ])}
+                              CHART_COLORS.PRIMARY,
+                              CHART_COLORS.DANGER,
+                              CHART_COLORS.SUCCESS,
+                              CHART_COLORS.WARNING,
+                              CHART_COLORS.INFO,
+                              CHART_COLORS.SECONDARY,
+                              CHART_COLORS.DARK,
+                              CHART_COLORS.ORANGE,
+                            ])}
                         }]
                     },
                     options: {
@@ -494,8 +500,9 @@ export class HtmlTemplateBuilder {
                 });
             }
 
-            ${vms.migrationWarnings.length > 0
-        ? `
+            ${
+              vms.migrationWarnings.length > 0
+                ? `
             // Migration Warnings Chart
             const warningsCtx = document.getElementById('warningsChart');
             if (warningsCtx) {
@@ -506,17 +513,17 @@ export class HtmlTemplateBuilder {
                         datasets: [{
                             data: ${JSON.stringify(warningsData.map((d) => d[1]))},
                             backgroundColor: ${JSON.stringify(
-          warningsData.map((d) => {
-            const count = Number(d[1]);
-            return count > 50
-              ? CHART_COLORS.DANGER
-              : count > 20
-                ? CHART_COLORS.WARNING
-                : count > 5
-                  ? CHART_COLORS.SUCCESS
-                  : CHART_COLORS.PRIMARY;
-          }),
-        )}
+                              warningsData.map((d) => {
+                                const count = Number(d[1]);
+                                return count > 50
+                                  ? CHART_COLORS.DANGER
+                                  : count > 20
+                                    ? CHART_COLORS.WARNING
+                                    : count > 5
+                                      ? CHART_COLORS.SUCCESS
+                                      : CHART_COLORS.PRIMARY;
+                              }),
+                            )}
                         }]
                     },
                     options: {
@@ -527,11 +534,12 @@ export class HtmlTemplateBuilder {
                     }
                 });
             }`
-        : ''
-      }
+                : ''
+            }
 
-            ${infra.datastores.length > 0
-        ? `
+            ${
+              infra.datastores.length > 0
+                ? `
             // Storage Utilization Chart
             const storageCtx = document.getElementById('storageChart');
             if (storageCtx) {
@@ -557,9 +565,8 @@ export class HtmlTemplateBuilder {
                     }
                 });
             }`
-        : ''
-      }
+                : ''
+            }
         });`;
   }
 }
-

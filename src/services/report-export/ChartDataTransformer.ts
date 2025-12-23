@@ -60,7 +60,8 @@ export class ChartDataTransformer {
     const infra = (snapshotLike.infra ||
       snapshotLike.inventory?.infra ||
       snapshotLike.inventory?.vcenter?.infra ||
-      (snapshotLike as { vcenter: { infra: InfraData } }).vcenter?.infra) as InfraData;
+      (snapshotLike as { vcenter: { infra: InfraData } }).vcenter
+        ?.infra) as InfraData;
 
     const vms = (snapshotLike.vms ||
       snapshotLike.inventory?.vms ||
@@ -108,16 +109,26 @@ export class ChartDataTransformer {
 
   private buildResourceData(vms: VMsData): Array<[string, number, number]> {
     return [
-      ['CPU Cores', vms.cpuCores.total, Math.round(vms.cpuCores.total * CPU_CAPACITY_MARGIN)],
-      ['Memory GB', vms.ramGB.total, Math.round(vms.ramGB.total * MEMORY_OVERHEAD_FACTOR)],
-      ['Storage GB', vms.diskGB.total, Math.round(vms.diskGB.total * STORAGE_SAFETY_MULTIPLIER)],
+      [
+        'CPU Cores',
+        vms.cpuCores.total,
+        Math.round(vms.cpuCores.total * CPU_CAPACITY_MARGIN),
+      ],
+      [
+        'Memory GB',
+        vms.ramGB.total,
+        Math.round(vms.ramGB.total * MEMORY_OVERHEAD_FACTOR),
+      ],
+      [
+        'Storage GB',
+        vms.diskGB.total,
+        Math.round(vms.diskGB.total * STORAGE_SAFETY_MULTIPLIER),
+      ],
     ];
   }
 
   private buildOSData(vms: VMsData): Array<[string, number]> {
-    const osEntries = this.extractOSData(vms).sort(
-      ([, a], [, b]) => b - a,
-    );
+    const osEntries = this.extractOSData(vms).sort(([, a], [, b]) => b - a);
 
     return osEntries.slice(0, 8);
   }
@@ -144,4 +155,3 @@ export class ChartDataTransformer {
     return { storageLabels, storageUsedData, storageTotalData };
   }
 }
-

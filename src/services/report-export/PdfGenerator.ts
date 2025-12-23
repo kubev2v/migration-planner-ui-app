@@ -237,7 +237,8 @@ export class PdfGenerator {
     // Calculate scaling
     const scaleFactor = contentWidth / imgWidth;
     const pageHeightPx = contentHeight / scaleFactor;
-    const domToCanvasScale = imgWidth / Math.max(1, this.hiddenContainer?.clientWidth || 1);
+    const domToCanvasScale =
+      imgWidth / Math.max(1, this.hiddenContainer?.clientWidth || 1);
 
     const blocksPx = domBlocks.map((b) => ({
       top: b.top * domToCanvasScale,
@@ -347,8 +348,7 @@ export class PdfGenerator {
       );
       if (!el) return null;
       const r = el.getBoundingClientRect();
-      const top =
-        Math.max(0, r.top - containerRect.top) * domToCanvasScale;
+      const top = Math.max(0, r.top - containerRect.top) * domToCanvasScale;
       const bottom =
         Math.max(top, r.bottom - containerRect.top) * domToCanvasScale;
       return { top, bottom };
@@ -377,7 +377,7 @@ export class PdfGenerator {
         height: Math.max(
           1,
           Math.min(imgHeight, b3.bottom + SEGMENT_PADDING_PX) -
-          Math.max(0, b3.top - SEGMENT_PADDING_PX),
+            Math.max(0, b3.top - SEGMENT_PADDING_PX),
         ),
       },
       {
@@ -385,7 +385,7 @@ export class PdfGenerator {
         height: Math.max(
           1,
           Math.min(imgHeight, b4.bottom + SEGMENT_PADDING_PX) -
-          Math.max(0, b4.top - SEGMENT_PADDING_PX),
+            Math.max(0, b4.top - SEGMENT_PADDING_PX),
         ),
       },
     ];
@@ -430,7 +430,10 @@ export class PdfGenerator {
         const guarded = Math.max(y + MIN_ADVANCE, lastBottom - bleedGuardPx);
         cut = Math.min(imgHeight, guarded);
       } else {
-        cut = Math.min(imgHeight, Math.max(y + MIN_ADVANCE, Math.round(target)));
+        cut = Math.min(
+          imgHeight,
+          Math.max(y + MIN_ADVANCE, Math.round(target)),
+        );
       }
 
       const height = Math.max(1, cut - y);
@@ -533,17 +536,7 @@ export class PdfGenerator {
 
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(0, 0, width, height);
-    ctx.drawImage(
-      sourceCanvas,
-      0,
-      offsetY,
-      width,
-      height,
-      0,
-      0,
-      width,
-      height,
-    );
+    ctx.drawImage(sourceCanvas, 0, offsetY, width, height, 0, 0, width, height);
 
     return pageCanvas;
   }
@@ -620,4 +613,3 @@ export class PdfGenerator {
     console.warn = this.originalWarn;
   }
 }
-

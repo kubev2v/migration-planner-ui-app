@@ -40,7 +40,7 @@
 export {
   ReportExportService,
   type ReportExportResult,
-  type ReportExportServiceDeps
+  type ReportExportServiceDeps,
 } from './ReportExportService';
 
 // Individual generators (for advanced use cases or testing)
@@ -68,9 +68,8 @@ export type {
   PowerStates,
   ResourceInfo,
   SnapshotLike,
-  VMsData
+  VMsData,
 } from './types';
 
 // Constants
 export { CHART_COLORS, EXPORT_CONFIG, TOC_ITEMS } from './constants';
-

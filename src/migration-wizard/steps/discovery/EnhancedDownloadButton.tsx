@@ -85,8 +85,9 @@ export const EnhancedDownloadButton: React.FC<EnhancedDownloadButtonProps> = ({
     setLoadingState('generating-html');
     setError(null);
 
-    const inventory = (sourceData?.inventory ||
-      snapshot?.inventory) as InventoryData | SnapshotLike;
+    const inventory = (sourceData?.inventory || snapshot?.inventory) as
+      | InventoryData
+      | SnapshotLike;
 
     if (!inventory) {
       setError({

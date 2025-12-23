@@ -33,4 +33,3 @@ export const TOC_ITEMS = [
   '- Migration warnings',
   '- Errors',
 ] as const;
-

@@ -47,11 +47,12 @@ export class HtmlGenerator {
     document.body.appendChild(link);
     link.click();
 
-    return new Promise<void>((resolve) => setTimeout(() => {
-      URL.revokeObjectURL(url);
-      document.body.removeChild(link);
-      resolve();
-    }, 250));
+    return new Promise<void>((resolve) =>
+      setTimeout(() => {
+        URL.revokeObjectURL(url);
+        document.body.removeChild(link);
+        resolve();
+      }, 250),
+    );
   }
 }
-
