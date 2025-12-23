@@ -269,13 +269,16 @@ const EnhancedDownloadButton: React.FC<EnhancedDownloadButtonProps> = ({
       pdf.text('Table of contents', margin, margin + 32);
       pdf.setFontSize(11);
       const tocItems = [
-        '- Infrastructure overview',
         '- VM migration status',
         '- Operating system distribution',
+        '- CPU & memory (VM distribution by memory size tier)',
+        '- CPU & memory (VM distribution by vCPU count tier)',
         '- Disks (VM count by disk size tier)',
         '- Disks (Total disk size by tier)',
         '- Clusters (VM distribution by cluster)',
         '- Clusters (Cluster distribution by data center)',
+        '- Clusters (Cluster CPU over commitment)',
+        '- Networks (VM distribution by network )',
         '- Migration warnings',
         '- Errors',
       ];
