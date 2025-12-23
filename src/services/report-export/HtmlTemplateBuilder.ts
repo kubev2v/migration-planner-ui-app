@@ -290,7 +290,7 @@ export class HtmlTemplateBuilder {
 
     return osEntries
       .map(([osName, count]) => {
-        const percentage = (((count as number) / vms.total) * 100).toFixed(1);
+        const percentage = ((count / vms.total) * 100).toFixed(1);
         const priority = osName.includes('Windows')
           ? 'High'
           : osName.includes('Linux') || osName.includes('Red Hat')
