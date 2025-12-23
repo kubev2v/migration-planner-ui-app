@@ -9,6 +9,15 @@ import { createRoot } from 'react-dom/client';
 
 import { EXPORT_CONFIG, TOC_ITEMS } from './constants';
 
+/**
+ * Expected number of custom segments for the PDF report layout.
+ * The report is divided into 3 segments (one per page after the cover):
+ *  - Segment 1: Blocks 1 & 2 combined (summary charts)
+ *  - Segment 2: Block 3 (migration recommendations)
+ *  - Segment 3: Block 4 (detailed analysis)
+ */
+const EXPECTED_CUSTOM_SEGMENTS = 3;
+
 export interface PdfGeneratorOptions {
   documentTitle?: string;
 }
@@ -38,7 +47,6 @@ export class PdfGenerator {
     options: PdfGeneratorOptions = {},
   ): Promise<void> {
     try {
-      this.suppressWarnings();
       this.createHiddenContainer();
       await this.renderComponent(componentToRender);
       this.injectPrintStyles();
@@ -51,11 +59,6 @@ export class PdfGenerator {
     } finally {
       this.cleanup();
     }
-  }
-
-  private suppressWarnings(): void {
-    this.originalWarn = console.warn;
-    console.warn = (): void => {};
   }
 
   private createHiddenContainer(): void {
@@ -87,10 +90,80 @@ export class PdfGenerator {
     this.root = createRoot(this.tempDiv);
     this.root.render(component);
 
-    // Wait for rendering to complete
-    await new Promise((resolve) =>
-      setTimeout(resolve, EXPORT_CONFIG.CANVAS_TIMEOUT),
-    );
+    // Wait for rendering to complete deterministically
+    await this.waitForRenderComplete();
+  }
+
+  /**
+   * Wait for render to complete by ensuring:
+   * 1. Two animation frames have passed (browser has painted the new tree)
+   * 2. All webfonts are loaded
+   * 3. All images in the container have finished loading
+   */
+  private async waitForRenderComplete(): Promise<void> {
+    // Wait for two animation frames to ensure browser has painted
+    await this.waitForAnimationFrames(2);
+
+    // Wait for webfonts to be ready
+    await document.fonts.ready;
+
+    // Wait for all images to load
+    await this.waitForImages();
+  }
+
+  /**
+   * Wait for a specified number of animation frames
+   */
+  private waitForAnimationFrames(count: number): Promise<void> {
+    return new Promise((resolve) => {
+      let remaining = count;
+      const tick = (): void => {
+        remaining--;
+        if (remaining <= 0) {
+          resolve();
+        } else {
+          requestAnimationFrame(tick);
+        }
+      };
+      requestAnimationFrame(tick);
+    });
+  }
+
+  /**
+   * Wait for all images in the tempDiv to finish loading
+   */
+  private async waitForImages(): Promise<void> {
+    if (!this.tempDiv) return;
+
+    const images = Array.from(this.tempDiv.querySelectorAll('img'));
+    if (images.length === 0) return;
+
+    const imagePromises = images.map((img) => {
+      // If image is already complete, resolve immediately
+      if (img.complete) {
+        return Promise.resolve();
+      }
+
+      // Otherwise wait for load or error event
+      return new Promise<void>((resolve) => {
+        const handleLoad = (): void => {
+          img.removeEventListener('load', handleLoad);
+          img.removeEventListener('error', handleError);
+          resolve();
+        };
+        const handleError = (): void => {
+          img.removeEventListener('load', handleLoad);
+          img.removeEventListener('error', handleError);
+          // Resolve even on error to not block PDF generation
+          resolve();
+        };
+
+        img.addEventListener('load', handleLoad);
+        img.addEventListener('error', handleError);
+      });
+    });
+
+    await Promise.all(imagePromises);
   }
 
   private injectPrintStyles(): void {
@@ -98,18 +171,9 @@ export class PdfGenerator {
 
     const style = document.createElement('style');
     style.textContent = `
-      #hidden-container .dashboard-card-print, 
-      #hidden-container .pf-v6-c-card, 
-      #hidden-container [data-export-block] {
-        page-break-inside: avoid !important;
-        break-inside: avoid !important;
-        margin-top: 80px !important;
-        border: none !important;
-        box-shadow: none !important;
-        padding: 0 !important;
-      }
-      #hidden-container .dashboard-card, 
-      #hidden-container .pf-v6-c-card, 
+      #hidden-container .dashboard-card-print,
+      #hidden-container .dashboard-card,
+      #hidden-container .pf-v6-c-card,
       #hidden-container [data-export-block] {
         page-break-inside: avoid !important;
         break-inside: avoid !important;
@@ -189,7 +253,7 @@ export class PdfGenerator {
       domToCanvasScale,
     );
 
-    if (customSegments && customSegments.length === 3) {
+    if (customSegments && customSegments.length === EXPECTED_CUSTOM_SEGMENTS) {
       this.renderCustomSegments(
         pdf,
         canvas,
@@ -243,8 +307,9 @@ export class PdfGenerator {
     pdf.text(headerTitle, pageWidth / 2, margin + 8, { align: 'center' });
 
     pdf.setFontSize(11);
+    const d = new Date();
     pdf.text(
-      `Generated: ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}`,
+      `Generated: ${d.toLocaleDateString()} ${d.toLocaleTimeString()}`,
       pageWidth / 2,
       margin + 18,
       { align: 'center' },
@@ -312,7 +377,7 @@ export class PdfGenerator {
         height: Math.max(
           1,
           Math.min(imgHeight, b3.bottom + SEGMENT_PADDING_PX) -
-            Math.max(0, b3.top - SEGMENT_PADDING_PX),
+          Math.max(0, b3.top - SEGMENT_PADDING_PX),
         ),
       },
       {
@@ -320,7 +385,7 @@ export class PdfGenerator {
         height: Math.max(
           1,
           Math.min(imgHeight, b4.bottom + SEGMENT_PADDING_PX) -
-            Math.max(0, b4.top - SEGMENT_PADDING_PX),
+          Math.max(0, b4.top - SEGMENT_PADDING_PX),
         ),
       },
     ];
@@ -555,7 +620,4 @@ export class PdfGenerator {
     console.warn = this.originalWarn;
   }
 }
-
-// Export singleton instance
-export const pdfGenerator = new PdfGenerator();
 

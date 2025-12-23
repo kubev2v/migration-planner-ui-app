@@ -21,8 +21,11 @@ export class HtmlTemplateBuilder {
 
   /**
    * Build the complete HTML report
+   * @param chartData - Chart data to render
+   * @param inventory - Inventory data (either InventoryData or SnapshotLike)
+   * @param generatedAt - Optional date for the report timestamp (defaults to current date/time)
    */
-  build(chartData: ChartData, inventory: InventoryData | SnapshotLike): string {
+  build(chartData: ChartData, inventory: InventoryData | SnapshotLike, generatedAt: Date = new Date()): string {
     const { infra, vms } = this.chartTransformer.normalizeInventory(inventory);
     const {
       powerStateData,
@@ -41,14 +44,14 @@ export class HtmlTemplateBuilder {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VMware Infrastructure Assessment Report</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js" integrity="sha512-ElRFoEQdI5Ht6kZvyzXhYG9NqjtkmlkfYk0wr6wHxU9JEHakS7UJZNeml5ALk+8IKlU6jDgMabC3vkumRokgJA==" crossorigin="anonymous"></script>
     <style>
         ${this.generateStyles()}
     </style>
 </head>
 <body>
     <div class="container">
-        ${this.buildHeader()}
+        ${this.buildHeader(generatedAt)}
         ${this.buildSummaryGrid(infra, vms)}
         ${this.buildChartGrid(vms, infra, powerStateData, resourceData, osData, warningsData, storageLabels, storageUsedData, storageTotalData)}
         ${this.buildDetailedTables(infra, vms)}
@@ -100,11 +103,11 @@ export class HtmlTemplateBuilder {
     }`;
   }
 
-  private buildHeader(): string {
+  private buildHeader(generatedAt: Date): string {
     return `
         <div class="header">
             <h1>VMware Infrastructure Assessment Report</h1>
-            <p>Generated: ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}</p>
+            <p>Generated: ${generatedAt.toLocaleDateString()} at ${generatedAt.toLocaleTimeString()}</p>
         </div>`;
   }
 
@@ -225,19 +228,19 @@ export class HtmlTemplateBuilder {
                         <tr>
                             <td><strong>CPU Cores (vCPUs)</strong></td>
                             <td>${vms.cpuCores.total}</td>
-                            <td>${(vms.cpuCores.total / vms.total).toFixed(1)}</td>
+                            <td>${vms.total > 0 ? (vms.cpuCores.total / vms.total).toFixed(1) : '0.0'}</td>
                             <td>${Math.round(vms.cpuCores.total * 1.2)} (with 20% overhead)</td>
                         </tr>
                         <tr>
                             <td><strong>Memory (GB)</strong></td>
                             <td>${vms.ramGB.total}</td>
-                            <td>${(vms.ramGB.total / vms.total).toFixed(1)}</td>
+                            <td>${vms.total > 0 ? (vms.ramGB.total / vms.total).toFixed(1) : '0.0'}</td>
                             <td>${Math.round(vms.ramGB.total * 1.25)} (with 25% overhead)</td>
                         </tr>
                         <tr>
                             <td><strong>Storage (GB)</strong></td>
                             <td>${vms.diskGB.total}</td>
-                            <td>${(vms.diskGB.total / vms.total).toFixed(1)}</td>
+                            <td>${vms.total > 0 ? (vms.diskGB.total / vms.total).toFixed(1) : '0.0'}</td>
                             <td>${Math.round(vms.diskGB.total * 1.15)} (with 15% overhead)</td>
                         </tr>
                     </tbody>
@@ -278,7 +281,7 @@ export class HtmlTemplateBuilder {
 
   private generateOSTable(vms: VMsData): string {
     const osEntries = this.chartTransformer.extractOSData(vms).sort(
-      ([, a], [, b]) => (b as number) - (a as number),
+      ([, a], [, b]) => b - a,
     );
 
     if (osEntries.length === 0) {
@@ -559,7 +562,4 @@ export class HtmlTemplateBuilder {
         });`;
   }
 }
-
-// Export singleton instance
-export const htmlTemplateBuilder = new HtmlTemplateBuilder();
 

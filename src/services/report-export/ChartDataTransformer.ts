@@ -2,6 +2,24 @@
  * Transforms inventory data into chart-ready data structures
  */
 
+/**
+ * Capacity planning margin for CPU cores.
+ * Adds 20% headroom to account for workload growth and bursting.
+ */
+const CPU_CAPACITY_MARGIN = 1.2;
+
+/**
+ * Memory overhead factor.
+ * Adds 25% to account for hypervisor overhead, page tables, and memory fragmentation.
+ */
+const MEMORY_OVERHEAD_FACTOR = 1.25;
+
+/**
+ * Storage safety multiplier.
+ * Adds 15% buffer for snapshots, temporary files, and unexpected growth.
+ */
+const STORAGE_SAFETY_MULTIPLIER = 1.15;
+
 import type {
   ChartData,
   Datastore,
@@ -90,20 +108,18 @@ export class ChartDataTransformer {
 
   private buildResourceData(vms: VMsData): Array<[string, number, number]> {
     return [
-      ['CPU Cores', vms.cpuCores.total, Math.round(vms.cpuCores.total * 1.2)],
-      ['Memory GB', vms.ramGB.total, Math.round(vms.ramGB.total * 1.25)],
-      ['Storage GB', vms.diskGB.total, Math.round(vms.diskGB.total * 1.15)],
+      ['CPU Cores', vms.cpuCores.total, Math.round(vms.cpuCores.total * CPU_CAPACITY_MARGIN)],
+      ['Memory GB', vms.ramGB.total, Math.round(vms.ramGB.total * MEMORY_OVERHEAD_FACTOR)],
+      ['Storage GB', vms.diskGB.total, Math.round(vms.diskGB.total * STORAGE_SAFETY_MULTIPLIER)],
     ];
   }
 
   private buildOSData(vms: VMsData): Array<[string, number]> {
     const osEntries = this.extractOSData(vms).sort(
-      ([, a], [, b]) => (b as number) - (a as number),
+      ([, a], [, b]) => b - a,
     );
 
-    return osEntries
-      .slice(0, 8)
-      .map(([name, count]) => [name, count]) as Array<[string, number]>;
+    return osEntries.slice(0, 8);
   }
 
   private buildWarningsData(vms: VMsData): Array<[string, number]> {
@@ -128,7 +144,4 @@ export class ChartDataTransformer {
     return { storageLabels, storageUsedData, storageTotalData };
   }
 }
-
-// Export singleton instance
-export const chartDataTransformer = new ChartDataTransformer();
 

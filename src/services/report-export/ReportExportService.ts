@@ -2,16 +2,8 @@
  * Main service for exporting reports in various formats
  */
 
-import {
-  HtmlGenerator,
-  htmlGenerator as defaultHtmlGenerator,
-  type HtmlGeneratorOptions,
-} from './HtmlGenerator';
-import {
-  PdfGenerator,
-  pdfGenerator as defaultPdfGenerator,
-  type PdfGeneratorOptions,
-} from './PdfGenerator';
+import { HtmlGenerator, type HtmlGeneratorOptions } from './HtmlGenerator';
+import { PdfGenerator, type PdfGeneratorOptions } from './PdfGenerator';
 import type { ExportError, InventoryData, SnapshotLike } from './types';
 
 export interface ReportExportResult {
@@ -29,8 +21,8 @@ export class ReportExportService {
   private htmlGenerator: HtmlGenerator;
 
   constructor(deps?: Partial<ReportExportServiceDeps>) {
-    this.pdfGenerator = deps?.pdfGenerator ?? defaultPdfGenerator;
-    this.htmlGenerator = deps?.htmlGenerator ?? defaultHtmlGenerator;
+    this.pdfGenerator = deps?.pdfGenerator ?? new PdfGenerator();
+    this.htmlGenerator = deps?.htmlGenerator ?? new HtmlGenerator();
   }
 
   /**
@@ -79,6 +71,3 @@ export class ReportExportService {
     }
   }
 }
-
-// Export singleton instance with default dependencies
-export const reportExportService = new ReportExportService();

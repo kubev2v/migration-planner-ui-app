@@ -29,30 +29,11 @@ import { AppPage } from '../../components/AppPage';
 import { useDiscoverySources } from '../../migration-wizard/contexts/discovery-sources/Context';
 import { Provider as DiscoverySourcesProvider } from '../../migration-wizard/contexts/discovery-sources/Provider';
 import { EnhancedDownloadButton } from '../../migration-wizard/steps/discovery/EnhancedDownloadButton';
-import { ExportError } from '../../services/report-export/types';
+import { ExportError, SnapshotLike } from '../../services/report-export/types';
 import { openAssistedInstaller } from '../assessment/utils/functions';
 import { parseLatestSnapshot } from '../assessment/utils/snapshotParser';
 
 import { Dashboard } from './assessment-report/Dashboard';
-
-export type SnapshotLike = {
-  // New preferred structure
-  createdAt?: string | Date;
-  vcenterId?: string;
-  // Backward-compatible fields
-  infra?: Infra;
-  vms?: VMs;
-  inventory?: {
-    infra?: Infra; // legacy
-    vms?: VMs; // legacy
-    vcenter?: {
-      id?: string;
-      infra?: Infra;
-      vms?: VMs;
-    };
-    clusters?: { [key: string]: InventoryData };
-  };
-};
 
 type AssessmentLike = {
   id: string | number;
@@ -126,21 +107,20 @@ const Inner: React.FC = () => {
     snapshots.length > 0
       ? (snapshots[snapshots.length - 1] as SnapshotLike)
       : ({} as SnapshotLike);
-  const infra =
-    last.infra ||
+  // At runtime, data from the API will always be the API model types (Infra, VMs).
+  // The SnapshotLike union type allows flexibility for export processing,
+  // but here we safely cast to the specific types expected by Dashboard.
+  const infra = (last.infra ||
     last.inventory?.infra || // legacy
-    last.inventory?.vcenter?.infra;
-  const vms =
-    last.vms ||
+    last.inventory?.vcenter?.infra) as Infra | undefined;
+  const vms = (last.vms ||
     last.inventory?.vms || // legacy
-    last.inventory?.vcenter?.vms;
-  const cpuCores = (vms as VMs | undefined)?.cpuCores as
-    | VMResourceBreakdown
+    last.inventory?.vcenter?.vms) as VMs | undefined;
+  const cpuCores = vms?.cpuCores as VMResourceBreakdown | undefined;
+  const ramGB = vms?.ramGB as VMResourceBreakdown | undefined;
+  const clusters = last.inventory?.clusters as
+    | { [key: string]: InventoryData }
     | undefined;
-  const ramGB = (vms as VMs | undefined)?.ramGB as
-    | VMResourceBreakdown
-    | undefined;
-  const clusters = last.inventory?.clusters;
 
   // Derive last updated text from latest snapshot
   const lastUpdatedText: string = ((): string => {

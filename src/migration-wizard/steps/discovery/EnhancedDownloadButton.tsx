@@ -13,12 +13,12 @@ import {
 import { DownloadIcon } from '@patternfly/react-icons';
 
 import { Symbols } from '../../../main/Symbols';
-import { SnapshotLike } from '../../../pages/report/Report';
 import {
   ReportExportService,
   type ExportError,
   type InventoryData,
   type LoadingState,
+  type SnapshotLike,
 } from '../../../services/report-export';
 
 import './DownloadPDFStyles.css';

@@ -220,7 +220,7 @@ export const DiscoveryStep: React.FC = () => {
             <Content>
               Not migratable reasons{' '}
               <Badge isRead>
-                {vms.migrationWarnings
+                {vms.notMigratableReasons
                   .map(({ count }) => count)
                   .reduce((sum, n) => sum + n, 0)}
               </Badge>

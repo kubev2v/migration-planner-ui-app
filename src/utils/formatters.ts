@@ -3,7 +3,7 @@
  */
 
 /**
- * Format a number with K/M suffixes (KB/MB) for readability
+ * Format a number with K/M suffixes for readability
  */
 export const formatNumber = (num: number): string => {
   if (num >= 1_000_000) {
@@ -27,8 +27,12 @@ export const escapeHtml = (str: string): string => {
 /**
  * Get current date/time formatted for display
  */
-export const getFormattedDateTime = (): { date: string; time: string } => ({
-  date: new Date().toLocaleDateString(),
-  time: new Date().toLocaleTimeString(),
-});
-
+export const getFormattedDateTime = (): { date: string; time: string } => {
+  const d = new Date();
+  const date = d.toLocaleDateString();
+  const time = d.toLocaleTimeString();
+  return {
+    date,
+    time,
+  };
+};

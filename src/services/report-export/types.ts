@@ -2,6 +2,12 @@
  * Type definitions for report export functionality
  */
 
+import type {
+    Infra,
+    InventoryData as ApiInventoryData,
+    VMs,
+} from '@migration-planner-ui/api-client/models';
+
 // OS Information
 export interface OSInfo {
     count: number;
@@ -103,21 +109,34 @@ export interface HtmlExportOptions extends ExportOptions {
     inventory: InventoryData | SnapshotLike;
 }
 
-// Snapshot-like structure (compatible with various inventory formats)
+/**
+ * Snapshot-like structure for both runtime rendering and export processing.
+ *
+ * This unified type supports both:
+ * - API client models (`Infra`, `VMs` from `@migration-planner-ui/api-client/models`)
+ *   for live data rendering
+ * - Internal simplified types (`InfraData`, `VMsData`) for export pipelines
+ *   (PDF/HTML generation, chart data transformation)
+ *
+ * The `ChartDataTransformer.normalizeInventory()` handles both formats by
+ * extracting data from various nested structures, enabling safe interoperability.
+ *
+ * @see ChartDataTransformer.normalizeInventory for the normalization logic
+ */
 export interface SnapshotLike {
     createdAt?: string | Date;
     vcenterId?: string;
-    infra?: InfraData;
-    vms?: VMsData;
+    infra?: InfraData | Infra;
+    vms?: VMsData | VMs;
     inventory?: {
-        infra?: InfraData;
-        vms?: VMsData;
+        infra?: InfraData | Infra;
+        vms?: VMsData | VMs;
         vcenter?: {
             id?: string;
-            infra?: InfraData;
-            vms?: VMsData;
+            infra?: InfraData | Infra;
+            vms?: VMsData | VMs;
         };
-        clusters?: Record<string, unknown>;
+        clusters?: Record<string, unknown> | { [key: string]: ApiInventoryData };
     };
 }
 

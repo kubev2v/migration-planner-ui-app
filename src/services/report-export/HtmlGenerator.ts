@@ -31,13 +31,13 @@ export class HtmlGenerator {
     const htmlContent = this.templateBuilder.build(chartData, inventory);
     const filename = options.filename || EXPORT_CONFIG.HTML_FILENAME;
 
-    this.downloadHtml(htmlContent, filename);
+    await this.downloadHtml(htmlContent, filename);
   }
 
   /**
    * Download HTML content as a file
    */
-  private downloadHtml(content: string, filename: string): void {
+  private downloadHtml(content: string, filename: string): Promise<void> {
     const blob = new Blob([content], { type: 'text/html;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
 
@@ -47,11 +47,11 @@ export class HtmlGenerator {
     document.body.appendChild(link);
     link.click();
 
-    URL.revokeObjectURL(url);
-    document.body.removeChild(link);
+    return new Promise<void>((resolve) => setTimeout(() => {
+      URL.revokeObjectURL(url);
+      document.body.removeChild(link);
+      resolve();
+    }, 250));
   }
 }
-
-// Export singleton instance
-export const htmlGenerator = new HtmlGenerator();
 
