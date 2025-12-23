@@ -20,7 +20,11 @@ module.exports = (env, argv) => {
     rules: [
       {
         test: /\.(ts|tsx)$/,
-        exclude: /node_modules\/(?!@migration-planner-ui)/, // Keep this line as it's for specific packages
+        exclude: [
+          /node_modules\/(?!@migration-planner-ui)/,
+          /\.test\.(ts|tsx)$/,
+          /\.spec\.(ts|tsx)$/,
+        ],
         use: [
           {
             loader: 'ts-loader',

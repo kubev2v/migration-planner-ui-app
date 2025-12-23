@@ -33,8 +33,8 @@ module.exports = {
     ],
   },
   resolve: {
-    extensions: ['.ts', '.tsx', '.js', '.json'], 
-    fullySpecified: false, 
+    extensions: ['.ts', '.tsx', '.js', '.json'],
+    fullySpecified: false,
     alias: {
       './MigrationIssuesInner': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/MigrationIssuesInner.js'),
       './VMResourceBreakdownHistogram': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/VMResourceBreakdownHistogram.js'),
@@ -68,7 +68,7 @@ module.exports = {
       './Label': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/Label.js'),
       './Histogram': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/Histogram.js'),
       './MigrationIssue': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/MigrationIssue.js'),
-      './OsInfo': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/OsInfo.js'),   
+      './OsInfo': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/OsInfo.js'),
       './UpdateInventoryRequest': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/UpdateInventoryRequest.js'),
       './UpdateSourceRequest': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/UpdateSourceRequest.js'),
       './SourceUpdate': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/SourceUpdate.js'),
@@ -79,20 +79,41 @@ module.exports = {
       './JobApi': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/apis/JobApi.js'),
       './Job': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/Job.js'),
       './JobStatus': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/JobStatus.js'),
-      './SourceAgentItem':path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/SourceAgentItem.js'),
-      './Snapshot':path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/Snapshot.js'),
-      './AssessmentUpdate':path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/AssessmentUpdate.js'),
+      './SourceAgentItem': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/SourceAgentItem.js'),
+      './Snapshot': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/Snapshot.js'),
+      './AssessmentUpdate': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/AssessmentUpdate.js'),
       './Info': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/Info.js'),
       './InfoApi': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/apis/InfoApi.js'),
       './VmNetwork': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/VmNetwork.js'),
       './Ipv4Config': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/Ipv4Config.js'),
       './SourceInfra': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/SourceInfra.js'),
       './DiskSizeTierSummary': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/DiskSizeTierSummary.js'),
-      './InventoryData': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/InventoryData.js'), 
+      './InventoryData': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/InventoryData.js'),
       './DiskTypeSummary': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/DiskTypeSummary.js'),
-    }, 
+    },
   },
   customizeWebpackConfig: (config) => {
+    // Exclude test files from all TypeScript loaders
+    config.module.rules.forEach((rule) => {
+      if (rule.test && rule.test.toString().includes('ts')) {
+        const existingExclude = rule.exclude;
+        rule.exclude = (filePath) => {
+          // Exclude test files
+          if (/\.(test|spec)\.(ts|tsx)$/.test(filePath)) {
+            return true;
+          }
+          // Apply existing exclude logic if it exists
+          if (existingExclude instanceof RegExp) {
+            return existingExclude.test(filePath);
+          }
+          if (typeof existingExclude === 'function') {
+            return existingExclude(filePath);
+          }
+          return false;
+        };
+      }
+    });
+
     config.module.rules.push({
       test: /\.(ts|tsx)$/,
       use: 'ts-loader',
@@ -101,8 +122,10 @@ module.exports = {
         path.resolve(__dirname, 'node_modules/@migration-planner-ui'),
         path.resolve(__dirname, 'node_modules/@migration-planner-ui/agent-client/src'),
       ],
-      exclude: /node_modules\/(?!@migration-planner-ui)/
-      
+      exclude: [
+        /node_modules\/(?!@migration-planner-ui)/,
+        /\.(test|spec)\.(ts|tsx)$/,
+      ],
     });
 
     // Add webpack DefinePlugin to inject version info and API config
