@@ -1,7 +1,8 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { ReportExportService } from './ReportExportService';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
 import type { HtmlGenerator } from './HtmlGenerator';
 import type { PdfGenerator } from './PdfGenerator';
+import { ReportExportService } from './ReportExportService';
 import type { InventoryData } from './types';
 
 describe('ReportExportService', () => {

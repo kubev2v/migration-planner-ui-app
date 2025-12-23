@@ -1,14 +1,15 @@
 import {
-  describe,
-  it,
-  expect,
-  beforeEach,
   afterEach,
-  vi,
+  beforeEach,
+  describe,
+  expect,
+  it,
   type MockInstance,
+  vi,
 } from 'vitest';
-import { HtmlGenerator } from './HtmlGenerator';
+
 import { DEFAULT_DOCUMENT_TITLE } from './constants';
+import { HtmlGenerator } from './HtmlGenerator';
 import type { InventoryData } from './types';
 
 // Mock the download functionality to prevent actual file downloads during tests

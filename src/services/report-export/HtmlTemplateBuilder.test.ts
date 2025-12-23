@@ -1,6 +1,7 @@
-import { describe, it, expect, beforeEach } from 'vitest';
-import { HtmlTemplateBuilder } from './HtmlTemplateBuilder';
+import { beforeEach,describe, expect, it } from 'vitest';
+
 import { DEFAULT_DOCUMENT_TITLE } from './constants';
+import { HtmlTemplateBuilder } from './HtmlTemplateBuilder';
 import type { ChartData, InventoryData } from './types';
 
 describe('HtmlTemplateBuilder', () => {
