@@ -1,6 +1,9 @@
 import React, { useMemo, useState } from 'react';
 
-import { Infra } from '@migration-planner-ui/api-client/models';
+import {
+  Infra,
+  VMResourceBreakdown,
+} from '@migration-planner-ui/api-client/models';
 import {
   Card,
   CardBody,
@@ -32,6 +35,7 @@ const colorPalette = [
 
 interface NetworkOverviewProps {
   infra: Infra;
+  nicCount: VMResourceBreakdown;
   isExportMode?: boolean;
 }
 
@@ -44,6 +48,7 @@ const VIEW_MODE_LABELS: Record<ViewMode, string> = {
 
 export const NetworkOverview: React.FC<NetworkOverviewProps> = ({
   infra,
+  nicCount,
   isExportMode = false,
 }) => {
   const [viewMode, setViewMode] = useState<ViewMode>('networkDistribution');
@@ -117,6 +122,54 @@ export const NetworkOverview: React.FC<NetworkOverviewProps> = ({
     };
   }, [infra]);
 
+  // Build NIC count chart data from nicCount.histogram
+  const { nicChartData, nicLegend, nicTitle, nicSubTitle } = useMemo(() => {
+    const histogram = nicCount?.histogram;
+    const dataArray: number[] = Array.isArray(histogram?.data)
+      ? (histogram?.data as number[])
+      : [];
+    const minValue =
+      typeof histogram?.minValue === 'number' ? histogram?.minValue : 0;
+    const step = typeof histogram?.step === 'number' ? histogram?.step : 1;
+
+    // Build one slice per NIC bucket that has VMs
+    const slices = dataArray
+      .map((count, idx) => {
+        const nicNum = minValue + idx * step;
+        return {
+          nicNum,
+          count: Number(count) || 0,
+        };
+      })
+      .filter((entry) => entry.count > 0)
+      // Show larger buckets first for clearer labeling
+      .sort((a, b) => a.nicNum - b.nicNum)
+      .map((entry) => {
+        const label = entry.nicNum === 1 ? '1 NIC' : `${entry.nicNum} NIC`;
+        return {
+          name: label,
+          count: entry.count,
+          countDisplay: `${entry.count} VMs`,
+          legendCategory: label,
+        };
+      });
+
+    const categories = slices.map((s) => s.legendCategory);
+    const legendMap: Record<string, string> = {};
+    categories.forEach((cat, idx) => {
+      legendMap[cat] = colorPalette[idx % colorPalette.length];
+    });
+
+    const total = typeof nicCount?.total === 'number' ? nicCount.total : 0;
+
+    return {
+      nicChartData: slices,
+      nicLegend: legendMap,
+      nicTitle: `${total}`,
+      nicSubTitle: 'VMs',
+    };
+  }, [nicCount]);
+
   const onDropdownToggle = (): void => {
     setIsDropdownOpen(!isDropdownOpen);
   };
@@ -148,7 +201,7 @@ export const NetworkOverview: React.FC<NetworkOverviewProps> = ({
               <div>
                 <i className="fas fa-network-wired" /> Networks
               </div>
-              {!isExportMode && (
+              {!isExportMode && viewMode === 'networkDistribution' && (
                 <div style={{ color: '#6a6e73', fontSize: '0.85rem' }}>
                   Top 5 networks
                 </div>
@@ -179,7 +232,7 @@ export const NetworkOverview: React.FC<NetworkOverviewProps> = ({
                   >
                     VM distribution by network
                   </DropdownItem>
-                  <DropdownItem key="nicCount" value="nicCount" isDisabled>
+                  <DropdownItem key="nicCount" value="nicCount">
                     VM distribution by NIC count
                   </DropdownItem>
                 </DropdownList>
@@ -205,6 +258,25 @@ export const NetworkOverview: React.FC<NetworkOverviewProps> = ({
             marginLeft="12%"
             tooltipLabelFormatter={({ datum, percent }) =>
               `${datum.countDisplay}\n${percent.toFixed(1)}%\nVLAN: ${legendVlanMap[datum.legendCategory] ?? '-'}`
+            }
+          />
+        )}
+        {viewMode === 'nicCount' && (
+          <MigrationDonutChart
+            data={nicChartData}
+            height={300}
+            width={420}
+            donutThickness={9}
+            titleFontSize={34}
+            legend={nicLegend}
+            title={nicTitle}
+            subTitle={nicSubTitle}
+            subTitleColor="#9a9da0"
+            itemsPerRow={Math.ceil((nicChartData?.length ?? 0) / 2)}
+            labelFontSize={18}
+            marginLeft="42%"
+            tooltipLabelFormatter={({ datum, percent }) =>
+              `${datum.countDisplay}\n${percent.toFixed(1)}%`
             }
           />
         )}

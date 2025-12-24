@@ -146,7 +146,11 @@ export const Dashboard: React.FC<Props> = ({
         <GridItem span={12} data-export-block={isExportMode ? '4' : undefined}>
           <Gallery hasGutter minWidths={{ default: '300px', md: '45%' }}>
             <GalleryItem>
-              <NetworkOverview infra={infra} isExportMode={isExportMode} />
+              <NetworkOverview
+                infra={infra}
+                nicCount={vms.nicCount}
+                isExportMode={isExportMode}
+              />
             </GalleryItem>
           </Gallery>
         </GridItem>
