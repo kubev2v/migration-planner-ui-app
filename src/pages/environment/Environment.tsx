@@ -123,6 +123,7 @@ export const Environment: React.FC = () => {
                 <InputGroupItem>
                   <Dropdown
                     isOpen={isFilterDropdownOpen}
+                    onOpenChange={(open) => setIsFilterDropdownOpen(open)}
                     onSelect={() => setIsFilterDropdownOpen(false)}
                     toggle={(toggleRef: React.Ref<MenuToggleElement>) => (
                       <MenuToggle
@@ -132,8 +133,8 @@ export const Environment: React.FC = () => {
                         }
                         isExpanded={isFilterDropdownOpen}
                         style={{ minWidth: '220px', width: '220px' }}
+                        icon={<FilterIcon style={{ marginRight: '8px' }} />}
                       >
-                        <FilterIcon style={{ marginRight: '8px' }} />
                         Filters
                       </MenuToggle>
                     )}

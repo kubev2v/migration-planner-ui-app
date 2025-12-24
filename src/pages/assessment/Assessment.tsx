@@ -315,6 +315,7 @@ const Assessment: React.FC<Props> = ({
                 <InputGroupItem>
                   <Dropdown
                     isOpen={isFilterDropdownOpen}
+                    onOpenChange={(open) => setIsFilterDropdownOpen(open)}
                     onSelect={() => setIsFilterDropdownOpen(false)}
                     toggle={(toggleRef: React.Ref<MenuToggleElement>) => (
                       <MenuToggle
