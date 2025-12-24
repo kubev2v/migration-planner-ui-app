@@ -150,6 +150,7 @@ export const Dashboard: React.FC<Props> = ({
                 infra={infra}
                 nicCount={vms.nicCount}
                 isExportMode={isExportMode}
+                exportAllViews={exportAllViews}
               />
             </GalleryItem>
           </Gallery>

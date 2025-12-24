@@ -25,13 +25,19 @@ export const CHART_COLORS = {
 } as const;
 
 export const TOC_ITEMS = [
-  '- Infrastructure overview',
   '- VM migration status',
   '- Operating system distribution',
+  '- CPU & memory (VM distribution by CPU & memory size tier)',
+  '- CPU & memory (VM distribution by vCPU count tier)',
   '- Disks (VM count by disk size tier)',
   '- Disks (Total disk size by tier)',
+  '- Disks (VM count by disk type)',
   '- Clusters (VM distribution by cluster)',
   '- Clusters (Cluster distribution by data center)',
+  '- Clusters (Cluster CPU over commitment)',
+  '- Host distribution by model',
+  '- Networks (VM distribution by network)',
+  '- Networks (VM distribution by NIC count)',
   '- Migration warnings',
   '- Errors',
 ] as const;
