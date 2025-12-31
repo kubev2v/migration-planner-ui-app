@@ -15,6 +15,7 @@
     "lint:js:fix": "eslint src --ext .js,.jsx,.ts,.tsx --cache --fix",
     "patch:hosts": "fec patch-etc-hosts",
     "start": "HOT=true fec dev --clouddotEnv=stage --uiEnv=stable",
+    "start:dev-proxy": "fec dev-proxy --clouddotEnv=stage --uiEnv=stable",
     "start:federated": "fec static",
     "test": "vitest run",
     "test:watch": "vitest",
@@ -31,8 +32,7 @@
   },
   "dependencies": {
     "@emotion/css": "^11.13.0",
-    "@migration-planner-ui/agent-client": "^0.0.31",
-    "@migration-planner-ui/api-client": "^0.0.31",
+    "@migration-planner-ui/api-client": "^0.0.32",
     "@migration-planner-ui/ioc": "^0.0.31",
     "@patternfly/react-charts": "7.4.9",
     "@patternfly/react-core": "^6.2.2",
