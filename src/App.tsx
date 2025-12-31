@@ -1,6 +1,5 @@
 import React, { Fragment, useEffect } from 'react';
 
-import { AgentApi } from '@migration-planner-ui/agent-client/apis';
 import {
   AssessmentApi,
   ImageApi,
@@ -35,7 +34,6 @@ const App: React.FC = () => {
       const c = new Container();
       c.register(Symbols.ImageApi, new ImageApi(plannerApiConfig));
       c.register(Symbols.SourceApi, new SourceApi(plannerApiConfig));
-      c.register(Symbols.AgentApi, new AgentApi(plannerApiConfig));
       c.register(Symbols.AssessmentApi, new AssessmentApi(plannerApiConfig));
       c.register(Symbols.ReportExportService, new ReportExportService());
 

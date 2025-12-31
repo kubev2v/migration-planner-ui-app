@@ -7,16 +7,13 @@ import React, {
 import { useAsyncFn, useInterval } from 'react-use';
 
 import {
-  type AgentApiInterface,
   type AssessmentApiInterface,
   type ImageApiInterface,
   JobApi,
   type SourceApiInterface,
 } from '@migration-planner-ui/api-client/apis';
 import {
-  Agent,
   Assessment,
-  JobStatus,
   Source,
   UpdateInventoryFromJSON,
 } from '@migration-planner-ui/api-client/models';
@@ -37,9 +34,7 @@ export const Provider: React.FC<PropsWithChildren> = (props) => {
   const { children } = props;
   const [sourceSelected, setSourceSelected] = useState<Source | null>(null);
 
-  const [agentSelected, setAgentSelected] = useState<Agent | null>(null);
-
-  const [sourcesLoaded, setSourcesLoaded] = useState(false);
+  const [, setSourcesLoaded] = useState(false);
 
   const [downloadSourceUrl, setDownloadSourceUrl] = useState('');
   const [sourceDownloadUrls, setSourceDownloadUrls] = useState<
@@ -54,7 +49,6 @@ export const Provider: React.FC<PropsWithChildren> = (props) => {
     useState<boolean>(false);
 
   const sourceApi = useInjection<SourceApiInterface>(Symbols.SourceApi);
-  const agentsApi = useInjection<AgentApiInterface>(Symbols.AgentApi);
   const imageApi = useInjection<ImageApiInterface>(Symbols.ImageApi);
   const assessmentApi = useInjection<AssessmentApiInterface>(
     Symbols.AssessmentApi,
@@ -68,12 +62,6 @@ export const Provider: React.FC<PropsWithChildren> = (props) => {
     const config = new Configuration({ basePath: baseUrl, fetchApi });
     return new JobApi(config);
   }, [assessmentApi]);
-
-  const [listAgentsState, listAgents] = useAsyncFn(async () => {
-    if (!sourcesLoaded) return;
-    const agents = await agentsApi.listAgents();
-    return agents;
-  }, [sourcesLoaded]);
 
   const [listSourcesState, listSources] = useAsyncFn(async () => {
     const sources = await sourceApi.listSources();
@@ -425,15 +413,6 @@ export const Provider: React.FC<PropsWithChildren> = (props) => {
     [listSources, listSourcesState],
   );
 
-  const selectAgent = useCallback(async (agent: Agent) => {
-    setAgentSelected(agent);
-  }, []);
-
-  const [deleteAgentState, deleteAgent] = useAsyncFn(async (agent: Agent) => {
-    const deletedAgent = await agentsApi.deleteAgent({ id: agent.id });
-    return deletedAgent;
-  });
-
   const getSourceById = useCallback(
     (sourceId: string) => {
       const source = listSourcesState.value?.find(
@@ -625,15 +604,6 @@ export const Provider: React.FC<PropsWithChildren> = (props) => {
     stopPolling,
     sourceSelected: sourceSelected,
     selectSource,
-    agents: listAgentsState.value || (EMPTY_ARRAY as Agent[]),
-    isLoadingAgents: listAgentsState.loading,
-    errorLoadingAgents: listAgentsState.error,
-    listAgents,
-    deleteAgent,
-    isDeletingAgent: deleteAgentState.loading,
-    errorDeletingAgent: deleteAgentState.error,
-    selectAgent,
-    agentSelected: agentSelected,
     selectSourceById,
     getSourceById,
     updateSource,
