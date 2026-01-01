@@ -34,8 +34,6 @@ export const Provider: React.FC<PropsWithChildren> = (props) => {
   const { children } = props;
   const [sourceSelected, setSourceSelected] = useState<Source | null>(null);
 
-  const [, setSourcesLoaded] = useState(false);
-
   const [downloadSourceUrl, setDownloadSourceUrl] = useState('');
   const [sourceDownloadUrls, setSourceDownloadUrls] = useState<
     Record<string, string>
@@ -65,7 +63,6 @@ export const Provider: React.FC<PropsWithChildren> = (props) => {
 
   const [listSourcesState, listSources] = useAsyncFn(async () => {
     const sources = await sourceApi.listSources();
-    setSourcesLoaded(true);
     return sources;
   }, []);
 
