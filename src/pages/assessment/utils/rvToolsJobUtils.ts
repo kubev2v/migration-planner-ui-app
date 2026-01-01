@@ -1,7 +1,7 @@
 import { JobStatus } from '@migration-planner-ui/api-client/models';
 
 // Constants for job polling
-export const JOB_POLLING_INTERVAL = 500;
+export const JOB_POLLING_INTERVAL = 1000;
 
 export const TERMINAL_JOB_STATUSES: JobStatus[] = [
   JobStatus.Completed,
