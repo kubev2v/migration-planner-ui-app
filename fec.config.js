@@ -1,26 +1,27 @@
-const path = require('path');
 const webpack = require('webpack');
 
+/** @type {import('@redhat-cloud-services/frontend-components-config').FecWebpackConfiguration} */
 module.exports = {
   appUrl: '/openshift/migration-assessment',
   debug: true,
   useProxy: true,
-  //customProxy: [
-  //  {
-  //    context: ['/planner'],
-  //    //target: 'http://127.0.0.1:3443',
-  //    target: 'https://migration-planner-assisted-migration-stage.apps.crcs02ue1.urby.p1.openshiftapps.com',
-  //    secure: false,
-  //    pathRewrite: { '^/planner/': '/' },
-  //    changeOrigin: true
-  //  },
-  //],
   proxyVerbose: true,
   sassPrefix: '.assisted-migration-app, .assistedMigrationApp',
   interceptChromeConfig: false,
-  plugins: [],
+  plugins: [
+    new webpack.DefinePlugin({
+      'process.env.PLANNER_API_BASE_URL': JSON.stringify(
+        process.env.PLANNER_API_BASE_URL || '/api/migration-assessment'
+      ),
+      'process.env.MIGRATION_PLANNER_UI_GIT_COMMIT': JSON.stringify(process.env.MIGRATION_PLANNER_UI_GIT_COMMIT),
+      'process.env.MIGRATION_PLANNER_UI_VERSION': JSON.stringify(process.env.MIGRATION_PLANNER_UI_VERSION),
+    })
+  ],
   hotReload: process.env.HOT === 'true',
   moduleFederation: {
+    exposes: {
+      './RootApp': './src/AppEntry',
+    },
     exclude: ['react-router-dom'],
     shared: [
       {
@@ -31,114 +32,5 @@ module.exports = {
         },
       },
     ],
-  },
-  resolve: {
-    extensions: ['.ts', '.tsx', '.js', '.json'],
-    fullySpecified: false,
-    alias: {
-      './MigrationIssuesInner': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/MigrationIssuesInner.js'),
-      './VMResourceBreakdownHistogram': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/VMResourceBreakdownHistogram.js'),
-      './Inventory': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/Inventory.js'),
-      './AgentProxy': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/AgentProxy.js'),
-      './Agent': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/Agent.js'),
-      './InfraDatastoresInner': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/InfraDatastoresInner.js'),
-      './InfraNetworksInner': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/InfraNetworksInner.js'),
-      './EventData': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/EventData.js'),
-      './VMs': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/VMs.js'),
-      './VMResourceBreakdown': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/VMResourceBreakdown.js'),
-      './VCenter': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/VCenter.js'),
-      './Status': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/Status.js'),
-      './SourceUpdateOnPrem': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/SourceUpdateOnPrem.js'),
-      './SourceCreate': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/SourceCreate.js'),
-      './Source': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/Source.js'),
-      './PresignedUrl': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/PresignedUrl.js'),
-      './ModelError': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/ModelError.js'),
-      './Infra': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/Infra.js'),
-      './Event': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/Event.js'),
-      './AgentApi': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/apis/AgentApi.js'),
-      './SourceApi': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/apis/SourceApi.js'),
-      './ImageApi': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/apis/ImageApi.js'),
-      '../models/index': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/index.js'),
-      '../runtime': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/runtime.js'),
-      './HealthApi': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/apis/HealthApi.js'),
-      './Datastore': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/Datastore.js'),
-      './UploadRvtoolsFile200Response': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/UploadRvtoolsFile200Response.js'),
-      './Network': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/Network.js'),
-      './Host': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/Host.js'),
-      './Label': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/Label.js'),
-      './Histogram': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/Histogram.js'),
-      './MigrationIssue': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/MigrationIssue.js'),
-      './OsInfo': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/OsInfo.js'),
-      './UpdateInventoryRequest': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/UpdateInventoryRequest.js'),
-      './UpdateSourceRequest': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/UpdateSourceRequest.js'),
-      './SourceUpdate': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/SourceUpdate.js'),
-      './UpdateInventory': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/UpdateInventory.js'),
-      './Assessment': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/Assessment.js'),
-      './AssessmentForm': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/AssessmentForm.js'),
-      './AssessmentApi': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/apis/AssessmentApi.js'),
-      './JobApi': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/apis/JobApi.js'),
-      './Job': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/Job.js'),
-      './JobStatus': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/JobStatus.js'),
-      './SourceAgentItem': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/SourceAgentItem.js'),
-      './Snapshot': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/Snapshot.js'),
-      './AssessmentUpdate': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/AssessmentUpdate.js'),
-      './Info': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/Info.js'),
-      './InfoApi': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/apis/InfoApi.js'),
-      './VmNetwork': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/VmNetwork.js'),
-      './Ipv4Config': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/Ipv4Config.js'),
-      './SourceInfra': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/SourceInfra.js'),
-      './DiskSizeTierSummary': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/DiskSizeTierSummary.js'),
-      './InventoryData': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/InventoryData.js'),
-      './DiskTypeSummary': path.resolve(__dirname, 'node_modules/@migration-planner-ui/api-client/dist/models/DiskTypeSummary.js'),
-    },
-  },
-  customizeWebpackConfig: (config) => {
-    // Exclude test files from all TypeScript loaders
-    config.module.rules.forEach((rule) => {
-      if (rule.test && rule.test.toString().includes('ts')) {
-        const existingExclude = rule.exclude;
-        rule.exclude = (filePath) => {
-          // Exclude test files
-          if (/\.(test|spec)\.(ts|tsx)$/.test(filePath)) {
-            return true;
-          }
-          // Apply existing exclude logic if it exists
-          if (existingExclude instanceof RegExp) {
-            return existingExclude.test(filePath);
-          }
-          if (typeof existingExclude === 'function') {
-            return existingExclude(filePath);
-          }
-          return false;
-        };
-      }
-    });
-
-    config.module.rules.push({
-      test: /\.(ts|tsx)$/,
-      use: 'ts-loader',
-      include: [
-        path.resolve(__dirname, 'src'),
-        path.resolve(__dirname, 'node_modules/@migration-planner-ui'),
-        path.resolve(__dirname, 'node_modules/@migration-planner-ui/agent-client/src'),
-      ],
-      exclude: [
-        /node_modules\/(?!@migration-planner-ui)/,
-        /\.(test|spec)\.(ts|tsx)$/,
-      ],
-    });
-
-    // Add webpack DefinePlugin to inject version info and API config
-    config.plugins.push(
-      new webpack.DefinePlugin({
-        'process.env.PLANNER_API_BASE_URL': JSON.stringify(
-          process.env.PLANNER_API_BASE_URL || '/api/migration-assessment'
-        ),
-        'process.env.MIGRATION_PLANNER_UI_GIT_COMMIT': JSON.stringify(process.env.MIGRATION_PLANNER_UI_GIT_COMMIT),
-        'process.env.MIGRATION_PLANNER_UI_VERSION': JSON.stringify(process.env.MIGRATION_PLANNER_UI_VERSION),
-      })
-    );
-
-    return config;
   },
 };
