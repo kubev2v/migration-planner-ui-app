@@ -1,6 +1,5 @@
 /** @type {import('eslint').Linter.Config} */
-module.exports = {
-  requireConfigFile: false,
+const config = {
   extends: [
     '@redhat-cloud-services/eslint-config-redhat-cloud-services',
     'prettier' // Disable ESLint rules that conflict with Prettier
@@ -63,3 +62,5 @@ module.exports = {
     'prettier/prettier': 'off',
   },
 };
+
+module.exports = config;
