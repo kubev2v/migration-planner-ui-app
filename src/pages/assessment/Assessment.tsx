@@ -1,10 +1,7 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import {
-  Assessment as AssessmentModel,
-  JobStatus,
-} from '@migration-planner-ui/api-client/models';
+import { Assessment as AssessmentModel } from '@migration-planner-ui/api-client/models';
 import {
   Button,
   Dropdown,
@@ -26,7 +23,6 @@ import FilterPill from '../../components/FilterPill';
 import { useDiscoverySources } from '../../migration-wizard/contexts/discovery-sources/Context';
 import StartingPageModal from '../starting-page/StartingPageModal';
 
-import { TERMINAL_JOB_STATUSES } from './utils/rvToolsJobUtils';
 import AssessmentsTable from './AssessmentsTable';
 import CreateAssessmentModal, { AssessmentMode } from './CreateAssessmentModal';
 import EmptyTableBanner from './EmptyTableBanner';
@@ -69,9 +65,6 @@ const Assessment: React.FC<Props> = ({
   const [selectedOwners, setSelectedOwners] = useState<string[]>([]);
 
   // Show the starting page modal only once on mount when there are no assessments.
-  // If the user has assessments, mark the modal as shown to prevent it from appearing
-  // after deleting the last assessment.
-  // hasShowStartingPageModal prevents the modal to pop up if the user deletes the last assessment.
   React.useEffect(() => {
     if (!isLoading) {
       if (assessments.length === 0 && !hasShownStartingPageModal.current) {
@@ -144,7 +137,6 @@ const Assessment: React.FC<Props> = ({
     errorCreatingRVToolsJob,
     createRVToolsJob,
     cancelRVToolsJob,
-    clearRVToolsJob,
   } = discoverySourcesContext;
 
   const handleOpenModal = (mode: AssessmentMode): void => {
@@ -153,36 +145,28 @@ const Assessment: React.FC<Props> = ({
     setIsDropdownOpen(false);
   };
 
-  // Handle modal close (X button) - should also cancel job if processing
+  // Handle modal close - cancel handles everything (running job or completed assessment)
   const handleCloseModal = useCallback((): void => {
-    if (currentJob && !TERMINAL_JOB_STATUSES.includes(currentJob.status)) {
-      cancelRVToolsJob(); // Cancel in-progress job
-    } else {
-      clearRVToolsJob(); // Just clear state if job is done
-    }
-    setIsModalOpen(false);
-  }, [currentJob, cancelRVToolsJob, clearRVToolsJob]);
-
-  // Cancel handler - actually cancels the job and closes modal
-  const handleCancelJob = useCallback(async (): Promise<void> => {
-    await cancelRVToolsJob();
+    cancelRVToolsJob();
     setIsModalOpen(false);
   }, [cancelRVToolsJob]);
 
-  // Handle job completion - navigate to report ONLY on success
-  useEffect(() => {
-    if (currentJob?.status === JobStatus.Completed && currentJob.assessmentId) {
-      const assessmentId = currentJob.assessmentId;
-      // Clear job state first
-      clearRVToolsJob();
-      // Close modal
+  // Handle successful job completion - navigate to report
+  // This is called by the hook's onSuccess callback via context
+  const handleJobSuccess = useCallback(
+    (assessmentId: string) => {
       setIsModalOpen(false);
-      // Navigate to report
       navigate(
         `/openshift/migration-assessment/assessments/${assessmentId}/report`,
       );
-    }
-  }, [currentJob, clearRVToolsJob, navigate]);
+    },
+    [navigate],
+  );
+
+  // Store the success handler in context for the hook to use
+  React.useEffect(() => {
+    discoverySourcesContext.setOnJobSuccess?.(handleJobSuccess);
+  }, [handleJobSuccess, discoverySourcesContext]);
 
   // Open RVTools modal when the trigger token changes
   React.useEffect(() => {
@@ -278,18 +262,13 @@ const Assessment: React.FC<Props> = ({
     }
   };
 
-  // Update submit handler for RVTools mode
-  // Modal stays open - progress bar will show job status
+  // Submit handler for RVTools mode - starts job, modal stays open
   const handleSubmitAssessment = async (
     name: string,
     file: File | null,
   ): Promise<void> => {
     if (!file) throw new Error('File is required for RVTools assessment');
-
-    // Start async job - modal stays open, progress bar appears
-    // Navigation happens via useEffect when job completes
     await createRVToolsJob(name, file);
-    // NOTE: Do NOT close modal or navigate here - wait for job completion
   };
 
   return (
@@ -568,7 +547,6 @@ const Assessment: React.FC<Props> = ({
         error={errorCreatingRVToolsJob}
         selectedEnvironment={null}
         job={currentJob}
-        onCancelJob={handleCancelJob}
       />
 
       <UpdateAssessment

@@ -114,6 +114,7 @@ declare namespace DiscoverySources {
     // RVTools Job Methods
     createRVToolsJob: (name: string, file: File) => Promise<Job | unknown>;
     cancelRVToolsJob: () => Promise<void>;
-    clearRVToolsJob: () => void;
+    // Callback setter for job success (navigation)
+    setOnJobSuccess?: (callback: (assessmentId: string) => void) => void;
   };
 }

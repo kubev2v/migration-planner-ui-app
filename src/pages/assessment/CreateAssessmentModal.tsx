@@ -38,7 +38,6 @@ interface CreateAssessmentModalProps {
   selectedEnvironment?: { id: string; name: string } | null;
   onSelectEnvironment?: (assessmentName: string) => void;
   job?: Job | null;
-  onCancelJob?: () => void;
 }
 
 const isDuplicateNameError = (error: Error | null): boolean =>
@@ -61,7 +60,6 @@ const isAbortError = (error: Error | null): boolean => {
 
 const extractErrorMessage = (message: string): string => {
   const lastColonIndex = message.lastIndexOf(':');
-
   return lastColonIndex !== -1
     ? message.slice(lastColonIndex + 1).trim()
     : message;
@@ -77,7 +75,6 @@ export const CreateAssessmentModal: React.FC<CreateAssessmentModalProps> = ({
   selectedEnvironment = null,
   onSelectEnvironment: _onSelectEnvironment,
   job = null,
-  onCancelJob,
 }) => {
   const [assessmentName, setAssessmentName] = useState('');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -95,18 +92,17 @@ export const CreateAssessmentModal: React.FC<CreateAssessmentModalProps> = ({
   // Helper to check if job is processing
   const isJobProcessing = job && !TERMINAL_JOB_STATUSES.includes(job.status);
 
-  // Derive error from job failure - use job.error when job fails
-  // Extract just the message after the last ":" for cleaner display
+  // Derive error from job failure
   const jobError = React.useMemo(() => {
     return job?.status === JobStatus.Failed
       ? new Error(extractErrorMessage(job.error || 'Processing failed'))
       : null;
   }, [job]);
 
-  // Combine with existing error logic - job error takes priority when job exists
+  // Combine with existing error logic - job error takes priority
   const effectiveError = jobError || error;
 
-  // Reset dismissed flags when a new error occurs (from API or job failure)
+  // Reset dismissed flags when a new error occurs
   React.useEffect(() => {
     if (error || jobError) {
       setNameErrorDismissed(false);
@@ -251,19 +247,15 @@ export const CreateAssessmentModal: React.FC<CreateAssessmentModalProps> = ({
     }
   };
 
+  // Simple close handler - just reset form and call parent's onClose
+  // Parent (Assessment.tsx) handles all cancel logic
   const handleClose = (): void => {
-    // Cancel job if processing
-    if (isJobProcessing && onCancelJob) {
-      onCancelJob();
-    }
-    // Reset form state
     setAssessmentName('');
     setSelectedFile(null);
     setFilename('');
     setNameValidationError('');
     setFileValidationError('');
     setSelectedEnvironmentId('');
-    // Dismiss stale API errors so they don't show on reopen
     setNameErrorDismissed(true);
     setFileErrorDismissed(true);
     onClose();

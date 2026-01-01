@@ -11,7 +11,8 @@ import {
 
 interface UseRVToolsJobProps {
   jobApi: JobApi;
-  onJobCompleted: () => void;
+  /** Called only when job completes successfully WITHOUT being cancelled */
+  onSuccess: (assessmentId: string) => void;
   onDeleteAssessment?: (assessmentId: string) => Promise<void>;
 }
 
@@ -24,12 +25,11 @@ interface UseRVToolsJobReturn {
     file: File,
   ) => Promise<Job | undefined | unknown>;
   cancelRVToolsJob: () => Promise<void>;
-  clearRVToolsJob: () => void;
 }
 
 export const useRVToolsJob = ({
   jobApi,
-  onJobCompleted,
+  onSuccess,
   onDeleteAssessment,
 }: UseRVToolsJobProps): UseRVToolsJobReturn => {
   // RVTools Job State
@@ -39,19 +39,42 @@ export const useRVToolsJob = ({
   const [createError, setCreateError] = useState<Error | undefined>(undefined);
   // AbortController ref to cancel in-flight API requests
   const abortControllerRef = useRef<AbortController | null>(null);
+  // Ref to track cancel in progress - checked synchronously to prevent race conditions
+  const cancelInProgressRef = useRef<boolean>(false);
 
-  // Job polling (separate from existing sources/assessments polling)
+  // Helper to clear all job state
+  const clearState = useCallback(() => {
+    setCurrentJob(null);
+    setJobPollingDelay(null);
+    setIsCreating(false);
+    setCreateError(undefined);
+  }, []);
+
+  // Job polling
   useInterval(() => {
+    // Skip polling if cancel is in progress (ref check avoids stale closure)
+    if (cancelInProgressRef.current) {
+      return;
+    }
     if (currentJob && !TERMINAL_JOB_STATUSES.includes(currentJob.status)) {
       jobApi
         .getJob({ id: currentJob.id })
         .then((updated) => {
+          // Skip if cancel happened while request was in flight
+          if (cancelInProgressRef.current) {
+            return;
+          }
           setCurrentJob(updated);
           if (TERMINAL_JOB_STATUSES.includes(updated.status)) {
             setJobPollingDelay(null);
-            // Refresh assessments list on completion
-            if (updated.status === JobStatus.Completed) {
-              onJobCompleted();
+            // Only call onSuccess if completed AND cancel not requested
+            if (
+              updated.status === JobStatus.Completed &&
+              updated.assessmentId &&
+              !cancelInProgressRef.current
+            ) {
+              clearState();
+              onSuccess(updated.assessmentId);
             }
           }
         })
@@ -61,14 +84,16 @@ export const useRVToolsJob = ({
     }
   }, jobPollingDelay);
 
-  // Create RVTools job with AbortController support
+  // Create RVTools job
   const createRVToolsJob = useCallback(
     async (name: string, file: File): Promise<Job | undefined> => {
+      // Reset cancel flag for new job
+      cancelInProgressRef.current = false;
+
       // Abort any previous in-flight request
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
       }
-      // Create new AbortController for this request
       const abortController = new AbortController();
       abortControllerRef.current = abortController;
 
@@ -81,9 +106,8 @@ export const useRVToolsJob = ({
           { signal: abortController.signal },
         );
 
-        // Check if aborted before setting state - cancel the backend job if needed
+        // Check if aborted before setting state
         if (abortController.signal.aborted) {
-          // Job was created on backend but user cancelled - cancel it
           if (job?.id && !TERMINAL_JOB_STATUSES.includes(job.status)) {
             jobApi.cancelJob({ id: job.id }).catch(() => {});
           }
@@ -95,7 +119,6 @@ export const useRVToolsJob = ({
         setIsCreating(false);
         return job;
       } catch (err) {
-        // Don't set error state if the request was aborted
         if (abortController.signal.aborted) {
           return undefined;
         }
@@ -107,25 +130,33 @@ export const useRVToolsJob = ({
     [jobApi],
   );
 
-  // Cancel job and abort any in-flight requests
+  // Cancel job - single entry point for all cancel operations
   const cancelRVToolsJob = useCallback(async () => {
+    // Skip if cancel already in progress
+    if (cancelInProgressRef.current) {
+      return;
+    }
+
+    // Set flag synchronously FIRST to block any racing success callbacks
+    cancelInProgressRef.current = true;
+
     // Abort any in-flight API request
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
       abortControllerRef.current = null;
     }
+
     if (currentJob) {
-      // Fetch latest job status from server (local state may be stale)
+      // Fetch latest job status (local state may be stale)
       let latestJob: Job | null = null;
       try {
         latestJob = await jobApi.getJob({ id: currentJob.id });
-      } catch (err) {
-        // If we can't fetch, use local state
+      } catch {
         latestJob = currentJob;
       }
 
       if (!TERMINAL_JOB_STATUSES.includes(latestJob.status)) {
-        // Job is still running - cancel it
+        // Job still running - cancel it on server
         try {
           await jobApi.cancelJob({ id: latestJob.id });
         } catch (err) {
@@ -136,7 +167,7 @@ export const useRVToolsJob = ({
         latestJob.assessmentId &&
         onDeleteAssessment
       ) {
-        // Job already completed - delete the created assessment
+        // Job already completed - delete the assessment
         try {
           await onDeleteAssessment(latestJob.assessmentId);
         } catch (err) {
@@ -144,24 +175,12 @@ export const useRVToolsJob = ({
         }
       }
     }
-    setCurrentJob(null);
-    setJobPollingDelay(null);
-    setIsCreating(false);
-    setCreateError(undefined);
-  }, [currentJob, jobApi, onDeleteAssessment]);
 
-  // Clear job state and abort any in-flight requests
-  const clearRVToolsJob = useCallback(() => {
-    // Abort any in-flight API request
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
-      abortControllerRef.current = null;
-    }
-    setCurrentJob(null);
-    setJobPollingDelay(null);
-    setIsCreating(false);
-    setCreateError(undefined);
-  }, []);
+    // Clear all state
+    clearState();
+    // Reset flag after cleanup
+    cancelInProgressRef.current = false;
+  }, [currentJob, jobApi, onDeleteAssessment, clearState]);
 
   return {
     currentJob,
@@ -169,6 +188,5 @@ export const useRVToolsJob = ({
     errorCreatingRVToolsJob: createError,
     createRVToolsJob,
     cancelRVToolsJob,
-    clearRVToolsJob,
   };
 };

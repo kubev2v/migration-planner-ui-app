@@ -2,6 +2,7 @@ import React, {
   type PropsWithChildren,
   useCallback,
   useEffect,
+  useRef,
   useState,
 } from 'react';
 import { useAsyncFn, useInterval } from 'react-use';
@@ -16,7 +17,6 @@ import {
 import {
   Agent,
   Assessment,
-  JobStatus,
   Source,
   UpdateInventoryFromJSON,
 } from '@migration-planner-ui/api-client/models';
@@ -26,9 +26,9 @@ import { useInjection } from '@migration-planner-ui/ioc';
 import { useAsyncFnResetError } from '../../../hooks/useAsyncFnResetError';
 import { Symbols } from '../../../main/Symbols';
 
+import { useRVToolsJob } from '../../../pages/assessment/hooks/useRVToolsJob';
 import { DiscoverySources } from './@types/DiscoverySources';
 import { Context } from './Context';
-import { useRVToolsJob } from '../../../pages/assessment/hooks/useRVToolsJob';
 
 // Use a shared constant to avoid recreating empty array references on each render
 const EMPTY_ARRAY: unknown[] = [];
@@ -52,6 +52,9 @@ export const Provider: React.FC<PropsWithChildren> = (props) => {
   // It is used by sourceTable to show Back button.
   const [assessmentFromAgentState, setAssessmentFromAgent] =
     useState<boolean>(false);
+
+  // Callback ref for job success - set by consuming component (Assessment.tsx)
+  const onJobSuccessRef = useRef<((assessmentId: string) => void) | null>(null);
 
   const sourceApi = useInjection<SourceApiInterface>(Symbols.SourceApi);
   const agentsApi = useInjection<AgentApiInterface>(Symbols.AgentApi);
@@ -114,17 +117,35 @@ export const Provider: React.FC<PropsWithChildren> = (props) => {
     [assessmentApi, listAssessments],
   );
 
-  // RVTools Job State Hook
+  // Callback for successful job completion - calls the ref callback if set
+  const handleJobSuccess = useCallback(
+    (assessmentId: string) => {
+      listAssessments();
+      if (onJobSuccessRef.current) {
+        onJobSuccessRef.current(assessmentId);
+      }
+    },
+    [listAssessments],
+  );
+
+  // Setter for the success callback - used by consuming components
+  const setOnJobSuccess = useCallback(
+    (callback: (assessmentId: string) => void) => {
+      onJobSuccessRef.current = callback;
+    },
+    [],
+  );
+
+  // RVTools Job State Hook - uses onSuccess callback pattern
   const {
     currentJob,
     isCreatingRVToolsJob,
     errorCreatingRVToolsJob,
     createRVToolsJob,
     cancelRVToolsJob,
-    clearRVToolsJob,
   } = useRVToolsJob({
     jobApi,
-    onJobCompleted: listAssessments,
+    onSuccess: handleJobSuccess,
     onDeleteAssessment: handleDeleteAssessment,
   });
 
@@ -151,7 +172,6 @@ export const Provider: React.FC<PropsWithChildren> = (props) => {
         await listAssessments();
         return assessment;
       } else if (sourceType === 'rvtools') {
-        // RVTools assessments should use createRVToolsJob instead
         throw new Error(
           'RVTools assessments must be created using createRVToolsJob for async processing',
         );
@@ -691,7 +711,8 @@ export const Provider: React.FC<PropsWithChildren> = (props) => {
     // RVTools Job Methods
     createRVToolsJob,
     cancelRVToolsJob,
-    clearRVToolsJob,
+    // Callback setter for job success
+    setOnJobSuccess,
   };
 
   return <Context.Provider value={ctx}>{children}</Context.Provider>;
