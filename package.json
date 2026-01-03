@@ -58,7 +58,7 @@
   "devDependencies": {
     "@babel/core": "^7.26.0",
     "@babel/eslint-parser": "^7.26.0",
-    "@redhat-cloud-services/eslint-config-redhat-cloud-services": "^2.0.4",
+    "@redhat-cloud-services/eslint-config-redhat-cloud-services": "^3.0.0",
     "@redhat-cloud-services/frontend-components-config": "^6.7.4",
     "@redhat-cloud-services/tsc-transform-imports": "^1.0.26",
     "@testing-library/jest-dom": "^6.5.0",
