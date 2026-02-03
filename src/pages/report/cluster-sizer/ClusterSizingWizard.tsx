@@ -6,6 +6,7 @@ import {
   Wizard,
   WizardHeader,
   WizardStep,
+  type WizardStepType,
 } from "@patternfly/react-core";
 import React, { useCallback, useState } from "react";
 
@@ -98,6 +99,20 @@ export const ClusterSizingWizard: React.FC<ClusterSizingWizardProps> = ({
     }
   }, [assessmentApi, assessmentId, clusterId, formValues]);
 
+  const handleStepChange = useCallback(
+    async (
+      _event: React.MouseEvent<HTMLButtonElement>,
+      currentStep: WizardStepType,
+      _prevStep: WizardStepType,
+    ): Promise<void> => {
+      // Trigger calculation when entering the review step
+      if (currentStep.id === "review-step") {
+        await handleCalculate();
+      }
+    },
+    [handleCalculate],
+  );
+
   if (!isOpen) {
     return null;
   }
@@ -112,6 +127,7 @@ export const ClusterSizingWizard: React.FC<ClusterSizingWizardProps> = ({
       <Wizard
         height={700}
         onClose={handleClose}
+        onStepChange={handleStepChange}
         header={
           <WizardHeader
             onClose={handleClose}
@@ -125,7 +141,6 @@ export const ClusterSizingWizard: React.FC<ClusterSizingWizardProps> = ({
           footer={
             <SizingInputFormWizardStepFooter
               onClose={handleClose}
-              onCalculate={handleCalculate}
               isLoading={isLoading}
             />
           }
