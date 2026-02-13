@@ -109,6 +109,13 @@ start: install
 	@HOT=true npx fec dev --clouddotEnv=stage --uiEnv=stable
 	@echo "✅ Federated dev server started!"
 
+# Start federated dev server with local backend
+.PHONY: start-local
+start-local: install
+	@echo "🚀 Starting federated dev server with local backend..."
+	@HOT=true USE_LOCAL_BACKEND=1 npx fec dev --clouddotEnv=stage --uiEnv=stable
+	@echo "✅ Federated dev server with local backend started!"
+
 # Start dev proxy server
 .PHONY: start-dev-proxy
 start-dev-proxy: install
@@ -375,6 +382,7 @@ help:
 	@echo "  run-standalone      Run the standalone application locally"
 	@echo "  preview-standalone  Preview standalone build"
 	@echo "  start               Start federated dev server (HOT mode)"
+	@echo "  start-local         Start federated dev server with local backend"
 	@echo "  start-dev-proxy     Start dev proxy server"
 	@echo "  start-federated     Start federated static server"
 	@echo "  patch-hosts         Patch /etc/hosts for local development"

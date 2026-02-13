@@ -49,7 +49,7 @@ export default defineConfig(() => {
       port: 3000,
       proxy: {
         "/planner": {
-          target: "http://localhost:3443",
+          target: "http://[::1]:3443",
           secure: false,
           changeOrigin: true,
         },

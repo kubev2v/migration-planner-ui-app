@@ -8,6 +8,16 @@ module.exports = {
   proxyVerbose: true,
   sassPrefix: ".assisted-migration-app, .assistedMigrationApp",
   interceptChromeConfig: false,
+  ...(process.env.USE_LOCAL_BACKEND && {
+    routes: {
+      "/api/migration-assessment": {
+        host: "http://[::1]:3443",
+        pathRewrite: {
+          "^/api/migration-assessment": "",
+        },
+      },
+    },
+  }),
   plugins: [
     new webpack.DefinePlugin({
       "process.env.MIGRATION_PLANNER_API_BASE_URL": JSON.stringify(
