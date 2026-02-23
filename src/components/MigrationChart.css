@@ -11,3 +11,15 @@
   .pf-v5-c-button.pf-m-plain:hover {
   color: #000;
 }
+
+.migration-chart-info-trigger {
+  padding: 0;
+  min-width: 0;
+  margin-left: 0.25rem;
+}
+
+.migration-chart-info-trigger.pf-c-button {
+  padding: 0;
+  min-width: 0;
+  margin-left: 0.25rem;
+}

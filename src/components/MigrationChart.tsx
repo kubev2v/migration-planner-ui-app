@@ -128,27 +128,27 @@ const MigrationChart: React.FC<MigrationChartProps> = ({
                     <Td width={dataLength} style={{ paddingLeft: "0px" }}>
                       <Flex
                         alignItems={{ default: "alignItemsCenter" }}
-                        spaceItems={{ default: "spaceItemsSm" }}
+                        spaceItems={{ default: "spaceItemsNone" }}
                       >
-                        <FlexItem>
+                        <FlexItem
+                          flex={{ default: "flex_1" }}
+                          style={{ minWidth: 0 }}
+                        >
                           <Content
                             component={ContentVariants.p}
                             style={{
                               fontSize: "clamp(0.4rem, 0.7vw, 1.1rem)",
                               overflow: "hidden",
                               textOverflow: "ellipsis",
-                              wordBreak: "break-word",
-                              display: "-webkit-box",
-                              WebkitLineClamp: 1,
+                              whiteSpace: "nowrap",
                               textTransform: "capitalize",
-                              WebkitBoxOrient: "vertical",
                             }}
                           >
                             {item.name}
                           </Content>
                         </FlexItem>
                         {item.infoText ? (
-                          <FlexItem>
+                          <FlexItem flex={{ default: "flex_0" }}>
                             <Popover
                               className="upgrade-recommendation-popover"
                               position="bottom"
@@ -156,6 +156,7 @@ const MigrationChart: React.FC<MigrationChartProps> = ({
                               bodyContent={<div>{item.infoText}</div>}
                             >
                               <Button
+                                className="migration-chart-info-trigger"
                                 type="button"
                                 aria-label="Open operating system upgrade information"
                                 variant="plain"
