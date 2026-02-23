@@ -44,7 +44,7 @@ const createCards = (
       <Content style={{ textAlign: "center" }}>
         <Content style={{ minHeight: "60px" }}>
           Run the discovery process or upload an inventory file to create a full
-          migration assessment report.
+          migration advisor report.
         </Content>
         <Button
           size="sm"

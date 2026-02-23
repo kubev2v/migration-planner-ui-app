@@ -6,7 +6,7 @@ import { VMwareMigrationCard } from "../ocm/VMwareMigrationCard";
 
 const OcmPreviewPage: React.FC = () => {
   return (
-    <AppPage title="VMware Migration Assessment Card for OCM">
+    <AppPage title="VMware Migration Advisor Card for OCM">
       <Bullseye>
         <VMwareMigrationCard />
       </Bullseye>

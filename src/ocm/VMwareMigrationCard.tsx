@@ -43,7 +43,7 @@ export const VMwareMigrationCard: React.FC = () => {
         <Content>
           <Content component="p">
             Start your migration journey to OpenShift Virtualization. We will
-            create a migration assessment report and help you create a migration
+            create a migration advisor report and help you create a migration
             plan.
           </Content>
         </Content>

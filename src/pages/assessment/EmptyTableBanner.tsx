@@ -58,7 +58,7 @@ const EmptyTableBanner: React.FC<Props> = ({ onOpenModal }) => {
             <Content style={{ textAlign: "center" }}>
               <Content component="p">
                 Run the discovery process or upload an inventory file to create
-                a full migration assessment report.
+                a full migration advisor report.
               </Content>
               <div
                 style={{
@@ -108,9 +108,9 @@ const EmptyTableBanner: React.FC<Props> = ({ onOpenModal }) => {
               variant="primary"
               onClick={onDropdownToggle}
               isExpanded={isDropdownOpen}
-              style={{ minWidth: "290px" }}
+              style={{ minWidth: "250px" }}
             >
-              Create new migration assessment
+              Create new assessment
             </MenuToggle>
           )}
           shouldFocusToggleOnSelect

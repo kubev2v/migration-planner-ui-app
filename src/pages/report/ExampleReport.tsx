@@ -2012,7 +2012,7 @@ const ExampleReport: React.FC = () => {
       breadcrumbs={[
         {
           key: 1,
-          children: "Migration assessment",
+          children: "Migration advisor",
         },
         {
           key: 2,
@@ -2035,8 +2035,7 @@ const ExampleReport: React.FC = () => {
             </Icon>{" "}
             Ready
             <br />
-            This is an example report showcasing the migration assessment
-            dashboard
+            This is an example report showcasing the migration advisor dashboard
           </StackItem>
           <StackItem>
             {clusterCount > 0 ? (

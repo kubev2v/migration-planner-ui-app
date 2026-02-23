@@ -10,7 +10,7 @@ const MigrationWizardPage: React.FC = () => {
         {
           key: 1,
           to: "/openshift/migration-assessment",
-          children: "Migration assessment",
+          children: "Migration advisor",
         },
         { key: 2, children: "Guide", isActive: true },
       ]}

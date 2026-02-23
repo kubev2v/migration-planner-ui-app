@@ -9,7 +9,7 @@ import App from "../../src/App"; // Make sure this path is correct relative to s
 // --- Mock/Standalone Shell Components ---
 export const StandaloneHeader: React.FC = () => (
   <header>
-    <h1>Migration Assessment App (Standalone) </h1>
+    <h1>Migration Advisor App (Standalone) </h1>
     <nav>
       <Link to="/"> Home </Link>
       <Link to="/inventory"> Inventory </Link>

@@ -35,7 +35,7 @@ const MigrationPage: React.FC<Props> = ({ initialTabKey }) => {
   const breadcrumbs = [
     {
       key: 1,
-      children: "Migration assessment",
+      children: "Migration advisor",
     },
     {
       key: 2,
