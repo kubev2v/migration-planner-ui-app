@@ -85,25 +85,21 @@ export const SizingInputForm: React.FC<SizingInputFormProps> = ({
 
   return (
     <Form>
-      <Grid>
-        <GridItem span={12}>
-          <Stack hasGutter>
-            <StackItem>
-              <Title headingLevel="h2">Migration preferences</Title>
-            </StackItem>
+      <Stack hasGutter>
+        <StackItem>
+          <Checkbox
+            isLabelWrapped
+            id="control-plane-scheduling"
+            label="Run workloads on control plane nodes"
+            isChecked={values.scheduleOnControlPlane}
+            onChange={handleControlPlaneChange}
+          />
+        </StackItem>
 
-            <StackItem>
-              <Checkbox
-                isLabelWrapped
-                id="control-plane-scheduling"
-                label="Run workloads on control plane nodes"
-                isChecked={values.scheduleOnControlPlane}
-                onChange={handleControlPlaneChange}
-              />
-            </StackItem>
-
+        <StackItem>
+          <Grid hasGutter>
             {/* Worker node CPU cores */}
-            <StackItem>
+            <GridItem span={6}>
               <FormGroup
                 label="Worker node CPU cores"
                 isRequired
@@ -131,10 +127,10 @@ export const SizingInputForm: React.FC<SizingInputFormProps> = ({
                   ))}
                 </FormSelect>
               </FormGroup>
-            </StackItem>
+            </GridItem>
 
             {/* Worker node memory size (GB) */}
-            <StackItem>
+            <GridItem span={6}>
               <FormGroup
                 label="Worker node memory size (GB)"
                 isRequired
@@ -162,10 +158,10 @@ export const SizingInputForm: React.FC<SizingInputFormProps> = ({
                   ))}
                 </FormSelect>
               </FormGroup>
-            </StackItem>
+            </GridItem>
 
             {/* CPU overcommitment */}
-            <StackItem>
+            <GridItem span={6}>
               <FormGroup
                 label="CPU overcommitment"
                 isRequired
@@ -193,10 +189,10 @@ export const SizingInputForm: React.FC<SizingInputFormProps> = ({
                   ))}
                 </FormSelect>
               </FormGroup>
-            </StackItem>
+            </GridItem>
 
             {/* Memory overcommitment */}
-            <StackItem>
+            <GridItem span={6}>
               <FormGroup
                 label="Memory overcommitment"
                 isRequired
@@ -224,10 +220,10 @@ export const SizingInputForm: React.FC<SizingInputFormProps> = ({
                   ))}
                 </FormSelect>
               </FormGroup>
-            </StackItem>
-          </Stack>
-        </GridItem>
-      </Grid>
+            </GridItem>
+          </Grid>
+        </StackItem>
+      </Stack>
     </Form>
   );
 };

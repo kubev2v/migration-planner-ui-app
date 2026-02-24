@@ -12,13 +12,12 @@ import {
   Nav,
   NavItem,
   NavList,
-  Stack,
-  StackItem,
 } from "@patternfly/react-core";
 import React, { useCallback, useState } from "react";
 
 import { Symbols } from "../../../main/Symbols";
 import { DEFAULT_FORM_VALUES, WORKER_NODE_PRESETS } from "./constants";
+import { RecommendationTemplate } from "./RecommendationTemplate";
 import { SizingInputForm } from "./SizingInputForm";
 import { SizingResult } from "./SizingResult";
 import type { ClusterRequirementsResponse, SizingFormValues } from "./types";
@@ -113,33 +112,25 @@ export const ClusterSizingWizard: React.FC<ClusterSizingWizardProps> = ({
     switch (selectedMenuItem) {
       case "architecture":
         return (
-          <Stack hasGutter>
-            <StackItem>
+          <RecommendationTemplate
+            preferencesTitle="Migration preferences"
+            preferencesContent={
               <SizingInputForm values={formValues} onChange={setFormValues} />
-            </StackItem>
-            <StackItem>
-              <Button
-                variant="primary"
-                onClick={() => {
-                  void handleCalculate();
-                }}
+            }
+            resultsContent={
+              <SizingResult
+                clusterName={clusterName}
+                formValues={formValues}
+                sizerOutput={sizerOutput}
                 isLoading={isLoading}
-              >
-                Calculate recommendations
-              </Button>
-            </StackItem>
-            {(sizerOutput || isLoading || error) && (
-              <StackItem>
-                <SizingResult
-                  clusterName={clusterName}
-                  formValues={formValues}
-                  sizerOutput={sizerOutput}
-                  isLoading={isLoading}
-                  error={error}
-                />
-              </StackItem>
-            )}
-          </Stack>
+                error={error}
+              />
+            }
+            onGenerate={handleCalculate}
+            isLoading={isLoading}
+            hasResults={Boolean(sizerOutput || isLoading || error)}
+            generateButtonText="Generate recommendation"
+          />
         );
       case "time-estimation":
         return <div>Migration Time Estimation content (coming soon)</div>;

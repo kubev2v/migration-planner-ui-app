@@ -91,13 +91,13 @@ describe("ClusterSizingWizard", () => {
       expect(screen.getByTestId("sizing-input-form")).toBeInTheDocument();
     });
 
-    it("triggers calculation when clicking Calculate recommendations button", async () => {
+    it("triggers calculation when clicking Generate recommendation button", async () => {
       render(<ClusterSizingWizard {...defaultProps} />);
 
-      const calculateButton = screen.getByRole("button", {
-        name: /Calculate recommendations/,
+      const generateButton = screen.getByRole("button", {
+        name: /Generate recommendation/,
       });
-      fireEvent.click(calculateButton);
+      fireEvent.click(generateButton);
 
       await waitFor(() => {
         expect(

@@ -1,26 +1,23 @@
 import {
   Alert,
-  Button,
   Content,
+  DescriptionList,
+  DescriptionListDescription,
+  DescriptionListGroup,
+  DescriptionListTerm,
   Flex,
   FlexItem,
-  Panel,
-  PanelHeader,
-  PanelMain,
-  PanelMainBody,
   Spinner,
   Stack,
   StackItem,
-  Title,
 } from "@patternfly/react-core";
-import { CopyIcon } from "@patternfly/react-icons";
 import React, { useCallback, useMemo } from "react";
 
 import { CPU_OVERCOMMIT_OPTIONS, MEMORY_OVERCOMMIT_OPTIONS } from "./constants";
 import type { ClusterRequirementsResponse, SizingFormValues } from "./types";
 
 const DISCLAIMER_TEXT =
-  "Note: Resource requirements are estimates based on current workloads. Please verify this architecture with your SME team to ensure optimal performance.";
+  "Confirm this architecture with your team to ensure optimal performance.";
 
 interface SizingResultProps {
   clusterName: string;
@@ -177,100 +174,83 @@ export const SizingResult: React.FC<SizingResultProps> = ({
   const memoryLimits = sizerOutput.resourceConsumption.limits?.memory ?? 0;
 
   return (
-    <Panel>
-      {/* Sticky Header with title and copy button */}
-      <PanelHeader>
-        <Flex justifyContent={{ default: "justifyContentSpaceBetween" }}>
-          <FlexItem>
-            <Title headingLevel="h2">Review cluster recommendations</Title>
-          </FlexItem>
-          <FlexItem>
-            <Button
-              variant="link"
-              icon={<CopyIcon />}
-              iconPosition="end"
-              onClick={handleCopyRecommendations}
-            >
-              Copy recommendations
-            </Button>
-          </FlexItem>
-        </Flex>
-      </PanelHeader>
+    <Stack hasGutter>
+      <StackItem>
+        <DescriptionList isHorizontal isCompact>
+          <DescriptionListGroup>
+            <DescriptionListTerm>Cluster name</DescriptionListTerm>
+            <DescriptionListDescription>
+              {clusterName}
+            </DescriptionListDescription>
+          </DescriptionListGroup>
 
-      {/* Scrollable Content */}
-      <PanelMain>
-        <PanelMainBody>
-          <Stack hasGutter>
-            {/* Main cluster info */}
+          <DescriptionListGroup>
+            <DescriptionListTerm>Target platform</DescriptionListTerm>
+            <DescriptionListDescription>Bare Metal</DescriptionListDescription>
+          </DescriptionListGroup>
 
-            <StackItem>
-              <Alert isInline variant="info" title={DISCLAIMER_TEXT} />
-            </StackItem>
-            <StackItem>
+          <DescriptionListGroup>
+            <DescriptionListTerm>Total nodes</DescriptionListTerm>
+            <DescriptionListDescription>
+              {sizerOutput.clusterSizing.totalNodes} (
+              {sizerOutput.clusterSizing.workerNodes} workers +{" "}
+              {sizerOutput.clusterSizing.controlPlaneNodes} control plane)
+            </DescriptionListDescription>
+          </DescriptionListGroup>
+
+          <DescriptionListGroup>
+            <DescriptionListTerm>Node size</DescriptionListTerm>
+            <DescriptionListDescription>
+              {formValues.customCpu} CPU, {formValues.customMemoryGb} GB memory
+            </DescriptionListDescription>
+          </DescriptionListGroup>
+
+          <DescriptionListGroup>
+            <DescriptionListTerm>Over-commitment</DescriptionListTerm>
+            <DescriptionListDescription>
+              {getMemoryOvercommitLabel(formValues.memoryOvercommitRatio)}
+            </DescriptionListDescription>
+          </DescriptionListGroup>
+
+          <DescriptionListGroup>
+            <DescriptionListTerm>Workload details</DescriptionListTerm>
+            <DescriptionListDescription>
               <Content>
-                <Content>
-                  <strong>Cluster:</strong> {clusterName}
-                </Content>
-                <Content>
-                  <strong>
-                    Total Nodes: {sizerOutput.clusterSizing.totalNodes} (
-                    {sizerOutput.clusterSizing.workerNodes} workers +{" "}
-                    {sizerOutput.clusterSizing.controlPlaneNodes} control plane)
-                  </strong>
-                </Content>
-                <Content>
-                  <strong>
-                    Node Size: {formValues.customCpu} CPU /{" "}
-                    {formValues.customMemoryGb} GB
-                  </strong>
-                </Content>
+                • VMs to migrate:{" "}
+                {formatNumber(sizerOutput.inventoryTotals.totalVMs)}
               </Content>
-            </StackItem>
-
-            {/* Additional info section */}
-            <StackItem>
               <Content>
-                <Content>
-                  <strong>Additional info</strong>
-                </Content>
-                <Content>Target Platform: BareMetal</Content>
-                <Content>
-                  Over-Commitment: CPU{" "}
-                  {getCpuOvercommitLabel(formValues.cpuOvercommitRatio)}, Memory{" "}
-                  {getMemoryOvercommitLabel(formValues.memoryOvercommitRatio)}
-                </Content>
-                <Content>
-                  VMs to Migrate:{" "}
-                  {formatNumber(sizerOutput.inventoryTotals.totalVMs)} VMs
-                </Content>
-                <Content>
-                  ~ CPU Over-Commit Ratio: {formatRatio(cpuOverCommitRatio)}
-                </Content>
-                <Content>
-                  - Memory Over-Commit Ratio:{" "}
-                  {formatRatio(memoryOverCommitRatio)}
-                </Content>
-                <Content>Resource Breakdown</Content>
-                <Content>
-                  VM Resources (requested):{" "}
-                  {formatNumber(sizerOutput.inventoryTotals.totalCPU)} CPU /{" "}
-                  {formatNumber(sizerOutput.inventoryTotals.totalMemory)} GB
-                </Content>
-                <Content>
-                  With Over-commit (limits): {formatNumber(cpuLimits)} CPU /{" "}
-                  {formatNumber(memoryLimits)} GB
-                </Content>
-                <Content>
-                  Physical Capacity:{" "}
-                  {formatNumber(sizerOutput.clusterSizing.totalCPU)} CPU /{" "}
-                  {formatNumber(sizerOutput.clusterSizing.totalMemory)} GB
-                </Content>
+                • CPU over-commit ratio: {formatRatio(cpuOverCommitRatio)}
               </Content>
-            </StackItem>
-          </Stack>
-        </PanelMainBody>
-      </PanelMain>
-    </Panel>
+              <Content>
+                • Memory over-commit ratio: {formatRatio(memoryOverCommitRatio)}
+              </Content>
+            </DescriptionListDescription>
+          </DescriptionListGroup>
+
+          <DescriptionListGroup>
+            <DescriptionListTerm>Resources</DescriptionListTerm>
+            <DescriptionListDescription>
+              <Content>
+                • VM resources (request):{" "}
+                {formatNumber(sizerOutput.inventoryTotals.totalCPU)} CPU,{" "}
+                {formatNumber(sizerOutput.inventoryTotals.totalMemory)} GB
+                memory
+              </Content>
+              <Content>
+                • With Over-commit (limits): {formatNumber(cpuLimits)} CPU,{" "}
+                {formatNumber(memoryLimits)} GB memory
+              </Content>
+              <Content>
+                • Physical capacity:{" "}
+                {formatNumber(sizerOutput.clusterSizing.totalCPU)} CPU,{" "}
+                {formatNumber(sizerOutput.clusterSizing.totalMemory)} GB memory
+              </Content>
+            </DescriptionListDescription>
+          </DescriptionListGroup>
+        </DescriptionList>
+      </StackItem>
+    </Stack>
   );
 };
 
