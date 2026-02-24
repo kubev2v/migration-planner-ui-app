@@ -11,10 +11,20 @@ import { useChrome } from "@redhat-cloud-services/frontend-components/useChrome"
 import React, { Fragment, useEffect } from "react";
 
 import { exposeVersionInfo } from "./common/version";
+import {
+  createMockAssessmentApi,
+  createMockImageApi,
+  createMockSourceApi,
+} from "./mocks/standaloneMockApis";
 import { Symbols } from "./main/Symbols";
 import Routing from "./Routing";
 import { ReportExportService } from "./services/report-export";
 import { createAuthFetch } from "./utils/authFetch";
+
+const isMockApi = (): boolean =>
+  typeof process !== "undefined" &&
+  typeof process.env !== "undefined" &&
+  !!process.env.USE_MOCK_API;
 
 const App: React.FC = () => {
   const chrome = useChrome(); // useChrome SÍ puede usarse acá
@@ -22,23 +32,31 @@ const App: React.FC = () => {
 
   useEffect(() => {
     const configure = (): void => {
-      const authFetch = createAuthFetch(chrome); // pasamos chrome
-
-      const plannerApiConfig = new Configuration({
-        basePath: process.env.MIGRATION_PLANNER_API_BASE_URL,
-        fetchApi: authFetch,
-      });
+      const useMock = isMockApi();
+      const fetchApi = useMock ? fetch : createAuthFetch(chrome);
 
       const c = new Container();
-      c.register(Symbols.ImageApi, new ImageApi(plannerApiConfig));
-      c.register(Symbols.SourceApi, new SourceApi(plannerApiConfig));
-      c.register(Symbols.AssessmentApi, new AssessmentApi(plannerApiConfig));
+
+      if (useMock) {
+        c.register(Symbols.ImageApi, createMockImageApi());
+        c.register(Symbols.SourceApi, createMockSourceApi());
+        c.register(Symbols.AssessmentApi, createMockAssessmentApi());
+      } else {
+        const plannerApiConfig = new Configuration({
+          basePath: process.env.MIGRATION_PLANNER_API_BASE_URL,
+          fetchApi,
+        });
+        c.register(Symbols.ImageApi, new ImageApi(plannerApiConfig));
+        c.register(Symbols.SourceApi, new SourceApi(plannerApiConfig));
+        c.register(Symbols.AssessmentApi, new AssessmentApi(plannerApiConfig));
+      }
+
       c.register(Symbols.ReportExportService, new ReportExportService());
 
       setContainer(c);
 
       // Expose version information for developers (async) with authenticated fetch
-      exposeVersionInfo(authFetch).catch((error) => {
+      exposeVersionInfo(fetchApi).catch((error) => {
         console.warn("Failed to expose version info:", error);
       });
     };

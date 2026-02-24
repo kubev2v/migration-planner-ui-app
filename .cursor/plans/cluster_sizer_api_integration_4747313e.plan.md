@@ -15,11 +15,12 @@ todos:
     content: Remove unused onCalculate prop from ClusterSizingWizard usage in Report.tsx
     status: completed
   - id: remove-ha-text
-    content: 'Remove "High Availability: Yes" text from SizingResult component'
+    content: "Remove \"High Availability: Yes\" text from SizingResult component"
     status: completed
   - id: update-default-overcommit
     content: Change default overcommit ratio from 1:6 to 1:4 in constants.ts
     status: completed
+isProject: false
 ---
 
 # Cluster Sizer API Integration Plan
@@ -30,10 +31,10 @@ The `@migration-planner-ui/api-client` package now includes the `calculateAssess
 
 ## Key Files
 
-- [`src/pages/report/cluster-sizer/ClusterSizingWizard.tsx`](src/pages/report/cluster-sizer/ClusterSizingWizard.tsx) - Main component to update
-- [`src/pages/report/cluster-sizer/types.ts`](src/pages/report/cluster-sizer/types.ts) - Replace API types with api-client imports
-- [`src/pages/report/cluster-sizer/SizingResult.tsx`](src/pages/report/cluster-sizer/SizingResult.tsx) - Add null checks for optional fields
-- [`src/main/Symbols.ts`](src/main/Symbols.ts) - Already has `AssessmentApi` symbol registered
+- `[src/pages/report/cluster-sizer/ClusterSizingWizard.tsx](src/pages/report/cluster-sizer/ClusterSizingWizard.tsx)` - Main component to update
+- `[src/pages/report/cluster-sizer/types.ts](src/pages/report/cluster-sizer/types.ts)` - Replace API types with api-client imports
+- `[src/pages/report/cluster-sizer/SizingResult.tsx](src/pages/report/cluster-sizer/SizingResult.tsx)` - Add null checks for optional fields
+- `[src/main/Symbols.ts](src/main/Symbols.ts)` - Already has `AssessmentApi` symbol registered
 
 ## API Details
 
@@ -103,7 +104,7 @@ Remove the hardcoded "High Availability: Yes" text from both:
 
 ### 6. Change default overcommit ratio
 
-In [`src/pages/report/cluster-sizer/constants.ts`](src/pages/report/cluster-sizer/constants.ts), update `DEFAULT_FORM_VALUES.overcommitRatio` from `6` (High Density 1:6) to `4` (Standard 1:4).
+In `[src/pages/report/cluster-sizer/constants.ts](src/pages/report/cluster-sizer/constants.ts)`, update `DEFAULT_FORM_VALUES.overcommitRatio` from `6` (High Density 1:6) to `4` (Standard 1:4).
 
 ### 7. Mock files decision
 

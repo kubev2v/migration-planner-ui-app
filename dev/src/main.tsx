@@ -2,19 +2,27 @@ import "./mocks/insights";
 
 import React from "react";
 import ReactDOM from "react-dom/client";
-import { BrowserRouter, Link, Route, Routes } from "react-router-dom";
+import {
+  BrowserRouter,
+  Link,
+  Navigate,
+  Route,
+  Routes,
+} from "react-router-dom";
 
 import App from "../../src/App"; // Make sure this path is correct relative to standalone-entry.tsx
+
+const APP_BASE = "/openshift/migration-assessment";
 
 // --- Mock/Standalone Shell Components ---
 export const StandaloneHeader: React.FC = () => (
   <header>
     <h1>Migration Assessment App (Standalone) </h1>
     <nav>
-      <Link to="/"> Home </Link>
-      <Link to="/inventory"> Inventory </Link>
-      <Link to="/assessments"> Assessments </Link>
-      <Link to="/issues"> Issues </Link>
+      <Link to={APP_BASE}> Home </Link>
+      <Link to={`${APP_BASE}/environments`}> Inventory </Link>
+      <Link to={`${APP_BASE}/assessments`}> Assessments </Link>
+      <Link to={APP_BASE}> Issues </Link>
     </nav>
   </header>
 );
@@ -34,6 +42,12 @@ export const StandaloneAppWrapper: React.FC = () => {
       <StandaloneHeader />
       <main>
         <Routes>
+          <Route
+            path="/"
+            element={
+              <Navigate to="/openshift/migration-assessment" replace />
+            }
+          />
           <Route path="/openshift/migration-assessment/*" element={<App />} />
         </Routes>
       </main>

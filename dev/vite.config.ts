@@ -20,6 +20,9 @@ export default defineConfig(() => {
       "process.env.MIGRATION_PLANNER_UI_VERSION": JSON.stringify(
         process.env.MIGRATION_PLANNER_UI_VERSION,
       ),
+      "process.env.USE_MOCK_API": JSON.stringify(
+        process.env.USE_MOCK_API || "",
+      ),
     },
     resolve: {
       alias: {

@@ -14,6 +14,7 @@ todos:
   - id: run-tests
     content: Run sizing result tests to validate.
     status: completed
+isProject: false
 ---
 
 # Add sizing disclaimer + tests
@@ -26,7 +27,7 @@ todos:
 
 ## Files to update
 
-- [`src/pages/report/cluster-sizer/SizingResult.tsx`](src/pages/report/cluster-sizer/SizingResult.tsx)
+- `[src/pages/report/cluster-sizer/SizingResult.tsx](src/pages/report/cluster-sizer/SizingResult.tsx)`
 - Add an inline PatternFly `Alert` (info variant) near the top of the results content with the provided message.
 - Extend `generatePlainTextRecommendation` to include the disclaimer after the main content, separated by a blank line.
 - Tests (discover location once confirmed by repo structure): likely `SizingResult.test.tsx` near the component or under a central `__tests__` folder.
@@ -48,3 +49,4 @@ todos:
 - `update-copy-text`: Append disclaimer to copied recommendations text.
 - `add-tests`: Add unit tests for disclaimer rendering and copy text content.
 - `run-tests`: Run the sizing result test suite.
+

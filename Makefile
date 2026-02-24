@@ -88,6 +88,15 @@ run-standalone: install
 		npx vite ./dev -c ./dev/vite.config.ts --mode dev --open http://localhost:3000/openshift/migration-assessment
 	@echo "✅ Standalone run completed"
 
+# Run the standalone application with mock API (no backend required)
+.PHONY: run-standalone-mock
+run-standalone-mock: install
+	@echo "🚀 Running standalone application (mock API, no backend)..."
+	@rm -rf dev/dist
+	@$(BUILD_ENV) USE_MOCK_API=1 \
+		npx vite ./dev -c ./dev/vite.config.ts --mode dev --open http://localhost:3000/openshift/migration-assessment
+	@echo "✅ Mock standalone run completed"
+
 # Preview standalone build
 .PHONY: preview-standalone
 preview-standalone: build-standalone
@@ -373,6 +382,7 @@ help:
 	@echo "  build-standalone    Build the standalone application locally"
 	@echo "  build               Build the federated module locally"
 	@echo "  run-standalone      Run the standalone application locally"
+	@echo "  run-standalone-mock Run the standalone application with mock API (no backend)"
 	@echo "  preview-standalone  Preview standalone build"
 	@echo "  start               Start federated dev server (HOT mode)"
 	@echo "  start-dev-proxy     Start dev proxy server"

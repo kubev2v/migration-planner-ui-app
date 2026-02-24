@@ -161,6 +161,28 @@ const srcTestsConfig = {
   },
 };
 
+/** Mock APIs/data: allow async without await and relax import/assertion rules */
+/** @type {import('eslint').Linter.Config} */
+const srcMocksConfig = {
+  name: "srcMocksConfig",
+  files: ["src/mocks/**/*.ts"],
+  rules: {
+    "@typescript-eslint/require-await": "off",
+    "@typescript-eslint/no-unnecessary-type-assertion": "off",
+    "simple-import-sort/imports": "off",
+  },
+};
+
+/** ExampleReport exports data for mocks; allow non-component export */
+/** @type {import('eslint').Linter.Config} */
+const exampleReportConfig = {
+  name: "exampleReportConfig",
+  files: ["src/pages/report/ExampleReport.tsx"],
+  rules: {
+    "react-refresh/only-export-components": "off",
+  },
+};
+
 /** @type {import('eslint').Linter.Config} */
 const devNodeConfig = {
   name: "devNodeConfig",
@@ -204,6 +226,8 @@ export default defineConfig(
   devNodeConfig,
   devConfig,
   srcConfig,
+  srcMocksConfig,
+  exampleReportConfig,
   srcTestsConfig,
   eslintConfigPrettier,
 );

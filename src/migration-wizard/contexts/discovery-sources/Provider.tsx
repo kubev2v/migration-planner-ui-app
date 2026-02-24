@@ -22,6 +22,7 @@ import React, {
 import { useAsyncFn, useInterval } from "react-use";
 
 import { useAsyncFnResetError } from "../../../hooks/useAsyncFnResetError";
+import { createMockJobApi } from "../../../mocks/standaloneMockApis";
 import { Symbols } from "../../../main/Symbols";
 import { useRVToolsJob } from "../../../pages/assessment/hooks/useRVToolsJob";
 import { DiscoverySources } from "./@types/DiscoverySources";
@@ -127,6 +128,13 @@ export const Provider: React.FC<PropsWithChildren> = (props) => {
 
   // Create jobApi instance (same pattern as assessmentService)
   const jobApi = React.useMemo(() => {
+    const useMockApi =
+      typeof process !== "undefined" &&
+      typeof process.env !== "undefined" &&
+      !!process.env.USE_MOCK_API;
+    if (useMockApi) {
+      return createMockJobApi() as unknown as InstanceType<typeof JobApi>;
+    }
     const baseUrl = process.env.MIGRATION_PLANNER_API_BASE_URL;
     const fetchApi =
       (

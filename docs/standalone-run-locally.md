@@ -22,9 +22,22 @@ https://github.com/kubev2v/migration-planner/blob/main/doc/run-locally.md
 Run the UI in standalone mode with local development settings:
 
 ```bash
-# Start the UI in standalone mode with local API
+# Start the UI in standalone mode with local API (requires API running on localhost:3443)
 make run-standalone
 ```
+
+### Running without a backend (mock mode)
+
+To run the UI with no backend—using mock data only—use:
+
+```bash
+# Start the UI with mock API (no backend required)
+make run-standalone-mock
+# or
+npm run start:mock
+```
+
+Mock mode uses preloaded sources and assessments (including an example vCenter report). No proxy or API server is needed.
 
 ## Testing Your Changes
 

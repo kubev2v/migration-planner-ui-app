@@ -51,6 +51,15 @@ const fetchApiInfo = async (customFetch?: typeof fetch): Promise<ApiInfo> => {
     return apiInfoCache;
   }
 
+  const useMockApi =
+    typeof process !== "undefined" &&
+    typeof process.env !== "undefined" &&
+    !!process.env.USE_MOCK_API;
+  if (useMockApi) {
+    apiInfoCache = { versionName: "mock", gitCommit: "standalone" };
+    return apiInfoCache;
+  }
+
   try {
     const config = new Configuration({
       basePath: process.env.MIGRATION_PLANNER_API_BASE_URL,
