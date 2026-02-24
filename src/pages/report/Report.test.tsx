@@ -334,7 +334,7 @@ describe("Report", () => {
 
       await waitFor(() => {
         expect(
-          screen.getByText("View target cluster recommendations"),
+          screen.getByText("View Recommendation based on vCenter cluster"),
         ).toBeInTheDocument();
       });
     });
@@ -357,7 +357,7 @@ describe("Report", () => {
       await waitFor(() => {
         // Button should be disabled (aria-disabled) when cluster has no VMs
         const button = screen.getByRole("button", {
-          name: "View target cluster recommendations",
+          name: "View Recommendation based on vCenter cluster",
         });
         expect(button).toHaveAttribute("aria-disabled", "true");
       });

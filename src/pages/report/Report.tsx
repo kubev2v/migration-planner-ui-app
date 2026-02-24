@@ -435,7 +435,7 @@ const Inner: React.FC = () => {
                     variant="primary"
                     onClick={() => setIsSizingWizardOpen(true)}
                   >
-                    View target cluster recommendations
+                    View Recommendation based on vCenter cluster
                   </Button>
                 ) : (
                   <Tooltip
@@ -451,7 +451,7 @@ const Inner: React.FC = () => {
                       onClick={() => setIsSizingWizardOpen(true)}
                       isAriaDisabled
                     >
-                      View target cluster recommendations
+                      View Recommendation based on vCenter cluster
                     </Button>
                   </Tooltip>
                 )}
