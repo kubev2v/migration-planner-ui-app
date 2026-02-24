@@ -424,63 +424,63 @@ export const AssessmentsTable: React.FC<Props> = ({
             <Th
               sort={nameSortParams}
               modifier="wrap"
-              style={{ minWidth: "80px" }}
+              style={{ width: "20%", minWidth: "100px" }}
             >
               {Columns.Name}
             </Th>
             <Th
               sort={sourceTypeSortParams}
               modifier="wrap"
-              style={{ width: "1%", whiteSpace: "nowrap" }}
+              style={{ width: "14%", minWidth: "90px" }}
             >
               {Columns.SourceType}
             </Th>
             <Th
               sort={lastUpdatedSortParams}
               modifier="wrap"
-              style={{ width: "1%", whiteSpace: "nowrap" }}
+              style={{ width: "12%", minWidth: "72px" }}
             >
               {Columns.LastUpdated}
             </Th>
             <Th
               sort={ownerSortParams}
               modifier="wrap"
-              style={{ width: "1%", minWidth: "60px" }}
+              style={{ width: "12%", minWidth: "72px" }}
             >
               {Columns.Owner}
             </Th>
             <Th
               sort={hostsSortParams}
               modifier="wrap"
-              style={{ width: "1%", minWidth: "44px" }}
+              style={{ width: "8%", minWidth: "44px" }}
             >
               {Columns.Hosts}
             </Th>
             <Th
               sort={vmsSortParams}
               modifier="wrap"
-              style={{ width: "1%", minWidth: "40px" }}
+              style={{ width: "8%", minWidth: "40px" }}
             >
               {Columns.VMs}
             </Th>
             <Th
               sort={networksSortParams}
               modifier="wrap"
-              style={{ width: "1%", minWidth: "52px" }}
+              style={{ width: "8%", minWidth: "40px" }}
             >
               {Columns.Networks}
             </Th>
             <Th
               sort={datastoresSortParams}
               modifier="wrap"
-              style={{ width: "1%", minWidth: "56px" }}
+              style={{ width: "8%", minWidth: "40px" }}
             >
               {Columns.Datastores}
             </Th>
             <Th
               modifier="fitContent"
               screenReaderText="Actions"
-              style={{ whiteSpace: "nowrap" }}
+              style={{ whiteSpace: "nowrap", width: "1%" }}
             >
               {Columns.Actions}
             </Th>
@@ -542,7 +542,10 @@ export const AssessmentsTable: React.FC<Props> = ({
                   )}
                 </div>
               </Td>
-              <Td dataLabel={Columns.SourceType}>
+              <Td
+                dataLabel={Columns.SourceType}
+                style={{ verticalAlign: "middle" }}
+              >
                 <div
                   style={{
                     display: "flex",
@@ -560,12 +563,33 @@ export const AssessmentsTable: React.FC<Props> = ({
                     : "Discovery OVA"}
                 </div>
               </Td>
-              <Td dataLabel={Columns.LastUpdated}>{row.lastUpdated}</Td>
-              <Td dataLabel={Columns.Owner}>{row.owner}</Td>
-              <Td dataLabel={Columns.Hosts}>{row.hosts}</Td>
-              <Td dataLabel={Columns.VMs}>{row.vms}</Td>
-              <Td dataLabel={Columns.Networks}>{row.networks}</Td>
-              <Td dataLabel={Columns.Datastores}>{row.datastores}</Td>
+              <Td
+                dataLabel={Columns.LastUpdated}
+                style={{ verticalAlign: "middle" }}
+              >
+                {row.lastUpdated}
+              </Td>
+              <Td dataLabel={Columns.Owner} style={{ verticalAlign: "middle" }}>
+                {row.owner}
+              </Td>
+              <Td dataLabel={Columns.Hosts} style={{ verticalAlign: "middle" }}>
+                {row.hosts}
+              </Td>
+              <Td dataLabel={Columns.VMs} style={{ verticalAlign: "middle" }}>
+                {row.vms}
+              </Td>
+              <Td
+                dataLabel={Columns.Networks}
+                style={{ verticalAlign: "middle" }}
+              >
+                {row.networks}
+              </Td>
+              <Td
+                dataLabel={Columns.Datastores}
+                style={{ verticalAlign: "middle" }}
+              >
+                {row.datastores}
+              </Td>
               <Td
                 dataLabel={Columns.Actions}
                 style={{
