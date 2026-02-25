@@ -174,13 +174,13 @@ patch-hosts: install
 # Start federated dev server (HOT mode)
 start: install
 	@echo "🚀 Starting federated dev server..."
-	@HOT=true npx fec dev --clouddotEnv=stage --uiEnv=stable
+	@HOT=true MIGRATION_PLANNER_API_BASE_URL=$(MIGRATION_PLANNER_API_BASE_URL) MIGRATION_PLANNER_UI_GIT_COMMIT=$(MIGRATION_PLANNER_UI_GIT_COMMIT) MIGRATION_PLANNER_UI_VERSION=$(MIGRATION_PLANNER_UI_VERSION) npx fec dev --clouddotEnv=stage --uiEnv=stable
 	@echo "✅ Federated dev server started!"
 
 # Start dev proxy server
 start-dev-proxy: install
 	@echo "🚀 Starting dev proxy server..."
-	@npx fec dev-proxy --clouddotEnv=stage --uiEnv=stable
+	@MIGRATION_PLANNER_API_BASE_URL=$(MIGRATION_PLANNER_API_BASE_URL) MIGRATION_PLANNER_UI_GIT_COMMIT=$(MIGRATION_PLANNER_UI_GIT_COMMIT) MIGRATION_PLANNER_UI_VERSION=$(MIGRATION_PLANNER_UI_VERSION) npx fec dev-proxy --clouddotEnv=stage --uiEnv=stable
 	@echo "✅ Dev proxy server started!"
 
 # Start federated static server
