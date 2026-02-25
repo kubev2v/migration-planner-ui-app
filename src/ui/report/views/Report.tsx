@@ -264,7 +264,7 @@ const ReportContent: React.FC = () => {
                     variant="primary"
                     onClick={() => vm.setIsSizingWizardOpen(true)}
                   >
-                    View target cluster recommendations
+                    View Recommendation based on vCenter cluster
                   </Button>
                 ) : (
                   <Tooltip
@@ -280,7 +280,7 @@ const ReportContent: React.FC = () => {
                       onClick={() => vm.setIsSizingWizardOpen(true)}
                       isAriaDisabled
                     >
-                      View target cluster recommendations
+                      View Recommendation based on vCenter cluster
                     </Button>
                   </Tooltip>
                 )}
