@@ -10,12 +10,11 @@ import {
   Nav,
   NavItem,
   NavList,
-  Stack,
-  StackItem,
 } from "@patternfly/react-core";
 import React, { useCallback, useState } from "react";
 
 import { useClusterSizingWizardViewModel } from "../../view-models/useClusterSizingWizardViewModel";
+import { RecommendationTemplate } from "./RecommendationTemplate";
 import { SizingInputForm } from "./SizingInputForm";
 import { SizingResult } from "./SizingResult";
 
@@ -59,34 +58,30 @@ export const ClusterSizingWizard: React.FC<ClusterSizingWizardProps> = ({
     switch (selectedMenuItem) {
       case "architecture":
         return (
-          <Stack hasGutter>
-            <StackItem>
+          <RecommendationTemplate
+            preferencesTitle="Migration preferences"
+            preferencesContent={
               <SizingInputForm
                 values={vm.formValues}
                 onChange={vm.setFormValues}
               />
-            </StackItem>
-            <StackItem>
-              <Button
-                variant="primary"
-                onClick={handleCalculate}
+            }
+            resultsContent={
+              <SizingResult
+                clusterName={clusterName}
+                formValues={vm.formValues}
+                sizerOutput={vm.sizerOutput}
                 isLoading={vm.isCalculating}
-              >
-                Generate recommendation
-              </Button>
-            </StackItem>
-            {(vm.sizerOutput || vm.isCalculating || vm.calculateError) && (
-              <StackItem>
-                <SizingResult
-                  clusterName={clusterName}
-                  formValues={vm.formValues}
-                  sizerOutput={vm.sizerOutput}
-                  isLoading={vm.isCalculating}
-                  error={vm.calculateError ?? null}
-                />
-              </StackItem>
+                error={vm.calculateError ?? null}
+              />
+            }
+            onGenerate={handleCalculate}
+            isLoading={vm.isCalculating}
+            hasResults={Boolean(
+              vm.sizerOutput || vm.isCalculating || vm.calculateError,
             )}
-          </Stack>
+            generateButtonText="Generate recommendation"
+          />
         );
       case "time-estimation":
         return <div>Migration Time Estimation content (coming soon)</div>;
