@@ -207,15 +207,15 @@ const Assessment: React.FC<Props> = ({
     setSelectedAssessment(null);
   };
 
-  const handleConfirmUpdate = (name: string): void => {
+  const handleConfirmUpdate = async (name: string): Promise<void> => {
     if (!selectedAssessment) return;
-    void vmUpdateAssessment(selectedAssessment.id, name);
+    await vmUpdateAssessment(selectedAssessment.id, name);
     handleCloseUpdateModal();
   };
 
-  const handleConfirmDelete = (): void => {
+  const handleConfirmDelete = async (): Promise<void> => {
     if (!selectedAssessment) return;
-    void vmDeleteAssessment(selectedAssessment.id);
+    await vmDeleteAssessment(selectedAssessment.id);
     handleCloseDeleteModal();
   };
 
@@ -517,7 +517,7 @@ const Assessment: React.FC<Props> = ({
         isOpen={isUpdateModalOpen}
         onClose={handleCloseUpdateModal}
         onSubmit={(name) => {
-          handleConfirmUpdate(name);
+          void handleConfirmUpdate(name);
         }}
         name={(selectedAssessment as AssessmentModel)?.name || ""}
       />
@@ -526,7 +526,9 @@ const Assessment: React.FC<Props> = ({
         isOpen={isDeleteModalOpen}
         onClose={handleCloseDeleteModal}
         onCancel={handleCloseDeleteModal}
-        onConfirm={handleConfirmDelete}
+        onConfirm={() => {
+          void handleConfirmDelete();
+        }}
         isDisabled={isDeletingAssessment}
         title="Delete Assessment"
         titleIconVariant="warning"
