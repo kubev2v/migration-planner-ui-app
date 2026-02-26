@@ -6,7 +6,6 @@ import {
   FormSelectOption,
   Grid,
   GridItem,
-  Title,
 } from "@patternfly/react-core";
 import React from "react";
 
@@ -84,10 +83,6 @@ export const SizingInputForm: React.FC<SizingInputFormProps> = ({
   return (
     <Form>
       <Grid hasGutter>
-        <GridItem span={12}>
-          <Title headingLevel="h2">Migration preferences</Title>
-        </GridItem>
-
         <GridItem span={12}>
           <Checkbox
             isLabelWrapped

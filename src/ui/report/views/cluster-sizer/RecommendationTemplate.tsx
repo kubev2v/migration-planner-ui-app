@@ -28,6 +28,16 @@ interface RecommendationTemplateProps {
   hasResults?: boolean;
   /** Custom button text (defaults to "Generate recommendation") */
   generateButtonText?: string;
+  /** Title for the results section (defaults to "Cluster recommendations") */
+  resultsTitle?: string;
+  /** Whether to show the info alert in the results section (defaults to true) */
+  showAlert?: boolean;
+  /** Initial expanded state for preferences section (defaults to true) */
+  isPreferencesInitiallyExpanded?: boolean;
+  /** Whether the preferences section is disabled (defaults to false) */
+  isPreferencesDisabled?: boolean;
+  /** Whether to hide the preferences section entirely (defaults to false) */
+  hidePreferences?: boolean;
 }
 
 export const RecommendationTemplate: React.FC<RecommendationTemplateProps> = ({
@@ -38,8 +48,15 @@ export const RecommendationTemplate: React.FC<RecommendationTemplateProps> = ({
   isLoading = false,
   hasResults = false,
   generateButtonText = "Generate recommendation",
+  resultsTitle = "Cluster recommendations",
+  showAlert = true,
+  isPreferencesInitiallyExpanded = true,
+  isPreferencesDisabled = false,
+  hidePreferences = false,
 }) => {
-  const [isPreferencesExpanded, setIsPreferencesExpanded] = useState(true);
+  const [isPreferencesExpanded, setIsPreferencesExpanded] = useState(
+    isPreferencesInitiallyExpanded,
+  );
 
   const handleGenerate = () => {
     const result = onGenerate();
@@ -56,63 +73,78 @@ export const RecommendationTemplate: React.FC<RecommendationTemplateProps> = ({
 
   return (
     <Stack hasGutter>
-      <StackItem>
-        <div
-          style={{
-            backgroundColor: "var(--pf-v6-global--BackgroundColor--200)",
-            padding: isPreferencesExpanded
-              ? "var(--pf-v6-global--spacer--lg)"
-              : "var(--pf-v6-global--spacer--md)",
-            borderRadius: "var(--pf-v6-global--BorderRadius--lg)",
-          }}
-        >
-          <ExpandableSection
-            title={preferencesTitle}
-            toggleText={preferencesTitle}
-            isExpanded={isPreferencesExpanded}
-            onToggle={(_event, expanded) => setIsPreferencesExpanded(expanded)}
-            displaySize="lg"
-            style={{ backgroundColor: "#E0F0FF" }}
+      {!hidePreferences && (
+        <StackItem>
+          <div
+            style={{
+              padding: isPreferencesExpanded
+                ? "var(--pf-t--global--spacer--400)"
+                : "var(--pf-t--global--spacer--300)",
+              borderRadius: "var(--pf-t--global--border--radius--large)",
+            }}
           >
-            <Stack
-              hasGutter
-              style={{ marginTop: "var(--pf-v6-global--spacer--md)" }}
+            <ExpandableSection
+              title={preferencesTitle}
+              toggleText={preferencesTitle}
+              isExpanded={isPreferencesExpanded}
+              onToggle={
+                isPreferencesDisabled
+                  ? undefined
+                  : (_event, expanded) => setIsPreferencesExpanded(expanded)
+              }
+              displaySize="lg"
+              style={{
+                backgroundColor: "#E0F0FF",
+                ...(isPreferencesDisabled && {
+                  opacity: 0.6,
+                  pointerEvents: "none",
+                }),
+              }}
             >
-              <StackItem>{preferencesContent}</StackItem>
-              <StackItem>
-                <Button
-                  variant="primary"
-                  onClick={handleGenerate}
-                  isLoading={isLoading}
-                  isDisabled={isLoading}
-                >
-                  {generateButtonText}
-                </Button>
-              </StackItem>
-            </Stack>
-          </ExpandableSection>
-        </div>
-      </StackItem>
+              <Stack
+                hasGutter
+                style={{ marginTop: "var(--pf-t--global--spacer--300)" }}
+              >
+                <StackItem>{preferencesContent}</StackItem>
+                <StackItem>
+                  <Button
+                    variant="primary"
+                    onClick={handleGenerate}
+                    isLoading={isLoading}
+                    isDisabled={isLoading || isPreferencesDisabled}
+                  >
+                    {generateButtonText}
+                  </Button>
+                </StackItem>
+              </Stack>
+            </ExpandableSection>
+          </div>
+        </StackItem>
+      )}
 
       {hasResults && (
         <StackItem>
           <Panel>
-            <PanelHeader>
-              <Title headingLevel="h2">Cluster recommendations</Title>
-            </PanelHeader>
+            {resultsTitle && (
+              <PanelHeader>
+                <Title headingLevel="h2">{resultsTitle}</Title>
+              </PanelHeader>
+            )}
             <PanelMain>
               <PanelMainBody>
                 <Stack hasGutter>
-                  <StackItem>
-                    <Alert
-                      variant="info"
-                      isInline
-                      title="Resource requirements are estimates based on current workloads"
-                    >
-                      Confirm this architecture with your team to ensure optimal
-                      performance.
-                    </Alert>
-                  </StackItem>
+                  {showAlert && (
+                    <StackItem>
+                      <Alert
+                        variant="info"
+                        isInline
+                        title="Resource requirements are estimates based on current workloads"
+                      >
+                        Confirm this architecture with your team to ensure
+                        optimal performance.
+                      </Alert>
+                    </StackItem>
+                  )}
                   <StackItem>{resultsContent}</StackItem>
                 </Stack>
               </PanelMainBody>

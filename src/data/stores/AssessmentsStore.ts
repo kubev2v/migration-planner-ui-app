@@ -1,6 +1,7 @@
 import {
   type AssessmentApiInterface,
   type CalculateAssessmentClusterRequirementsRequest,
+  type CalculateMigrationEstimationRequest,
   ResponseError,
 } from "@openshift-migration-advisor/planner-sdk";
 import { type Assessment } from "@openshift-migration-advisor/planner-sdk";
@@ -143,6 +144,16 @@ export class AssessmentsStore
     initOverrides?: RequestInit | InitOverrideFunction,
   ) {
     return this.api.calculateAssessmentClusterRequirements(
+      requestParameters,
+      initOverrides,
+    );
+  }
+
+  calculateMigrationEstimation(
+    requestParameters: CalculateMigrationEstimationRequest,
+    initOverrides?: RequestInit | InitOverrideFunction,
+  ) {
+    return this.api.calculateMigrationEstimation(
       requestParameters,
       initOverrides,
     );
