@@ -138,7 +138,7 @@ export const CreateAssessmentModal: React.FC<CreateAssessmentModalProps> = ({
         };
       case "rvtools":
         return {
-          title: "Create migration assessment from RVTools",
+          title: "Create assessment from RVTools",
           fileLabel: "RVTools File (Excel)",
           fileDescription: "Select an Excel file from RVTools (max 50 MiB)",
           accept: ".xlsx,.xls",
@@ -148,7 +148,7 @@ export const CreateAssessmentModal: React.FC<CreateAssessmentModalProps> = ({
         };
       case "agent":
         return {
-          title: "Create migration assessment from Environment",
+          title: "Create assessment from Environment",
           fileLabel: "Environment",
           fileDescription: "Select an environment to create assessment from",
           accept: "",
@@ -282,7 +282,7 @@ export const CreateAssessmentModal: React.FC<CreateAssessmentModalProps> = ({
       isDisabled={isButtonDisabled}
       isLoading={isLoading || isJobProcessing}
     >
-      Create Migration Assessment
+      Create Assessment
     </Button>,
     <Button key="cancel" variant="link" onClick={handleClose}>
       Cancel

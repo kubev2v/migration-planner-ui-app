@@ -380,9 +380,8 @@ const Assessment: React.FC<Props> = ({
                       variant="primary"
                       onClick={onDropdownToggle}
                       isExpanded={isDropdownOpen}
-                      style={{ minWidth: "290px" }}
                     >
-                      Create new migration assessment
+                      Create
                     </MenuToggle>
                   )}
                   shouldFocusToggleOnSelect

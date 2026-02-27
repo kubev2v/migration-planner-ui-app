@@ -47,7 +47,7 @@ const ReportContent: React.FC = () => {
         breadcrumbs={[
           {
             key: 1,
-            children: "Migration assessment",
+            children: "Migration advisor",
           },
           {
             key: 2,
@@ -93,7 +93,7 @@ const ReportContent: React.FC = () => {
       breadcrumbs={[
         {
           key: 1,
-          children: "Migration assessment",
+          children: "Migration advisor",
         },
         {
           key: 2,

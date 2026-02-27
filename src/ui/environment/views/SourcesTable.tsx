@@ -472,7 +472,7 @@ export const SourcesTable: React.FC<SourceTableProps> = ({
                                   handleCreateAssessment(source.id)
                                 }
                               >
-                                Create new migration assessment
+                                Create new assessment
                               </DropdownItem>
                               <DropdownItem
                                 isDisabled={
