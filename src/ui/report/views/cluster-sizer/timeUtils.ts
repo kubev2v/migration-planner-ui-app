@@ -5,19 +5,35 @@
 export const parseDuration = (duration: string): number => {
   let totalSeconds = 0;
 
-  const hoursMatch = duration.match(/(\d+)h/);
-  if (hoursMatch) {
-    totalSeconds += parseInt(hoursMatch[1], 10) * 3600;
-  }
+  const regex = /(\d+(?:\.\d+)?)(ns|us|µs|μs|ms|s|m|h)/g;
+  let match: RegExpExecArray | null;
 
-  const minutesMatch = duration.match(/(\d+)m/);
-  if (minutesMatch) {
-    totalSeconds += parseInt(minutesMatch[1], 10) * 60;
-  }
+  while ((match = regex.exec(duration)) !== null) {
+    const value = parseFloat(match[1]);
+    const unit = match[2];
 
-  const secondsMatch = duration.match(/(\d+(?:\.\d+)?)s/);
-  if (secondsMatch) {
-    totalSeconds += parseFloat(secondsMatch[1]);
+    switch (unit) {
+      case "h":
+        totalSeconds += value * 3600;
+        break;
+      case "m":
+        totalSeconds += value * 60;
+        break;
+      case "s":
+        totalSeconds += value;
+        break;
+      case "ms":
+        totalSeconds += value * 1e-3;
+        break;
+      case "us":
+      case "µs":
+      case "μs":
+        totalSeconds += value * 1e-6;
+        break;
+      case "ns":
+        totalSeconds += value * 1e-9;
+        break;
+    }
   }
 
   return totalSeconds;

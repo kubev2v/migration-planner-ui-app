@@ -16,24 +16,33 @@ import { ClusterSizingWizard } from "../ClusterSizingWizard";
 const mockCalculate = vi.fn();
 const mockReset = vi.fn();
 const mockSetFormValues = vi.fn();
+const mockCalculateEstimation = vi.fn();
+const mockEnsureEstimationForMenu = vi.fn();
+
+const mockViewModel = {
+  formValues: {
+    workerNodePreset: "custom" as const,
+    customCpu: 32,
+    customMemoryGb: 128,
+    cpuOvercommitRatio: 6,
+    memoryOvercommitRatio: 4,
+    scheduleOnControlPlane: false,
+  },
+  setFormValues: mockSetFormValues,
+  calculate: mockCalculate,
+  isCalculating: false,
+  sizerOutput: null,
+  calculateError: null,
+  migrationEstimation: null,
+  isCalculatingEstimation: false,
+  estimationError: null,
+  calculateEstimation: mockCalculateEstimation,
+  ensureEstimationForMenu: mockEnsureEstimationForMenu,
+  reset: mockReset,
+};
 
 vi.mock("../../../view-models/useClusterSizingWizardViewModel", () => ({
-  useClusterSizingWizardViewModel: vi.fn(() => ({
-    formValues: {
-      workerNodePreset: "custom" as const,
-      customCpu: 32,
-      customMemoryGb: 128,
-      cpuOvercommitRatio: 6,
-      memoryOvercommitRatio: 4,
-      scheduleOnControlPlane: false,
-    },
-    setFormValues: mockSetFormValues,
-    calculate: mockCalculate,
-    isCalculating: false,
-    sizerOutput: null,
-    calculateError: null,
-    reset: mockReset,
-  })),
+  useClusterSizingWizardViewModel: vi.fn(() => mockViewModel),
 }));
 
 // Mock child components to simplify testing
@@ -46,6 +55,18 @@ vi.mock("../SizingInputForm", () => ({
 vi.mock("../SizingResult", () => ({
   SizingResult: (): React.ReactElement => (
     <div data-testid="sizing-result">Sizing Results</div>
+  ),
+}));
+
+vi.mock("../TimeEstimationResult", () => ({
+  TimeEstimationResult: ({
+    isLoading,
+  }: {
+    isLoading: boolean;
+  }): React.ReactElement => (
+    <div data-testid="time-estimation-result">
+      {isLoading ? "Loading..." : "Time Estimation Results"}
+    </div>
   ),
 }));
 
@@ -65,6 +86,8 @@ describe("ClusterSizingWizard", () => {
   afterEach(() => {
     cleanup();
     vi.clearAllMocks();
+    mockViewModel.isCalculatingEstimation = false;
+    mockViewModel.migrationEstimation = null;
   });
 
   it("renders the modal with menu when open", () => {
@@ -75,7 +98,7 @@ describe("ClusterSizingWizard", () => {
     ).toBeInTheDocument();
 
     expect(
-      screen.getByText("Openshift Cluster Architecture"),
+      screen.getByText("OpenShift Cluster Architecture"),
     ).toBeInTheDocument();
     expect(screen.getByText("Migration Time Estimation")).toBeInTheDocument();
     expect(screen.getByText("Migration Complexity")).toBeInTheDocument();
@@ -91,12 +114,14 @@ describe("ClusterSizingWizard", () => {
   });
 
   describe("navigation and calculation", () => {
-    it("shows architecture section by default", () => {
+    it("shows architecture section when menu item is clicked", () => {
       render(<ClusterSizingWizard {...defaultProps} />);
 
       const architectureNav = screen.getByText(
-        "Openshift Cluster Architecture",
+        "OpenShift Cluster Architecture",
       );
+      fireEvent.click(architectureNav);
+
       // Verify element has a class (from emotion/css)
       expect(architectureNav.className).toBeTruthy();
 
@@ -105,6 +130,11 @@ describe("ClusterSizingWizard", () => {
 
     it("triggers calculation when clicking Generate recommendation button", async () => {
       render(<ClusterSizingWizard {...defaultProps} />);
+
+      const architectureNav = screen.getByText(
+        "OpenShift Cluster Architecture",
+      );
+      fireEvent.click(architectureNav);
 
       const generateButton = screen.getByRole("button", {
         name: /Generate recommendation/,
@@ -117,6 +147,7 @@ describe("ClusterSizingWizard", () => {
     });
 
     it("navigates to time estimation section when menu item is clicked", async () => {
+      mockViewModel.isCalculatingEstimation = true;
       render(<ClusterSizingWizard {...defaultProps} />);
 
       const timeEstimationNav = screen.getByText("Migration Time Estimation");
@@ -127,9 +158,7 @@ describe("ClusterSizingWizard", () => {
         expect(timeEstimationNav.className).toBeTruthy();
       });
 
-      expect(
-        screen.getByText("Migration Time Estimation content (coming soon)"),
-      ).toBeInTheDocument();
+      expect(screen.getByTestId("time-estimation-result")).toBeInTheDocument();
     });
 
     it("disables Migration Complexity menu item", () => {

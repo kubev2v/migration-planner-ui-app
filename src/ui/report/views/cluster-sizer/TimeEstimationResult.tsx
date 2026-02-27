@@ -12,6 +12,10 @@ import {
 import { Table, Tbody, Td, Th, Thead, Tr } from "@patternfly/react-table";
 import React from "react";
 
+import {
+  parsePostMigrationChecks,
+  parseStorageTransfer,
+} from "./timeParsingUtils";
 import { parseDuration } from "./timeUtils";
 
 interface TimeEstimationResultProps {
@@ -45,64 +49,14 @@ const phaseHeaderStyle = css`
   margin-bottom: var(--pf-t--global--spacer--200);
 `;
 
-interface ParsedAssumption {
-  workload?: string;
-  resources?: string;
-  schedule?: string;
-  volume?: string;
-  transferSpeed?: string;
-}
-
-const parsePostMigrationChecks = (reason: string): ParsedAssumption => {
-  const assumptions: ParsedAssumption = {};
-
-  const vmsMatch = reason.match(
-    /(\d+)\s+VMs?\s+@\s+([\d.]+)\s+mins?(?:\/|\s+)each/i,
-  );
-  if (vmsMatch) {
-    assumptions.workload = `${vmsMatch[1]} VMs at ${vmsMatch[2]} mins/each`;
-  }
-
-  const engineersMatch = reason.match(
-    /(\d+)\s+engineers?\s+working\s+(\d+)[-\s]h(?:our)?(?:\/day|\s+shifts?)/i,
-  );
-  if (engineersMatch) {
-    assumptions.resources = `${engineersMatch[1]} Engineers working ${engineersMatch[2]}-hour shifts`;
-  }
-
-  const daysMatch = reason.match(/(\d+)\s+(?:work|business)\s+days/i);
-  if (daysMatch) {
-    assumptions.schedule = `${daysMatch[1]} Business Days total`;
-  }
-
-  return assumptions;
-};
-
-const parseStorageTransfer = (reason: string): ParsedAssumption => {
-  const assumptions: ParsedAssumption = {};
-
-  const volumeMatch = reason.match(/([\d,]+\.?\d*)\s+GB/i);
-  if (volumeMatch) {
-    const gb = parseFloat(volumeMatch[1].replace(/,/g, ""));
-    assumptions.volume = `${gb.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} GB`;
-  }
-
-  const speedMatch = reason.match(/\((\d+)\s+min\/(\d+)GB\)/i);
-  if (speedMatch) {
-    assumptions.transferSpeed = `~${speedMatch[1]} minutes per ${speedMatch[2]}GB`;
-  }
-
-  return assumptions;
-};
-
 const getTotalDurationInHours = (duration: string): number => {
   const seconds = parseDuration(duration);
-  return Math.round(seconds / 3600);
+  return Math.ceil(seconds / 3600);
 };
 
 const getTotalDurationInDays = (duration: string): number => {
   const seconds = parseDuration(duration);
-  return Math.round(seconds / 86400);
+  return Math.ceil(seconds / 86400);
 };
 
 export const TimeEstimationResult: React.FC<TimeEstimationResultProps> = ({
@@ -142,6 +96,13 @@ export const TimeEstimationResult: React.FC<TimeEstimationResultProps> = ({
   const totalHours = getTotalDurationInHours(estimationOutput.totalDuration);
   const totalDays = getTotalDurationInDays(estimationOutput.totalDuration);
 
+  const breakdownEntries =
+    estimationOutput.breakdown &&
+    typeof estimationOutput.breakdown === "object" &&
+    Object.keys(estimationOutput.breakdown).length > 0
+      ? Object.entries(estimationOutput.breakdown)
+      : [];
+
   return (
     <Stack hasGutter>
       <StackItem>
@@ -160,33 +121,28 @@ export const TimeEstimationResult: React.FC<TimeEstimationResultProps> = ({
               </Tr>
             </Thead>
             <Tbody>
-              {Object.entries(estimationOutput.breakdown).map(
-                ([phase, detail]) => {
-                  const durationHours = getTotalDurationInHours(
-                    detail.duration,
-                  );
-                  const volumeMatch =
-                    detail.reason.match(/([\d,]+\.?\d*)\s+GB/i);
-                  const vmsMatch = detail.reason.match(/(\d+)\s+VMs?/i);
+              {breakdownEntries.map(([phase, detail]) => {
+                const durationHours = getTotalDurationInHours(detail.duration);
+                const volumeMatch = detail.reason.match(/([\d,]+\.?\d*)\s+GB/i);
+                const vmsMatch = detail.reason.match(/(\d+)\s+VMs?/i);
 
-                  let detailText = "";
-                  if (volumeMatch) {
-                    const gb = parseFloat(volumeMatch[1].replace(/,/g, ""));
-                    const tb = (gb / 1000).toFixed(1);
-                    detailText = `${tb} TB Total Volume`;
-                  } else if (vmsMatch) {
-                    detailText = `${vmsMatch[1]} Virtual Machines`;
-                  }
+                let detailText = "";
+                if (volumeMatch) {
+                  const gb = parseFloat(volumeMatch[1].replace(/,/g, ""));
+                  const tb = (gb / 1000).toFixed(1);
+                  detailText = `${tb} TB Total Volume`;
+                } else if (vmsMatch) {
+                  detailText = `${vmsMatch[1]} Virtual Machines`;
+                }
 
-                  return (
-                    <Tr key={phase}>
-                      <Td>{phase}</Td>
-                      <Td>{durationHours} Hours</Td>
-                      <Td>{detailText}</Td>
-                    </Tr>
-                  );
-                },
-              )}
+                return (
+                  <Tr key={phase}>
+                    <Td>{phase}</Td>
+                    <Td>{durationHours} Hours</Td>
+                    <Td>{detailText}</Td>
+                  </Tr>
+                );
+              })}
             </Tbody>
           </Table>
         </div>
@@ -198,7 +154,7 @@ export const TimeEstimationResult: React.FC<TimeEstimationResultProps> = ({
             The following parameters were used to calculate this estimate:
           </p>
 
-          {Object.entries(estimationOutput.breakdown).map(([phase, detail]) => {
+          {breakdownEntries.map(([phase, detail]) => {
             const isPostMigration = phase
               .toLowerCase()
               .includes("post-migration");

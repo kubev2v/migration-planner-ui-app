@@ -65,6 +65,32 @@ const welcomeMessageStyle = css`
   line-height: var(--pf-t--global--font--line-height--body);
 `;
 
+const modalBodyFlexStyle = css`
+  height: 680px;
+  align-items: stretch;
+`;
+
+const sidebarFlexItemStyle = css`
+  width: 250px;
+  border-right: 1px solid var(--pf-t--global--border--color--default);
+  display: flex;
+  flex-direction: column;
+`;
+
+const navStyle = css`
+  flex: 0.3;
+`;
+
+const disabledNavItemStyle = css`
+  opacity: 0.5;
+  pointer-events: none;
+`;
+
+const contentFlexItemStyle = css`
+  overflow: auto;
+  padding: var(--pf-t--global--spacer--300);
+`;
+
 export const ClusterSizingWizard: React.FC<ClusterSizingWizardProps> = ({
   isOpen,
   onClose,
@@ -90,21 +116,8 @@ export const ClusterSizingWizard: React.FC<ClusterSizingWizardProps> = ({
   }, [vm]);
 
   useEffect(() => {
-    if (
-      selectedMenuItem === "time-estimation" &&
-      !vm.migrationEstimation &&
-      !vm.isCalculatingEstimation &&
-      !vm.estimationError
-    ) {
-      void vm.calculateEstimation();
-    }
-  }, [
-    selectedMenuItem,
-    vm.migrationEstimation,
-    vm.isCalculatingEstimation,
-    vm.estimationError,
-    vm,
-  ]);
+    vm.ensureEstimationForMenu(selectedMenuItem);
+  }, [selectedMenuItem, vm]);
 
   const renderContent = () => {
     switch (selectedMenuItem) {
@@ -190,24 +203,16 @@ export const ClusterSizingWizard: React.FC<ClusterSizingWizardProps> = ({
     >
       <ModalHeader title={`${clusterName} - Recommendation`} />
       <ModalBody>
-        <Flex style={{ height: "680px", alignItems: "stretch" }}>
-          <FlexItem
-            style={{
-              width: "250px",
-              borderRight:
-                "1px solid var(--pf-t--global--border--color--default)",
-              display: "flex",
-              flexDirection: "column",
-            }}
-          >
-            <Nav style={{ flex: 0.3 }}>
+        <Flex className={modalBodyFlexStyle}>
+          <FlexItem className={sidebarFlexItemStyle}>
+            <Nav className={navStyle}>
               <NavList className={navListStyle}>
                 <NavItem
                   itemId="architecture"
                   isActive={selectedMenuItem === "architecture"}
                   onClick={() => setSelectedMenuItem("architecture")}
                 >
-                  Openshift Cluster Architecture
+                  OpenShift Cluster Architecture
                 </NavItem>
                 <NavItem
                   itemId="time-estimation"
@@ -220,7 +225,7 @@ export const ClusterSizingWizard: React.FC<ClusterSizingWizardProps> = ({
                   itemId="complexity"
                   isActive={false}
                   onClick={(e) => e.preventDefault()}
-                  style={{ opacity: 0.5, pointerEvents: "none" }}
+                  className={disabledNavItemStyle}
                   component="button"
                   aria-disabled="true"
                 >
@@ -230,7 +235,7 @@ export const ClusterSizingWizard: React.FC<ClusterSizingWizardProps> = ({
                   itemId="plan"
                   isActive={false}
                   onClick={(e) => e.preventDefault()}
-                  style={{ opacity: 0.5, pointerEvents: "none" }}
+                  className={disabledNavItemStyle}
                   component="button"
                   aria-disabled="true"
                 >
@@ -241,10 +246,7 @@ export const ClusterSizingWizard: React.FC<ClusterSizingWizardProps> = ({
           </FlexItem>
           <FlexItem
             flex={{ default: "flex_1" }}
-            style={{
-              overflow: "auto",
-              padding: "var(--pf-t--global--spacer--300)",
-            }}
+            className={contentFlexItemStyle}
           >
             {renderContent()}
           </FlexItem>

@@ -1,3 +1,4 @@
+import { css } from "@emotion/css";
 import {
   Alert,
   Button,
@@ -12,6 +13,30 @@ import {
 } from "@patternfly/react-core";
 import type { ReactNode } from "react";
 import React, { useState } from "react";
+
+const preferencesWrapperStyle = css`
+  padding: var(--pf-t--global--spacer--400);
+  border-radius: var(--pf-t--global--border--radius--large);
+`;
+
+const preferencesWrapperCollapsedStyle = css`
+  padding: var(--pf-t--global--spacer--300);
+  border-radius: var(--pf-t--global--border--radius--large);
+`;
+
+const expandableSectionStyle = css`
+  background-color: var(--pf-t--global--background--color--primary--default);
+`;
+
+const expandableSectionDisabledStyle = css`
+  background-color: var(--pf-t--global--background--color--primary--default);
+  opacity: 0.6;
+  pointer-events: none;
+`;
+
+const preferencesContentStackStyle = css`
+  margin-top: var(--pf-t--global--spacer--300);
+`;
 
 interface RecommendationTemplateProps {
   /** Title for the preferences section */
@@ -61,12 +86,14 @@ export const RecommendationTemplate: React.FC<RecommendationTemplateProps> = ({
   const handleGenerate = () => {
     const result = onGenerate();
     if (result instanceof Promise) {
-      void result.then(() => {
-        // Collapse preferences after successful generation
-        setIsPreferencesExpanded(false);
-      });
+      void result
+        .catch((err) => {
+          console.error("Generate recommendation failed:", err);
+        })
+        .finally(() => {
+          setIsPreferencesExpanded(false);
+        });
     } else {
-      // Collapse preferences after generation
       setIsPreferencesExpanded(false);
     }
   };
@@ -76,12 +103,11 @@ export const RecommendationTemplate: React.FC<RecommendationTemplateProps> = ({
       {!hidePreferences && (
         <StackItem>
           <div
-            style={{
-              padding: isPreferencesExpanded
-                ? "var(--pf-t--global--spacer--400)"
-                : "var(--pf-t--global--spacer--300)",
-              borderRadius: "var(--pf-t--global--border--radius--large)",
-            }}
+            className={
+              isPreferencesExpanded
+                ? preferencesWrapperStyle
+                : preferencesWrapperCollapsedStyle
+            }
           >
             <ExpandableSection
               title={preferencesTitle}
@@ -93,18 +119,13 @@ export const RecommendationTemplate: React.FC<RecommendationTemplateProps> = ({
                   : (_event, expanded) => setIsPreferencesExpanded(expanded)
               }
               displaySize="lg"
-              style={{
-                backgroundColor: "#E0F0FF",
-                ...(isPreferencesDisabled && {
-                  opacity: 0.6,
-                  pointerEvents: "none",
-                }),
-              }}
+              className={
+                isPreferencesDisabled
+                  ? expandableSectionDisabledStyle
+                  : expandableSectionStyle
+              }
             >
-              <Stack
-                hasGutter
-                style={{ marginTop: "var(--pf-t--global--spacer--300)" }}
-              >
+              <Stack hasGutter className={preferencesContentStackStyle}>
                 <StackItem>{preferencesContent}</StackItem>
                 <StackItem>
                   <Button

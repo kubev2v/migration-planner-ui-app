@@ -209,6 +209,7 @@ export const SizingResult: React.FC<SizingResultProps> = ({
           <DescriptionListGroup>
             <DescriptionListTerm>Over-commitment</DescriptionListTerm>
             <DescriptionListDescription>
+              CPU {getCpuOvercommitLabel(formValues.cpuOvercommitRatio)}, Memory{" "}
               {getMemoryOvercommitLabel(formValues.memoryOvercommitRatio)}
             </DescriptionListDescription>
           </DescriptionListGroup>

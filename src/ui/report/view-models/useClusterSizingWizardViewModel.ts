@@ -31,6 +31,7 @@ export interface ClusterSizingWizardViewModel {
   isCalculatingEstimation: boolean;
   estimationError: Error | undefined;
   calculateEstimation: () => Promise<void>;
+  ensureEstimationForMenu: (menuItem: string | null) => void;
   reset: () => void;
 }
 
@@ -115,6 +116,25 @@ export const useClusterSizingWizardViewModel = (
     }
   }, [assessmentId, assessmentsStore, clusterId]);
 
+  const ensureEstimationForMenu = useCallback(
+    (menuItem: string | null) => {
+      if (
+        menuItem === "time-estimation" &&
+        !migrationEstimation &&
+        !estimationState.loading &&
+        !estimationState.error
+      ) {
+        void doCalculateEstimation();
+      }
+    },
+    [
+      migrationEstimation,
+      estimationState.loading,
+      estimationState.error,
+      doCalculateEstimation,
+    ],
+  );
+
   const reset = useCallback(() => {
     setFormValues(DEFAULT_FORM_VALUES);
     setSizerOutput(null);
@@ -132,6 +152,7 @@ export const useClusterSizingWizardViewModel = (
     isCalculatingEstimation: estimationState.loading,
     estimationError: estimationState.error,
     calculateEstimation: doCalculateEstimation,
+    ensureEstimationForMenu,
     reset,
   };
 };
