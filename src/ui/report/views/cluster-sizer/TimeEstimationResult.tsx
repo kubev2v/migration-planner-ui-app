@@ -88,7 +88,12 @@ export const TimeEstimationResult: React.FC<TimeEstimationResultProps> = ({
     return null;
   }
 
-  const totalHours = getTotalDurationInHours(estimationOutput.totalDuration);
+  const totalHours =
+    estimationOutput.totalDuration &&
+    typeof estimationOutput.totalDuration === "string" &&
+    estimationOutput.totalDuration.trim() !== ""
+      ? getTotalDurationInHours(estimationOutput.totalDuration)
+      : null;
 
   const breakdownEntries =
     estimationOutput.breakdown &&
@@ -103,7 +108,8 @@ export const TimeEstimationResult: React.FC<TimeEstimationResultProps> = ({
         <div className={sectionStyle}>
           <Title headingLevel="h3">Migration Time Summary</Title>
           <div className={totalTimeStyle}>
-            Total Estimated Time: {totalHours} Hours
+            Total Estimated Time:{" "}
+            {totalHours !== null ? `${totalHours} Hours` : "N/A"}
           </div>
 
           <Table aria-label="Migration time breakdown" variant="compact">
@@ -116,7 +122,12 @@ export const TimeEstimationResult: React.FC<TimeEstimationResultProps> = ({
             </Thead>
             <Tbody>
               {breakdownEntries.map(([phase, detail]) => {
-                const durationHours = getTotalDurationInHours(detail.duration);
+                const durationHours =
+                  detail.duration &&
+                  typeof detail.duration === "string" &&
+                  detail.duration.trim() !== ""
+                    ? getTotalDurationInHours(detail.duration)
+                    : null;
                 const volumeMatch = detail.reason.match(/([\d,]+\.?\d*)\s+GB/i);
                 const vmsMatch = detail.reason.match(/(\d+)\s+VMs?/i);
 
@@ -132,7 +143,11 @@ export const TimeEstimationResult: React.FC<TimeEstimationResultProps> = ({
                 return (
                   <Tr key={phase}>
                     <Td>{phase}</Td>
-                    <Td>{durationHours} Hours</Td>
+                    <Td>
+                      {durationHours !== null
+                        ? `${durationHours} Hours`
+                        : "N/A"}
+                    </Td>
                     <Td>{detailText}</Td>
                   </Tr>
                 );

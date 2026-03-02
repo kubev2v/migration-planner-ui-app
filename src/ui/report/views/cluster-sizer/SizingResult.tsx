@@ -1,6 +1,7 @@
 import { css } from "@emotion/css";
 import {
   Alert,
+  AlertActionCloseButton,
   Button,
   DescriptionList,
   DescriptionListDescription,
@@ -15,7 +16,7 @@ import {
   StackItem,
 } from "@patternfly/react-core";
 import { CopyIcon } from "@patternfly/react-icons";
-import React, { useCallback, useMemo } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 
 import { CPU_OVERCOMMIT_OPTIONS, MEMORY_OVERCOMMIT_OPTIONS } from "./constants";
 import type { ClusterRequirementsResponse, SizingFormValues } from "./types";
@@ -82,6 +83,7 @@ const generatePlainTextRecommendation = (
   return `
 Cluster: ${clusterName}
 Total Nodes: ${output.clusterSizing.totalNodes} (${output.clusterSizing.workerNodes} workers + ${output.clusterSizing.controlPlaneNodes} control plane)
+Failover Capacity: ${output.clusterSizing.failoverNodes} failover nodes
 Node Size: ${formValues.customCpu} CPU / ${formValues.customMemoryGb} GB
 
 Additional info
@@ -91,7 +93,7 @@ VMs to Migrate: ${formatNumber(output.inventoryTotals.totalVMs)} VMs
 - CPU Over-Commit Ratio: ${formatRatio(cpuOverCommitRatio)}
 - Memory Over-Commit Ratio: ${formatRatio(memoryOverCommitRatio)}
 Resource Breakdown
-VM Resources (requested): ${formatNumber(output.inventoryTotals.totalCPU)} CPU / ${formatNumber(output.inventoryTotals.totalMemory)} GB
+VM resources (request): ${formatNumber(output.inventoryTotals.totalCPU)} CPU / ${formatNumber(output.inventoryTotals.totalMemory)} GB
 With Over-commit (limits): ${formatNumber(cpuLimits)} CPU / ${formatNumber(memoryLimits)} GB
 Physical Capacity: ${formatNumber(output.clusterSizing.totalCPU)} CPU / ${formatNumber(output.clusterSizing.totalMemory)} GB
 
@@ -106,6 +108,9 @@ export const SizingResult: React.FC<SizingResultProps> = ({
   isLoading = false,
   error = null,
 }) => {
+  const [copySuccess, setCopySuccess] = useState(false);
+  const [copyError, setCopyError] = useState<string | null>(null);
+
   const plainTextRecommendation = useMemo(() => {
     if (!sizerOutput) return "";
     return generatePlainTextRecommendation(
@@ -116,9 +121,24 @@ export const SizingResult: React.FC<SizingResultProps> = ({
   }, [clusterName, formValues, sizerOutput]);
 
   const handleCopyRecommendations = useCallback(() => {
-    void navigator.clipboard.writeText(plainTextRecommendation).catch((err) => {
-      console.error("Failed to copy recommendations:", err);
-    });
+    setCopyError(null);
+    setCopySuccess(false);
+
+    navigator.clipboard
+      .writeText(plainTextRecommendation)
+      .then(() => {
+        setCopySuccess(true);
+        setTimeout(() => setCopySuccess(false), 3000);
+      })
+      .catch((err) => {
+        console.error("Failed to copy recommendations:", err);
+        const errorMessage =
+          err instanceof Error
+            ? err.message
+            : "Failed to copy to clipboard. Please check your browser permissions.";
+        setCopyError(errorMessage);
+        setTimeout(() => setCopyError(null), 5000);
+      });
   }, [plainTextRecommendation]);
 
   if (isLoading) {
@@ -287,6 +307,34 @@ export const SizingResult: React.FC<SizingResultProps> = ({
           Copy as plain text
         </Button>
       </StackItem>
+
+      {copySuccess && (
+        <StackItem>
+          <Alert
+            variant="success"
+            isInline
+            title="Copied to clipboard"
+            actionClose={
+              <AlertActionCloseButton onClose={() => setCopySuccess(false)} />
+            }
+          />
+        </StackItem>
+      )}
+
+      {copyError && (
+        <StackItem>
+          <Alert
+            variant="danger"
+            isInline
+            title="Failed to copy"
+            actionClose={
+              <AlertActionCloseButton onClose={() => setCopyError(null)} />
+            }
+          >
+            {copyError}
+          </Alert>
+        </StackItem>
+      )}
     </Stack>
   );
 };
