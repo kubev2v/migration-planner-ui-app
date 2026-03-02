@@ -114,16 +114,13 @@ describe("ClusterSizingWizard", () => {
   });
 
   describe("navigation and calculation", () => {
-    it("shows architecture section when menu item is clicked", () => {
+    it("shows architecture section when tab is clicked", () => {
       render(<ClusterSizingWizard {...defaultProps} />);
 
-      const architectureNav = screen.getByText(
-        "OpenShift Cluster Architecture",
-      );
-      fireEvent.click(architectureNav);
-
-      // Verify element has a class (from emotion/css)
-      expect(architectureNav.className).toBeTruthy();
+      const architectureTab = screen.getByRole("tab", {
+        name: /OpenShift Cluster Architecture/,
+      });
+      fireEvent.click(architectureTab);
 
       expect(screen.getByTestId("sizing-input-form")).toBeInTheDocument();
     });
@@ -131,10 +128,10 @@ describe("ClusterSizingWizard", () => {
     it("triggers calculation when clicking Generate recommendation button", async () => {
       render(<ClusterSizingWizard {...defaultProps} />);
 
-      const architectureNav = screen.getByText(
-        "OpenShift Cluster Architecture",
-      );
-      fireEvent.click(architectureNav);
+      const architectureTab = screen.getByRole("tab", {
+        name: /OpenShift Cluster Architecture/,
+      });
+      fireEvent.click(architectureTab);
 
       const generateButton = screen.getByRole("button", {
         name: /Generate recommendation/,
@@ -146,37 +143,40 @@ describe("ClusterSizingWizard", () => {
       });
     });
 
-    it("navigates to time estimation section when menu item is clicked", async () => {
+    it("navigates to time estimation section when tab is clicked", async () => {
       mockViewModel.isCalculatingEstimation = true;
       render(<ClusterSizingWizard {...defaultProps} />);
 
-      const timeEstimationNav = screen.getByText("Migration Time Estimation");
-      fireEvent.click(timeEstimationNav);
+      const timeEstimationTab = screen.getByRole("tab", {
+        name: /Migration Time Estimation/,
+      });
+      fireEvent.click(timeEstimationTab);
 
       await waitFor(() => {
-        // Verify element has a class (from emotion/css)
-        expect(timeEstimationNav.className).toBeTruthy();
+        expect(
+          screen.getByTestId("time-estimation-result"),
+        ).toBeInTheDocument();
       });
-
-      expect(screen.getByTestId("time-estimation-result")).toBeInTheDocument();
     });
 
-    it("disables Migration Complexity menu item", () => {
+    it("disables Migration Complexity tab", () => {
       render(<ClusterSizingWizard {...defaultProps} />);
 
-      const complexityNav = screen.getByText("Migration Complexity");
-      const complexityButton = complexityNav.closest("button");
-      expect(complexityButton).toHaveAttribute("aria-disabled", "true");
-      expect(complexityButton).toHaveStyle({ pointerEvents: "none" });
+      const complexityTab = screen.getByRole("tab", {
+        name: /Migration Complexity/,
+      });
+      expect(complexityTab).toHaveAttribute("aria-disabled", "true");
+      expect(complexityTab).toBeDisabled();
     });
 
-    it("disables Migration Plan menu item", () => {
+    it("disables Migration Plan tab", () => {
       render(<ClusterSizingWizard {...defaultProps} />);
 
-      const planNav = screen.getByText("Migration Plan");
-      const planButton = planNav.closest("button");
-      expect(planButton).toHaveAttribute("aria-disabled", "true");
-      expect(planButton).toHaveStyle({ pointerEvents: "none" });
+      const planTab = screen.getByRole("tab", {
+        name: /Migration Plan/,
+      });
+      expect(planTab).toHaveAttribute("aria-disabled", "true");
+      expect(planTab).toBeDisabled();
     });
   });
 });

@@ -1,15 +1,13 @@
 import { css } from "@emotion/css";
 import {
   Button,
-  Flex,
-  FlexItem,
   Modal,
   ModalBody,
   ModalFooter,
   ModalHeader,
-  Nav,
-  NavItem,
-  NavList,
+  Tab,
+  Tabs,
+  TabTitleText,
 } from "@patternfly/react-core";
 import React, { useCallback, useEffect, useState } from "react";
 
@@ -36,22 +34,6 @@ type MenuItem =
   | "plan"
   | null;
 
-const navListStyle = css`
-  .pf-v6-c-nav__item {
-    margin-bottom: 0;
-    padding: 0;
-  }
-
-  .pf-v6-c-nav__link {
-    padding: var(--pf-t--global--spacer--100) var(--pf-t--global--spacer--300);
-    margin-bottom: var(--pf-t--global--spacer--100);
-  }
-
-  .pf-v6-c-nav__link.pf-m-current {
-    font-weight: var(--pf-t--global--font--weight--body--bold);
-  }
-`;
-
 const welcomeMessageStyle = css`
   display: flex;
   align-items: center;
@@ -65,28 +47,55 @@ const welcomeMessageStyle = css`
   line-height: var(--pf-t--global--font--line-height--body);
 `;
 
-const modalBodyFlexStyle = css`
-  height: 680px;
-  align-items: stretch;
-`;
-
-const sidebarFlexItemStyle = css`
-  width: 250px;
-  border-right: 1px solid var(--pf-t--global--border--color--default);
+const modalBodyStyle = css`
   display: flex;
   flex-direction: column;
+  height: 680px;
 `;
 
-const navStyle = css`
-  flex: 0.3;
+const tabsContainerStyle = css`
+  margin-bottom: var(--pf-t--global--spacer--300);
+
+  .pf-v6-c-tabs__list {
+    border-bottom: 1px solid var(--pf-t--global--border--color--default);
+  }
+
+  .pf-v6-c-tabs__item {
+    margin-bottom: 0;
+  }
+
+  .pf-v6-c-tabs__link {
+    padding: var(--pf-t--global--spacer--200) var(--pf-t--global--spacer--300);
+    color: var(--pf-t--global--text--color--subtle);
+    font-weight: var(--pf-t--global--font--weight--body--default);
+    border: none;
+    background: transparent;
+    border-bottom: 2px solid transparent;
+  }
+
+  .pf-v6-c-tabs__link:hover:not(.pf-m-disabled) {
+    color: var(--pf-t--global--text--color--regular);
+    background: transparent;
+  }
+
+  .pf-v6-c-tabs__link.pf-m-current {
+    color: var(--pf-t--global--text--color--regular);
+    font-weight: var(--pf-t--global--font--weight--body--bold);
+    border-bottom-color: var(--pf-t--global--color--brand--default);
+    background: transparent;
+  }
+
+  .pf-v6-c-tabs__link:is(:disabled, .pf-m-disabled, .pf-m-aria-disabled) {
+    color: var(--pf-t--global--text--color--disabled);
+    opacity: 0.7;
+    cursor: not-allowed;
+    border-radius: var(--pf-t--global--border--radius--small)
+      var(--pf-t--global--border--radius--small) 0 0;
+  }
 `;
 
-const disabledNavItemStyle = css`
-  opacity: 0.5;
-  pointer-events: none;
-`;
-
-const contentFlexItemStyle = css`
+const contentContainerStyle = css`
+  flex: 1;
   overflow: auto;
   padding: var(--pf-t--global--spacer--300);
 `;
@@ -202,55 +211,37 @@ export const ClusterSizingWizard: React.FC<ClusterSizingWizardProps> = ({
       variant="large"
     >
       <ModalHeader title={`${clusterName} - Recommendation`} />
-      <ModalBody>
-        <Flex className={modalBodyFlexStyle}>
-          <FlexItem className={sidebarFlexItemStyle}>
-            <Nav className={navStyle}>
-              <NavList className={navListStyle}>
-                <NavItem
-                  itemId="architecture"
-                  isActive={selectedMenuItem === "architecture"}
-                  onClick={() => setSelectedMenuItem("architecture")}
-                >
-                  OpenShift Cluster Architecture
-                </NavItem>
-                <NavItem
-                  itemId="time-estimation"
-                  isActive={selectedMenuItem === "time-estimation"}
-                  onClick={() => setSelectedMenuItem("time-estimation")}
-                >
-                  Migration Time Estimation
-                </NavItem>
-                <NavItem
-                  itemId="complexity"
-                  isActive={false}
-                  onClick={(e) => e.preventDefault()}
-                  className={disabledNavItemStyle}
-                  component="button"
-                  aria-disabled="true"
-                >
-                  Migration Complexity
-                </NavItem>
-                <NavItem
-                  itemId="plan"
-                  isActive={false}
-                  onClick={(e) => e.preventDefault()}
-                  className={disabledNavItemStyle}
-                  component="button"
-                  aria-disabled="true"
-                >
-                  Migration Plan
-                </NavItem>
-              </NavList>
-            </Nav>
-          </FlexItem>
-          <FlexItem
-            flex={{ default: "flex_1" }}
-            className={contentFlexItemStyle}
+      <ModalBody className={modalBodyStyle}>
+        <div className={tabsContainerStyle}>
+          <Tabs
+            activeKey={selectedMenuItem ?? ""}
+            onSelect={(_event, tabIndex) =>
+              setSelectedMenuItem(tabIndex as MenuItem)
+            }
           >
-            {renderContent()}
-          </FlexItem>
-        </Flex>
+            <Tab
+              eventKey="architecture"
+              title={
+                <TabTitleText>OpenShift Cluster Architecture</TabTitleText>
+              }
+            />
+            <Tab
+              eventKey="time-estimation"
+              title={<TabTitleText>Migration Time Estimation</TabTitleText>}
+            />
+            <Tab
+              eventKey="complexity"
+              title={<TabTitleText>Migration Complexity</TabTitleText>}
+              isDisabled
+            />
+            <Tab
+              eventKey="plan"
+              title={<TabTitleText>Migration Plan</TabTitleText>}
+              isDisabled
+            />
+          </Tabs>
+        </div>
+        <div className={contentContainerStyle}>{renderContent()}</div>
       </ModalBody>
       <ModalFooter>
         <Button variant="secondary" onClick={handleClose}>

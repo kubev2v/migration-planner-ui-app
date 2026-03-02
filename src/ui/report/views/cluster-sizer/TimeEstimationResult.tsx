@@ -54,11 +54,6 @@ const getTotalDurationInHours = (duration: string): number => {
   return Math.ceil(seconds / 3600);
 };
 
-const getTotalDurationInDays = (duration: string): number => {
-  const seconds = parseDuration(duration);
-  return Math.ceil(seconds / 86400);
-};
-
 export const TimeEstimationResult: React.FC<TimeEstimationResultProps> = ({
   clusterName,
   estimationOutput,
@@ -94,7 +89,6 @@ export const TimeEstimationResult: React.FC<TimeEstimationResultProps> = ({
   }
 
   const totalHours = getTotalDurationInHours(estimationOutput.totalDuration);
-  const totalDays = getTotalDurationInDays(estimationOutput.totalDuration);
 
   const breakdownEntries =
     estimationOutput.breakdown &&
@@ -109,7 +103,7 @@ export const TimeEstimationResult: React.FC<TimeEstimationResultProps> = ({
         <div className={sectionStyle}>
           <Title headingLevel="h3">Migration Time Summary</Title>
           <div className={totalTimeStyle}>
-            Total Estimated Time: {totalHours} Hours (~{totalDays} Days)
+            Total Estimated Time: {totalHours} Hours
           </div>
 
           <Table aria-label="Migration time breakdown" variant="compact">
