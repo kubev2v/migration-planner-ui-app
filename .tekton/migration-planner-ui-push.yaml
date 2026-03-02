@@ -29,8 +29,7 @@ spec:
       value: .
     - name: build-args
       value:
-        - MIGRATION_PLANNER_UI_GIT_COMMIT={{revision}}
-        - MIGRATION_PLANNER_UI_VERSION={{revision}}
+        - APP_VERSION={{target_branch}}-$(tasks.clone-repository.results.short-commit)
   pipelineSpec:
     description: |
       This pipeline is ideal for building container images from a Containerfile while reducing network traffic.
