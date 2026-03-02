@@ -1,3 +1,4 @@
+import { css } from "@emotion/css";
 import {
   Alert,
   Button,
@@ -21,6 +22,13 @@ import type { ClusterRequirementsResponse, SizingFormValues } from "./types";
 
 const DISCLAIMER_TEXT =
   "Note: Resource requirements are estimates based on current workloads. Please verify this architecture with your SME team to ensure optimal performance.";
+
+const descriptionListStyles = css`
+  .pf-v6-c-description-list__term {
+    min-width: 250px;
+    width: auto;
+  }
+`;
 
 interface SizingResultProps {
   clusterName: string;
@@ -177,7 +185,11 @@ export const SizingResult: React.FC<SizingResultProps> = ({
   return (
     <Stack hasGutter>
       <StackItem>
-        <DescriptionList isHorizontal isCompact>
+        <DescriptionList
+          isHorizontal
+          isCompact
+          className={descriptionListStyles}
+        >
           <DescriptionListGroup>
             <DescriptionListTerm>Cluster name</DescriptionListTerm>
             <DescriptionListDescription>
@@ -196,6 +208,13 @@ export const SizingResult: React.FC<SizingResultProps> = ({
               {sizerOutput.clusterSizing.totalNodes} (
               {sizerOutput.clusterSizing.workerNodes} workers +{" "}
               {sizerOutput.clusterSizing.controlPlaneNodes} control plane)
+            </DescriptionListDescription>
+          </DescriptionListGroup>
+
+          <DescriptionListGroup>
+            <DescriptionListTerm>Failover Capacity</DescriptionListTerm>
+            <DescriptionListDescription>
+              {sizerOutput.clusterSizing.failoverNodes} failover nodes
             </DescriptionListDescription>
           </DescriptionListGroup>
 
