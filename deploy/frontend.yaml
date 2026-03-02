@@ -2,12 +2,12 @@
 apiVersion: v1
 kind: Template
 metadata:
-  name: migration-advisor
+  name: migration-assessment
 objects:
   - apiVersion: cloud.redhat.com/v1alpha1
     kind: Frontend
     metadata:
-      name: migration-advisor
+      name: migration-assessment
     spec:
       API:
         versions:
@@ -22,10 +22,10 @@ objects:
       module:
         manifestLocation: "/apps/assisted-migration-app/fed-mods.json"
         modules:
-          - id: "migration-advisor"
+          - id: "migration-assessment"
             module: "./RootApp"
             routes:
-              - pathname: /openshift/migration-advisor
+              - pathname: /openshift/migration-assessment
 
 parameters:
   - name: ENV_NAME
