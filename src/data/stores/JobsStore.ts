@@ -1,10 +1,8 @@
 import type { JobApi } from "@openshift-migration-advisor/planner-sdk";
 import type { Job } from "@openshift-migration-advisor/planner-sdk";
-import {
-  JobStatus,
-  ResponseError,
-} from "@openshift-migration-advisor/planner-sdk";
+import { JobStatus } from "@openshift-migration-advisor/planner-sdk";
 
+import { parseApiError } from "../../lib/common/ErrorParser";
 import { PollableStoreBase } from "../../lib/mvvm/PollableStore";
 import type { IJobsStore } from "./interfaces/IJobsStore";
 
@@ -80,37 +78,10 @@ export class JobsStore
         return undefined;
       }
 
-      let errorToStore: Error;
-      if (err instanceof ResponseError) {
-        try {
-          const responseText = await err.response.text();
-          let message = responseText;
-
-          // Try to parse as JSON and extract the message field
-          try {
-            const parsed: unknown = JSON.parse(responseText);
-            if (
-              parsed !== null &&
-              typeof parsed === "object" &&
-              "message" in parsed &&
-              typeof (parsed as Record<string, unknown>).message === "string"
-            ) {
-              message = (parsed as Record<string, unknown>).message as string;
-            }
-          } catch {
-            // Not JSON, use the raw text
-          }
-
-          errorToStore = new Error(message || err.message);
-        } catch {
-          errorToStore = new Error(err.message);
-        }
-      } else {
-        errorToStore =
-          err instanceof Error
-            ? err
-            : new Error("Failed to create RVTools job");
-      }
+      const errorToStore = await parseApiError(
+        err,
+        "Failed to create RVTools job",
+      );
 
       this.setState({ createError: errorToStore, isCreating: false });
       return undefined;
