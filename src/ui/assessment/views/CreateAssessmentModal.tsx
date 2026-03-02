@@ -330,6 +330,7 @@ export const CreateAssessmentModal: React.FC<CreateAssessmentModalProps> = ({
               }}
               validated={nameErrorToDisplay ? "error" : "default"}
               placeholder="Enter assessment name"
+              isDisabled={isFileOperationsDisabled}
             />
             {nameErrorToDisplay && (
               <HelperText>
@@ -450,6 +451,7 @@ export const CreateAssessmentModal: React.FC<CreateAssessmentModalProps> = ({
                       setRvtoolsConsentChecked(Boolean(checked));
                     }}
                     isRequired
+                    isDisabled={isFileOperationsDisabled}
                   />
                 </div>
               )}
