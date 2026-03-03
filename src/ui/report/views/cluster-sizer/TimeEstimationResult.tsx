@@ -122,14 +122,30 @@ export const TimeEstimationResult: React.FC<TimeEstimationResultProps> = ({
             </Thead>
             <Tbody>
               {breakdownEntries.map(([phase, detail]) => {
+                const normalizedDetail =
+                  detail && typeof detail === "object"
+                    ? (detail as unknown as Record<string, unknown>)
+                    : ({} as Record<string, unknown>);
+
+                const duration =
+                  "duration" in normalizedDetail &&
+                  typeof normalizedDetail.duration === "string"
+                    ? normalizedDetail.duration
+                    : "";
+
                 const durationHours =
-                  detail.duration &&
-                  typeof detail.duration === "string" &&
-                  detail.duration.trim() !== ""
-                    ? getTotalDurationInHours(detail.duration)
+                  duration.trim() !== ""
+                    ? getTotalDurationInHours(duration)
                     : null;
-                const volumeMatch = detail.reason.match(/([\d,]+\.?\d*)\s+GB/i);
-                const vmsMatch = detail.reason.match(/(\d+)\s+VMs?/i);
+
+                const reason =
+                  "reason" in normalizedDetail &&
+                  typeof normalizedDetail.reason === "string"
+                    ? normalizedDetail.reason
+                    : "";
+
+                const volumeMatch = reason.match(/([\d,]+\.?\d*)\s+GB/i);
+                const vmsMatch = reason.match(/(\d+)\s+VMs?/i);
 
                 let detailText = "";
                 if (volumeMatch) {
@@ -164,12 +180,23 @@ export const TimeEstimationResult: React.FC<TimeEstimationResultProps> = ({
           </p>
 
           {breakdownEntries.map(([phase, detail]) => {
+            const normalizedDetail =
+              detail && typeof detail === "object"
+                ? (detail as unknown as Record<string, unknown>)
+                : ({} as Record<string, unknown>);
+
+            const reason =
+              "reason" in normalizedDetail &&
+              typeof normalizedDetail.reason === "string"
+                ? normalizedDetail.reason
+                : "";
+
             const isPostMigration = phase
               .toLowerCase()
               .includes("post-migration");
             const assumptions = isPostMigration
-              ? parsePostMigrationChecks(detail.reason)
-              : parseStorageTransfer(detail.reason);
+              ? parsePostMigrationChecks(reason)
+              : parseStorageTransfer(reason);
 
             return (
               <div key={phase}>

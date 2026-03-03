@@ -87,7 +87,7 @@ Failover Capacity: ${output.clusterSizing.failoverNodes} failover nodes
 Node Size: ${formValues.customCpu} CPU / ${formValues.customMemoryGb} GB
 
 Additional info
-Target Platform: BareMetal
+Target Platform: Bare Metal
 Over-Commitment: CPU ${getCpuOvercommitLabel(formValues.cpuOvercommitRatio)}, Memory ${getMemoryOvercommitLabel(formValues.memoryOvercommitRatio)}
 VMs to Migrate: ${formatNumber(output.inventoryTotals.totalVMs)} VMs
 - CPU Over-Commit Ratio: ${formatRatio(cpuOverCommitRatio)}
@@ -123,6 +123,18 @@ export const SizingResult: React.FC<SizingResultProps> = ({
   const handleCopyRecommendations = useCallback(() => {
     setCopyError(null);
     setCopySuccess(false);
+
+    if (
+      !navigator.clipboard ||
+      !navigator.clipboard.writeText ||
+      (typeof window !== "undefined" && !window.isSecureContext)
+    ) {
+      setCopyError(
+        "Clipboard API is not available. Please use HTTPS or a secure context.",
+      );
+      setTimeout(() => setCopyError(null), 5000);
+      return;
+    }
 
     navigator.clipboard
       .writeText(plainTextRecommendation)
