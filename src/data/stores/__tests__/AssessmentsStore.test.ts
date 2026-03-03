@@ -165,7 +165,7 @@ describe("AssessmentsStore", () => {
     expect(store.getSnapshot()[0].name).toBe("Updated");
   });
 
-  it("remove() filters out item", async () => {
+  it("remove() filters out item and refreshes from server", async () => {
     const items = [
       makeAssessment({ id: "a-1" }),
       makeAssessment({ id: "a-2" }),
@@ -176,10 +176,15 @@ describe("AssessmentsStore", () => {
     vi.mocked(api.deleteAssessment).mockResolvedValue(
       makeAssessment({ id: "a-1" }) as never,
     );
+    // After deletion, list() is called to refresh from server
+    vi.mocked(api.listAssessments).mockResolvedValue([
+      makeAssessment({ id: "a-2" }),
+    ] as never);
 
     const result = await store.remove("a-1");
 
     expect(api.deleteAssessment).toHaveBeenCalledWith({ id: "a-1" }, undefined);
+    expect(api.listAssessments).toHaveBeenCalledTimes(2); // Initial list + refresh after delete
     expect(result.id).toBe("a-1");
     expect(store.getSnapshot()).toHaveLength(1);
     expect(store.getSnapshot()[0].id).toBe("a-2");
@@ -199,10 +204,15 @@ describe("AssessmentsStore", () => {
       "Failed to parse response",
     );
     vi.mocked(api.deleteAssessment).mockRejectedValue(responseError);
+    // After deletion, list() is called to refresh from server
+    vi.mocked(api.listAssessments).mockResolvedValue([
+      makeAssessment({ id: "a-2" }),
+    ] as never);
 
     const result = await store.remove("a-1");
 
     expect(result.id).toBe("a-1");
+    expect(api.listAssessments).toHaveBeenCalledTimes(2); // Initial list + refresh after delete
     expect(store.getSnapshot()).toHaveLength(1);
     expect(store.getSnapshot()[0].id).toBe("a-2");
   });
@@ -230,6 +240,114 @@ describe("AssessmentsStore", () => {
 
     await expect(store.remove("a-1")).rejects.toThrow("Network failure");
     expect(store.getSnapshot()).toHaveLength(1);
+  });
+
+  it("remove() suppresses TypeError from JSON parsing (malformed backend response)", async () => {
+    const items = [
+      makeAssessment({ id: "a-1" }),
+      makeAssessment({ id: "a-2" }),
+    ];
+    vi.mocked(api.listAssessments).mockResolvedValue(items as never);
+    await store.list();
+
+    // Simulate the exact error from the backend: TypeError during JSON parsing
+    const typeError = new TypeError(
+      "Cannot read properties of null (reading 'map')",
+    );
+    vi.mocked(api.deleteAssessment).mockRejectedValue(typeError);
+    // After deletion, list() is called to refresh from server
+    vi.mocked(api.listAssessments).mockResolvedValue([
+      makeAssessment({ id: "a-2" }),
+    ] as never);
+
+    const result = await store.remove("a-1");
+
+    expect(result.id).toBe("a-1");
+    expect(api.listAssessments).toHaveBeenCalledTimes(2); // Initial list + refresh after delete
+    expect(store.getSnapshot()).toHaveLength(1);
+    expect(store.getSnapshot()[0].id).toBe("a-2");
+  });
+
+  it("remove() rethrows unrelated TypeErrors (not backend parsing errors)", async () => {
+    const items = [makeAssessment({ id: "a-1" })];
+    vi.mocked(api.listAssessments).mockResolvedValue(items as never);
+    await store.list();
+
+    // Simulate an unrelated TypeError (not the specific backend parsing error)
+    const unrelatedError = new TypeError(
+      "Cannot call method 'map' of undefined",
+    );
+    vi.mocked(api.deleteAssessment).mockRejectedValue(unrelatedError);
+
+    await expect(store.remove("a-1")).rejects.toThrow(TypeError);
+    expect(api.listAssessments).toHaveBeenCalledTimes(1); // Only the initial list, no refresh
+    expect(store.getSnapshot()).toHaveLength(1); // Item not removed from local state
+  });
+
+  it("remove() prevents deleted item from reappearing if backend is slow", async () => {
+    const items = [
+      makeAssessment({ id: "a-1" }),
+      makeAssessment({ id: "a-2" }),
+    ];
+    vi.mocked(api.listAssessments).mockResolvedValue(items as never);
+    await store.list();
+
+    vi.mocked(api.deleteAssessment).mockResolvedValue(
+      makeAssessment({ id: "a-1" }) as never,
+    );
+    // Simulate slow backend: first list() call still returns the deleted item
+    vi.mocked(api.listAssessments).mockResolvedValueOnce(items as never);
+    // Second list() call (after backend processes) returns without the deleted item
+    vi.mocked(api.listAssessments).mockResolvedValueOnce([
+      makeAssessment({ id: "a-2" }),
+    ] as never);
+
+    await store.remove("a-1");
+
+    // Even though the backend returned a-1 in the first refresh, it should be filtered out
+    expect(store.getSnapshot()).toHaveLength(1);
+    expect(store.getSnapshot()[0].id).toBe("a-2");
+
+    // Simulate polling call - deleted ID cache should still filter it out
+    await store.list();
+    expect(store.getSnapshot()).toHaveLength(1);
+    expect(store.getSnapshot()[0].id).toBe("a-2");
+  });
+
+  it("list(sourceId) does not clear deleted-ID cache for other sources", async () => {
+    const allItems = [
+      makeAssessment({ id: "a-1", name: "Assessment 1" }),
+      makeAssessment({ id: "a-2", name: "Assessment 2" }),
+    ];
+    vi.mocked(api.listAssessments).mockResolvedValue(allItems as never);
+    await store.list();
+
+    // Delete a-1 (adds it to deletedAssessmentIds cache)
+    vi.mocked(api.deleteAssessment).mockResolvedValue(
+      makeAssessment({ id: "a-1" }) as never,
+    );
+    // Mock the background refresh after delete to still include a-1 (slow backend)
+    vi.mocked(api.listAssessments).mockResolvedValueOnce(allItems as never);
+    await store.remove("a-1");
+
+    // Verify a-1 is filtered out (deleted cache is working)
+    expect(store.getSnapshot()).toHaveLength(1);
+    expect(store.getSnapshot()[0].id).toBe("a-2");
+
+    // Now call list() with a sourceId (filtered response)
+    const filteredItems = [makeAssessment({ id: "a-2" })];
+    vi.mocked(api.listAssessments).mockResolvedValueOnce(
+      filteredItems as never,
+    );
+    await store.list("someOtherSource");
+
+    // Verify that a-1 is still in the deleted cache by calling an unfiltered list()
+    vi.mocked(api.listAssessments).mockResolvedValueOnce(allItems as never);
+    await store.list();
+
+    // a-1 should still be filtered out (deleted cache was not cleared by the filtered call)
+    expect(store.getSnapshot()).toHaveLength(1);
+    expect(store.getSnapshot()[0].id).toBe("a-2");
   });
 
   it("subscribe — listener called on mutation", async () => {

@@ -47,6 +47,7 @@ export class AssessmentsStore
 {
   private assessments: AssessmentModel[] = [];
   private api: AssessmentApiInterface;
+  private deletedAssessmentIds = new Set<string>();
 
   constructor(api: AssessmentApiInterface) {
     super();
@@ -61,9 +62,28 @@ export class AssessmentsStore
       { sourceId },
       initOverrides,
     )) as AssessmentListResponse;
-    this.assessments = normalizeListResponse(response).map(
+    const rawAssessments = normalizeListResponse(response).map(
       createAssessmentModel,
     );
+
+    // Clean up the deleted IDs cache: if an ID is marked as deleted but no longer
+    // appears in the server response, the backend has confirmed the deletion.
+    // Only do this for unfiltered responses to avoid clearing the cache when
+    // the server returns a source-filtered subset.
+    if (!sourceId) {
+      const serverIds = new Set(rawAssessments.map((a) => a.id));
+      this.deletedAssessmentIds.forEach((deletedId) => {
+        if (!serverIds.has(deletedId)) {
+          this.deletedAssessmentIds.delete(deletedId);
+        }
+      });
+    }
+
+    // Filter out recently deleted assessments that the backend hasn't processed yet
+    this.assessments = rawAssessments.filter(
+      (a) => !this.deletedAssessmentIds.has(a.id),
+    );
+
     this.notify();
     return this.assessments;
   }
@@ -118,24 +138,47 @@ export class AssessmentsStore
       // this parsing error since the deletion itself succeeds (status 200).
       await this.api.deleteAssessment({ id }, initOverrides);
     } catch (error) {
-      // Only suppress parsing errors if the HTTP response was successful.
-      // The SDK throws ResponseError when JSON parsing fails after a successful HTTP call.
-      // We must verify the deletion actually succeeded (status 200) before updating local state.
+      // The backend returns a malformed response that causes parsing errors.
+      // We need to detect if the HTTP call succeeded even though parsing failed.
+
+      // Check for ResponseError with 200 status
       const hasSuccessStatus =
         (error as { response?: { status?: number } })?.response?.status === 200;
-
-      const isSuccessfulDeletion =
+      const isResponseErrorSuccess =
         error instanceof ResponseError && hasSuccessStatus;
 
-      if (!isSuccessfulDeletion) {
+      // Check for TypeError from JSON parsing (e.g., "Cannot read properties of null (reading 'map')")
+      const isTypeErrorFromParsing =
+        error instanceof TypeError &&
+        error.message.includes(
+          "Cannot read properties of null (reading 'map')",
+        );
+
+      // If it's a parsing error, we assume the delete succeeded since these only
+      // happen after a successful HTTP response
+      if (isResponseErrorSuccess || isTypeErrorFromParsing) {
+        // Deletion succeeded despite parsing error, continue execution
+      } else {
         throw error;
       }
     }
 
+    // Track this ID as deleted to prevent it from reappearing if backend is slow
+    this.deletedAssessmentIds.add(id);
+
+    // Optimistic update: remove from local state immediately for instant UI feedback
     this.assessments = this.assessments.filter(
       (assessment) => assessment.id !== id,
     );
     this.notify();
+
+    // Refresh from server in background to ensure consistency. This doesn't block
+    // the UI from closing the modal. The list() method will filter out any items
+    // in deletedAssessmentIds, preventing the deleted item from reappearing.
+    void this.list(undefined, initOverrides).catch((err) => {
+      console.error("Background refresh after delete failed:", err);
+    });
+
     return deletedAssessment;
   }
 
