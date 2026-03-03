@@ -13,6 +13,7 @@ interface AppInfo {
   src_hash: string;
   src_tag: string;
   src_branch: string;
+  app_version: string;
   patternfly_dependencies: string;
   rh_cloud_services_dependencies: string;
 }
@@ -51,7 +52,7 @@ export class VersionsStore
       if (response.ok) {
         const payload: unknown = await response.json();
         if (isAppInfo(payload)) {
-          versionName = payload.src_tag;
+          versionName = payload.app_version;
           gitCommit = payload.src_hash;
         } else {
           console.log("Invalid app.info.json payload, using fallback");
@@ -87,5 +88,5 @@ export class VersionsStore
 function isAppInfo(value: unknown): value is AppInfo {
   if (typeof value !== "object" || value === null) return false;
   const v = value as Record<string, unknown>;
-  return typeof v.src_tag === "string" && typeof v.src_hash === "string";
+  return typeof v.app_version === "string" && typeof v.src_hash === "string";
 }
