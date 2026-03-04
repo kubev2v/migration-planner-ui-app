@@ -16,7 +16,7 @@ describe("resolveApiBaseUrl", () => {
     });
   });
 
-  it("should return /api/migration-assessment for production route", () => {
+  it("should return /api/migration-advisor for production route", () => {
     Object.defineProperty(window, "location", {
       value: {
         pathname: "/openshift/migration-advisor/assessments",
@@ -25,7 +25,7 @@ describe("resolveApiBaseUrl", () => {
       configurable: true,
     });
 
-    expect(resolveApiBaseUrl()).toBe("/api/migration-assessment");
+    expect(resolveApiBaseUrl()).toBe("/api/migration-advisor");
   });
 
   it("should return /api/migration-advisor-dev for dev route", () => {
@@ -49,7 +49,7 @@ describe("resolveApiBaseUrl", () => {
       configurable: true,
     });
 
-    expect(resolveApiBaseUrl()).toBe("/api/migration-assessment");
+    expect(resolveApiBaseUrl()).toBe("/api/migration-advisor");
   });
 
   it("should strip /beta prefix before matching", () => {
@@ -87,33 +87,33 @@ describe("resolveApiBaseUrl", () => {
       configurable: true,
     });
 
-    expect(resolveApiBaseUrl()).toBe("/api/migration-assessment");
+    expect(resolveApiBaseUrl()).toBe("/api/migration-advisor");
   });
 
   it("should NOT strip /preview when not a full path segment", () => {
     Object.defineProperty(window, "location", {
       value: {
-        pathname: "/previewx/openshift/migration-assessment/assessments",
+        pathname: "/previewx/openshift/migration-advisor/assessments",
       },
       writable: true,
       configurable: true,
     });
 
     // Should fall back to default since /previewx/openshift/... is not a known route
-    expect(resolveApiBaseUrl()).toBe("/api/migration-assessment");
+    expect(resolveApiBaseUrl()).toBe("/api/migration-advisor");
   });
 
   it("should NOT strip /beta when not a full path segment", () => {
     Object.defineProperty(window, "location", {
       value: {
-        pathname: "/beta-test/openshift/migration-assessment/assessments",
+        pathname: "/beta-test/openshift/migration-advisor/assessments",
       },
       writable: true,
       configurable: true,
     });
 
     // Should fall back to default since /beta-test/openshift/... is not a known route
-    expect(resolveApiBaseUrl()).toBe("/api/migration-assessment");
+    expect(resolveApiBaseUrl()).toBe("/api/migration-advisor");
   });
 
   it("should NOT match partial route segments (suffix)", () => {
@@ -126,7 +126,7 @@ describe("resolveApiBaseUrl", () => {
     });
 
     // Should fall back to default since the route continues without a separator
-    expect(resolveApiBaseUrl()).toBe("/api/migration-assessment");
+    expect(resolveApiBaseUrl()).toBe("/api/migration-advisor");
   });
 
   it("should NOT match partial route segments for dev route", () => {
@@ -139,7 +139,7 @@ describe("resolveApiBaseUrl", () => {
     });
 
     // Should fall back to default since migration-advisor-development != migration-advisor-dev
-    expect(resolveApiBaseUrl()).toBe("/api/migration-assessment");
+    expect(resolveApiBaseUrl()).toBe("/api/migration-advisor");
   });
 
   it("should match exact route without trailing path", () => {
@@ -151,7 +151,7 @@ describe("resolveApiBaseUrl", () => {
       configurable: true,
     });
 
-    expect(resolveApiBaseUrl()).toBe("/api/migration-assessment");
+    expect(resolveApiBaseUrl()).toBe("/api/migration-advisor");
   });
 
   it("should handle error and fall back to env variable", () => {
@@ -177,6 +177,6 @@ describe("resolveApiBaseUrl", () => {
       configurable: true,
     });
 
-    expect(resolveApiBaseUrl()).toBe("/api/migration-assessment");
+    expect(resolveApiBaseUrl()).toBe("/api/migration-advisor");
   });
 });

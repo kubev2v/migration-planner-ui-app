@@ -28,10 +28,10 @@ const chromeApiMock: Partial<ChromeAPI> = {
           },
         },
         entitlements: {
-          "migration-assessment": { is_entitled: true, is_trial: false },
+          "migration-advisor": { is_entitled: true, is_trial: false },
         },
         entitled: {
-          "migration-assessment": true,
+          "migration-advisor": true,
         },
       }),
     getToken: (): Promise<string> => Promise.resolve("mock-standalone-token"),

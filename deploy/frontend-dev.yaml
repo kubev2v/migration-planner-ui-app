@@ -22,7 +22,7 @@ objects:
       module:
         manifestLocation: "/apps/assisted-migration-app/fed-mods.json"
         modules:
-          - id: "migration-assessment"
+          - id: "migration-advisor"
             module: "./RootApp"
             routes:
               - pathname: /openshift/migration-advisor-dev

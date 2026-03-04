@@ -56,7 +56,7 @@ vi.mock("../../lib/middleware/Auth", () => ({
   createAuthMiddleware: vi.fn().mockReturnValue({ pre: vi.fn() }),
 }));
 vi.mock("../ApiConfig", () => ({
-  resolveApiBaseUrl: vi.fn().mockReturnValue("/api/migration-assessment"),
+  resolveApiBaseUrl: vi.fn().mockReturnValue("/api/migration-advisor"),
 }));
 
 // ---------------------------------------------------------------------------

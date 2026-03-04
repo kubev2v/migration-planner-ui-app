@@ -3,14 +3,14 @@
  * This allows a single build to work with multiple deployments.
  */
 const ROUTE_TO_API_MAP: Record<string, string> = {
-  "/openshift/migration-advisor": "/api/migration-assessment",
+  "/openshift/migration-advisor": "/api/migration-advisor",
   "/openshift/migration-advisor-dev": "/api/migration-advisor-dev",
 } as const;
 
 /**
  * Fallback API base URL for local development or when route is not recognized.
  */
-const DEFAULT_API_BASE_URL = "/api/migration-assessment";
+const DEFAULT_API_BASE_URL = "/api/migration-advisor";
 
 /**
  * Determines the API base URL at runtime based on the current frontend path.

@@ -19,13 +19,13 @@ SOURCE_GIT_COMMIT ?=$(shell git rev-parse "HEAD^{commit}" 2>/dev/null)
 SOURCE_GIT_COMMIT_SHORT ?=$(shell git rev-parse --short "HEAD^{commit}" 2>/dev/null)
 SOURCE_GIT_TAG ?=$(shell git describe --tags --abbrev=7 2>/dev/null | sed 's/-[0-9]*-g/-/' || echo 'v0.0.0-$$(git rev-parse --short "HEAD^{commit}" 2>/dev/null)')
 IMAGE_TAG ?= $(SOURCE_GIT_TAG)
-IMAGE ?= localhost/migration-assessment-ui
+IMAGE ?= localhost/migration-advisor-ui
 
 # OpenShift CLI configuration
 OC_BIN ?= $(shell command -v oc 2>/dev/null)
 OC_VERSION ?= stable
 
-MIGRATION_PLANNER_API_BASE_URL ?= /api/migration-assessment
+MIGRATION_PLANNER_API_BASE_URL ?= /api/migration-advisor
 MIGRATION_PLANNER_UI_GIT_COMMIT ?= $(SOURCE_GIT_COMMIT)
 MIGRATION_PLANNER_UI_VERSION ?= $(SOURCE_GIT_TAG)
 

@@ -13,7 +13,7 @@ import { useEnvironmentPage } from "../../environment/view-models/EnvironmentPag
 // Constants
 // ---------------------------------------------------------------------------
 
-const DRAFT_KEY = "migration-assessment:create-from-ova-draft";
+const DRAFT_KEY = "migration-advisor:create-from-ova-draft";
 
 // ---------------------------------------------------------------------------
 // Public interface

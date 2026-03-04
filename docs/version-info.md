@@ -40,5 +40,5 @@ document.getElementById("migration-planner-version-info");
 - **UI Version**: Version number or git tag
 - **UI Git Commit**: Git commit hash from when it was built
 - **API Name**: Backend API name (migration-planner)
-- **API Version**: Backend API version (fetched from `/api/migration-assessment/info`)
+- **API Version**: Backend API version (fetched from `/api/migration-advisor/info`)
 - **API Git Commit**: Backend API git commit hash

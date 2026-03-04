@@ -22,8 +22,11 @@ const APP_SLUG = "/openshift/migration-advisor";
  */
 function resolveAppBasename(): string {
   try {
-    // Strip known Chrome preview/beta prefixes before matching
-    const pathname = window.location.pathname.replace(/^\/(preview|beta)/, "");
+    // Strip known Chrome preview/beta prefixes before matching (full path segments only)
+    const pathname = window.location.pathname.replace(
+      /^\/(preview|beta)(?=\/|$)/,
+      "",
+    );
     return pathname.startsWith(APP_SLUG) ? APP_SLUG : "";
   } catch {
     return ""; // SSR / test environment without DOM

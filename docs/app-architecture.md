@@ -347,8 +347,8 @@ include the full mount prefix.
 
 `src/routing/Routes.ts` handles this transparently through **runtime
 detection**. At module-load time it checks `window.location.pathname` to
-determine whether the app slug (`/openshift/migration-advisor`) is present
-and stores the result in `APP_BASENAME`:
+determine whether the app slug is present and stores the result in
+`APP_BASENAME`:
 
 - Dev mode → `APP_BASENAME = ""`
 - Stage mode → `APP_BASENAME = "/openshift/migration-advisor"`
