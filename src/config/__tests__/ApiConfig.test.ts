@@ -19,7 +19,7 @@ describe("resolveApiBaseUrl", () => {
   it("should return /api/migration-assessment for production route", () => {
     Object.defineProperty(window, "location", {
       value: {
-        pathname: "/openshift/migration-advisor/assessments",
+        pathname: "/openshift/migration-assessment/assessments",
       },
       writable: true,
       configurable: true,
@@ -43,7 +43,7 @@ describe("resolveApiBaseUrl", () => {
   it("should strip /preview prefix before matching", () => {
     Object.defineProperty(window, "location", {
       value: {
-        pathname: "/preview/openshift/migration-advisor/assessments",
+        pathname: "/preview/openshift/migration-assessment/assessments",
       },
       writable: true,
       configurable: true,
@@ -119,7 +119,7 @@ describe("resolveApiBaseUrl", () => {
   it("should NOT match partial route segments (suffix)", () => {
     Object.defineProperty(window, "location", {
       value: {
-        pathname: "/openshift/migration-advisor-foo/assessments",
+        pathname: "/openshift/migration-assessment-foo/assessments",
       },
       writable: true,
       configurable: true,
@@ -145,7 +145,7 @@ describe("resolveApiBaseUrl", () => {
   it("should match exact route without trailing path", () => {
     Object.defineProperty(window, "location", {
       value: {
-        pathname: "/openshift/migration-advisor",
+        pathname: "/openshift/migration-assessment",
       },
       writable: true,
       configurable: true,
