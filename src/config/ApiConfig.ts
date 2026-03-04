@@ -3,7 +3,7 @@
  * This allows a single build to work with multiple deployments.
  */
 const ROUTE_TO_API_MAP: Record<string, string> = {
-  "/openshift/migration-assessment": "/api/migration-assessment",
+  "/openshift/migration-advisor": "/api/migration-assessment",
   "/openshift/migration-advisor-dev": "/api/migration-advisor-dev",
 } as const;
 
