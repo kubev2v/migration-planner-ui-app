@@ -147,7 +147,7 @@ export const CreateAssessmentModal: React.FC<CreateAssessmentModalProps> = ({
           accept: ".xlsx,.xls",
           allowedExtensions: ["xlsx", "xls"],
           fileLink:
-            "https://kubev2v.github.io/assisted-migration-docs/docs/tutorial/#prerequisites-rvtools-file-requirements",
+            "https://kubev2v.github.io/openshift-migration-advisor-docs/docs/tutorial/#prerequisites-rvtools-file-requirements",
         };
       case "agent":
         return {
