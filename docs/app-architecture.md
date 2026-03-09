@@ -345,31 +345,39 @@ resolves from the router root (`"/"`), producing the URL `/assessments/123` —
 which is _outside_ the app's mount point. Navigation paths must therefore
 include the full mount prefix.
 
-`src/routing/Routes.ts` handles this transparently through **runtime
-detection**. At module-load time it checks `window.location.pathname` to
-determine whether the app slug (`/openshift/migration-assessment`) is present
-and stores the result in `APP_BASENAME`:
+`src/routing/Routes.ts` handles this transparently through **dynamic runtime
+detection**. Each time a route is accessed, it checks `window.location.pathname`
+to determine whether the app slug (`/openshift/migration-assessment`) is present:
 
-- Dev mode → `APP_BASENAME = ""`
-- Stage mode → `APP_BASENAME = "/openshift/migration-assessment"`
+- Dev mode → basename = `""`
+- Stage mode → basename = `"/openshift/migration-assessment"`
 
-Every entry in the `routes` object includes `APP_BASENAME` as a prefix, so
-consuming code never needs to think about it:
+Every entry in the `routes` object uses getters that compute the basename
+dynamically, ensuring correctness even during hot-module reloading or federated
+module initialization timing edge cases:
 
 ```typescript
 // src/routing/Routes.ts (simplified)
-export const APP_BASENAME = resolveAppBasename(); // "" or "/openshift/migration-assessment"
+function getAppBasename(): string {
+  const pathname = window.location.pathname.replace(/^\/(preview|beta)/, "");
+  return pathname.startsWith("/openshift/migration-assessment")
+    ? "/openshift/migration-assessment"
+    : "";
+}
 
 export const routes = {
-  root: APP_BASENAME || "/",
-  assessments: `${APP_BASENAME}/assessments`,
-  assessmentById: (id: string) => `${APP_BASENAME}/assessments/${id}`,
-  assessmentReport: (id: string) => `${APP_BASENAME}/assessments/${id}/report`,
-  assessmentCreate: `${APP_BASENAME}/assessments/create`,
-  exampleReport: `${APP_BASENAME}/assessments/example-report`,
-  environments: `${APP_BASENAME}/environments`,
+  get assessments() {
+    return `${getAppBasename()}/assessments`;
+  },
+  assessmentById: (id: string) => `${getAppBasename()}/assessments/${id}`,
+  assessmentReport: (id: string) =>
+    `${getAppBasename()}/assessments/${id}/report`,
+  // ... other routes with dynamic basename resolution
 } as const;
 ```
+
+The routes module logs basename detection at `console.info` level whenever
+the detected mode changes, helping diagnose production routing issues.
 
 ### How to add a new route
 
@@ -468,6 +476,21 @@ expect(mockNavigate).toHaveBeenCalledWith(routes.migrationPlanById("p-1"));
 - **Adding a leading `/` to `<Route path>`** — route paths in `AppRoutes.tsx`
   are relative. A leading `/` makes them absolute, which can cause matching
   issues under nested `<Routes>` elements.
+
+#### Debugging production routing issues
+
+If you see incorrect URLs in production (e.g. missing the
+`/openshift/migration-assessment` prefix), check the browser console for
+`[Routes] Basename detected:` log entries. This will show:
+
+- Which mode was detected (`microfrontend` or `standalone`)
+- The detected basename value
+- The current pathname at detection time
+- Whether the basename changed during the session
+
+The routes module uses dynamic getters to resolve the basename fresh on each
+access, preventing stale values from module-load timing issues in federated
+module environments.
 
 ---
 
