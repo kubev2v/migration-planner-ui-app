@@ -224,4 +224,125 @@ describe("Routes", () => {
       expect(APP_BASENAME).toMatch(/^(|\/openshift\/migration-assessment)$/);
     });
   });
+
+  // ---------------------------------------------------------------------------
+  // Production bug reproduction test
+  // ---------------------------------------------------------------------------
+
+  describe("Production bug: inconsistent URL generation after login/logout", () => {
+    it("reproduces the 'See an example report' navigation bug where basename is missing", () => {
+      // SCENARIO: User logs in, module loads before Chrome routing is ready
+      // Simulate: Module loads with incorrect pathname (root or incomplete)
+      Object.defineProperty(window, "location", {
+        value: { ...window.location, pathname: "/" },
+        writable: true,
+        configurable: true,
+      });
+
+      // At this point, if routes were static (old behavior), they would cache
+      // the wrong basename and return "/assessments/example-report"
+
+      // User navigates to the app after Chrome routing initializes
+      Object.defineProperty(window, "location", {
+        value: {
+          ...window.location,
+          pathname: "/openshift/migration-assessment/assessments",
+        },
+        writable: true,
+        configurable: true,
+      });
+
+      // User clicks "See an example report" button
+      const exampleReportUrl = routes.exampleReport;
+
+      // EXPECTED: Should return correct URL with basename
+      expect(exampleReportUrl).toBe(
+        "/openshift/migration-assessment/assessments/example-report",
+      );
+
+      // BEFORE FIX: Would return "/assessments/example-report"
+      // AFTER FIX: Returns "/openshift/migration-assessment/assessments/example-report"
+    });
+
+    it("reproduces the RVTools upload navigation bug where basename is missing", () => {
+      // SCENARIO: User uploads RVTools file, job completes, navigates to report
+      // Simulate: Module loaded at wrong time, pathname changes during session
+
+      // Initial load with incomplete pathname
+      Object.defineProperty(window, "location", {
+        value: { ...window.location, pathname: "/assessments" },
+        writable: true,
+        configurable: true,
+      });
+
+      // User is actually in the microfrontend context
+      Object.defineProperty(window, "location", {
+        value: {
+          ...window.location,
+          pathname: "/openshift/migration-assessment/assessments",
+        },
+        writable: true,
+        configurable: true,
+      });
+
+      // Job completes, navigate to report
+      const assessmentId = "d8d38f15-d3f6-49a6-9a8b-2f7efc21aae9";
+      const reportUrl = routes.assessmentReport(assessmentId);
+
+      // EXPECTED: Should return correct URL with basename
+      expect(reportUrl).toBe(
+        `/openshift/migration-assessment/assessments/${assessmentId}/report`,
+      );
+
+      // BEFORE FIX: Would return "/assessments/d8d38f15-.../report"
+      // AFTER FIX: Returns "/openshift/migration-assessment/assessments/d8d38f15-.../report"
+    });
+
+    it("verifies all route getters adapt to pathname changes during the session", () => {
+      // Simulate module load at root
+      Object.defineProperty(window, "location", {
+        value: { ...window.location, pathname: "/" },
+        writable: true,
+        configurable: true,
+      });
+
+      // Routes should work in standalone mode initially
+      expect(routes.assessments).toBe("/assessments");
+      expect(routes.environments).toBe("/environments");
+
+      // User navigates to microfrontend context (Chrome loads)
+      Object.defineProperty(window, "location", {
+        value: {
+          ...window.location,
+          pathname: "/openshift/migration-assessment/assessments",
+        },
+        writable: true,
+        configurable: true,
+      });
+
+      // ALL routes should now include the basename
+      expect(routes.root).toBe("/openshift/migration-assessment");
+      expect(routes.assessments).toBe(
+        "/openshift/migration-assessment/assessments",
+      );
+      expect(routes.assessmentCreate).toBe(
+        "/openshift/migration-assessment/assessments/create",
+      );
+      expect(routes.exampleReport).toBe(
+        "/openshift/migration-assessment/assessments/example-report",
+      );
+      expect(routes.environments).toBe(
+        "/openshift/migration-assessment/environments",
+      );
+
+      // And they should work correctly for navigation
+      const testId = "test-123";
+      expect(routes.assessmentById(testId)).toBe(
+        `/openshift/migration-assessment/assessments/${testId}`,
+      );
+      expect(routes.assessmentReport(testId)).toBe(
+        `/openshift/migration-assessment/assessments/${testId}/report`,
+      );
+    });
+  });
 });
