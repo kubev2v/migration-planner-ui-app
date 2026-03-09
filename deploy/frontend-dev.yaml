@@ -26,6 +26,7 @@ objects:
             module: "./RootApp"
             routes:
               - pathname: /openshift/migration-advisor-dev
+      feoConfigEnabled: true # flags a frontend to be ready for FEO features
 
 parameters:
   - name: ENV_NAME
