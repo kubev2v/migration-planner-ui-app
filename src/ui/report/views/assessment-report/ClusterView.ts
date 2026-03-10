@@ -1,10 +1,10 @@
 export type {
-  ClusterSelection,
   ClusterOption,
+  ClusterSelection,
   ClusterViewModel,
 } from "../../helpers/clusterViewModel";
 export {
   buildClusterViewModel,
-  getClusterOptions,
   compareClustersByVmCount,
+  getClusterOptions,
 } from "../../helpers/clusterViewModel";

@@ -18,8 +18,8 @@ import type { SourceModel } from "../../../models/SourceModel";
 import type { SnapshotLike } from "../../../services/html-export/types";
 import {
   buildClusterViewModel,
-  compareClustersByVmCount,
   type ClusterViewModel,
+  compareClustersByVmCount,
 } from "../helpers/clusterViewModel";
 
 // ---------------------------------------------------------------------------
