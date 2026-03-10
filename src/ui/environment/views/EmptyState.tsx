@@ -8,35 +8,26 @@ import {
   StackItem,
 } from "@patternfly/react-core";
 import { ExclamationCircleIcon, SearchIcon } from "@patternfly/react-icons";
-import React, { useCallback, useState } from "react";
+import React, { useCallback } from "react";
 
 import { useEnvironmentPage } from "../view-models/EnvironmentPageContext";
-import { DiscoverySourceSetupModal } from "./DiscoverySourceSetupModal";
 
-export const EmptyState: React.FC = () => {
+export interface EmptyStateProps {
+  onAddEnvironment: () => void;
+  isOvaDownloading: boolean;
+}
+
+export const EmptyState: React.FC<EmptyStateProps> = ({
+  onAddEnvironment,
+  isOvaDownloading,
+}) => {
   const vm = useEnvironmentPage();
-
-  const [
-    shouldShowDiscoverySourceSetupModal,
-    setShouldShowDiscoverySetupModal,
-  ] = useState(false);
-
-  const toggleDiscoverySourceSetupModal = useCallback((): void => {
-    setShouldShowDiscoverySetupModal((lastState) => {
-      if (lastState === true) {
-        void vm.listSources();
-      }
-      return !lastState;
-    });
-  }, [vm]);
 
   const handleTryAgain = useCallback(() => {
     if (!vm.isLoadingSources) {
       void vm.listSources();
     }
   }, [vm]);
-
-  const [isOvaDownloading, setIsOvaDownloading] = useState(false);
 
   let emptyStateNode: React.ReactNode = (
     <PFEmptyState
@@ -52,7 +43,7 @@ export const EmptyState: React.FC = () => {
 
       <EmptyStateFooter>
         <EmptyStateActions>
-          <Button variant="secondary" onClick={toggleDiscoverySourceSetupModal}>
+          <Button variant="secondary" onClick={onAddEnvironment}>
             Add environment
           </Button>
         </EmptyStateActions>
@@ -90,22 +81,7 @@ export const EmptyState: React.FC = () => {
     );
   }
 
-  return (
-    <>
-      {emptyStateNode}
-      {shouldShowDiscoverySourceSetupModal && (
-        <DiscoverySourceSetupModal
-          isOpen={shouldShowDiscoverySourceSetupModal}
-          onClose={toggleDiscoverySourceSetupModal}
-          isDisabled={vm.isDownloadingSource}
-          onStartDownload={() => setIsOvaDownloading(true)}
-          onAfterDownload={async () => {
-            await vm.listSources();
-          }}
-        />
-      )}
-    </>
-  );
+  return emptyStateNode;
 };
 
 EmptyState.displayName = "SourcesTableEmptyState";

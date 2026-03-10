@@ -11,7 +11,13 @@ import {
 } from "@patternfly/react-core";
 import { ArrowLeftIcon, EllipsisVIcon } from "@patternfly/react-icons";
 import { Table, Tbody, Td, Th, Thead, Tr } from "@patternfly/react-table";
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { useNavigate } from "react-router-dom";
 
 import type { SourceModel } from "../../../models/SourceModel";
@@ -20,6 +26,7 @@ import { ConfirmationModal } from "../../core/components/ConfirmationModal";
 import { useEnvironmentPage } from "../view-models/EnvironmentPageContext";
 import { AgentStatusView } from "./AgentStatusView";
 import { Columns } from "./Columns";
+import { DiscoverySourceSetupModal } from "./DiscoverySourceSetupModal";
 import { EmptyState } from "./EmptyState";
 
 const VALUE_NOT_AVAILABLE = "-";
@@ -95,6 +102,20 @@ export const SourcesTable: React.FC<SourceTableProps> = ({
     {},
   );
   const [deleteTarget, setDeleteTarget] = useState<SourceModel | null>(null);
+  const [
+    shouldShowDiscoverySourceSetupModal,
+    setShouldShowDiscoverySetupModal,
+  ] = useState(false);
+  const [isOvaDownloading, setIsOvaDownloading] = useState(false);
+
+  const toggleDiscoverySourceSetupModal = useCallback((): void => {
+    setShouldShowDiscoverySetupModal((lastState) => {
+      if (lastState === true) {
+        void vm.listSources();
+      }
+      return !lastState;
+    });
+  }, [vm]);
 
   // Memorize ordered sources without mutating context sources
   const memoizedSources = useMemo(() => {
@@ -512,7 +533,10 @@ export const SourcesTable: React.FC<SourceTableProps> = ({
               ) : (
                 <Tr>
                   <Td colSpan={12}>
-                    <EmptyState />
+                    <EmptyState
+                      onAddEnvironment={toggleDiscoverySourceSetupModal}
+                      isOvaDownloading={isOvaDownloading}
+                    />
                   </Td>
                 </Tr>
               )}
@@ -539,6 +563,18 @@ export const SourcesTable: React.FC<SourceTableProps> = ({
             <br />
             To use it again, create a new discovery image and redeploy it.
           </ConfirmationModal>
+        )}
+
+        {shouldShowDiscoverySourceSetupModal && (
+          <DiscoverySourceSetupModal
+            isOpen={shouldShowDiscoverySourceSetupModal}
+            onClose={toggleDiscoverySourceSetupModal}
+            isDisabled={vm.isDownloadingSource}
+            onStartDownload={() => setIsOvaDownloading(true)}
+            onAfterDownload={async () => {
+              await vm.listSources();
+            }}
+          />
         )}
       </div>
     );
