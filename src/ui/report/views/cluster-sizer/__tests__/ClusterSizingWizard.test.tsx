@@ -17,6 +17,7 @@ const mockCalculate = vi.fn();
 const mockReset = vi.fn();
 const mockSetFormValues = vi.fn();
 const mockCalculateEstimation = vi.fn();
+const mockCalculateComplexity = vi.fn();
 const mockEnsureEstimationForMenu = vi.fn();
 
 const mockViewModel = {
@@ -37,6 +38,10 @@ const mockViewModel = {
   isCalculatingEstimation: false,
   estimationError: null,
   calculateEstimation: mockCalculateEstimation,
+  complexityEstimation: null,
+  isCalculatingComplexity: false,
+  complexityError: null,
+  calculateComplexity: mockCalculateComplexity,
   ensureEstimationForMenu: mockEnsureEstimationForMenu,
   reset: mockReset,
 };
@@ -70,6 +75,18 @@ vi.mock("../TimeEstimationResult", () => ({
   ),
 }));
 
+vi.mock("../ComplexityResult", () => ({
+  ComplexityResult: ({
+    isLoading,
+  }: {
+    isLoading: boolean;
+  }): React.ReactElement => (
+    <div data-testid="complexity-result">
+      {isLoading ? "Loading..." : "Complexity Results"}
+    </div>
+  ),
+}));
+
 const defaultProps = {
   isOpen: true,
   onClose: vi.fn(),
@@ -88,6 +105,8 @@ describe("ClusterSizingWizard", () => {
     vi.clearAllMocks();
     mockViewModel.isCalculatingEstimation = false;
     mockViewModel.migrationEstimation = null;
+    mockViewModel.isCalculatingComplexity = false;
+    mockViewModel.complexityEstimation = null;
   });
 
   it("renders the modal with menu when open", () => {
@@ -159,14 +178,28 @@ describe("ClusterSizingWizard", () => {
       });
     });
 
-    it("disables Migration Complexity tab", () => {
+    it("enables Migration Complexity tab", () => {
       render(<ClusterSizingWizard {...defaultProps} />);
 
       const complexityTab = screen.getByRole("tab", {
         name: /Migration Complexity/,
       });
-      expect(complexityTab).toHaveAttribute("aria-disabled", "true");
-      expect(complexityTab).toBeDisabled();
+      expect(complexityTab).not.toBeDisabled();
+    });
+
+    it("navigates to complexity section when tab is clicked", async () => {
+      mockViewModel.isCalculatingComplexity = true;
+      render(<ClusterSizingWizard {...defaultProps} />);
+
+      const complexityTab = screen.getByRole("tab", {
+        name: /Migration Complexity/,
+      });
+      fireEvent.click(complexityTab);
+
+      await waitFor(() => {
+        expect(screen.getByTestId("complexity-result")).toBeInTheDocument();
+        expect(mockEnsureEstimationForMenu).toHaveBeenCalledWith("complexity");
+      });
     });
 
     it("disables Migration Plan tab", () => {
