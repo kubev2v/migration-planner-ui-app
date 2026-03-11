@@ -135,6 +135,8 @@ export const Dashboard: React.FC<Props> = ({
                 isExportMode={isExportMode}
                 exportAllViews={exportAllViews}
                 diskTypeSummary={vms.diskTypes ?? {}}
+                totalVMs={vms.total}
+                totalWithSharedDisks={vms.totalWithSharedDisks}
               />
             </GalleryItem>
           </Gallery>
