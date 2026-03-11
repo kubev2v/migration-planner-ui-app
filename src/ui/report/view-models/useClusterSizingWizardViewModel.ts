@@ -1,7 +1,10 @@
-import type { MigrationEstimationResponse } from "@openshift-migration-advisor/planner-sdk";
+import type {
+  MigrationComplexityResponse,
+  MigrationEstimationResponse,
+} from "@openshift-migration-advisor/planner-sdk";
 import { ResponseError } from "@openshift-migration-advisor/planner-sdk";
 import { useInjection } from "@y0n1/react-ioc";
-import { useCallback, useState, useSyncExternalStore } from "react";
+import { useCallback, useRef, useState, useSyncExternalStore } from "react";
 import { useAsyncFn } from "react-use";
 
 import { Symbols } from "../../../config/Dependencies";
@@ -31,6 +34,10 @@ export interface ClusterSizingWizardViewModel {
   isCalculatingEstimation: boolean;
   estimationError: Error | undefined;
   calculateEstimation: () => Promise<void>;
+  complexityEstimation: MigrationComplexityResponse | null;
+  isCalculatingComplexity: boolean;
+  complexityError: Error | undefined;
+  calculateComplexity: () => Promise<void>;
   ensureEstimationForMenu: (menuItem: string | null) => void;
   reset: () => void;
 }
@@ -57,8 +64,22 @@ export const useClusterSizingWizardViewModel = (
     useState<ClusterRequirementsResponse | null>(null);
   const [migrationEstimation, setMigrationEstimation] =
     useState<MigrationEstimationResponse | null>(null);
+  const [complexityEstimation, setComplexityEstimation] =
+    useState<MigrationComplexityResponse | null>(null);
+  const [manualCalculateError, setManualCalculateError] = useState<
+    Error | undefined
+  >(undefined);
+  const [manualEstimationError, setManualEstimationError] = useState<
+    Error | undefined
+  >(undefined);
+  const [manualComplexityError, setManualComplexityError] = useState<
+    Error | undefined
+  >(undefined);
+  const [resetCounter, setResetCounter] = useState<number>(0);
+  const latestComplexityRequestIdRef = useRef<string>("");
 
   const [calculateState, doCalculate] = useAsyncFn(async () => {
+    setManualCalculateError(undefined);
     // Get worker node CPU and memory based on preset or custom values
     const workerCpu =
       formValues.workerNodePreset !== "custom"
@@ -89,15 +110,22 @@ export const useClusterSizingWizardViewModel = (
     } catch (err) {
       if (err instanceof ResponseError) {
         const message = await err.response.text();
-        throw new Error(err.message, { cause: message });
+        const combinedMessage = message
+          ? `${err.message}: ${message}`
+          : err.message;
+        const error = new Error(combinedMessage, { cause: message });
+        setManualCalculateError(error);
+        throw error;
       }
-      throw err instanceof Error
-        ? err
-        : new Error("Failed to calculate sizing");
+      const error =
+        err instanceof Error ? err : new Error("Failed to calculate sizing");
+      setManualCalculateError(error);
+      throw error;
     }
   }, [assessmentId, assessmentsStore, clusterId, formValues]);
 
   const [estimationState, doCalculateEstimation] = useAsyncFn(async () => {
+    setManualEstimationError(undefined);
     try {
       const result = await assessmentsStore.calculateMigrationEstimation({
         id: assessmentId,
@@ -108,11 +136,56 @@ export const useClusterSizingWizardViewModel = (
     } catch (err) {
       if (err instanceof ResponseError) {
         const message = await err.response.text();
-        throw new Error(err.message, { cause: message });
+        const combinedMessage = message
+          ? `${err.message}: ${message}`
+          : err.message;
+        const error = new Error(combinedMessage, { cause: message });
+        setManualEstimationError(error);
+        throw error;
       }
-      throw err instanceof Error
-        ? err
-        : new Error("Failed to calculate migration estimation");
+      const error =
+        err instanceof Error
+          ? err
+          : new Error("Failed to calculate migration estimation");
+      setManualEstimationError(error);
+      throw error;
+    }
+  }, [assessmentId, assessmentsStore, clusterId]);
+
+  const [complexityState, doCalculateComplexity] = useAsyncFn(async () => {
+    setManualComplexityError(undefined);
+    const requestId = `${assessmentId}-${clusterId}-${Date.now()}`;
+    latestComplexityRequestIdRef.current = requestId;
+
+    try {
+      const result = await assessmentsStore.calculateComplexityEstimation({
+        id: assessmentId,
+        migrationComplexityRequest: { clusterId },
+      });
+
+      if (latestComplexityRequestIdRef.current === requestId) {
+        setComplexityEstimation(result);
+      }
+    } catch (err) {
+      if (latestComplexityRequestIdRef.current !== requestId) {
+        return;
+      }
+
+      if (err instanceof ResponseError) {
+        const message = await err.response.text();
+        const combinedMessage = message
+          ? `${err.message}: ${message}`
+          : err.message;
+        const error = new Error(combinedMessage, { cause: message });
+        setManualComplexityError(error);
+        throw error;
+      }
+      const error =
+        err instanceof Error
+          ? err
+          : new Error("Failed to calculate complexity estimation");
+      setManualComplexityError(error);
+      throw error;
     }
   }, [assessmentId, assessmentsStore, clusterId]);
 
@@ -122,16 +195,28 @@ export const useClusterSizingWizardViewModel = (
         menuItem === "time-estimation" &&
         !migrationEstimation &&
         !estimationState.loading &&
-        !estimationState.error
+        !manualEstimationError
       ) {
         void doCalculateEstimation();
+      }
+      if (
+        menuItem === "complexity" &&
+        !complexityEstimation &&
+        !complexityState.loading &&
+        !manualComplexityError
+      ) {
+        void doCalculateComplexity();
       }
     },
     [
       migrationEstimation,
       estimationState.loading,
-      estimationState.error,
+      manualEstimationError,
       doCalculateEstimation,
+      complexityEstimation,
+      complexityState.loading,
+      manualComplexityError,
+      doCalculateComplexity,
     ],
   );
 
@@ -139,6 +224,11 @@ export const useClusterSizingWizardViewModel = (
     setFormValues(DEFAULT_FORM_VALUES);
     setSizerOutput(null);
     setMigrationEstimation(null);
+    setComplexityEstimation(null);
+    setManualCalculateError(undefined);
+    setManualEstimationError(undefined);
+    setManualComplexityError(undefined);
+    setResetCounter((prev) => prev + 1);
   }, []);
 
   return {
@@ -146,12 +236,22 @@ export const useClusterSizingWizardViewModel = (
     setFormValues,
     sizerOutput,
     isCalculating: calculateState.loading,
-    calculateError: calculateState.error,
+    calculateError:
+      manualCalculateError ??
+      (resetCounter > 0 ? undefined : calculateState.error),
     calculate: doCalculate,
     migrationEstimation,
     isCalculatingEstimation: estimationState.loading,
-    estimationError: estimationState.error,
+    estimationError:
+      manualEstimationError ??
+      (resetCounter > 0 ? undefined : estimationState.error),
     calculateEstimation: doCalculateEstimation,
+    complexityEstimation,
+    isCalculatingComplexity: complexityState.loading,
+    complexityError:
+      manualComplexityError ??
+      (resetCounter > 0 ? undefined : complexityState.error),
+    calculateComplexity: doCalculateComplexity,
     ensureEstimationForMenu,
     reset,
   };

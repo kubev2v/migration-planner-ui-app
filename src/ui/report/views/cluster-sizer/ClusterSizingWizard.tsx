@@ -12,6 +12,7 @@ import {
 import React, { useCallback, useEffect, useState } from "react";
 
 import { useClusterSizingWizardViewModel } from "../../view-models/useClusterSizingWizardViewModel";
+import { ComplexityResult } from "./ComplexityResult";
 import { RecommendationTemplate } from "./RecommendationTemplate";
 import { SizingInputForm } from "./SizingInputForm";
 import { SizingResult } from "./SizingResult";
@@ -124,6 +125,10 @@ export const ClusterSizingWizard: React.FC<ClusterSizingWizardProps> = ({
     void vm.calculateEstimation();
   }, [vm]);
 
+  const handleCalculateComplexity = useCallback(() => {
+    void vm.calculateComplexity();
+  }, [vm]);
+
   useEffect(() => {
     vm.ensureEstimationForMenu(selectedMenuItem);
   }, [selectedMenuItem, vm]);
@@ -191,7 +196,31 @@ export const ClusterSizingWizard: React.FC<ClusterSizingWizardProps> = ({
           />
         );
       case "complexity":
-        return <div>Migration Complexity content (coming soon)</div>;
+        return (
+          <RecommendationTemplate
+            preferencesTitle="Complexity analysis parameters"
+            preferencesContent={<div>Analysis parameters (coming soon)</div>}
+            resultsContent={
+              <ComplexityResult
+                clusterName={clusterName}
+                complexityOutput={vm.complexityEstimation}
+                isLoading={vm.isCalculatingComplexity}
+                error={vm.complexityError ?? null}
+              />
+            }
+            onGenerate={handleCalculateComplexity}
+            isLoading={vm.isCalculatingComplexity}
+            hasResults={Boolean(
+              vm.complexityEstimation ||
+              vm.isCalculatingComplexity ||
+              vm.complexityError,
+            )}
+            generateButtonText="Calculate complexity"
+            resultsTitle=""
+            showAlert={false}
+            hidePreferences={true}
+          />
+        );
       case "plan":
         return <div>Migration Plan content (coming soon)</div>;
       default:
@@ -232,7 +261,6 @@ export const ClusterSizingWizard: React.FC<ClusterSizingWizardProps> = ({
             <Tab
               eventKey="complexity"
               title={<TabTitleText>Migration Complexity</TabTitleText>}
-              isDisabled
             />
             <Tab
               eventKey="plan"

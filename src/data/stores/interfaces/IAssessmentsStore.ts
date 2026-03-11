@@ -1,12 +1,15 @@
-import type { CalculateAssessmentClusterRequirementsRequest } from "@openshift-migration-advisor/planner-sdk";
+import type {
+  CalculateAssessmentClusterRequirementsRequest,
+  CalculateMigrationComplexityRequest,
+} from "@openshift-migration-advisor/planner-sdk";
 import type { CalculateMigrationEstimationRequest } from "@openshift-migration-advisor/planner-sdk";
 import type { ClusterRequirementsResponse } from "@openshift-migration-advisor/planner-sdk";
 import type { InitOverrideFunction } from "@openshift-migration-advisor/planner-sdk";
+import type { MigrationComplexityResponse } from "@openshift-migration-advisor/planner-sdk";
 import type { MigrationEstimationResponse } from "@openshift-migration-advisor/planner-sdk";
 
 import type { ExternalStore } from "../../../lib/mvvm/ExternalStore";
 import type { AssessmentModel } from "../../../models/AssessmentModel";
-
 type AssessmentCreateForm = {
   name: string;
   sourceType?: string;
@@ -44,6 +47,10 @@ export interface IAssessmentsStore extends ExternalStore<AssessmentModel[]> {
     requestParameters: CalculateMigrationEstimationRequest,
     initOverrides?: RequestInit | InitOverrideFunction,
   ): Promise<MigrationEstimationResponse>;
+  calculateComplexityEstimation(
+    requestParameters: CalculateMigrationComplexityRequest,
+    initOverrides?: RequestInit | InitOverrideFunction,
+  ): Promise<MigrationComplexityResponse>;
   startPolling(intervalMs?: number): void;
   stopPolling(): void;
 }
