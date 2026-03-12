@@ -18,8 +18,7 @@ This allows the same image to be used in dev (e.g. `host.containers.internal:344
 
 ### 1. Nginx config template (`deploy/dev/nginx.conf.template`)
 
-- **Static `nginx.conf`** (`deploy/dev/nginx.conf`) is unchanged and remains the reference for local or non-container use.
-- **Template** `nginx.conf.template` is used at container runtime. It contains two placeholders substituted at startup:
+- **Template** `nginx.conf.template` is the single nginx config source. It is used at container runtime with two placeholders substituted at startup:
   - `${MIGRATION_PLANNER_API_UPSTREAM}` — upstream server (host:port), e.g. `host.containers.internal:3443`
   - `${MIGRATION_PLANNER_API_BASE_URL}` — location path for proxying, e.g. `/api/migration-assessment`
 - A single `location` block proxies requests under the base URL to the upstream; the path prefix is stripped so the backend receives paths relative to its root.
@@ -93,7 +92,6 @@ Replace `my-api-host:3443` and the base URL as needed. The base URL must still m
 
 | Path | Role |
 |------|------|
-| `deploy/dev/nginx.conf` | Unchanged; reference static config. |
 | `deploy/dev/nginx.conf.template` | Runtime template with `${MIGRATION_PLANNER_API_UPSTREAM}` and `${MIGRATION_PLANNER_API_BASE_URL}`. |
 | `deploy/dev/docker-entrypoint.sh` | Defaults env, runs `envsubst`, then `exec nginx`. |
 | `deploy/dev/Containerfile` | Copies template and entrypoint; CMD is entrypoint. |

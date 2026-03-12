@@ -15,23 +15,27 @@ http {
         server ${MIGRATION_PLANNER_API_UPSTREAM};
     }
     
+    # Client connections: nginx responds with HTTP/1.1 (default for listen without ssl).
+    # Upstream (proxy): default is HTTP/1.0 (see ngx_http_proxy_module proxy_http_version);
+    # we set proxy_http_version 1.1 so the connection to the API uses HTTP/1.1.
     server {
         listen 8081;
         server_name localhost;
         root /usr/share/nginx/html;
         index index.html;
-        
-         # Proxy API calls to migration-planner-api service
-         location ${MIGRATION_PLANNER_API_BASE_URL} {
-             proxy_pass http://migration_planner_api/;
-             proxy_set_header Host $host;
-             proxy_set_header X-Real-IP $remote_addr;
-             proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-             proxy_set_header X-Forwarded-Proto $scheme;
-             proxy_connect_timeout 30s;
-             proxy_send_timeout 30s;
-             proxy_read_timeout 30s;
-         }
+
+        # Proxy API calls to migration-planner-api service
+        location ${MIGRATION_PLANNER_API_BASE_URL} {
+            proxy_pass http://migration_planner_api/;
+            proxy_http_version 1.1;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_connect_timeout 30s;
+            proxy_send_timeout 30s;
+            proxy_read_timeout 30s;
+        }
        
         # Serve static files and SPA
         location / {
