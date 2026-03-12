@@ -48,10 +48,10 @@ This allows the same image to be used in dev (e.g. `host.containers.internal:344
 
 ## Environment variables (runtime)
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `MIGRATION_PLANNER_API_UPSTREAM` | `host.containers.internal:3443` | Backend host:port nginx proxies to. |
-| `MIGRATION_PLANNER_API_BASE_URL` | `/api/migration-assessment` | Path prefix under which API requests are proxied. Must match the base URL the SPA was built with. |
+| Variable                         | Default                         | Description                                                                                       |
+| -------------------------------- | ------------------------------- | ------------------------------------------------------------------------------------------------- |
+| `MIGRATION_PLANNER_API_UPSTREAM` | `host.containers.internal:3443` | Backend host:port nginx proxies to.                                                               |
+| `MIGRATION_PLANNER_API_BASE_URL` | `/api/migration-assessment`     | Path prefix under which API requests are proxied. Must match the base URL the SPA was built with. |
 
 ---
 
@@ -90,12 +90,12 @@ Replace `my-api-host:3443` and the base URL as needed. The base URL must still m
 
 ## Files touched
 
-| Path | Role |
-|------|------|
-| `deploy/dev/nginx.conf.template` | Runtime template with `${MIGRATION_PLANNER_API_UPSTREAM}` and `${MIGRATION_PLANNER_API_BASE_URL}`. |
-| `deploy/dev/docker-entrypoint.sh` | Defaults env, runs `envsubst`, then `exec nginx`. |
-| `deploy/dev/Containerfile` | Copies template and entrypoint; CMD is entrypoint. |
-| `deploy/dev/ui-template.yaml` | Sets env vars and port 8081 for OpenShift deployment. |
+| Path                              | Role                                                                                               |
+| --------------------------------- | -------------------------------------------------------------------------------------------------- |
+| `deploy/dev/nginx.conf.template`  | Runtime template with `${MIGRATION_PLANNER_API_UPSTREAM}` and `${MIGRATION_PLANNER_API_BASE_URL}`. |
+| `deploy/dev/docker-entrypoint.sh` | Defaults env, runs `envsubst`, then `exec nginx`.                                                  |
+| `deploy/dev/Containerfile`        | Copies template and entrypoint; CMD is entrypoint.                                                 |
+| `deploy/dev/ui-template.yaml`     | Sets env vars and port 8081 for OpenShift deployment.                                              |
 
 ---
 
