@@ -1,0 +1,20 @@
+apiVersion: appstudio.redhat.com/v1alpha1
+kind: ImageRepository
+metadata:
+  annotations:
+    image-controller.appstudio.redhat.com/update-component-image: 'true'
+  name: migration-planner-ui-dev
+  namespace: assisted-migration-tenant
+  labels:
+    appstudio.redhat.com/application: assisted-migration
+    appstudio.redhat.com/component: migration-planner-ui-dev
+spec:
+  image:
+    name: assisted-migration-tenant/migration-planner-ui-dev
+    visibility: public
+  notifications:
+    - config:
+        url: https://bombino.api.redhat.com/v1/sbom/quay/push
+      event: repo_push
+      method: webhook
+      title: SBOM-event-to-Bombino
