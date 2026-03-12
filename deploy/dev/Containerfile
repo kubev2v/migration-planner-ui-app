@@ -27,11 +27,14 @@ RUN npm run build:standalone
 # Runtime stage
 FROM --platform=linux/amd64 registry.access.redhat.com/ubi9/nginx-126 AS runtime
 # Copy nginx configuration first (changes less often than built app)
-COPY --from=builder ${APP_ROOT}/deploy/dev/nginx.conf /etc/nginx/nginx.conf
+COPY --from=builder ${APP_ROOT}/deploy/dev/nginx.conf.template /etc/nginx/nginx.conf.template
 # Copy built application from builder stage
 COPY --from=builder ${APP_ROOT}/dev/dist /usr/share/nginx/html
 # Expose port 8081 (nginx default for non-root)
 EXPOSE 8081
 
-# Start nginx
-CMD ["nginx", "-g", "daemon off;"]
+# Copy entrypoint that runs envsubst then nginx
+COPY --from=builder ${APP_ROOT}/deploy/dev/docker-entrypoint.sh /docker-entrypoint.sh
+RUN chmod +x /docker-entrypoint.sh
+# Substitute MIGRATION_PLANNER_API_UPSTREAM and start nginx
+CMD ["/docker-entrypoint.sh"]

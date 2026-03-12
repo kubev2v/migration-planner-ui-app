@@ -14,6 +14,12 @@ parameters:
   - name: ROUTE_HOST
     description: Host name for the route (optional, if not specified OpenShift will generate one)
     value: ""
+  - name: MIGRATION_PLANNER_API_UPSTREAM
+    description: Backend API host:port for nginx to proxy to (e.g. migration-planner-api:3443 in same namespace)
+    value: "migration-planner-api:3443"
+  - name: MIGRATION_PLANNER_API_BASE_URL
+    description: API base path the SPA was built with; must match build-time value (e.g. /api/migration-assessment)
+    value: "/api/migration-assessment"
 
 objects:
   - kind: Deployment
@@ -39,19 +45,24 @@ objects:
               image: ${MIGRATION_PLANNER_UI_IMAGE}:${IMAGE_TAG}
               imagePullPolicy: Always
               ports:
-                - containerPort: 8080
+                - containerPort: 8081
                   protocol: TCP
+              env:
+                - name: MIGRATION_PLANNER_API_UPSTREAM
+                  value: ${MIGRATION_PLANNER_API_UPSTREAM}
+                - name: MIGRATION_PLANNER_API_BASE_URL
+                  value: ${MIGRATION_PLANNER_API_BASE_URL}
               livenessProbe:
                 httpGet:
                   path: /
-                  port: 8080
+                  port: 8081
                 initialDelaySeconds: 30
                 periodSeconds: 10
                 timeoutSeconds: 5
               readinessProbe:
                 httpGet:
                   path: /
-                  port: 8080
+                  port: 8081
                 initialDelaySeconds: 5
                 periodSeconds: 5
                 timeoutSeconds: 3
@@ -73,8 +84,8 @@ objects:
     spec:
       ports:
         - name: http
-          port: 8080
-          targetPort: 8080
+          port: 8081
+          targetPort: 8081
           protocol: TCP
       selector:
         app: migration-planner-ui

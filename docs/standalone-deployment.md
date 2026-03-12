@@ -1,6 +1,10 @@
 # Standalone OpenShift Deployment Guide
 
-This guide provides instructions for building and deploying the Migration Planner UI in a standalone OpenShift environment.
+This guide provides instructions for building and deploying the Migration Planner UI in a standalone OpenShift environment. For the configurable nginx setup (API upstream and base path via environment variables), see [standalone-nginx-configurable-deployment](plans/standalone-nginx-configurable-deployment.md).
+
+**Build and runtime alignment:** The image is built with a specific API base path (`MIGRATION_PLANNER_API_BASE_URL`). When you deploy (OpenShift template or `podman run`), use the same base path at runtime so nginx proxies the path the UI calls. The OpenShift template defaults match the default build; override the template parameters only if you built the image with a different base path.
+
+**Local runs:** `make podman-run` uses default API upstream and base path. To override (e.g. different API host/port), run the container with `-e MIGRATION_PLANNER_API_UPSTREAM=...` and `-e MIGRATION_PLANNER_API_BASE_URL=...`; see the [plan](plans/standalone-nginx-configurable-deployment.md) for the exact variables and examples.
 
 ## Prerequisites
 
@@ -44,6 +48,8 @@ Deploy the application to your OpenShift cluster:
 # Deploy using the OpenShift template
 make deploy-on-openshift IMAGE=quay.io/your-registry/migration-planner-ui
 ```
+
+The template sets `MIGRATION_PLANNER_API_UPSTREAM` (default `migration-planner-api:3443`) and `MIGRATION_PLANNER_API_BASE_URL` (default `/api/migration-assessment`) so nginx proxies API traffic to the backend. Use the same base path as at build time. To override when processing the template, pass e.g. `-p MIGRATION_PLANNER_API_UPSTREAM=your-api-service:3443`.
 
 ### Step 4: Access the Application
 
