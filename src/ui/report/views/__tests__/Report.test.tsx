@@ -7,13 +7,7 @@ import type {
   VMResourceBreakdown,
   VMs,
 } from "@openshift-migration-advisor/planner-sdk";
-import {
-  cleanup,
-  render,
-  screen,
-  waitFor,
-  within,
-} from "@testing-library/react";
+import { cleanup, render, screen } from "@testing-library/react";
 import React from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -44,19 +38,6 @@ vi.mock("react-router-dom", () => ({
 }));
 
 // Mock child components
-vi.mock("../ExportReportButton", () => ({
-  ExportReportButton: ({
-    isDisabled,
-  }: {
-    isDisabled?: boolean;
-  }): React.ReactElement => (
-    <div
-      data-testid="download-button"
-      data-disabled={isDisabled ? "true" : "false"}
-    />
-  ),
-}));
-
 vi.mock("../../../environment/views/AgentStatusView", () => ({
   AgentStatusView: (): React.ReactElement => (
     <div data-testid="agent-status-view" />
@@ -67,24 +48,9 @@ vi.mock("../assessment-report/Dashboard", () => ({
   Dashboard: (): React.ReactElement => <div data-testid="dashboard" />,
 }));
 
-vi.mock("../cluster-sizer/ClusterSizingWizard", () => ({
-  ClusterSizingWizard: (): React.ReactElement => (
-    <div data-testid="cluster-sizing-wizard" />
-  ),
-}));
-
 vi.mock("../../../core/components/AppPage", () => ({
-  AppPage: ({
-    children,
-    headerActions,
-  }: {
-    children: React.ReactNode;
-    headerActions?: React.ReactNode;
-  }): React.ReactElement => (
-    <div data-testid="app-page">
-      {headerActions && <div data-testid="header-actions">{headerActions}</div>}
-      {children}
-    </div>
+  AppPage: ({ children }: { children: React.ReactNode }): React.ReactElement => (
+    <div data-testid="app-page">{children}</div>
   ),
 }));
 
@@ -176,16 +142,6 @@ function makeBaseVm(
     lastUpdatedText: "-",
     clusterCount: 0,
     scopedClusterView: undefined,
-    canExportReport: false,
-    canShowClusterRecommendations: false,
-    isExporting: false,
-    exportLoadingLabel: null,
-    exportPdf: vi.fn(),
-    exportHtml: vi.fn(),
-    exportError: null,
-    clearExportError: vi.fn(),
-    isSizingWizardOpen: false,
-    setIsSizingWizardOpen: vi.fn(),
     ...overrides,
   };
 }
@@ -218,166 +174,4 @@ describe("Report", () => {
     ).toBeInTheDocument();
   });
 
-  describe("Cluster recommendations button", () => {
-    it("auto-selects first cluster to show recommendations button", async () => {
-      const clusterData = {
-        "Cluster A": { infra: createInfra(2, 2), vms: createVMs(5) },
-        "Cluster B": { infra: createInfra(3, 3), vms: createVMs(7) },
-      };
-      const clusterView = buildClusterViewModel({
-        infra: clusterData["Cluster A"].infra,
-        vms: clusterData["Cluster A"].vms,
-        clusters: clusterData,
-        selectedClusterId: "Cluster A",
-      });
-
-      mockVm = makeBaseVm({
-        assessment: {
-          id: "assessment-1",
-          name: "Assessment 1",
-          sourceId: "source-1",
-          sourceType: "vcenter",
-        },
-        clusterView,
-        selectedClusterId: "Cluster A",
-        clusterCount: 2,
-        clusters: clusterData,
-        scopedClusterView: {
-          ...clusterView,
-          viewInfra: clusterData["Cluster A"].infra,
-          viewVms: clusterData["Cluster A"].vms,
-          cpuCores: clusterData["Cluster A"].vms.cpuCores,
-          ramGB: clusterData["Cluster A"].vms.ramGB,
-        },
-        canShowClusterRecommendations: true,
-        canExportReport: true,
-      });
-
-      render(<Report />);
-
-      await waitFor(() => {
-        expect(
-          screen.getByText("View Recommendation based on vCenter cluster"),
-        ).toBeInTheDocument();
-      });
-    });
-
-    it("shows disabled recommendations button when cluster has no VMs", async () => {
-      const clusterData = {
-        "Cluster A": { infra: createInfra(2, 2), vms: createVMs(0) },
-      };
-      const clusterView = buildClusterViewModel({
-        infra: clusterData["Cluster A"].infra,
-        vms: clusterData["Cluster A"].vms,
-        clusters: clusterData,
-        selectedClusterId: "Cluster A",
-      });
-
-      mockVm = makeBaseVm({
-        assessment: {
-          id: "assessment-1",
-          name: "Assessment 1",
-          sourceId: "source-1",
-        },
-        clusterView,
-        selectedClusterId: "Cluster A",
-        clusters: clusterData,
-        scopedClusterView: undefined,
-        canShowClusterRecommendations: false,
-        canExportReport: false,
-      });
-
-      render(<Report />);
-
-      await waitFor(() => {
-        expect(screen.getByTestId("app-page")).toBeInTheDocument();
-      });
-    });
-  });
-
-  describe("Export report button", () => {
-    it("enables export button when cluster has both hosts and VMs", async () => {
-      const clusterData = {
-        "Cluster A": { infra: createInfra(2, 2), vms: createVMs(5) },
-      };
-      const clusterView = buildClusterViewModel({
-        infra: clusterData["Cluster A"].infra,
-        vms: clusterData["Cluster A"].vms,
-        clusters: clusterData,
-        selectedClusterId: "Cluster A",
-      });
-
-      mockVm = makeBaseVm({
-        assessment: {
-          id: "assessment-1",
-          name: "Assessment 1",
-          sourceId: "source-1",
-        },
-        clusterView,
-        selectedClusterId: "Cluster A",
-        clusters: clusterData,
-        scopedClusterView: {
-          ...clusterView,
-          viewInfra: clusterData["Cluster A"].infra,
-          viewVms: clusterData["Cluster A"].vms,
-          cpuCores: clusterData["Cluster A"].vms.cpuCores,
-          ramGB: clusterData["Cluster A"].vms.ramGB,
-        },
-        canExportReport: true,
-      });
-
-      render(<Report />);
-
-      await waitFor(() => {
-        expect(screen.getByTestId("app-page")).toBeInTheDocument();
-      });
-
-      const headerActions = screen.getByTestId("header-actions");
-      const downloadButton =
-        within(headerActions).getByTestId("download-button");
-      expect(downloadButton).toHaveAttribute("data-disabled", "false");
-    });
-
-    it("disables export button when cluster has no hosts", async () => {
-      const clusterData = {
-        "Cluster A": { infra: createInfra(0, 0), vms: createVMs(5) },
-      };
-      const clusterView = buildClusterViewModel({
-        infra: clusterData["Cluster A"].infra,
-        vms: clusterData["Cluster A"].vms,
-        clusters: clusterData,
-        selectedClusterId: "Cluster A",
-      });
-
-      mockVm = makeBaseVm({
-        assessment: {
-          id: "assessment-1",
-          name: "Assessment 1",
-          sourceId: "source-1",
-        },
-        clusterView,
-        selectedClusterId: "Cluster A",
-        clusters: clusterData,
-        scopedClusterView: {
-          ...clusterView,
-          viewInfra: clusterData["Cluster A"].infra,
-          viewVms: clusterData["Cluster A"].vms,
-          cpuCores: clusterData["Cluster A"].vms.cpuCores,
-          ramGB: clusterData["Cluster A"].vms.ramGB,
-        },
-        canExportReport: false,
-      });
-
-      render(<Report />);
-
-      await waitFor(() => {
-        expect(screen.getByTestId("app-page")).toBeInTheDocument();
-      });
-
-      const headerActions = screen.getByTestId("header-actions");
-      const downloadButton =
-        within(headerActions).getByTestId("download-button");
-      expect(downloadButton).toHaveAttribute("data-disabled", "true");
-    });
-  });
 });

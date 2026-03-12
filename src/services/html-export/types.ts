@@ -89,18 +89,11 @@ export interface InventoryData {
 }
 
 /**
- * Snapshot-like structure for both runtime rendering and export processing.
+ * Snapshot-like structure for runtime rendering and report data.
  *
- * This unified type supports both:
- * - API client models (`Infra`, `VMs` from `@openshift-migration-advisor/planner-sdk`)
- *   for live data rendering
- * - Internal simplified types (`InfraData`, `VMsData`) for export pipelines
- *   (PDF/HTML generation, chart data transformation)
- *
- * The `ChartDataTransformer.normalizeInventory()` handles both formats by
- * extracting data from various nested structures, enabling safe interoperability.
- *
- * @see ChartDataTransformer.normalizeInventory for the normalization logic
+ * This type supports API client models (`Infra`, `VMs` from
+ * `@openshift-migration-advisor/planner-sdk`) and nested inventory shapes
+ * by allowing data in top-level or inventory/vcenter paths.
  */
 export interface SnapshotLike {
   createdAt?: string | Date;

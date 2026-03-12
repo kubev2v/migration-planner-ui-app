@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 import { routes } from "../../../routing/Routes";
@@ -14,9 +13,6 @@ export const useHomeScreenViewModel = () => {
   const activeTabKey = location.pathname.startsWith(routes.environments)
     ? 1
     : 0;
-
-  const [isStartingPageModalOpen, setIsStartingPageModalOpen] = useState(false);
-  const [rvtoolsOpenToken, setRvtoolsOpenToken] = useState(false);
 
   const breadcrumbs = [
     { key: 1, children: "Migration advisor" },
@@ -35,21 +31,9 @@ export const useHomeScreenViewModel = () => {
     navigate(index === 1 ? routes.environments : routes.assessments);
   };
 
-  const handleOpenStartingPageModal = () => setIsStartingPageModalOpen(true);
-  const handleCloseStartingPageModal = () => setIsStartingPageModalOpen(false);
-  const handleOpenRVToolsModal = () => {
-    setRvtoolsOpenToken(true);
-    navigate(routes.assessments); // switch to assessments tab
-  };
-
   return {
     activeTabKey,
     breadcrumbs,
-    isStartingPageModalOpen,
-    rvtoolsOpenToken,
     handleTabClick,
-    handleOpenStartingPageModal,
-    handleCloseStartingPageModal,
-    handleOpenRVToolsModal,
   };
 };

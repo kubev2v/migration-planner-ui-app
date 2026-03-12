@@ -16,8 +16,6 @@ import { ReportStore } from "../data/stores/ReportStore";
 import { SourcesStore } from "../data/stores/SourcesStore";
 import { VersionsStore } from "../data/stores/VersionsStore";
 import { createAuthMiddleware } from "../lib/middleware/Auth";
-import { HtmlExportService } from "../services/html-export/HtmlExportService";
-import { PdfExportService } from "../services/pdf-export/PdfExportService";
 import { resolveApiBaseUrl } from "./ApiConfig";
 
 /** Symbols used by the DI container */
@@ -64,11 +62,7 @@ export const createContainer = (auth: ChromeAPI["auth"]): Container => {
   c.register(Symbols.SourcesStore, new SourcesStore(sourceApi));
   c.register(Symbols.JobsStore, new JobsStore(jobApi));
 
-  // Report export
-  c.register(
-    Symbols.ReportStore,
-    new ReportStore(new PdfExportService(), new HtmlExportService()),
-  );
+  c.register(Symbols.ReportStore, new ReportStore());
 
   return c;
 };

@@ -1,18 +1,17 @@
 import {
-  Card,
-  CardBody,
-  CardTitle,
   Content,
   ContentVariants,
   Flex,
   FlexItem,
   Icon,
+  Stack,
+  StackItem,
+  Title,
 } from "@patternfly/react-core";
 import { InfoCircleIcon } from "@patternfly/react-icons";
 import React from "react";
 
 import MigrationChart from "../../../core/components/MigrationChart";
-import { dashboardCard } from "./styles";
 
 interface OSDistributionProps {
   osData: {
@@ -33,12 +32,14 @@ export const OSDistribution: React.FC<OSDistributionProps> = ({
     (o) => o.upgradeRecommendation && o.upgradeRecommendation.trim() !== "",
   );
   return (
-    <Card className={dashboardCard} id="os-distribution">
-      <CardTitle>
-        <i className="fas fa-database" /> Operating Systems
-      </CardTitle>
-      <CardBody>
-        {hasUpgradeRecommendation ? (
+    <Stack id="os-distribution" hasGutter>
+      <StackItem>
+        <Title headingLevel="h2" size="lg">
+          <i className="fas fa-database" /> Operating Systems
+        </Title>
+      </StackItem>
+      {hasUpgradeRecommendation ? (
+        <StackItem>
           <Flex
             alignItems={{ default: "alignItemsCenter" }}
             spaceItems={{ default: "spaceItemsSm" }}
@@ -58,10 +59,12 @@ export const OSDistribution: React.FC<OSDistributionProps> = ({
               </Content>
             </FlexItem>
           </Flex>
-        ) : null}
+        </StackItem>
+      ) : null}
+      <StackItem>
         <OSBarChart osData={osData} isExportMode={isExportMode} />
-      </CardBody>
-    </Card>
+      </StackItem>
+    </Stack>
   );
 };
 
@@ -87,10 +90,7 @@ function osSortGroup(osInfo: {
   return 3;
 }
 
-export const OSBarChart: React.FC<OSBarChartProps> = ({
-  osData,
-  isExportMode,
-}) => {
+export const OSBarChart: React.FC<OSBarChartProps> = ({ osData }) => {
   const dataEntries = Object.entries(osData).filter(([os]) => os.trim() !== "");
 
   const sorted = [...dataEntries].sort(([, a], [, b]) => {
@@ -115,12 +115,11 @@ export const OSBarChart: React.FC<OSBarChartProps> = ({
     "Not supported by MTV": "#f0ad4e", // Yellow
   };
 
-  const tableHeight = isExportMode ? "auto !important" : "350px";
   return (
     <MigrationChart
       data={chartData}
       legend={customLegend}
-      maxHeight={tableHeight}
+      maxHeight="none"
       barHeight={12}
     />
   );

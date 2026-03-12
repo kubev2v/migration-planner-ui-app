@@ -20,7 +20,6 @@ import type { AssessmentModel } from "../../../models/AssessmentModel";
 import { routes } from "../../../routing/Routes";
 import { ConfirmationModal } from "../../core/components/ConfirmationModal";
 import FilterPill from "../../core/components/FilterPill";
-import StartingPageModal from "../../home/views/StartingPageModal";
 import { useAssessmentPageViewModel } from "../view-models/useAssessmentPageViewModel";
 import AssessmentsTable from "./AssessmentsTable";
 import CreateAssessmentModal, {
@@ -72,24 +71,10 @@ const Assessment: React.FC<Props> = ({
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedAssessment, setSelectedAssessment] =
     useState<AssessmentModel | null>(null);
-  const [isStartingPageModalOpen, setIsStartingPageModalOpen] = useState(false);
-  const hasShownStartingPageModal = React.useRef(false);
 
   // Multi-select filters (checkbox)
   const [selectedSourceTypes, setSelectedSourceTypes] = useState<string[]>([]);
   const [selectedOwners, setSelectedOwners] = useState<string[]>([]);
-
-  // Show the starting page modal only once on mount when there are no assessments.
-  React.useEffect(() => {
-    if (!isLoading) {
-      if (assessments.length === 0 && !hasShownStartingPageModal.current) {
-        setIsStartingPageModalOpen(true);
-        hasShownStartingPageModal.current = true;
-      } else if (assessments.length > 0) {
-        hasShownStartingPageModal.current = true;
-      }
-    }
-  }, [assessments.length, isLoading]);
 
   const toggleSourceType = (value: "rvtools" | "discovery"): void => {
     setSelectedSourceTypes((prev) =>
@@ -163,20 +148,10 @@ const Assessment: React.FC<Props> = ({
 
   // Close filter dropdown whenever any modal in this page opens
   React.useEffect(() => {
-    if (
-      isModalOpen ||
-      isUpdateModalOpen ||
-      isDeleteModalOpen ||
-      isStartingPageModalOpen
-    ) {
+    if (isModalOpen || isUpdateModalOpen || isDeleteModalOpen) {
       setIsFilterDropdownOpen(false);
     }
-  }, [
-    isModalOpen,
-    isUpdateModalOpen,
-    isDeleteModalOpen,
-    isStartingPageModalOpen,
-  ]);
+  }, [isModalOpen, isUpdateModalOpen, isDeleteModalOpen]);
 
   const handleUpdateAssessment = (assessmentId: string): void => {
     const assessment = assessments.find((a) => a.id === assessmentId);
@@ -229,12 +204,6 @@ const Assessment: React.FC<Props> = ({
 
   return (
     <>
-      <StartingPageModal
-        isOpen={isStartingPageModalOpen}
-        onClose={() => setIsStartingPageModalOpen(false)}
-        onOpenRVToolsModal={() => handleOpenModal("rvtools")}
-      />
-
       <div
         style={{
           background: "white",

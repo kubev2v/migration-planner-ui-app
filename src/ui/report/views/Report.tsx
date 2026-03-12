@@ -1,6 +1,4 @@
 import {
-  Alert,
-  AlertActionCloseButton,
   Bullseye,
   Button,
   Content,
@@ -14,24 +12,19 @@ import {
   SplitItem,
   Stack,
   StackItem,
-  Tooltip,
 } from "@patternfly/react-core";
-import React, { useRef } from "react";
+import React from "react";
 import { Link } from "react-router-dom";
 
 import { routes } from "../../../routing/Routes";
 import { AppPage } from "../../core/components/AppPage";
-import { OffScreenRenderer } from "../../core/components/OffScreenRenderer";
 import { AgentStatusView } from "../../environment/views/AgentStatusView";
 import { useReportPageViewModel } from "../view-models/useReportPageViewModel";
 import type { ClusterOption } from "./assessment-report/ClusterView";
 import { Dashboard } from "./assessment-report/Dashboard";
-import { ClusterSizingWizard } from "./cluster-sizer/ClusterSizingWizard";
-import { ExportReportButton } from "./ExportReportButton";
 
 const ReportContent: React.FC = () => {
   const vm = useReportPageViewModel();
-  const offScreenRef = useRef<HTMLDivElement>(null);
 
   if (vm.isLoadingData && !vm.assessment) {
     return (
@@ -208,87 +201,6 @@ const ReportContent: React.FC = () => {
           </StackItem>
         </Stack>
       }
-      alerts={
-        vm.exportError ? (
-          <Alert
-            variant="danger"
-            isInline
-            title="An error occurred"
-            actionClose={
-              <AlertActionCloseButton onClose={() => vm.clearExportError()} />
-            }
-          >
-            <p>{vm.exportError?.message}</p>
-          </Alert>
-        ) : null
-      }
-      headerActions={
-        vm.scopedClusterView ? (
-          <Split hasGutter>
-            <SplitItem>
-              {vm.canExportReport ? (
-                <ExportReportButton
-                  isLoading={vm.isExporting}
-                  loadingLabel={vm.exportLoadingLabel}
-                  onExportPdf={() => {
-                    if (offScreenRef.current) {
-                      vm.exportPdf(offScreenRef.current);
-                    }
-                  }}
-                  onExportHtml={() => vm.exportHtml()}
-                  isAggregateView={vm.clusterView.isAggregateView}
-                />
-              ) : (
-                <Tooltip
-                  content={
-                    <p>
-                      Export is unavailable because this cluster has no VMs.
-                    </p>
-                  }
-                >
-                  <ExportReportButton
-                    isLoading={vm.isExporting}
-                    loadingLabel={vm.exportLoadingLabel}
-                    onExportPdf={() => {}}
-                    onExportHtml={() => {}}
-                    isDisabled
-                  />
-                </Tooltip>
-              )}
-            </SplitItem>
-
-            {vm.selectedClusterId !== "all" ? (
-              <SplitItem>
-                {vm.canShowClusterRecommendations ? (
-                  <Button
-                    variant="primary"
-                    onClick={() => vm.setIsSizingWizardOpen(true)}
-                  >
-                    View Recommendation based on vCenter cluster
-                  </Button>
-                ) : (
-                  <Tooltip
-                    content={
-                      <p>
-                        This cluster has no VMs. Cluster recommendations are not
-                        available for empty clusters.
-                      </p>
-                    }
-                  >
-                    <Button
-                      variant="primary"
-                      onClick={() => vm.setIsSizingWizardOpen(true)}
-                      isAriaDisabled
-                    >
-                      View Recommendation based on vCenter cluster
-                    </Button>
-                  </Tooltip>
-                )}
-              </SplitItem>
-            ) : null}
-          </Split>
-        ) : undefined
-      }
     >
       {vm.scopedClusterView ? (
         <Dashboard
@@ -311,32 +223,6 @@ const ReportContent: React.FC = () => {
           </Content>
         </Bullseye>
       )}
-
-      <ClusterSizingWizard
-        isOpen={vm.isSizingWizardOpen}
-        onClose={() => vm.setIsSizingWizardOpen(false)}
-        clusterName={vm.clusterView.selectionLabel}
-        clusterId={vm.selectedClusterId}
-        assessmentId={vm.assessmentId || ""}
-      />
-
-      {/* Off-screen render target for PDF export — React owns the rendering,
-          PdfExportService only captures the already-painted DOM element. */}
-      {vm.scopedClusterView ? (
-        <OffScreenRenderer ref={offScreenRef} enabled={vm.canExportReport}>
-          <Dashboard
-            infra={vm.scopedClusterView.viewInfra}
-            vms={vm.scopedClusterView.viewVms}
-            cpuCores={vm.scopedClusterView.cpuCores}
-            ramGB={vm.scopedClusterView.ramGB}
-            isExportMode={true}
-            exportAllViews={true}
-            clusters={vm.scopedClusterView.viewClusters}
-            isAggregateView={vm.scopedClusterView.isAggregateView}
-            clusterFound={vm.scopedClusterView.clusterFound}
-          />
-        </OffScreenRenderer>
-      ) : null}
     </AppPage>
   );
 };

@@ -66,22 +66,11 @@ const mockSourcesStore = {
   stopPolling: vi.fn(),
 };
 
-const idleExportState = { loadingState: "idle" as const, error: null };
-
-const mockReportStore = {
-  subscribe: vi.fn(() => () => {}),
-  getSnapshot: vi.fn(() => idleExportState),
-  exportPdf: vi.fn().mockResolvedValue(undefined),
-  exportHtml: vi.fn().mockResolvedValue(undefined),
-  clearError: vi.fn(),
-};
-
 vi.mock("@y0n1/react-ioc", () => ({
   useInjection: vi.fn((symbol: symbol) => {
     const key = symbol.description;
     if (key === "AssessmentsStore") return mockAssessmentsStore;
     if (key === "SourcesStore") return mockSourcesStore;
-    if (key === "ReportStore") return mockReportStore;
     throw new Error(`Unknown symbol: ${String(symbol)}`);
   }),
 }));
@@ -334,113 +323,6 @@ describe("useReportPageViewModel", () => {
       expect(result.current.scopedClusterView).toBeDefined();
       expect(result.current.scopedClusterView?.viewInfra).toBeDefined();
       expect(result.current.scopedClusterView?.viewVms).toBeDefined();
-    });
-  });
-
-  describe("resource checks", () => {
-    it("canShowClusterRecommendations is true when cluster has hosts and VMs", () => {
-      const assessment = createAssessment("assessment-1", {
-        "Cluster-A": { infra: createInfra(2, 2), vms: createVMs(5) },
-      });
-      mockAssessmentsStore.getSnapshot.mockReturnValue([assessment]);
-
-      const { result } = renderHook(() => useReportPageViewModel());
-      expect(result.current.canShowClusterRecommendations).toBe(true);
-    });
-
-    it("canShowClusterRecommendations is false on aggregate view", () => {
-      const assessment = createAssessment("assessment-1");
-      mockAssessmentsStore.getSnapshot.mockReturnValue([assessment]);
-
-      const { result } = renderHook(() => useReportPageViewModel());
-      // Default is "all" (aggregate)
-      expect(result.current.canShowClusterRecommendations).toBe(false);
-    });
-
-    it("canExportReport is true when cluster has hosts and VMs", () => {
-      const assessment = createAssessment("assessment-1", {
-        "Cluster-A": { infra: createInfra(2, 2), vms: createVMs(5) },
-      });
-      mockAssessmentsStore.getSnapshot.mockReturnValue([assessment]);
-
-      const { result } = renderHook(() => useReportPageViewModel());
-      expect(result.current.canExportReport).toBe(true);
-    });
-
-    it("canExportReport is false when cluster has no hosts", () => {
-      const assessment = createAssessment("assessment-1", {
-        "Cluster-A": { infra: createInfra(0, 0), vms: createVMs(5) },
-      });
-      mockAssessmentsStore.getSnapshot.mockReturnValue([assessment]);
-
-      const { result } = renderHook(() => useReportPageViewModel());
-      expect(result.current.canExportReport).toBe(false);
-    });
-  });
-
-  describe("export", () => {
-    it("starts with null exportError and not exporting", () => {
-      const { result } = renderHook(() => useReportPageViewModel());
-      expect(result.current.exportError).toBeNull();
-      expect(result.current.isExporting).toBe(false);
-      expect(result.current.exportLoadingLabel).toBeNull();
-    });
-
-    it("clearExportError delegates to store.clearError()", () => {
-      const { result } = renderHook(() => useReportPageViewModel());
-
-      act(() => {
-        result.current.clearExportError();
-      });
-
-      expect(mockReportStore.clearError).toHaveBeenCalledTimes(1);
-    });
-
-    it("exportPdf delegates to store.exportPdf()", () => {
-      const { result } = renderHook(() => useReportPageViewModel());
-      const mockContainer = document.createElement("div");
-
-      act(() => {
-        result.current.exportPdf(mockContainer);
-      });
-
-      expect(mockReportStore.exportPdf).toHaveBeenCalledTimes(1);
-      expect(mockReportStore.exportPdf).toHaveBeenCalledWith(
-        mockContainer,
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        expect.objectContaining({ documentTitle: expect.any(String) }),
-      );
-    });
-
-    it("exportHtml delegates to store.exportHtml()", () => {
-      const { result } = renderHook(() => useReportPageViewModel());
-
-      act(() => {
-        result.current.exportHtml();
-      });
-
-      expect(mockReportStore.exportHtml).toHaveBeenCalledTimes(1);
-    });
-  });
-
-  describe("sizing wizard", () => {
-    it("starts with isSizingWizardOpen = false", () => {
-      const { result } = renderHook(() => useReportPageViewModel());
-      expect(result.current.isSizingWizardOpen).toBe(false);
-    });
-
-    it("toggles sizing wizard open state", () => {
-      const { result } = renderHook(() => useReportPageViewModel());
-
-      act(() => {
-        result.current.setIsSizingWizardOpen(true);
-      });
-      expect(result.current.isSizingWizardOpen).toBe(true);
-
-      act(() => {
-        result.current.setIsSizingWizardOpen(false);
-      });
-      expect(result.current.isSizingWizardOpen).toBe(false);
     });
   });
 

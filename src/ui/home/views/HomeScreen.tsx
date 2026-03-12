@@ -1,16 +1,9 @@
-import {
-  Button,
-  Tab,
-  TabContent,
-  Tabs,
-  TabTitleText,
-} from "@patternfly/react-core";
+import { Tab, TabContent, Tabs, TabTitleText } from "@patternfly/react-core";
 import React from "react";
 import { Outlet } from "react-router-dom";
 
 import { AppPage } from "../../core/components/AppPage";
 import { useHomeScreenViewModel } from "../view-models/useHomeScreenViewModel";
-import StartingPageModal from "./StartingPageModal";
 
 export const HomeScreen: React.FC = () => {
   const vm = useHomeScreenViewModel();
@@ -19,15 +12,6 @@ export const HomeScreen: React.FC = () => {
     <AppPage
       breadcrumbs={vm.breadcrumbs}
       title="Welcome, let's start your migration journey from VMware to OpenShift."
-      caption={
-        <Button
-          variant="link"
-          isInline
-          onClick={vm.handleOpenStartingPageModal}
-        >
-          How does this work?
-        </Button>
-      }
     >
       <Tabs
         activeKey={vm.activeTabKey}
@@ -48,14 +32,8 @@ export const HomeScreen: React.FC = () => {
       </Tabs>
 
       <TabContent id="home-screen-content">
-        <Outlet context={{ rvtoolsOpenToken: vm.rvtoolsOpenToken }} />
+        <Outlet context={{}} />
       </TabContent>
-
-      <StartingPageModal
-        isOpen={vm.isStartingPageModalOpen}
-        onClose={vm.handleCloseStartingPageModal}
-        onOpenRVToolsModal={vm.handleOpenRVToolsModal}
-      />
     </AppPage>
   );
 };
