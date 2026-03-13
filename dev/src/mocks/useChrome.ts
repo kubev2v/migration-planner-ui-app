@@ -9,7 +9,7 @@ export const useChrome = (): Record<string, unknown> => {
     ) {
       (window as Record<string, any>).insights.chrome.init();
       (window as Record<string, any>).insights.chrome.identifyApp(
-        "assisted-migration-app",
+        "migration-assessment",
       ); // Your appname from package.json
     }
   }, []);

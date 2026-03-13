@@ -4,7 +4,7 @@ import { ExternalStoreBase } from "../../lib/mvvm/ExternalStore";
 import type { VersionInfo } from "../../models/VersionInfo";
 import type { IVersionsStore } from "./interfaces/IVersionsStore";
 
-const UI_NAME = "assisted-migration-app";
+const UI_NAME = "migration-assessment";
 const API_NAME = "migration-planner";
 
 interface AppInfo {
