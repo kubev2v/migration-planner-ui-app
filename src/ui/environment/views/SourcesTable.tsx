@@ -390,7 +390,8 @@ export const SourcesTable: React.FC<SourceTableProps> = ({
                           credentialUrl={agent ? agent.credentialUrl : ""}
                           uploadedManually={
                             Boolean(source.onPremises) &&
-                            source.inventory !== undefined
+                            source.inventory !== undefined &&
+                            source.displayStatus === "not-connected"
                           }
                           updatedAt={source?.updatedAt}
                         />
