@@ -88,6 +88,6 @@
     "serialize-javascript": ">=7.0.3"
   },
   "insights": {
-    "appname": "migration-advisor-app"
+    "appname": "migration-advisor-dev-app"
   }
 }
