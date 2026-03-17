@@ -31,7 +31,7 @@ const createCards = (
         <Icon size="xl">
           <CustomEnterpriseIcon color={globalActiveColor300.value} />
         </Icon>
-        <Content component="h2">
+        <Content component="h2" style={{ minHeight: "52px" }}>
           Assess your VMware environment{" "}
           <Tooltip content="As part of the discovery process, we're collecting aggregated data about your VMware environment. This includes information such as the number of clusters, hosts, and VMs; VM counts per operating system type; total CPU cores and memory; network types and VLANs; and a list of datastores.">
             <Icon size="sm">
@@ -43,7 +43,7 @@ const createCards = (
     </CardHeader>
     <CardBody>
       <Content style={{ textAlign: "center" }}>
-        <Content style={{ minHeight: "60px" }}>
+        <Content style={{ minHeight: "70px" }}>
           Run the discovery process or upload an inventory file to create a full
           migration assessment report.
         </Content>
@@ -51,7 +51,7 @@ const createCards = (
           size="sm"
           variant="link"
           onClick={() => navigate(routes.exampleReport)}
-          style={{ marginTop: "16px", display: "inline-block" }}
+          style={{ marginTop: "6px", display: "inline-block" }}
         >
           See an example report
         </Button>
@@ -60,25 +60,24 @@ const createCards = (
   </Card>,
 
   <Card isFullHeight isPlain key="card-2">
-    <CardHeader style={{ height: "210px" }}>
+    <CardHeader>
       <Content style={{ textAlign: "center" }}>
         <Icon size="xl">
           <ClusterIcon color={globalActiveColor300.value} />
         </Icon>
-        <Content component="h2">
+        <Content component="h2" style={{ minHeight: "52px" }}>
           Select a target cluster
-          <br />
         </Content>
       </Content>
     </CardHeader>
     <CardBody>
       <Content style={{ textAlign: "center" }}>
-        <Content style={{ minHeight: "60px" }}>
-          Select your target OpenShift Cluster to fit your migration data
+        <Content style={{ minHeight: "70px" }}>
+          Select your target OpenShift Cluster to fit your migration data.
         </Content>
         <span
           className="pf-v6-c-label pf-m-purple pf-m-compact"
-          style={{ marginTop: "6px", display: "inline-block" }}
+          style={{ marginTop: "10px", display: "inline-block" }}
         >
           <span className="pf-v6-c-label__content">Coming soon</span>
         </span>
@@ -87,26 +86,25 @@ const createCards = (
   </Card>,
 
   <Card isFullHeight isPlain key="card-3">
-    <CardHeader style={{ height: "210px" }}>
+    <CardHeader>
       <Content style={{ textAlign: "center" }}>
         <Icon size="xl">
           <MigrationIcon color={globalActiveColor300.value} />
         </Icon>
-        <Content component="h2">
+        <Content component="h2" style={{ minHeight: "52px" }}>
           Create a migration plan
-          <br />
         </Content>
       </Content>
     </CardHeader>
     <CardBody>
       <Content style={{ textAlign: "center" }}>
-        <Content style={{ minHeight: "60px" }}>
+        <Content style={{ minHeight: "70px" }}>
           Select your VMs, create a network and storage mapping and schedule
-          your migration timeline
+          your migration timeline.
         </Content>
         <span
           className="pf-v6-c-label pf-m-purple pf-m-compact"
-          style={{ marginTop: "6px", display: "inline-block" }}
+          style={{ marginTop: "10px", display: "inline-block" }}
         >
           <span className="pf-v6-c-label__content">Coming soon</span>
         </span>
