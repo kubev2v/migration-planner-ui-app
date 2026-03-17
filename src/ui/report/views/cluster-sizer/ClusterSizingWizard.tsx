@@ -9,13 +9,14 @@ import {
   Tabs,
   TabTitleText,
 } from "@patternfly/react-core";
-import React, { useCallback, useEffect, useState } from "react";
+import { CopyIcon } from "@patternfly/react-icons";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 
 import { useClusterSizingWizardViewModel } from "../../view-models/useClusterSizingWizardViewModel";
 import { ComplexityResult } from "./ComplexityResult";
 import { RecommendationTemplate } from "./RecommendationTemplate";
 import { SizingInputForm } from "./SizingInputForm";
-import { SizingResult } from "./SizingResult";
+import { generatePlainTextRecommendation, SizingResult } from "./SizingResult";
 import { TimeEstimationForm } from "./TimeEstimationForm";
 import { TimeEstimationResult } from "./TimeEstimationResult";
 
@@ -112,6 +113,26 @@ export const ClusterSizingWizard: React.FC<ClusterSizingWizardProps> = ({
     void vm.calculateComplexity();
   }, [vm]);
 
+  const plainTextRecommendation = useMemo(() => {
+    if (!vm.sizerOutput) return "";
+    return generatePlainTextRecommendation(
+      clusterName,
+      vm.formValues,
+      vm.sizerOutput,
+    );
+  }, [clusterName, vm.formValues, vm.sizerOutput]);
+
+  const handleCopyRecommendations = useCallback(() => {
+    if (
+      !navigator.clipboard ||
+      !navigator.clipboard.writeText ||
+      (typeof window !== "undefined" && !window.isSecureContext)
+    ) {
+      return;
+    }
+    void navigator.clipboard.writeText(plainTextRecommendation);
+  }, [plainTextRecommendation]);
+
   useEffect(() => {
     vm.ensureEstimationForMenu(selectedMenuItem);
   }, [selectedMenuItem, vm]);
@@ -143,6 +164,19 @@ export const ClusterSizingWizard: React.FC<ClusterSizingWizardProps> = ({
               vm.sizerOutput || vm.isCalculating || vm.calculateError,
             )}
             generateButtonText="Generate recommendation"
+            hasError={Boolean(vm.calculateError)}
+            headerAction={
+              vm.sizerOutput ? (
+                <Button
+                  variant="link"
+                  icon={<CopyIcon />}
+                  iconPosition="end"
+                  onClick={handleCopyRecommendations}
+                >
+                  Copy as plain text
+                </Button>
+              ) : undefined
+            }
           />
         );
       case "time-estimation":

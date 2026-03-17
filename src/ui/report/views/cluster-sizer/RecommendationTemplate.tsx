@@ -3,6 +3,8 @@ import {
   Alert,
   Button,
   ExpandableSection,
+  Flex,
+  FlexItem,
   Panel,
   PanelHeader,
   PanelMain,
@@ -12,7 +14,7 @@ import {
   Title,
 } from "@patternfly/react-core";
 import type { ReactNode } from "react";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 const preferencesWrapperStyle = css`
   padding: var(--pf-t--global--spacer--400);
@@ -63,6 +65,10 @@ interface RecommendationTemplateProps {
   isPreferencesDisabled?: boolean;
   /** Whether to hide the preferences section entirely (defaults to false) */
   hidePreferences?: boolean;
+  /** Optional action element rendered inline with the results title */
+  headerAction?: ReactNode;
+  /** When true, re-expands the preferences section so the user can adjust values */
+  hasError?: boolean;
 }
 
 export const RecommendationTemplate: React.FC<RecommendationTemplateProps> = ({
@@ -78,10 +84,18 @@ export const RecommendationTemplate: React.FC<RecommendationTemplateProps> = ({
   isPreferencesInitiallyExpanded = true,
   isPreferencesDisabled = false,
   hidePreferences = false,
+  headerAction,
+  hasError = false,
 }) => {
   const [isPreferencesExpanded, setIsPreferencesExpanded] = useState(
     isPreferencesInitiallyExpanded,
   );
+
+  useEffect(() => {
+    if (hasError) {
+      setIsPreferencesExpanded(true);
+    }
+  }, [hasError]);
 
   const handleGenerate = () => {
     const result = onGenerate();
@@ -146,9 +160,19 @@ export const RecommendationTemplate: React.FC<RecommendationTemplateProps> = ({
       {hasResults && (
         <StackItem>
           <Panel>
-            {resultsTitle && (
+            {(resultsTitle || headerAction) && (
               <PanelHeader>
-                <Title headingLevel="h2">{resultsTitle}</Title>
+                <Flex
+                  justifyContent={{ default: "justifyContentSpaceBetween" }}
+                  alignItems={{ default: "alignItemsCenter" }}
+                >
+                  {resultsTitle && (
+                    <FlexItem>
+                      <Title headingLevel="h2">{resultsTitle}</Title>
+                    </FlexItem>
+                  )}
+                  {headerAction && <FlexItem>{headerAction}</FlexItem>}
+                </Flex>
               </PanelHeader>
             )}
             <PanelMain>

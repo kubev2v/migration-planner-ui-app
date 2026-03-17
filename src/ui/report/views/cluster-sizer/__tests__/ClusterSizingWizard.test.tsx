@@ -22,12 +22,18 @@ const mockEnsureEstimationForMenu = vi.fn();
 
 const mockViewModel = {
   formValues: {
+    clusterMode: "full-ha" as const,
     workerNodePreset: "custom" as const,
     customCpu: 32,
     customMemoryGb: 128,
+    haReplicas: 3 as const,
     cpuOvercommitRatio: 6,
     memoryOvercommitRatio: 4,
     scheduleOnControlPlane: false,
+    smtEnabled: false,
+    smtThreads: 32,
+    controlPlaneCpu: 16,
+    controlPlaneMemoryGb: 32,
   },
   setFormValues: mockSetFormValues,
   calculate: mockCalculate,

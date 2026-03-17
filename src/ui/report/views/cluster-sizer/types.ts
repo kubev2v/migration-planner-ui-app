@@ -50,9 +50,16 @@ export type MemoryOvercommitRatio = 1 | 2 | 4;
 export type HAReplicaCount = 1 | 2 | 3;
 
 /**
+ * Cluster mode types
+ */
+export type ClusterMode = "full-ha" | "single-node" | "hosted-control-plane";
+
+/**
  * User input for cluster sizing configuration (form state)
  */
 export interface SizingFormValues {
+  /** Cluster mode selection */
+  clusterMode: ClusterMode;
   /** Selected worker node size preset */
   workerNodePreset: WorkerNodePreset;
   /** Custom CPU cores per worker (when preset is 'custom') */
@@ -67,6 +74,14 @@ export interface SizingFormValues {
   memoryOvercommitRatio: MemoryOvercommitRatio;
   /** Whether to schedule VMs on control plane nodes */
   scheduleOnControlPlane: boolean;
+  /** Whether SMT/Hyperthreading is enabled */
+  smtEnabled: boolean;
+  /** Number of SMT threads */
+  smtThreads: number;
+  /** Control plane CPU cores */
+  controlPlaneCpu: number;
+  /** Control plane memory in GB */
+  controlPlaneMemoryGb: number;
 }
 
 /**
