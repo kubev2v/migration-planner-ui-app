@@ -325,7 +325,14 @@ export const StorageOverview: React.FC<StorageOverviewProps> = ({
                   <DropdownItem key="totalSize" value="totalSize">
                     Total disk size by tier
                   </DropdownItem>
-                  <DropdownItem key="sharedDisks" value="sharedDisks">
+                  <DropdownItem
+                    key="sharedDisks"
+                    value="sharedDisks"
+                    isDisabled={
+                      totalWithSharedDisks !== undefined &&
+                      totalWithSharedDisks === 0
+                    }
+                  >
                     Shared disks VS. No shared disks
                   </DropdownItem>
                 </DropdownList>
