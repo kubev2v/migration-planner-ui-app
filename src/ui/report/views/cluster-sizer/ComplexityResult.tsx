@@ -448,7 +448,7 @@ export const ComplexityResult: React.FC<ComplexityResultProps> = ({
           </FlexItem>
           <FlexItem>
             <div className={legendContainerStyle}>
-              {[1, 2, 3, 4].map((score) => (
+              {[0, 1, 2, 3, 4].map((score) => (
                 <Badge
                   key={score}
                   style={{
