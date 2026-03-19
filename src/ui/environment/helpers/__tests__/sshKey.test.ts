@@ -162,4 +162,29 @@ describe("validateSshKey", () => {
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIC6iw5jIM9/iS1JvZiSMb86YxY0x3bh79oN2OEfIaz7D user@example.com\n\n\n";
     expect(validateSshKey(keyWithMultipleBreaks)).toBeNull();
   });
+
+  // Tests for standard OpenSSH ECDSA format (without ssh- prefix)
+  it("returns null for valid standard ECDSA nistp256 key without ssh- prefix", () => {
+    const validEcdsaKey =
+      "ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBJrJUO+TtmV36MRgFAoidYt09pPd3oH0/tbQ5dcGs/PesEQ8sSNmdJgGQwO10w/GXbD9PRNF56YZn5KS60ZZ/XQ= user@example.com";
+    expect(validateSshKey(validEcdsaKey)).toBeNull();
+  });
+
+  it("returns null for valid standard ECDSA nistp384 key without ssh- prefix", () => {
+    const validEcdsaKey =
+      "ecdsa-sha2-nistp384 AAAAE2VjZHNhLXNoYTItbmlzdHAzODQAAAAIbmlzdHAzODQAAABhBO6T8ELZFwJSsSNbtMiL2RobZnfv/FOmAmDa7/SeMhINqTSMb3eCohJZ/f7AkDYwXPqMEHfmaLmKM/8z3y3SWsuonJ+X2er552TADjyykkdV5eVgOV7lJn+DX4nlRjoxFQ== user@example.com";
+    expect(validateSshKey(validEcdsaKey)).toBeNull();
+  });
+
+  it("returns null for valid standard ECDSA nistp521 key without ssh- prefix", () => {
+    const validEcdsaKey =
+      "ecdsa-sha2-nistp521 AAAAE2VjZHNhLXNoYTItbmlzdHA1MjEAAAAIbmlzdHA1MjEAAACFBAGICAubly7pyfBF5xBA2Uc/6u/IOsiaFdHI5g0vUI43qAtVqtJ4GWXPTfqP6l1VQfdlEpfRfdr8krJ5F11UHN/3dwHtyXmUtqU/Ldmtv/YDOXmCUxo+HUFOyeBu6GyerofPgkF3UDe3lM/VcwB8oyafR9mMA1QsbMTpCtCBd/f7FnRhug==";
+    expect(validateSshKey(validEcdsaKey)).toBeNull();
+  });
+
+  it("returns null for valid sk-ecdsa security key with @openssh.com domain", () => {
+    const validSkEcdsaKey =
+      "sk-ecdsa-sha2-nistp256@openssh.com AAAAInNrLWVjZHNhLXNoYTItbmlzdHAyNTZAb3BlbnNzaC5jb20AAAAIbmlzdHAyNTYAAABBBJrJUO+TtmV36MRgFAoidYt09pPd3oH0/tbQ5dcGs/PesEQ8sSNmdJgGQwO10w/GXbD9PRNF56YZn5KS60ZZ/XQ= user@example.com";
+    expect(validateSshKey(validSkEcdsaKey)).toBeNull();
+  });
 });

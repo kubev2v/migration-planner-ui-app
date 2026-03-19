@@ -24,7 +24,7 @@ export const validateSshKey = (key: string): string | null => {
     RSA: /^ssh-rsa\s+[A-Za-z0-9+/]+[=]{0,2}(\s+.*)?$/,
     ED25519: /^ssh-ed25519\s+[A-Za-z0-9+/]+[=]{0,2}(\s+.*)?$/,
     ECDSA:
-      /^ssh-(ecdsa|sk-ecdsa)-sha2-nistp[0-9]+\s+[A-Za-z0-9+/]+[=]{0,2}(\s+.*)?$/,
+      /^(ssh-)?(ecdsa|sk-ecdsa)-sha2-nistp[0-9]+(@openssh\.com)?\s+[A-Za-z0-9+/]+[=]{0,2}(\s+.*)?$/,
   };
 
   if (!key) return null;
