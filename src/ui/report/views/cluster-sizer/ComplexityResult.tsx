@@ -16,7 +16,6 @@ import {
 import {
   Alert,
   Badge,
-  Button,
   Card,
   CardBody,
   Flex,
@@ -25,6 +24,8 @@ import {
   Stack,
   StackItem,
   Title,
+  ToggleGroup,
+  ToggleGroupItem,
 } from "@patternfly/react-core";
 import { Table, Tbody, Td, Th, Thead, Tr } from "@patternfly/react-table";
 import React, { useState } from "react";
@@ -63,9 +64,7 @@ const legendContainerStyle = css`
   flex-wrap: wrap;
 `;
 
-const buttonGroupStyle = css`
-  display: flex;
-  gap: var(--pf-t--global--spacer--200);
+const toggleGroupStyle = css`
   margin-bottom: var(--pf-t--global--spacer--500);
 `;
 
@@ -189,7 +188,8 @@ export const ComplexityResult: React.FC<ComplexityResultProps> = ({
         <StackItem>
           <div className={chartContainerStyle}>
             <Chart
-              ariaDesc="Bar chart showing VM count per operating system colored by complexity"
+              ariaDesc="Horizontal bar chart showing VM count per operating system colored by complexity"
+              horizontal
               containerComponent={
                 <ChartVoronoiContainer
                   labels={({ datum }) => {
@@ -202,7 +202,7 @@ export const ComplexityResult: React.FC<ComplexityResultProps> = ({
                   }}
                   labelComponent={
                     <ChartTooltip
-                      style={{ fontSize: 10, fill: "white" }}
+                      style={{ fontSize: 8, fill: "white" }}
                       flyoutStyle={{
                         stroke: "#151515",
                         strokeWidth: 1,
@@ -223,28 +223,22 @@ export const ComplexityResult: React.FC<ComplexityResultProps> = ({
                   ) * 1.1,
                 ],
               }}
-              domainPadding={{ x: [15, 15] }}
-              height={250}
-              padding={{ top: 20, bottom: 70, left: 50, right: 20 }}
+              domainPadding={{ x: [10, 10] }}
+              height={Math.max(200, sortedOSData.length * 25)}
+              padding={{ top: 10, bottom: 40, left: 220, right: 30 }}
               themeColor={ChartThemeColor.multiUnordered}
-              width={Math.max(600, sortedOSData.length * 50)}
+              width={600}
             >
               <ChartAxis
-                tickFormat={(t) => {
-                  const label = String(t);
-                  return label.length > 12
-                    ? `${label.substring(0, 10)}...`
-                    : label;
-                }}
                 style={{
-                  tickLabels: { angle: -45, textAnchor: "end", fontSize: 10 },
+                  tickLabels: { fontSize: 9 },
                 }}
               />
               <ChartAxis
                 dependentAxis
                 showGrid
                 style={{
-                  tickLabels: { fontSize: 10 },
+                  tickLabels: { fontSize: 9 },
                 }}
               />
               <ChartBar
@@ -253,7 +247,7 @@ export const ComplexityResult: React.FC<ComplexityResultProps> = ({
                   y: item.vmCount,
                   score: item.score,
                 }))}
-                barWidth={20}
+                barWidth={12}
                 style={{
                   data: {
                     fill: ({ datum }) => {
@@ -465,25 +459,27 @@ export const ComplexityResult: React.FC<ComplexityResultProps> = ({
       </StackItem>
 
       <StackItem>
-        <div className={buttonGroupStyle}>
-          <Button
-            variant={activeTabKey === 0 ? "primary" : "secondary"}
-            onClick={() => setActiveTabKey(0)}
-          >
-            By OS
-          </Button>
-          <Button
-            variant={activeTabKey === 1 ? "primary" : "secondary"}
-            onClick={() => setActiveTabKey(1)}
-          >
-            By Disk
-          </Button>
-          <Button
-            variant={activeTabKey === 2 ? "primary" : "secondary"}
-            onClick={() => setActiveTabKey(2)}
-          >
-            By Disk & OS
-          </Button>
+        <div className={toggleGroupStyle}>
+          <ToggleGroup aria-label="Complexity view selector">
+            <ToggleGroupItem
+              text="By OS"
+              buttonId="toggle-by-os"
+              isSelected={activeTabKey === 0}
+              onChange={() => setActiveTabKey(0)}
+            />
+            <ToggleGroupItem
+              text="By Disk"
+              buttonId="toggle-by-disk"
+              isSelected={activeTabKey === 1}
+              onChange={() => setActiveTabKey(1)}
+            />
+            <ToggleGroupItem
+              text="By Disk & OS"
+              buttonId="toggle-by-disk-os"
+              isSelected={activeTabKey === 2}
+              onChange={() => setActiveTabKey(2)}
+            />
+          </ToggleGroup>
         </div>
       </StackItem>
 
