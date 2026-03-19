@@ -1,8 +1,10 @@
 approvers:
-- jkilzi
-- ammont82
-- nirarg
+  - jkilzi
+  - ammont82
+  - nirarg
+  - rh-gvincent
 reviewers:
-- jkilzi
-- ammont82
-- nirarg
+  - jkilzi
+  - ammont82
+  - nirarg
+  - rh-gvincent
