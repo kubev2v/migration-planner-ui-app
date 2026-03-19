@@ -25,8 +25,8 @@ import {
 import React, { useCallback, useEffect, useState } from "react";
 
 import { VCenterSetupInstructions } from "../../core/components/VCenterSetupInstructions";
-import { useEnvironmentPage } from "../view-models/EnvironmentPageContext";
 import { normalizeSshKey, validateSshKey } from "../helpers/sshKey";
+import { useEnvironmentPage } from "../view-models/EnvironmentPageContext";
 
 export interface DiscoverySourceSetupModalProps {
   isOpen?: boolean;
