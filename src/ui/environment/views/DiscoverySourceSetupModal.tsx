@@ -7,6 +7,7 @@ import {
   Content,
   ContentVariants,
   Form,
+  FormAlert,
   FormGroup,
   FormHelperText,
   HelperText,
@@ -25,6 +26,7 @@ import React, { useCallback, useEffect, useState } from "react";
 
 import { VCenterSetupInstructions } from "../../core/components/VCenterSetupInstructions";
 import { useEnvironmentPage } from "../view-models/EnvironmentPageContext";
+import { normalizeSshKey, validateSshKey } from "../helpers/sshKey";
 
 export interface DiscoverySourceSetupModalProps {
   isOpen?: boolean;
@@ -102,24 +104,6 @@ export const DiscoverySourceSetupModal: React.FC<
     defaultGateway: "",
     ipAddress: "",
   });
-
-  const validateSshKey = useCallback((key: string): string | null => {
-    const SSH_KEY_PATTERNS = {
-      RSA: /^ssh-rsa\s+[A-Za-z0-9+/]+[=]{0,2}(\s+.*)?$/,
-      ED25519: /^ssh-ed25519\s+[A-Za-z0-9+/]+[=]{0,2}(\s+.*)?$/,
-      ECDSA:
-        /^ssh-(ecdsa|sk-ecdsa)-sha2-nistp[0-9]+\s+[A-Za-z0-9+/]+[=]{0,2}(\s+.*)?$/,
-    };
-
-    if (!key) return null;
-
-    const isValidKey = Object.values(SSH_KEY_PATTERNS).some((pattern) =>
-      pattern.test(key.trim()),
-    );
-    return isValidKey
-      ? null
-      : "Invalid SSH key format. Please provide a valid SSH public key.";
-  }, []);
 
   const validateIpAddress = useCallback((ip: string): string | null => {
     if (!ip.trim()) return null;
@@ -291,7 +275,7 @@ export const DiscoverySourceSetupModal: React.FC<
           void vm
             .updateSource({
               sourceId: sourceIdToUpdate,
-              sshPublicKey: sshKey,
+              sshPublicKey: normalizeSshKey(sshKey),
               httpProxy,
               httpsProxy,
               noProxy,
@@ -345,7 +329,7 @@ export const DiscoverySourceSetupModal: React.FC<
           // createDownloadSource is useAsyncFn-backed; fire-and-forget.
           void vm.createDownloadSource({
             name: environmentName,
-            sshPublicKey: sshKey,
+            sshPublicKey: normalizeSshKey(sshKey),
             httpProxy,
             httpsProxy,
             noProxy,
@@ -381,7 +365,6 @@ export const DiscoverySourceSetupModal: React.FC<
       httpProxy,
       httpsProxy,
       noProxy,
-      validateSshKey,
       vm,
       sourceName,
       onStartDownload,
@@ -851,22 +834,32 @@ export const DiscoverySourceSetupModal: React.FC<
               </StackItem>
             </Stack>
           )}
+          {proxyGroupError && (
+            <FormAlert>
+              <Alert
+                isInline
+                variant="danger"
+                title="Proxy configuration error"
+              >
+                {proxyGroupError}
+              </Alert>
+            </FormAlert>
+          )}
+          {vm.errorDownloadingSource && (
+            <FormAlert>
+              <Alert isInline variant="danger" title="Add Environment error">
+                {vm.errorDownloadingSource.message}
+              </Alert>
+            </FormAlert>
+          )}
+          {vm.errorUpdatingSource && (
+            <FormAlert>
+              <Alert isInline variant="danger" title="Update Environment error">
+                {vm.errorUpdatingSource.message}
+              </Alert>
+            </FormAlert>
+          )}
         </Form>
-        {proxyGroupError && (
-          <Alert isInline variant="danger" title="Proxy configuration error">
-            {proxyGroupError}
-          </Alert>
-        )}
-        {vm.errorDownloadingSource && (
-          <Alert isInline variant="danger" title="Add Environment error">
-            {vm.errorDownloadingSource.message}
-          </Alert>
-        )}
-        {vm.errorUpdatingSource && (
-          <Alert isInline variant="danger" title="Update Environment error">
-            {vm.errorUpdatingSource.message}
-          </Alert>
-        )}
       </ModalBody>
       <ModalFooter>
         <Button
