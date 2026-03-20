@@ -28,25 +28,7 @@ interface ClusterSizingWizardProps {
   assessmentId: string;
 }
 
-type MenuItem =
-  | "architecture"
-  | "time-estimation"
-  | "complexity"
-  | "plan"
-  | null;
-
-const welcomeMessageStyle = css`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-  text-align: center;
-  font-size: var(--pf-t--global--font--size--2xl);
-  color: var(--pf-t--global--text--color--regular);
-  padding: var(--pf-t--global--spacer--600);
-  font-weight: var(--pf-t--global--font--weight--body--default);
-  line-height: var(--pf-t--global--font--line-height--body);
-`;
+type MenuItem = "architecture" | "time-estimation" | "complexity" | "plan";
 
 const modalBodyStyle = css`
   display: flex;
@@ -109,11 +91,12 @@ export const ClusterSizingWizard: React.FC<ClusterSizingWizardProps> = ({
   assessmentId,
 }) => {
   const vm = useClusterSizingWizardViewModel(assessmentId, clusterId);
-  const [selectedMenuItem, setSelectedMenuItem] = useState<MenuItem>(null);
+  const [selectedMenuItem, setSelectedMenuItem] =
+    useState<MenuItem>("architecture");
 
   const handleClose = useCallback(() => {
     vm.reset();
-    setSelectedMenuItem(null);
+    setSelectedMenuItem("architecture");
     onClose();
   }, [onClose, vm]);
 
@@ -135,13 +118,6 @@ export const ClusterSizingWizard: React.FC<ClusterSizingWizardProps> = ({
 
   const renderContent = () => {
     switch (selectedMenuItem) {
-      case null:
-        return (
-          <div className={welcomeMessageStyle}>
-            The following recommendations are designed to facilitate the
-            migration of vCenter {clusterName}
-          </div>
-        );
       case "architecture":
         return (
           <RecommendationTemplate
@@ -236,6 +212,7 @@ export const ClusterSizingWizard: React.FC<ClusterSizingWizardProps> = ({
     <Modal
       isOpen={isOpen}
       aria-label="Target cluster recommendations modal"
+      onClose={handleClose}
       onEscapePress={handleClose}
       variant="large"
     >
@@ -243,7 +220,7 @@ export const ClusterSizingWizard: React.FC<ClusterSizingWizardProps> = ({
       <ModalBody className={modalBodyStyle}>
         <div className={tabsContainerStyle}>
           <Tabs
-            activeKey={selectedMenuItem ?? ""}
+            activeKey={selectedMenuItem}
             onSelect={(_event, tabIndex) =>
               setSelectedMenuItem(tabIndex as MenuItem)
             }
