@@ -74,15 +74,25 @@ vi.mock("../cluster-sizer/ClusterSizingWizard", () => ({
   ),
 }));
 
+vi.mock("../../../assessment/views/CreateAssessmentModal", () => ({
+  __esModule: true,
+  default: (): React.ReactElement => (
+    <div data-testid="create-assessment-modal" />
+  ),
+}));
+
 vi.mock("../../../core/components/AppPage", () => ({
   AppPage: ({
     children,
     headerActions,
+    alerts,
   }: {
     children: React.ReactNode;
     headerActions?: React.ReactNode;
+    alerts?: React.ReactNode;
   }): React.ReactElement => (
     <div data-testid="app-page">
+      {alerts && <div data-testid="alerts">{alerts}</div>}
       {headerActions && <div data-testid="header-actions">{headerActions}</div>}
       {children}
     </div>
@@ -181,6 +191,18 @@ function makeBaseVm(
     canShowClusterRecommendations: false,
     missingMetrics: [],
     hasMissingMetrics: false,
+    isRvtoolsModalOpen: false,
+    openRvtoolsModal: vi.fn(),
+    closeRvtoolsModal: vi.fn(),
+    createRVToolsJob: vi.fn(),
+    cancelRVToolsJob: vi.fn(),
+    isCreatingJob: false,
+    jobCreateError: undefined,
+    isJobProcessing: false,
+    jobProgressValue: 0,
+    jobProgressLabel: "",
+    jobError: null,
+    isNavigatingToReport: false,
     isExporting: false,
     exportLoadingLabel: null,
     exportPdf: vi.fn(),
@@ -295,6 +317,103 @@ describe("Report", () => {
       await waitFor(() => {
         expect(screen.getByTestId("app-page")).toBeInTheDocument();
       });
+    });
+  });
+
+  describe("Missing metrics warning", () => {
+    it("renders warning alert with metric names and create button when hasMissingMetrics is true", async () => {
+      const clusterData = {
+        "Cluster A": { infra: createInfra(2, 2), vms: createVMs(5) },
+      };
+      const clusterView = buildClusterViewModel({
+        infra: clusterData["Cluster A"].infra,
+        vms: clusterData["Cluster A"].vms,
+        clusters: clusterData,
+        selectedClusterId: "Cluster A",
+      });
+
+      mockVm = makeBaseVm({
+        assessment: {
+          id: "assessment-1",
+          name: "Assessment 1",
+          sourceId: "source-1",
+          sourceType: "vcenter",
+        },
+        clusterView,
+        selectedClusterId: "Cluster A",
+        clusters: clusterData,
+        scopedClusterView: {
+          ...clusterView,
+          viewInfra: clusterData["Cluster A"].infra,
+          viewVms: clusterData["Cluster A"].vms,
+          cpuCores: clusterData["Cluster A"].vms.cpuCores,
+          ramGB: clusterData["Cluster A"].vms.ramGB,
+        },
+        hasMissingMetrics: true,
+        missingMetrics: ["CPU", "Memory", "Hosts"],
+      });
+
+      render(<Report />);
+
+      await waitFor(() => {
+        expect(
+          screen.getByText(
+            "Limited recommendation: required metrics are missing.",
+          ),
+        ).toBeInTheDocument();
+      });
+
+      expect(screen.getByText("CPU")).toBeInTheDocument();
+      expect(screen.getByText("Memory")).toBeInTheDocument();
+      expect(screen.getByText("Hosts")).toBeInTheDocument();
+      expect(
+        screen.getByRole("button", { name: "Create a new assessment" }),
+      ).toBeInTheDocument();
+    });
+
+    it("does not render warning alert when hasMissingMetrics is false", async () => {
+      const clusterData = {
+        "Cluster A": { infra: createInfra(2, 2), vms: createVMs(5) },
+      };
+      const clusterView = buildClusterViewModel({
+        infra: clusterData["Cluster A"].infra,
+        vms: clusterData["Cluster A"].vms,
+        clusters: clusterData,
+        selectedClusterId: "Cluster A",
+      });
+
+      mockVm = makeBaseVm({
+        assessment: {
+          id: "assessment-1",
+          name: "Assessment 1",
+          sourceId: "source-1",
+          sourceType: "vcenter",
+        },
+        clusterView,
+        selectedClusterId: "Cluster A",
+        clusters: clusterData,
+        scopedClusterView: {
+          ...clusterView,
+          viewInfra: clusterData["Cluster A"].infra,
+          viewVms: clusterData["Cluster A"].vms,
+          cpuCores: clusterData["Cluster A"].vms.cpuCores,
+          ramGB: clusterData["Cluster A"].vms.ramGB,
+        },
+        hasMissingMetrics: false,
+        missingMetrics: [],
+      });
+
+      render(<Report />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId("app-page")).toBeInTheDocument();
+      });
+
+      expect(
+        screen.queryByText(
+          "Limited recommendation: required metrics are missing.",
+        ),
+      ).not.toBeInTheDocument();
     });
   });
 

@@ -1,20 +1,35 @@
 import type {
   Infra,
   InventoryData,
+  Job,
   VMs,
 } from "@openshift-migration-advisor/planner-sdk";
+import { JobStatus } from "@openshift-migration-advisor/planner-sdk";
 import { useInjection } from "@y0n1/react-ioc";
-import { useCallback, useMemo, useState, useSyncExternalStore } from "react";
-import { useParams } from "react-router-dom";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { useAsyncFn, useMount } from "react-use";
 
 import { Symbols } from "../../../config/Dependencies";
 import type { IAssessmentsStore } from "../../../data/stores/interfaces/IAssessmentsStore";
+import type { IJobsStore } from "../../../data/stores/interfaces/IJobsStore";
 import type { IReportStore } from "../../../data/stores/interfaces/IReportStore";
 import type { ExportError } from "../../../data/stores/interfaces/IReportStore";
 import type { ISourcesStore } from "../../../data/stores/interfaces/ISourcesStore";
+import {
+  JOB_POLLING_INTERVAL,
+  TERMINAL_JOB_STATUSES,
+} from "../../../data/stores/JobsStore";
 import type { AssessmentModel } from "../../../models/AssessmentModel";
 import type { SourceModel } from "../../../models/SourceModel";
+import { routes } from "../../../routing/Routes";
 import type { SnapshotLike } from "../../../services/html-export/types";
 import {
   buildClusterViewModel,
@@ -71,6 +86,20 @@ export interface ReportPageViewModel {
   // Sizing wizard
   isSizingWizardOpen: boolean;
   setIsSizingWizardOpen: (open: boolean) => void;
+
+  // RVTools modal (create-new-assessment from report page)
+  isRvtoolsModalOpen: boolean;
+  openRvtoolsModal: () => void;
+  closeRvtoolsModal: () => void;
+  createRVToolsJob: (name: string, file: File) => Promise<void>;
+  cancelRVToolsJob: () => Promise<void>;
+  isCreatingJob: boolean;
+  jobCreateError?: Error;
+  isJobProcessing: boolean;
+  jobProgressValue: number;
+  jobProgressLabel: string;
+  jobError: Error | null;
+  isNavigatingToReport: boolean;
 }
 
 // ---------------------------------------------------------------------------
@@ -91,12 +120,58 @@ type ClusterScopedView = ClusterViewModel &
   >;
 
 // ---------------------------------------------------------------------------
+// Private helpers — job progress mappers
+// ---------------------------------------------------------------------------
+
+const getProgressValue = (status: JobStatus): number => {
+  switch (status) {
+    case JobStatus.Pending:
+      return 20;
+    case JobStatus.Validating:
+      return 50;
+    case JobStatus.Parsing:
+      return 80;
+    case JobStatus.Completed:
+      return 100;
+    default:
+      return 0;
+  }
+};
+
+const getProgressLabel = (status: JobStatus): string => {
+  switch (status) {
+    case JobStatus.Pending:
+      return "Uploading file..";
+    case JobStatus.Parsing:
+      return "Parsing data..";
+    case JobStatus.Validating:
+      return "Validating vms..";
+    case JobStatus.Completed:
+      return "Complete!";
+    case JobStatus.Failed:
+      return "Failed";
+    case JobStatus.Cancelled:
+      return "Cancelled";
+    default:
+      return "";
+  }
+};
+
+const extractJobErrorMessage = (message: string): string => {
+  const lastColonIndex = message.lastIndexOf(":");
+  return lastColonIndex !== -1
+    ? message.slice(lastColonIndex + 1).trim()
+    : message;
+};
+
+// ---------------------------------------------------------------------------
 // Hook implementation
 // ---------------------------------------------------------------------------
 
 export const useReportPageViewModel = (): ReportPageViewModel => {
   // ---- Route params --------------------------------------------------------
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
 
   // ---- Stores --------------------------------------------------------------
   const assessmentsStore = useInjection<IAssessmentsStore>(
@@ -104,6 +179,7 @@ export const useReportPageViewModel = (): ReportPageViewModel => {
   );
   const sourcesStore = useInjection<ISourcesStore>(Symbols.SourcesStore);
   const reportStore = useInjection<IReportStore>(Symbols.ReportStore);
+  const jobsStore = useInjection<IJobsStore>(Symbols.JobsStore);
 
   // ---- Reactive store data -------------------------------------------------
   const assessments = useSyncExternalStore(
@@ -119,6 +195,11 @@ export const useReportPageViewModel = (): ReportPageViewModel => {
   const exportState = useSyncExternalStore(
     reportStore.subscribe.bind(reportStore),
     reportStore.getSnapshot.bind(reportStore),
+  );
+
+  const jobState = useSyncExternalStore(
+    jobsStore.subscribe.bind(jobsStore),
+    jobsStore.getSnapshot.bind(jobsStore),
   );
 
   // ---- Initial data fetch (no polling — detail page) -----------------------
@@ -323,7 +404,10 @@ export const useReportPageViewModel = (): ReportPageViewModel => {
       missing.push("Hosts");
     if (!activeInfra?.networks || activeInfra.networks.length === 0)
       missing.push("Networks");
-    if (isEmpty(activeVms.distributionByNicCount) && !activeVms.nicCount)
+    if (
+      isEmpty(activeVms.distributionByNicCount) &&
+      (!activeVms.nicCount || !activeVms.nicCount.total)
+    )
       missing.push("NIC count");
 
     return missing;
@@ -369,6 +453,97 @@ export const useReportPageViewModel = (): ReportPageViewModel => {
     reportStore.clearError();
   }, [reportStore]);
 
+  // ---- RVTools modal (create-new-assessment from report page) ---------------
+  const [isRvtoolsModalOpen, setIsRvtoolsModalOpen] = useState(false);
+
+  const openRvtoolsModal = useCallback(
+    (): void => setIsRvtoolsModalOpen(true),
+    [],
+  );
+  const closeRvtoolsModal = useCallback((): void => {
+    void jobsStore.cancelRVToolsJob();
+    setIsRvtoolsModalOpen(false);
+  }, [jobsStore]);
+
+  const createRVToolsJob = useCallback(
+    async (name: string, file: File): Promise<void> => {
+      const job = await jobsStore.createRVToolsJob(name, file);
+      if (job) {
+        jobsStore.startPolling(JOB_POLLING_INTERVAL);
+      }
+    },
+    [jobsStore],
+  );
+
+  const cancelRVToolsJob = useCallback(async (): Promise<void> => {
+    jobsStore.stopPolling();
+    const latestJob = await jobsStore.cancelRVToolsJob();
+    if (latestJob?.status === JobStatus.Completed && latestJob.assessmentId) {
+      try {
+        await assessmentsStore.remove(latestJob.assessmentId);
+      } catch (err) {
+        console.error("Failed to delete assessment after job cancel:", err);
+      }
+    }
+  }, [jobsStore, assessmentsStore]);
+
+  // Navigate to the new report when the RVTools job completes
+  const prevJobRef = useRef<Job | null>(null);
+  const isNavigatingRef = useRef(false);
+
+  const [rvtoolsNavigationState, navigateToReport] = useAsyncFn(
+    async (assessmentId: string) => {
+      try {
+        await assessmentsStore.list();
+        navigate(routes.assessmentReport(assessmentId));
+      } finally {
+        isNavigatingRef.current = false;
+      }
+    },
+    [assessmentsStore, navigate],
+  );
+
+  useEffect(() => {
+    const { currentJob } = jobState;
+    const prevJob = prevJobRef.current;
+    prevJobRef.current = currentJob;
+
+    if (
+      currentJob?.status === JobStatus.Completed &&
+      currentJob.assessmentId &&
+      prevJob?.status !== JobStatus.Completed &&
+      !isNavigatingRef.current
+    ) {
+      const assessmentId = currentJob.assessmentId;
+      isNavigatingRef.current = true;
+      jobsStore.stopPolling();
+      jobsStore.reset();
+      setIsRvtoolsModalOpen(false);
+
+      void navigateToReport(assessmentId);
+    }
+  }, [jobState, jobsStore, navigateToReport]);
+
+  const { currentJob } = jobState;
+
+  const isJobProcessing = Boolean(
+    currentJob && !TERMINAL_JOB_STATUSES.includes(currentJob.status),
+  );
+
+  const jobProgressValue = currentJob ? getProgressValue(currentJob.status) : 0;
+
+  const jobProgressLabel = currentJob
+    ? getProgressLabel(currentJob.status)
+    : "";
+
+  const jobError = useMemo(() => {
+    return currentJob?.status === JobStatus.Failed
+      ? new Error(
+          extractJobErrorMessage(currentJob.error || "Processing failed"),
+        )
+      : null;
+  }, [currentJob]);
+
   // ---- Return --------------------------------------------------------------
   return {
     assessmentId: id,
@@ -407,5 +582,18 @@ export const useReportPageViewModel = (): ReportPageViewModel => {
 
     isSizingWizardOpen,
     setIsSizingWizardOpen,
+
+    isRvtoolsModalOpen,
+    openRvtoolsModal,
+    closeRvtoolsModal,
+    createRVToolsJob,
+    cancelRVToolsJob,
+    isCreatingJob: jobState.isCreating,
+    jobCreateError: jobState.createError,
+    isJobProcessing,
+    jobProgressValue,
+    jobProgressLabel,
+    jobError,
+    isNavigatingToReport: rvtoolsNavigationState.loading,
   };
 };

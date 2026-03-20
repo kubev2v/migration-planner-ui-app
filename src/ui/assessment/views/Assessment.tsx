@@ -162,15 +162,6 @@ const Assessment: React.FC<Props> = ({
     // We intentionally only react to token changes
   }, [rvtoolsOpenToken]);
 
-  // Open RVTools modal when navigated with location state (e.g. from Report page)
-  React.useEffect(() => {
-    const state = location.state as { openRvtools?: boolean } | null;
-    if (state?.openRvtools) {
-      handleOpenModal("rvtools");
-      navigate(location.pathname, { replace: true, state: {} });
-    }
-  }, [location.state, navigate, location.pathname]);
-
   // Close filter dropdown whenever any modal in this page opens
   React.useEffect(() => {
     if (

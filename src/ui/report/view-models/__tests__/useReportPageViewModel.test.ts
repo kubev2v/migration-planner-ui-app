@@ -20,8 +20,10 @@ import { useReportPageViewModel } from "../useReportPageViewModel";
 
 // Mock react-router-dom
 let mockRouteId = "assessment-1";
+const mockNavigate = vi.fn();
 vi.mock("react-router-dom", () => ({
   useParams: () => ({ id: mockRouteId }),
+  useNavigate: () => mockNavigate,
   Link: ({ children }: { children: React.ReactNode }) => children,
 }));
 
@@ -76,12 +78,29 @@ const mockReportStore = {
   clearError: vi.fn(),
 };
 
+const idleJobState = {
+  currentJob: null,
+  isCreating: false,
+  createError: undefined,
+};
+
+const mockJobsStore = {
+  subscribe: vi.fn(() => () => {}),
+  getSnapshot: vi.fn(() => idleJobState),
+  createRVToolsJob: vi.fn().mockResolvedValue(undefined),
+  cancelRVToolsJob: vi.fn().mockResolvedValue(null),
+  reset: vi.fn(),
+  startPolling: vi.fn(),
+  stopPolling: vi.fn(),
+};
+
 vi.mock("@y0n1/react-ioc", () => ({
   useInjection: vi.fn((symbol: symbol) => {
     const key = symbol.description;
     if (key === "AssessmentsStore") return mockAssessmentsStore;
     if (key === "SourcesStore") return mockSourcesStore;
     if (key === "ReportStore") return mockReportStore;
+    if (key === "JobsStore") return mockJobsStore;
     throw new Error(`Unknown symbol: ${String(symbol)}`);
   }),
 }));

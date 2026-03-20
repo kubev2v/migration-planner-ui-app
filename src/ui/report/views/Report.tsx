@@ -1,3 +1,4 @@
+import { css } from "@emotion/css";
 import {
   Alert,
   AlertActionCloseButton,
@@ -21,11 +22,10 @@ import {
   StackItem,
   Tooltip,
 } from "@patternfly/react-core";
-import React, { useCallback, useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 import { routes } from "../../../routing/Routes";
-import { useAssessmentPageViewModel } from "../../assessment/view-models/useAssessmentPageViewModel";
 import CreateAssessmentModal from "../../assessment/views/CreateAssessmentModal";
 import { AppPage } from "../../core/components/AppPage";
 import { OffScreenRenderer } from "../../core/components/OffScreenRenderer";
@@ -36,27 +36,15 @@ import { Dashboard } from "./assessment-report/Dashboard";
 import { ClusterSizingWizard } from "./cluster-sizer/ClusterSizingWizard";
 import { ExportReportButton } from "./ExportReportButton";
 
+const alertSpacing = css`
+  margin-top: var(--pf-t--global--spacer--md);
+`;
+
 const ReportContent: React.FC = () => {
   const vm = useReportPageViewModel();
-  const assessmentVm = useAssessmentPageViewModel();
   const navigate = useNavigate();
   const offScreenRef = useRef<HTMLDivElement>(null);
   const [isCreateDropdownOpen, setIsCreateDropdownOpen] = useState(false);
-  const [isRvtoolsModalOpen, setIsRvtoolsModalOpen] = useState(false);
-
-  const handleRvtoolsSubmit = useCallback(
-    (name: string, file: File | null): void => {
-      if (file) {
-        void assessmentVm.createRVToolsJob(name, file);
-      }
-    },
-    [assessmentVm],
-  );
-
-  const handleRvtoolsClose = useCallback((): void => {
-    void assessmentVm.cancelRVToolsJob();
-    setIsRvtoolsModalOpen(false);
-  }, [assessmentVm]);
 
   if (vm.isLoadingData && !vm.assessment) {
     return (
@@ -234,7 +222,7 @@ const ReportContent: React.FC = () => {
         </Stack>
       }
       alerts={
-        <div style={{ marginTop: "var(--pf-t--global--spacer--md)" }}>
+        <div className={alertSpacing}>
           {vm.hasMissingMetrics && (
             <Alert
               variant="warning"
@@ -250,7 +238,7 @@ const ReportContent: React.FC = () => {
                   <ListItem key={metric}>{metric}</ListItem>
                 ))}
               </List>
-              <div style={{ marginTop: "var(--pf-t--global--spacer--md)" }}>
+              <div className={alertSpacing}>
                 <Dropdown
                   isOpen={isCreateDropdownOpen}
                   onOpenChange={setIsCreateDropdownOpen}
@@ -285,7 +273,7 @@ const ReportContent: React.FC = () => {
                       component="button"
                       onClick={() => {
                         setIsCreateDropdownOpen(false);
-                        setIsRvtoolsModalOpen(true);
+                        vm.openRvtoolsModal();
                       }}
                     >
                       From RVTools (XLS/X)
@@ -426,17 +414,21 @@ const ReportContent: React.FC = () => {
       ) : null}
 
       <CreateAssessmentModal
-        isOpen={isRvtoolsModalOpen}
-        onClose={handleRvtoolsClose}
-        onSubmit={handleRvtoolsSubmit}
+        isOpen={vm.isRvtoolsModalOpen}
+        onClose={vm.closeRvtoolsModal}
+        onSubmit={(_name, file, _mode) => {
+          if (file) {
+            void vm.createRVToolsJob(_name, file);
+          }
+        }}
         mode="rvtools"
-        isLoading={assessmentVm.isCreatingJob}
-        error={assessmentVm.jobCreateError}
-        isJobProcessing={assessmentVm.isJobProcessing}
-        jobProgressValue={assessmentVm.jobProgressValue}
-        jobProgressLabel={assessmentVm.jobProgressLabel}
-        jobError={assessmentVm.jobError}
-        isNavigatingToReport={assessmentVm.isNavigatingToReport}
+        isLoading={vm.isCreatingJob}
+        error={vm.jobCreateError}
+        isJobProcessing={vm.isJobProcessing}
+        jobProgressValue={vm.jobProgressValue}
+        jobProgressLabel={vm.jobProgressLabel}
+        jobError={vm.jobError}
+        isNavigatingToReport={vm.isNavigatingToReport}
       />
     </AppPage>
   );
