@@ -4,6 +4,11 @@ import {
   Bullseye,
   Button,
   Content,
+  Dropdown,
+  DropdownItem,
+  DropdownList,
+  List,
+  ListItem,
   MenuToggle,
   type MenuToggleElement,
   Select,
@@ -16,10 +21,12 @@ import {
   StackItem,
   Tooltip,
 } from "@patternfly/react-core";
-import React, { useRef } from "react";
-import { Link } from "react-router-dom";
+import React, { useCallback, useRef, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 
 import { routes } from "../../../routing/Routes";
+import { useAssessmentPageViewModel } from "../../assessment/view-models/useAssessmentPageViewModel";
+import CreateAssessmentModal from "../../assessment/views/CreateAssessmentModal";
 import { AppPage } from "../../core/components/AppPage";
 import { OffScreenRenderer } from "../../core/components/OffScreenRenderer";
 import { AgentStatusView } from "../../environment/views/AgentStatusView";
@@ -31,7 +38,25 @@ import { ExportReportButton } from "./ExportReportButton";
 
 const ReportContent: React.FC = () => {
   const vm = useReportPageViewModel();
+  const assessmentVm = useAssessmentPageViewModel();
+  const navigate = useNavigate();
   const offScreenRef = useRef<HTMLDivElement>(null);
+  const [isCreateDropdownOpen, setIsCreateDropdownOpen] = useState(false);
+  const [isRvtoolsModalOpen, setIsRvtoolsModalOpen] = useState(false);
+
+  const handleRvtoolsSubmit = useCallback(
+    (name: string, file: File | null): void => {
+      if (file) {
+        void assessmentVm.createRVToolsJob(name, file);
+      }
+    },
+    [assessmentVm],
+  );
+
+  const handleRvtoolsClose = useCallback((): void => {
+    void assessmentVm.cancelRVToolsJob();
+    setIsRvtoolsModalOpen(false);
+  }, [assessmentVm]);
 
   if (vm.isLoadingData && !vm.assessment) {
     return (
@@ -209,18 +234,80 @@ const ReportContent: React.FC = () => {
         </Stack>
       }
       alerts={
-        vm.exportError ? (
-          <Alert
-            variant="danger"
-            isInline
-            title="An error occurred"
-            actionClose={
-              <AlertActionCloseButton onClose={() => vm.clearExportError()} />
-            }
-          >
-            <p>{vm.exportError?.message}</p>
-          </Alert>
-        ) : null
+        <div style={{ marginTop: "var(--pf-t--global--spacer--md)" }}>
+          {vm.hasMissingMetrics && (
+            <Alert
+              variant="warning"
+              isInline
+              title="Limited recommendation: required metrics are missing."
+            >
+              <p>
+                Add the following to improve accuracy and create a new
+                assessment:
+              </p>
+              <List>
+                {vm.missingMetrics.map((metric) => (
+                  <ListItem key={metric}>{metric}</ListItem>
+                ))}
+              </List>
+              <div style={{ marginTop: "var(--pf-t--global--spacer--md)" }}>
+                <Dropdown
+                  isOpen={isCreateDropdownOpen}
+                  onOpenChange={setIsCreateDropdownOpen}
+                  toggle={(toggleRef: React.Ref<MenuToggleElement>) => (
+                    <MenuToggle
+                      ref={toggleRef}
+                      variant="primary"
+                      onClick={() =>
+                        setIsCreateDropdownOpen(!isCreateDropdownOpen)
+                      }
+                      isExpanded={isCreateDropdownOpen}
+                    >
+                      Create a new assessment
+                    </MenuToggle>
+                  )}
+                  shouldFocusToggleOnSelect
+                >
+                  <DropdownList>
+                    <DropdownItem
+                      key="agent"
+                      component="button"
+                      onClick={() =>
+                        navigate(routes.assessmentCreate, {
+                          state: { reset: true },
+                        })
+                      }
+                    >
+                      With discovery OVA
+                    </DropdownItem>
+                    <DropdownItem
+                      key="rvtools"
+                      component="button"
+                      onClick={() => {
+                        setIsCreateDropdownOpen(false);
+                        setIsRvtoolsModalOpen(true);
+                      }}
+                    >
+                      From RVTools (XLS/X)
+                    </DropdownItem>
+                  </DropdownList>
+                </Dropdown>
+              </div>
+            </Alert>
+          )}
+          {vm.exportError && (
+            <Alert
+              variant="danger"
+              isInline
+              title="An error occurred"
+              actionClose={
+                <AlertActionCloseButton onClose={() => vm.clearExportError()} />
+              }
+            >
+              <p>{vm.exportError?.message}</p>
+            </Alert>
+          )}
+        </div>
       }
       headerActions={
         vm.scopedClusterView ? (
@@ -337,6 +424,20 @@ const ReportContent: React.FC = () => {
           />
         </OffScreenRenderer>
       ) : null}
+
+      <CreateAssessmentModal
+        isOpen={isRvtoolsModalOpen}
+        onClose={handleRvtoolsClose}
+        onSubmit={handleRvtoolsSubmit}
+        mode="rvtools"
+        isLoading={assessmentVm.isCreatingJob}
+        error={assessmentVm.jobCreateError}
+        isJobProcessing={assessmentVm.isJobProcessing}
+        jobProgressValue={assessmentVm.jobProgressValue}
+        jobProgressLabel={assessmentVm.jobProgressLabel}
+        jobError={assessmentVm.jobError}
+        isNavigatingToReport={assessmentVm.isNavigatingToReport}
+      />
     </AppPage>
   );
 };

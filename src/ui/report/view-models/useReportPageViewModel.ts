@@ -56,6 +56,10 @@ export interface ReportPageViewModel {
   canExportReport: boolean;
   canShowClusterRecommendations: boolean;
 
+  // Missing metrics (old inventories lacking CPU/Memory data)
+  missingMetrics: string[];
+  hasMissingMetrics: boolean;
+
   // Export
   isExporting: boolean;
   exportLoadingLabel: string | null;
@@ -285,6 +289,46 @@ export const useReportPageViewModel = (): ReportPageViewModel => {
 
   const clusterCount = clusters ? Object.keys(clusters).length : 0;
 
+  // ---- Missing metrics detection -------------------------------------------
+  // Uses the scoped (cluster-level) data that the Dashboard actually renders,
+  // falling back to the aggregate snapshot data when no scoped view exists.
+  const missingMetrics = useMemo((): string[] => {
+    const activeVms = scopedClusterView?.viewVms ?? vms;
+    const activeInfra = scopedClusterView?.viewInfra ?? infra;
+    if (!activeVms || activeVms.total === 0) return [];
+
+    const missing: string[] = [];
+
+    const isEmpty = (
+      obj: Record<string, unknown> | undefined | null,
+    ): boolean => !obj || Object.keys(obj).length === 0;
+
+    const isCpuMissing =
+      !activeVms.cpuCores ||
+      activeVms.cpuCores.total === 0 ||
+      isEmpty(activeVms.distributionByCpuTier);
+    if (isCpuMissing) missing.push("CPU");
+
+    const isMemoryMissing =
+      !activeVms.ramGB ||
+      activeVms.ramGB.total === 0 ||
+      isEmpty(activeVms.distributionByMemoryTier);
+    if (isMemoryMissing) missing.push("Memory");
+
+    if (isEmpty(activeVms.osInfo) && isEmpty(activeVms.os))
+      missing.push("Operating systems");
+    if (isEmpty(activeVms.diskSizeTier)) missing.push("Disk size tiers");
+    if (isEmpty(activeVms.diskTypes)) missing.push("Disk types");
+    if (!activeInfra?.hosts || activeInfra.hosts.length === 0)
+      missing.push("Hosts");
+    if (!activeInfra?.networks || activeInfra.networks.length === 0)
+      missing.push("Networks");
+    if (isEmpty(activeVms.distributionByNicCount) && !activeVms.nicCount)
+      missing.push("NIC count");
+
+    return missing;
+  }, [scopedClusterView, vms, infra]);
+
   // ---- Export (reactive from ReportStore) ----------------------------------
   const isExporting =
     exportState.loadingState === "generating-pdf" ||
@@ -350,6 +394,9 @@ export const useReportPageViewModel = (): ReportPageViewModel => {
     scopedClusterView,
     canExportReport,
     canShowClusterRecommendations,
+
+    missingMetrics,
+    hasMissingMetrics: missingMetrics.length > 0,
 
     isExporting,
     exportLoadingLabel,

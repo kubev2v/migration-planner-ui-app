@@ -41,6 +41,7 @@ vi.mock("react-router-dom", () => ({
     to: string;
   }): React.ReactElement => <a href={to}>{children}</a>,
   useParams: vi.fn(() => ({ id: "assessment-1" })),
+  useNavigate: () => vi.fn(),
 }));
 
 // Mock child components
@@ -178,6 +179,8 @@ function makeBaseVm(
     scopedClusterView: undefined,
     canExportReport: false,
     canShowClusterRecommendations: false,
+    missingMetrics: [],
+    hasMissingMetrics: false,
     isExporting: false,
     exportLoadingLabel: null,
     exportPdf: vi.fn(),

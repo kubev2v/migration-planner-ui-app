@@ -14,7 +14,7 @@ import {
 } from "@patternfly/react-core";
 import { FilterIcon, TimesIcon } from "@patternfly/react-icons";
 import React, { useCallback, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 import type { AssessmentModel } from "../../../models/AssessmentModel";
 import { routes } from "../../../routing/Routes";
@@ -42,6 +42,7 @@ const Assessment: React.FC<Props> = ({
   rvtoolsOpenToken,
 }) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const {
     isCreatingJob,
     jobCreateError,
@@ -160,6 +161,15 @@ const Assessment: React.FC<Props> = ({
     }
     // We intentionally only react to token changes
   }, [rvtoolsOpenToken]);
+
+  // Open RVTools modal when navigated with location state (e.g. from Report page)
+  React.useEffect(() => {
+    const state = location.state as { openRvtools?: boolean } | null;
+    if (state?.openRvtools) {
+      handleOpenModal("rvtools");
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [location.state, navigate, location.pathname]);
 
   // Close filter dropdown whenever any modal in this page opens
   React.useEffect(() => {
