@@ -14,7 +14,7 @@ import {
   Title,
 } from "@patternfly/react-core";
 import type { ReactNode } from "react";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 
 const preferencesWrapperStyle = css`
   padding: var(--pf-t--global--spacer--400);
@@ -87,15 +87,10 @@ export const RecommendationTemplate: React.FC<RecommendationTemplateProps> = ({
   headerAction,
   hasError = false,
 }) => {
-  const [isPreferencesExpanded, setIsPreferencesExpanded] = useState(
+  const [manualExpanded, setManualExpanded] = useState(
     isPreferencesInitiallyExpanded,
   );
-
-  useEffect(() => {
-    if (hasError) {
-      setIsPreferencesExpanded(true);
-    }
-  }, [hasError]);
+  const isPreferencesExpanded = hasError || manualExpanded;
 
   const handleGenerate = () => {
     const result = onGenerate();
@@ -105,10 +100,10 @@ export const RecommendationTemplate: React.FC<RecommendationTemplateProps> = ({
           console.error("Generate recommendation failed:", err);
         })
         .finally(() => {
-          setIsPreferencesExpanded(false);
+          setManualExpanded(false);
         });
     } else {
-      setIsPreferencesExpanded(false);
+      setManualExpanded(false);
     }
   };
 
@@ -130,7 +125,7 @@ export const RecommendationTemplate: React.FC<RecommendationTemplateProps> = ({
               onToggle={
                 isPreferencesDisabled
                   ? undefined
-                  : (_event, expanded) => setIsPreferencesExpanded(expanded)
+                  : (_event, expanded) => setManualExpanded(expanded)
               }
               displaySize="lg"
               className={

@@ -77,7 +77,7 @@ export const generatePlainTextRecommendation = (
 Cluster: ${clusterName}
 Target Platform: Bare Metal
 Total Nodes: ${output.clusterSizing.totalNodes}
-Node Size: ${formValues.customCpu} CPU / ${formValues.customMemoryGb} GB
+Node Size: ${formValues.controlPlaneCpu} CPU / ${formValues.controlPlaneMemoryGb} GB
 VMs to Migrate: ${formatNumber(output.inventoryTotals.totalVMs)} VMs
 VM resources (request): ${formatNumber(output.inventoryTotals.totalCPU)} CPU / ${formatNumber(output.inventoryTotals.totalMemory)} GB
 
@@ -230,7 +230,9 @@ export const SizingResult: React.FC<SizingResultProps> = ({
           <DescriptionListGroup>
             <DescriptionListTerm>Node size</DescriptionListTerm>
             <DescriptionListDescription>
-              {formValues.customCpu} CPU, {formValues.customMemoryGb} GB memory
+              {isSNO
+                ? `${formValues.controlPlaneCpu} CPU, ${formValues.controlPlaneMemoryGb} GB memory`
+                : `${formValues.customCpu} CPU, ${formValues.customMemoryGb} GB memory`}
             </DescriptionListDescription>
           </DescriptionListGroup>
 
