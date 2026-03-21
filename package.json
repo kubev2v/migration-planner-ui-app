@@ -34,7 +34,7 @@
     "@redhat-cloud-services/frontend-components-utilities": "^7.0.22",
     "@y0n1/react-ioc": "npm:@jsr/y0n1__react-ioc@^0.2.1",
     "github-markdown-css": "^5.8.1",
-    "html2canvas-pro": "^1.6.0",
+    "html2canvas-pro": "^2.0.0",
     "humanize-plus": "^1.8.2",
     "jspdf": "^4.0.0",
     "lodash": "^4.17.23",
