@@ -7,6 +7,7 @@ import {
   type MenuToggleElement,
   Spinner,
   Tooltip,
+  Truncate,
 } from "@patternfly/react-core";
 import {
   ConnectedIcon,
@@ -60,6 +61,7 @@ const Columns = {
   VMs: "VMs",
   Networks: "Networks",
   Datastores: "Datastores",
+  AssessmentReport: "Assessment report",
   Actions: "",
 } as const;
 
@@ -390,7 +392,7 @@ export const AssessmentsTable: React.FC<Props> = ({
       <Table aria-label="Loading assessments" variant="compact" borders={false}>
         <Tbody>
           <Tr>
-            <Td colSpan={9}>
+            <Td colSpan={10}>
               <Spinner size="xl" />
             </Td>
           </Tr>
@@ -402,16 +404,16 @@ export const AssessmentsTable: React.FC<Props> = ({
     <div
       style={{
         width: "100%",
-        maxHeight: "450px",
-        overflowY: "auto",
-        overflowX: "visible",
+        maxHeight: "60vh",
+        overflow: "auto",
       }}
     >
       <Table
         aria-label="Assessments table"
         variant="compact"
         borders={false}
-        style={{ tableLayout: "auto", width: "100%", fontSize: "16px" }}
+        isStickyHeader
+        style={{ tableLayout: "fixed", width: "100%" }}
       >
         <Thead>
           <Tr>
@@ -439,6 +441,7 @@ export const AssessmentsTable: React.FC<Props> = ({
             <Th sort={datastoresSortParams} modifier="wrap">
               {Columns.Datastores}
             </Th>
+            <Th modifier="fitContent">{Columns.AssessmentReport}</Th>
             <Th
               modifier="fitContent"
               screenReaderText="Actions"
@@ -499,9 +502,11 @@ export const AssessmentsTable: React.FC<Props> = ({
                   ) : (
                     <ConnectedIcon />
                   )}
-                  {row.sourceType.toLowerCase() === "rvtools"
-                    ? "RVTools (XLS/X)"
-                    : "Discovery OVA"}
+                  {row.sourceType.toLowerCase() === "rvtools" ? (
+                    <Truncate content="RVTools (XLS/X)" />
+                  ) : (
+                    <Truncate content="Discovery OVA" />
+                  )}
                 </div>
               </Td>
               <Td dataLabel={Columns.LastUpdated}>{row.lastUpdated}</Td>
@@ -510,6 +515,27 @@ export const AssessmentsTable: React.FC<Props> = ({
               <Td dataLabel={Columns.VMs}>{row.vms}</Td>
               <Td dataLabel={Columns.Networks}>{row.networks}</Td>
               <Td dataLabel={Columns.Datastores}>{row.datastores}</Td>
+              <Td dataLabel={Columns.AssessmentReport}>
+                <Tooltip
+                  content={
+                    row.hasData
+                      ? "View assessment report"
+                      : row.sourceType.toLowerCase().includes("rvtools")
+                        ? "No inventory data found. The uploaded file may be corrupted. Please verify and re-upload."
+                        : "No inventory data yet. Data collection may be in progress or the source connection failed."
+                  }
+                >
+                  <Button
+                    variant="link"
+                    isAriaDisabled={!row.hasData}
+                    onClick={() => navigate(routes.assessmentReport(row.id))}
+                    icon={<MonitoringIcon />}
+                    style={{ padding: 0, whiteSpace: "nowrap" }}
+                  >
+                    View report
+                  </Button>
+                </Tooltip>
+              </Td>
               <Td
                 dataLabel={Columns.Actions}
                 style={{
@@ -526,28 +552,6 @@ export const AssessmentsTable: React.FC<Props> = ({
                     height: "100%",
                   }}
                 >
-                  <Tooltip
-                    content={
-                      row.hasData
-                        ? "Show assessment report"
-                        : row.sourceType.toLowerCase().includes("rvtools")
-                          ? "No inventory data found. The uploaded file may be corrupted. Please verify and re-upload."
-                          : "No inventory data yet. Data collection may be in progress or the source connection failed."
-                    }
-                  >
-                    <Button
-                      variant="plain"
-                      aria-label="Open assessment"
-                      icon={
-                        <MonitoringIcon
-                          style={{ color: row.hasData ? "#0066cc" : "#6a6e73" }}
-                        />
-                      }
-                      style={{ padding: 0 }}
-                      isAriaDisabled={!row.hasData}
-                      onClick={() => navigate(routes.assessmentReport(row.id))}
-                    />
-                  </Tooltip>
                   <Dropdown
                     isOpen={openDropdowns[row.id] || false}
                     popperProps={{
