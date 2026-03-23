@@ -15,11 +15,13 @@ import {
 } from "@patternfly/react-core";
 import React from "react";
 
-import { CPU_OVERCOMMIT_OPTIONS, MEMORY_OVERCOMMIT_OPTIONS } from "./constants";
+import {
+  formatNumber,
+  formatRatio,
+  getCpuOvercommitLabel,
+  getMemoryOvercommitLabel,
+} from "../../view-models/ClusterSizingHelpers";
 import type { ClusterRequirementsResponse, SizingFormValues } from "./types";
-
-const DISCLAIMER_TEXT =
-  "Note: Resource requirements are estimates based on current workloads. Please verify this architecture with your SME team to ensure optimal performance.";
 
 const descriptionListStyles = css`
   .pf-v6-c-description-list__term {
@@ -35,83 +37,6 @@ interface SizingResultProps {
   isLoading?: boolean;
   error?: Error | null;
 }
-
-/**
- * Format a number with locale-specific thousands separators
- */
-const formatNumber = (value: number): string => value.toLocaleString();
-
-/**
- * Format a ratio value
- */
-const formatRatio = (value: number): string => value.toFixed(2);
-
-/**
- * Get the CPU over-commit ratio label
- */
-const getCpuOvercommitLabel = (ratio: number): string => {
-  const option = CPU_OVERCOMMIT_OPTIONS.find((opt) => opt.value === ratio);
-  return option?.label || `1:${ratio}`;
-};
-
-/**
- * Get the memory over-commit ratio label
- */
-const getMemoryOvercommitLabel = (ratio: number): string => {
-  const option = MEMORY_OVERCOMMIT_OPTIONS.find((opt) => opt.value === ratio);
-  return option?.label || `1:${ratio}`;
-};
-
-/**
- * Generate the plain text recommendation for clipboard copy
- */
-export const generatePlainTextRecommendation = (
-  clusterName: string,
-  formValues: SizingFormValues,
-  output: ClusterRequirementsResponse,
-): string => {
-  const isSNO = formValues.clusterMode === "single-node";
-
-  if (isSNO) {
-    return `
-Cluster: ${clusterName}
-Target Platform: Bare Metal
-Total Nodes: ${output.clusterSizing.totalNodes}
-Node Size: ${formValues.controlPlaneCpu} CPU / ${formValues.controlPlaneMemoryGb} GB
-VMs to Migrate: ${formatNumber(output.inventoryTotals.totalVMs)} VMs
-VM resources (request): ${formatNumber(output.inventoryTotals.totalCPU)} CPU / ${formatNumber(output.inventoryTotals.totalMemory)} GB
-
-${DISCLAIMER_TEXT}
-`.trim();
-  }
-
-  const cpuOverCommitRatio =
-    output.resourceConsumption.overCommitRatio?.cpu ?? 0;
-  const memoryOverCommitRatio =
-    output.resourceConsumption.overCommitRatio?.memory ?? 0;
-  const cpuLimits = output.resourceConsumption.limits?.cpu ?? 0;
-  const memoryLimits = output.resourceConsumption.limits?.memory ?? 0;
-
-  return `
-Cluster: ${clusterName}
-Total Nodes: ${output.clusterSizing.totalNodes} (${output.clusterSizing.workerNodes} workers + ${output.clusterSizing.controlPlaneNodes} control plane)
-Failover Capacity: ${output.clusterSizing.failoverNodes} failover nodes
-Node Size: ${formValues.customCpu} CPU / ${formValues.customMemoryGb} GB
-
-Additional info
-Target Platform: Bare Metal
-OverCommitment: CPU ${getCpuOvercommitLabel(formValues.cpuOvercommitRatio)}, Memory ${getMemoryOvercommitLabel(formValues.memoryOvercommitRatio)}
-VMs to Migrate: ${formatNumber(output.inventoryTotals.totalVMs)} VMs
-- CPU Over-Commit Ratio: ${formatRatio(cpuOverCommitRatio)}
-- Memory Over-Commit Ratio: ${formatRatio(memoryOverCommitRatio)}
-Resource Breakdown
-VM resources (request): ${formatNumber(output.inventoryTotals.totalCPU)} CPU / ${formatNumber(output.inventoryTotals.totalMemory)} GB
-With Over-commit (limits): ${formatNumber(cpuLimits)} CPU / ${formatNumber(memoryLimits)} GB
-Physical Capacity: ${formatNumber(output.clusterSizing.totalCPU)} CPU / ${formatNumber(output.clusterSizing.totalMemory)} GB
-
-${DISCLAIMER_TEXT}
-`.trim();
-};
 
 export const SizingResult: React.FC<SizingResultProps> = ({
   clusterName,
@@ -174,6 +99,7 @@ export const SizingResult: React.FC<SizingResultProps> = ({
   }
 
   const isSNO = formValues.clusterMode === "single-node";
+  const hasControlPlane = sizerOutput.clusterSizing.controlPlaneNodes > 0;
 
   // Extract optional fields with defaults (only needed for non-SNO modes)
   const cpuOverCommitRatio =
@@ -230,9 +156,22 @@ export const SizingResult: React.FC<SizingResultProps> = ({
           <DescriptionListGroup>
             <DescriptionListTerm>Node size</DescriptionListTerm>
             <DescriptionListDescription>
-              {isSNO
-                ? `${formValues.controlPlaneCpu} CPU, ${formValues.controlPlaneMemoryGb} GB memory`
-                : `${formValues.customCpu} CPU, ${formValues.customMemoryGb} GB memory`}
+              {isSNO ? (
+                `${formValues.controlPlaneCpu} CPU, ${formValues.controlPlaneMemoryGb} GB memory`
+              ) : hasControlPlane ? (
+                <List isPlain>
+                  <ListItem>
+                    Worker: {formValues.customCpu} CPU,{" "}
+                    {formValues.customMemoryGb} GB memory
+                  </ListItem>
+                  <ListItem>
+                    Control Plane: {formValues.controlPlaneCpu} CPU,{" "}
+                    {formValues.controlPlaneMemoryGb} GB memory
+                  </ListItem>
+                </List>
+              ) : (
+                `${formValues.customCpu} CPU, ${formValues.customMemoryGb} GB memory`
+              )}
             </DescriptionListDescription>
           </DescriptionListGroup>
 

@@ -12,11 +12,12 @@ import {
 import { CopyIcon } from "@patternfly/react-icons";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 
+import { generatePlainTextRecommendation } from "../../view-models/ClusterSizingHelpers";
 import { useClusterSizingWizardViewModel } from "../../view-models/useClusterSizingWizardViewModel";
 import { ComplexityResult } from "./ComplexityResult";
 import { RecommendationTemplate } from "./RecommendationTemplate";
 import { SizingInputForm } from "./SizingInputForm";
-import { generatePlainTextRecommendation, SizingResult } from "./SizingResult";
+import { SizingResult } from "./SizingResult";
 import { TimeEstimationForm } from "./TimeEstimationForm";
 import { TimeEstimationResult } from "./TimeEstimationResult";
 
