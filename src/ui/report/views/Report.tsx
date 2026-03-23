@@ -5,9 +5,6 @@ import {
   Bullseye,
   Button,
   Content,
-  Dropdown,
-  DropdownItem,
-  DropdownList,
   List,
   ListItem,
   MenuToggle,
@@ -22,12 +19,13 @@ import {
   StackItem,
   Tooltip,
 } from "@patternfly/react-core";
-import React, { useRef, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import React, { useRef } from "react";
+import { Link } from "react-router-dom";
 
 import { routes } from "../../../routing/Routes";
 import CreateAssessmentModal from "../../assessment/views/CreateAssessmentModal";
 import { AppPage } from "../../core/components/AppPage";
+import CreateAssessmentDropdown from "../../core/components/CreateAssessmentDropdown";
 import { OffScreenRenderer } from "../../core/components/OffScreenRenderer";
 import { AgentStatusView } from "../../environment/views/AgentStatusView";
 import { useReportPageViewModel } from "../view-models/useReportPageViewModel";
@@ -42,9 +40,7 @@ const alertSpacing = css`
 
 const ReportContent: React.FC = () => {
   const vm = useReportPageViewModel();
-  const navigate = useNavigate();
   const offScreenRef = useRef<HTMLDivElement>(null);
-  const [isCreateDropdownOpen, setIsCreateDropdownOpen] = useState(false);
 
   if (vm.isLoadingData && !vm.assessment) {
     return (
@@ -239,47 +235,10 @@ const ReportContent: React.FC = () => {
                 ))}
               </List>
               <div className={alertSpacing}>
-                <Dropdown
-                  isOpen={isCreateDropdownOpen}
-                  onOpenChange={setIsCreateDropdownOpen}
-                  toggle={(toggleRef: React.Ref<MenuToggleElement>) => (
-                    <MenuToggle
-                      ref={toggleRef}
-                      variant="primary"
-                      onClick={() =>
-                        setIsCreateDropdownOpen(!isCreateDropdownOpen)
-                      }
-                      isExpanded={isCreateDropdownOpen}
-                    >
-                      Create a new assessment
-                    </MenuToggle>
-                  )}
-                  shouldFocusToggleOnSelect
-                >
-                  <DropdownList>
-                    <DropdownItem
-                      key="agent"
-                      component="button"
-                      onClick={() =>
-                        navigate(routes.assessmentCreate, {
-                          state: { reset: true },
-                        })
-                      }
-                    >
-                      With discovery OVA
-                    </DropdownItem>
-                    <DropdownItem
-                      key="rvtools"
-                      component="button"
-                      onClick={() => {
-                        setIsCreateDropdownOpen(false);
-                        vm.openRvtoolsModal();
-                      }}
-                    >
-                      From RVTools (XLS/X)
-                    </DropdownItem>
-                  </DropdownList>
-                </Dropdown>
+                <CreateAssessmentDropdown
+                  toggleLabel="Create a new assessment"
+                  onSelectRvtools={() => vm.openRvtoolsModal()}
+                />
               </div>
             </Alert>
           )}

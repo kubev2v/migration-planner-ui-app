@@ -14,11 +14,10 @@ import {
 } from "@patternfly/react-core";
 import { FilterIcon, TimesIcon } from "@patternfly/react-icons";
 import React, { useCallback, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
 
 import type { AssessmentModel } from "../../../models/AssessmentModel";
-import { routes } from "../../../routing/Routes";
 import { ConfirmationModal } from "../../core/components/ConfirmationModal";
+import CreateAssessmentDropdown from "../../core/components/CreateAssessmentDropdown";
 import FilterPill from "../../core/components/FilterPill";
 import StartingPageModal from "../../home/views/StartingPageModal";
 import { useAssessmentPageViewModel } from "../view-models/useAssessmentPageViewModel";
@@ -41,8 +40,6 @@ const Assessment: React.FC<Props> = ({
   isLoading,
   rvtoolsOpenToken,
 }) => {
-  const navigate = useNavigate();
-  const location = useLocation();
   const {
     isCreatingJob,
     jobCreateError,
@@ -65,7 +62,6 @@ const Assessment: React.FC<Props> = ({
     index: 0,
     direction: "asc",
   });
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isFilterDropdownOpen, setIsFilterDropdownOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState<AssessmentMode>("inventory");
@@ -138,14 +134,9 @@ const Assessment: React.FC<Props> = ({
     setSortBy({ index, direction });
   };
 
-  const onDropdownToggle = (): void => {
-    setIsDropdownOpen(!isDropdownOpen);
-  };
-
   const handleOpenModal = (mode: AssessmentMode): void => {
     setModalMode(mode);
     setIsModalOpen(true);
-    setIsDropdownOpen(false);
   };
 
   // Handle modal close - cancel handles everything (running job or completed assessment)
@@ -373,42 +364,9 @@ const Assessment: React.FC<Props> = ({
             </ToolbarItem>
             {!isTableEmpty() ? (
               <ToolbarItem align={{ default: "alignStart" }}>
-                <Dropdown
-                  isOpen={isDropdownOpen}
-                  onOpenChange={setIsDropdownOpen}
-                  toggle={(toggleRef: React.Ref<MenuToggleElement>) => (
-                    <MenuToggle
-                      ref={toggleRef}
-                      variant="primary"
-                      onClick={onDropdownToggle}
-                      isExpanded={isDropdownOpen}
-                    >
-                      Create
-                    </MenuToggle>
-                  )}
-                  shouldFocusToggleOnSelect
-                >
-                  <DropdownList>
-                    <DropdownItem
-                      key="agent"
-                      component="button"
-                      onClick={() =>
-                        navigate(routes.assessmentCreate, {
-                          state: { reset: true },
-                        })
-                      }
-                    >
-                      With discovery OVA
-                    </DropdownItem>
-                    <DropdownItem
-                      key="rvtools"
-                      component="button"
-                      onClick={() => handleOpenModal("rvtools")}
-                    >
-                      From RVTools (XLS/X)
-                    </DropdownItem>
-                  </DropdownList>
-                </Dropdown>
+                <CreateAssessmentDropdown
+                  onSelectRvtools={() => handleOpenModal("rvtools")}
+                />
               </ToolbarItem>
             ) : (
               <></>

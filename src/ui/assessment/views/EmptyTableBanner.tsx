@@ -4,22 +4,18 @@ import {
   CardBody,
   CardHeader,
   Content,
-  Dropdown,
-  DropdownItem,
-  DropdownList,
   Flex,
   FlexItem,
   Icon,
-  MenuToggle,
-  type MenuToggleElement,
   Tooltip,
 } from "@patternfly/react-core";
 import { QuestionCircleIcon } from "@patternfly/react-icons";
 import { t_global_icon_color_300 as globalActiveColor300 } from "@patternfly/react-tokens/dist/js/t_global_icon_color_300";
-import React, { useState } from "react";
+import React from "react";
 import { useNavigate } from "react-router-dom";
 
 import { routes } from "../../../routing/Routes";
+import CreateAssessmentDropdown from "../../core/components/CreateAssessmentDropdown";
 import { CustomEnterpriseIcon } from "../../core/components/CustomEnterpriseIcon";
 import type { AssessmentMode } from "./CreateAssessmentModal";
 
@@ -29,16 +25,7 @@ type Props = {
 
 const EmptyTableBanner: React.FC<Props> = ({ onOpenModal }) => {
   const navigate = useNavigate();
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
-  const onDropdownToggle = (): void => {
-    setIsDropdownOpen(!isDropdownOpen);
-  };
-
-  const handleOpenModal = (mode: AssessmentMode): void => {
-    onOpenModal(mode);
-    setIsDropdownOpen(false);
-  };
   return (
     <Flex
       direction={{ default: "column" }}
@@ -96,42 +83,10 @@ const EmptyTableBanner: React.FC<Props> = ({ onOpenModal }) => {
         </Button>
       </FlexItem>
       <FlexItem>
-        <Dropdown
-          isOpen={isDropdownOpen}
-          onOpenChange={setIsDropdownOpen}
-          toggle={(toggleRef: React.Ref<MenuToggleElement>) => (
-            <MenuToggle
-              ref={toggleRef}
-              variant="primary"
-              onClick={onDropdownToggle}
-              isExpanded={isDropdownOpen}
-            >
-              Create new assessment
-            </MenuToggle>
-          )}
-          shouldFocusToggleOnSelect
-        >
-          <DropdownList>
-            <DropdownItem
-              key="agent"
-              component="button"
-              onClick={() =>
-                navigate(routes.assessmentCreate, {
-                  state: { reset: true },
-                })
-              }
-            >
-              With discovery OVA
-            </DropdownItem>
-            <DropdownItem
-              key="rvtools"
-              component="button"
-              onClick={() => handleOpenModal("rvtools")}
-            >
-              From RVTools (XLS/X)
-            </DropdownItem>
-          </DropdownList>
-        </Dropdown>
+        <CreateAssessmentDropdown
+          toggleLabel="Create new assessment"
+          onSelectRvtools={() => onOpenModal("rvtools")}
+        />
       </FlexItem>
     </Flex>
   );
