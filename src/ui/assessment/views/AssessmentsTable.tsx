@@ -413,40 +413,36 @@ export const AssessmentsTable: React.FC<Props> = ({
         variant="compact"
         borders={false}
         isStickyHeader
-        style={{ tableLayout: "fixed", width: "100%" }}
+        style={{ tableLayout: "auto", width: "100%" }}
       >
         <Thead>
           <Tr>
             <Th sort={nameSortParams} modifier="wrap">
               {Columns.Name}
             </Th>
-            <Th sort={sourceTypeSortParams} modifier="wrap">
+            <Th sort={sourceTypeSortParams} modifier="nowrap">
               {Columns.SourceType}
             </Th>
-            <Th sort={lastUpdatedSortParams} modifier="wrap">
+            <Th sort={lastUpdatedSortParams} modifier="nowrap">
               {Columns.LastUpdated}
             </Th>
-            <Th sort={ownerSortParams} modifier="wrap">
+            <Th sort={ownerSortParams} modifier="nowrap">
               {Columns.Owner}
             </Th>
-            <Th sort={hostsSortParams} modifier="wrap">
+            <Th sort={hostsSortParams} modifier="nowrap">
               {Columns.Hosts}
             </Th>
-            <Th sort={vmsSortParams} modifier="wrap">
+            <Th sort={vmsSortParams} modifier="nowrap">
               {Columns.VMs}
             </Th>
-            <Th sort={networksSortParams} modifier="wrap">
+            <Th sort={networksSortParams} modifier="nowrap">
               {Columns.Networks}
             </Th>
-            <Th sort={datastoresSortParams} modifier="wrap">
+            <Th sort={datastoresSortParams} modifier="nowrap">
               {Columns.Datastores}
             </Th>
-            <Th modifier="fitContent">{Columns.AssessmentReport}</Th>
-            <Th
-              modifier="fitContent"
-              screenReaderText="Actions"
-              style={{ whiteSpace: "nowrap" }}
-            >
+            <Th modifier="nowrap">{Columns.AssessmentReport}</Th>
+            <Th modifier="fitContent" screenReaderText="Actions">
               {Columns.Actions}
             </Th>
           </Tr>
@@ -464,7 +460,7 @@ export const AssessmentsTable: React.FC<Props> = ({
                 >
                   <Button
                     variant={row.hasData ? "link" : "plain"}
-                    style={{ padding: 0 }}
+                    style={{ padding: 0, textAlign: "left" }}
                     isDisabled={!row.hasData}
                     onClick={
                       row.hasData
@@ -472,7 +468,7 @@ export const AssessmentsTable: React.FC<Props> = ({
                         : undefined
                     }
                   >
-                    {row.name}
+                    <Truncate content={row.name} />
                   </Button>
                   {!row.hasData && (
                     <Tooltip
@@ -489,7 +485,10 @@ export const AssessmentsTable: React.FC<Props> = ({
                   )}
                 </div>
               </Td>
-              <Td dataLabel={Columns.SourceType}>
+              <Td
+                dataLabel={Columns.SourceType}
+                style={{ whiteSpace: "nowrap" }}
+              >
                 <div
                   style={{
                     display: "flex",
@@ -502,19 +501,28 @@ export const AssessmentsTable: React.FC<Props> = ({
                   ) : (
                     <ConnectedIcon />
                   )}
-                  {row.sourceType.toLowerCase() === "rvtools" ? (
-                    <Truncate content="RVTools (XLS/X)" />
-                  ) : (
-                    <Truncate content="Discovery OVA" />
-                  )}
+                  {row.sourceType.toLowerCase() === "rvtools"
+                    ? "RVTools (XLS/X)"
+                    : "Discovery OVA"}
                 </div>
               </Td>
               <Td dataLabel={Columns.LastUpdated}>{row.lastUpdated}</Td>
               <Td dataLabel={Columns.Owner}>{row.owner}</Td>
-              <Td dataLabel={Columns.Hosts}>{row.hosts}</Td>
-              <Td dataLabel={Columns.VMs}>{row.vms}</Td>
-              <Td dataLabel={Columns.Networks}>{row.networks}</Td>
-              <Td dataLabel={Columns.Datastores}>{row.datastores}</Td>
+              <Td dataLabel={Columns.Hosts} style={{ whiteSpace: "nowrap" }}>
+                {row.hosts}
+              </Td>
+              <Td dataLabel={Columns.VMs} style={{ whiteSpace: "nowrap" }}>
+                {row.vms}
+              </Td>
+              <Td dataLabel={Columns.Networks} style={{ whiteSpace: "nowrap" }}>
+                {row.networks}
+              </Td>
+              <Td
+                dataLabel={Columns.Datastores}
+                style={{ whiteSpace: "nowrap" }}
+              >
+                {row.datastores}
+              </Td>
               <Td dataLabel={Columns.AssessmentReport}>
                 <Tooltip
                   content={
@@ -536,72 +544,54 @@ export const AssessmentsTable: React.FC<Props> = ({
                   </Button>
                 </Tooltip>
               </Td>
-              <Td
-                dataLabel={Columns.Actions}
-                style={{
-                  verticalAlign: "middle",
-                  paddingTop: 0,
-                  paddingBottom: 0,
-                }}
-              >
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "8px",
-                    height: "100%",
+              <Td dataLabel={Columns.Actions} modifier="fitContent">
+                <Dropdown
+                  isOpen={openDropdowns[row.id] || false}
+                  popperProps={{
+                    appendTo: () => document.body,
+                    position: "end",
                   }}
+                  onOpenChange={(isOpen) =>
+                    setOpenDropdowns((prev) => ({
+                      ...prev,
+                      [row.id]: isOpen,
+                    }))
+                  }
+                  toggle={(toggleRef: React.Ref<MenuToggleElement>) => (
+                    <MenuToggle
+                      ref={toggleRef}
+                      aria-label="Actions"
+                      variant="plain"
+                      onClick={() => toggleDropdown(row.id)}
+                      icon={<EllipsisVIcon />}
+                      style={{ padding: 0 }}
+                    ></MenuToggle>
+                  )}
                 >
-                  <Dropdown
-                    isOpen={openDropdowns[row.id] || false}
-                    popperProps={{
-                      appendTo: () => document.body,
-                      position: "end",
-                    }}
-                    onOpenChange={(isOpen) =>
-                      setOpenDropdowns((prev) => ({
-                        ...prev,
-                        [row.id]: isOpen,
-                      }))
-                    }
-                    toggle={(toggleRef: React.Ref<MenuToggleElement>) => (
-                      <MenuToggle
-                        ref={toggleRef}
-                        aria-label="Actions"
-                        variant="plain"
-                        onClick={() => toggleDropdown(row.id)}
-                        icon={<EllipsisVIcon />}
-                        style={{ padding: 0 }}
-                      ></MenuToggle>
-                    )}
-                  >
-                    <DropdownList>
-                      <DropdownItem
-                        onClick={() =>
-                          navigate(routes.assessmentReport(row.id))
-                        }
-                        isDisabled={!row.hasData}
-                      >
-                        Show assessment report
-                      </DropdownItem>
-                      <DropdownItem
-                        onClick={() => alert("Edit functionality coming soon!")}
-                        isDisabled={true}
-                      >
-                        Edit assessment
-                      </DropdownItem>
-                      <DropdownItem
-                        onClick={openAssistedInstaller}
-                        isDisabled={!row.hasData}
-                      >
-                        Create a target cluster
-                      </DropdownItem>
-                      <DropdownItem onClick={() => handleDelete(row.id)}>
-                        Delete assessment
-                      </DropdownItem>
-                    </DropdownList>
-                  </Dropdown>
-                </div>
+                  <DropdownList>
+                    <DropdownItem
+                      onClick={() => navigate(routes.assessmentReport(row.id))}
+                      isDisabled={!row.hasData}
+                    >
+                      Show assessment report
+                    </DropdownItem>
+                    <DropdownItem
+                      onClick={() => alert("Edit functionality coming soon!")}
+                      isDisabled={true}
+                    >
+                      Edit assessment
+                    </DropdownItem>
+                    <DropdownItem
+                      onClick={openAssistedInstaller}
+                      isDisabled={!row.hasData}
+                    >
+                      Create a target cluster
+                    </DropdownItem>
+                    <DropdownItem onClick={() => handleDelete(row.id)}>
+                      Delete assessment
+                    </DropdownItem>
+                  </DropdownList>
+                </Dropdown>
               </Td>
             </Tr>
           ))}
