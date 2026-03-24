@@ -95,6 +95,6 @@
     "uuid": ">=14.0.2"
   },
   "insights": {
-    "appname": "migration-advisor"
+    "appname": "migration-advisor-dev-app"
   }
 }
