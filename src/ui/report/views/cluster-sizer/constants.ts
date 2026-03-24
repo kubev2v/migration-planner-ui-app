@@ -1,4 +1,5 @@
 import type {
+  ClusterMode,
   HAReplicaCount,
   MemoryOvercommitRatio,
   OvercommitRatio,
@@ -54,6 +55,27 @@ export const MEMORY_OPTIONS: { value: number; label: string }[] = [
   { value: 256, label: "256" },
   { value: 512, label: "512" },
 ];
+
+/**
+ * Control plane CPU options
+ */
+export const CONTROL_PLANE_CPU_OPTIONS: { value: number; label: string }[] = [
+  { value: 8, label: "8" },
+  { value: 16, label: "16" },
+  { value: 32, label: "32" },
+  { value: 64, label: "64" },
+];
+
+/**
+ * Control plane memory options in GB
+ */
+export const CONTROL_PLANE_MEMORY_OPTIONS: { value: number; label: string }[] =
+  [
+    { value: 16, label: "16" },
+    { value: 32, label: "32" },
+    { value: 64, label: "64" },
+    { value: 128, label: "128" },
+  ];
 
 /**
  * CPU over-commit ratio options for resource sharing
@@ -150,6 +172,18 @@ export const HA_OPTIONS: {
 ];
 
 /**
+ * Cluster mode options
+ */
+export const CLUSTER_MODE_OPTIONS: {
+  value: ClusterMode;
+  label: string;
+}[] = [
+  { value: "full-ha", label: "Full HA (3CP)" },
+  { value: "single-node", label: "Single node (SNO)" },
+  { value: "hosted-control-plane", label: "Hosted control plane (HCP)" },
+];
+
+/**
  * Control plane scheduling options
  */
 export const CONTROL_PLANE_OPTIONS = {
@@ -169,13 +203,18 @@ export const CONTROL_PLANE_OPTIONS = {
  * Default form values (matching Figma design defaults)
  */
 export const DEFAULT_FORM_VALUES: SizingFormValues = {
+  clusterMode: "full-ha",
   workerNodePreset: "custom",
   customCpu: 32,
   customMemoryGb: 32,
   haReplicas: 3,
-  cpuOvercommitRatio: 4, // Standard (1:4)
-  memoryOvercommitRatio: 2, // Balanced (1:2)
+  cpuOvercommitRatio: 4,
+  memoryOvercommitRatio: 2,
   scheduleOnControlPlane: false,
+  smtEnabled: false,
+  smtThreads: 32,
+  controlPlaneCpu: 16,
+  controlPlaneMemoryGb: 32,
 };
 
 /**

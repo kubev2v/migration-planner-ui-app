@@ -1,16 +1,27 @@
+import { css } from "@emotion/css";
 import {
   Bullseye,
   Button,
   Dropdown,
   DropdownItem,
   DropdownList,
+  Icon,
   MenuToggle,
   type MenuToggleElement,
+  Popover,
   Spinner,
+  Split,
+  SplitItem,
   Tooltip,
 } from "@patternfly/react-core";
-import { ArrowLeftIcon, EllipsisVIcon } from "@patternfly/react-icons";
+import {
+  ArrowLeftIcon,
+  EllipsisVIcon,
+  InfoCircleIcon,
+} from "@patternfly/react-icons";
 import { Table, Tbody, Td, Th, Thead, Tr } from "@patternfly/react-table";
+import { t_global_color_status_success_default as globalSuccessColor } from "@patternfly/react-tokens/dist/js/t_global_color_status_success_default";
+import { t_global_color_status_warning_default as globalWarningColor } from "@patternfly/react-tokens/dist/js/t_global_color_status_warning_default";
 import React, {
   useCallback,
   useEffect,
@@ -31,6 +42,23 @@ import { EmptyState } from "./EmptyState";
 
 const VALUE_NOT_AVAILABLE = "-";
 import { UploadInventoryAction } from "./UploadInventoryAction";
+
+const versionStatusLatest = css`
+  color: ${globalSuccessColor.value};
+`;
+
+const versionStatusOutdated = css`
+  color: ${globalWarningColor.value};
+`;
+
+const versionStatusSplit = css`
+  gap: 0.5rem;
+`;
+
+const versionInfoButton = css`
+  padding: 0;
+  min-width: auto;
+`;
 
 type SourceTableProps = {
   search?: string;
@@ -288,7 +316,7 @@ export const SourcesTable: React.FC<SourceTableProps> = ({
       <Table aria-label="Loading table" variant="compact" borders={false}>
         <Tbody>
           <Tr>
-            <Td colSpan={7}>
+            <Td colSpan={8}>
               <Bullseye>
                 <Spinner size="xl" />
               </Bullseye>
@@ -323,6 +351,9 @@ export const SourcesTable: React.FC<SourceTableProps> = ({
                 <Tr>
                   <Th style={{ whiteSpace: "normal" }}>{Columns.Name}</Th>
                   <Th style={{ whiteSpace: "normal" }}>{Columns.Status}</Th>
+                  <Th style={{ whiteSpace: "normal" }}>
+                    {Columns.VersionStatus}
+                  </Th>
                   <Th style={{ whiteSpace: "normal" }}>{Columns.Hosts}</Th>
                   <Th style={{ whiteSpace: "normal" }}>{Columns.VMs}</Th>
                   <Th
@@ -395,6 +426,46 @@ export const SourcesTable: React.FC<SourceTableProps> = ({
                           }
                           updatedAt={source?.updatedAt}
                         />
+                      </Td>
+                      <Td
+                        dataLabel={Columns.VersionStatus}
+                        style={{ verticalAlign: "top" }}
+                      >
+                        {source.agentVersionWarning ? (
+                          <Split hasGutter className={versionStatusSplit}>
+                            <SplitItem>
+                              <span className={versionStatusOutdated}>
+                                Outdated
+                              </span>
+                            </SplitItem>
+                            <SplitItem>
+                              <Popover
+                                aria-label="Version warning"
+                                headerContent="Version Warning"
+                                headerComponent="h2"
+                                bodyContent={
+                                  <div>{source.agentVersionWarning}</div>
+                                }
+                              >
+                                <Button
+                                  variant="plain"
+                                  aria-label="Version warning info"
+                                  className={versionInfoButton}
+                                >
+                                  <Icon isInline>
+                                    <InfoCircleIcon
+                                      color={globalWarningColor.value}
+                                    />
+                                  </Icon>
+                                </Button>
+                              </Popover>
+                            </SplitItem>
+                          </Split>
+                        ) : (
+                          <span className={versionStatusLatest}>
+                            Up to date
+                          </span>
+                        )}
                       </Td>
                       <Td
                         dataLabel={Columns.Hosts}

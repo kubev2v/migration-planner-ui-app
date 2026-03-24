@@ -1,8 +1,6 @@
 import { css } from "@emotion/css";
 import {
   Alert,
-  AlertActionCloseButton,
-  Button,
   DescriptionList,
   DescriptionListDescription,
   DescriptionListGroup,
@@ -15,14 +13,15 @@ import {
   Stack,
   StackItem,
 } from "@patternfly/react-core";
-import { CopyIcon } from "@patternfly/react-icons";
-import React, { useCallback, useMemo, useState } from "react";
+import React from "react";
 
-import { CPU_OVERCOMMIT_OPTIONS, MEMORY_OVERCOMMIT_OPTIONS } from "./constants";
+import {
+  formatNumber,
+  formatRatio,
+  getCpuOvercommitLabel,
+  getMemoryOvercommitLabel,
+} from "../../view-models/ClusterSizingHelpers";
 import type { ClusterRequirementsResponse, SizingFormValues } from "./types";
-
-const DISCLAIMER_TEXT =
-  "Note: Resource requirements are estimates based on current workloads. Please verify this architecture with your SME team to ensure optimal performance.";
 
 const descriptionListStyles = css`
   .pf-v6-c-description-list__term {
@@ -39,68 +38,6 @@ interface SizingResultProps {
   error?: Error | null;
 }
 
-/**
- * Format a number with locale-specific thousands separators
- */
-const formatNumber = (value: number): string => value.toLocaleString();
-
-/**
- * Format a ratio value
- */
-const formatRatio = (value: number): string => value.toFixed(2);
-
-/**
- * Get the CPU over-commit ratio label
- */
-const getCpuOvercommitLabel = (ratio: number): string => {
-  const option = CPU_OVERCOMMIT_OPTIONS.find((opt) => opt.value === ratio);
-  return option?.label || `1:${ratio}`;
-};
-
-/**
- * Get the memory over-commit ratio label
- */
-const getMemoryOvercommitLabel = (ratio: number): string => {
-  const option = MEMORY_OVERCOMMIT_OPTIONS.find((opt) => opt.value === ratio);
-  return option?.label || `1:${ratio}`;
-};
-
-/**
- * Generate the plain text recommendation for clipboard copy
- */
-const generatePlainTextRecommendation = (
-  clusterName: string,
-  formValues: SizingFormValues,
-  output: ClusterRequirementsResponse,
-): string => {
-  const cpuOverCommitRatio =
-    output.resourceConsumption.overCommitRatio?.cpu ?? 0;
-  const memoryOverCommitRatio =
-    output.resourceConsumption.overCommitRatio?.memory ?? 0;
-  const cpuLimits = output.resourceConsumption.limits?.cpu ?? 0;
-  const memoryLimits = output.resourceConsumption.limits?.memory ?? 0;
-
-  return `
-Cluster: ${clusterName}
-Total Nodes: ${output.clusterSizing.totalNodes} (${output.clusterSizing.workerNodes} workers + ${output.clusterSizing.controlPlaneNodes} control plane)
-Failover Capacity: ${output.clusterSizing.failoverNodes} failover nodes
-Node Size: ${formValues.customCpu} CPU / ${formValues.customMemoryGb} GB
-
-Additional info
-Target Platform: Bare Metal
-Over-Commitment: CPU ${getCpuOvercommitLabel(formValues.cpuOvercommitRatio)}, Memory ${getMemoryOvercommitLabel(formValues.memoryOvercommitRatio)}
-VMs to Migrate: ${formatNumber(output.inventoryTotals.totalVMs)} VMs
-- CPU Over-Commit Ratio: ${formatRatio(cpuOverCommitRatio)}
-- Memory Over-Commit Ratio: ${formatRatio(memoryOverCommitRatio)}
-Resource Breakdown
-VM resources (request): ${formatNumber(output.inventoryTotals.totalCPU)} CPU / ${formatNumber(output.inventoryTotals.totalMemory)} GB
-With Over-commit (limits): ${formatNumber(cpuLimits)} CPU / ${formatNumber(memoryLimits)} GB
-Physical Capacity: ${formatNumber(output.clusterSizing.totalCPU)} CPU / ${formatNumber(output.clusterSizing.totalMemory)} GB
-
-${DISCLAIMER_TEXT}
-`.trim();
-};
-
 export const SizingResult: React.FC<SizingResultProps> = ({
   clusterName,
   formValues,
@@ -108,51 +45,6 @@ export const SizingResult: React.FC<SizingResultProps> = ({
   isLoading = false,
   error = null,
 }) => {
-  const [copySuccess, setCopySuccess] = useState(false);
-  const [copyError, setCopyError] = useState<string | null>(null);
-
-  const plainTextRecommendation = useMemo(() => {
-    if (!sizerOutput) return "";
-    return generatePlainTextRecommendation(
-      clusterName,
-      formValues,
-      sizerOutput,
-    );
-  }, [clusterName, formValues, sizerOutput]);
-
-  const handleCopyRecommendations = useCallback(() => {
-    setCopyError(null);
-    setCopySuccess(false);
-
-    if (
-      !navigator.clipboard ||
-      !navigator.clipboard.writeText ||
-      (typeof window !== "undefined" && !window.isSecureContext)
-    ) {
-      setCopyError(
-        "Clipboard API is not available. Please use HTTPS or a secure context.",
-      );
-      setTimeout(() => setCopyError(null), 5000);
-      return;
-    }
-
-    navigator.clipboard
-      .writeText(plainTextRecommendation)
-      .then(() => {
-        setCopySuccess(true);
-        setTimeout(() => setCopySuccess(false), 3000);
-      })
-      .catch((err) => {
-        console.error("Failed to copy recommendations:", err);
-        const errorMessage =
-          err instanceof Error
-            ? err.message
-            : "Failed to copy to clipboard. Please check your browser permissions.";
-        setCopyError(errorMessage);
-        setTimeout(() => setCopyError(null), 5000);
-      });
-  }, [plainTextRecommendation]);
-
   if (isLoading) {
     return (
       <Stack hasGutter>
@@ -206,7 +98,10 @@ export const SizingResult: React.FC<SizingResultProps> = ({
     );
   }
 
-  // Extract optional fields with defaults
+  const isSNO = formValues.clusterMode === "single-node";
+  const hasControlPlane = sizerOutput.clusterSizing.controlPlaneNodes > 0;
+
+  // Extract optional fields with defaults (only needed for non-SNO modes)
   const cpuOverCommitRatio =
     sizerOutput.resourceConsumption.overCommitRatio?.cpu ?? 0;
   const memoryOverCommitRatio =
@@ -231,122 +126,126 @@ export const SizingResult: React.FC<SizingResultProps> = ({
 
           <DescriptionListGroup>
             <DescriptionListTerm>Target platform</DescriptionListTerm>
-            <DescriptionListDescription>Bare Metal</DescriptionListDescription>
+            <DescriptionListDescription>Bare metal</DescriptionListDescription>
           </DescriptionListGroup>
 
           <DescriptionListGroup>
             <DescriptionListTerm>Total nodes</DescriptionListTerm>
             <DescriptionListDescription>
-              {sizerOutput.clusterSizing.totalNodes} (
-              {sizerOutput.clusterSizing.workerNodes} workers +{" "}
-              {sizerOutput.clusterSizing.controlPlaneNodes} control plane)
+              {isSNO ? (
+                sizerOutput.clusterSizing.totalNodes
+              ) : (
+                <>
+                  {sizerOutput.clusterSizing.totalNodes} (
+                  {sizerOutput.clusterSizing.workerNodes} workers +{" "}
+                  {sizerOutput.clusterSizing.controlPlaneNodes} control plane)
+                </>
+              )}
             </DescriptionListDescription>
           </DescriptionListGroup>
 
-          <DescriptionListGroup>
-            <DescriptionListTerm>Failover Capacity</DescriptionListTerm>
-            <DescriptionListDescription>
-              {sizerOutput.clusterSizing.failoverNodes} failover nodes
-            </DescriptionListDescription>
-          </DescriptionListGroup>
+          {!isSNO && (
+            <DescriptionListGroup>
+              <DescriptionListTerm>Failover Capacity</DescriptionListTerm>
+              <DescriptionListDescription>
+                {sizerOutput.clusterSizing.failoverNodes} failover nodes
+              </DescriptionListDescription>
+            </DescriptionListGroup>
+          )}
 
           <DescriptionListGroup>
             <DescriptionListTerm>Node size</DescriptionListTerm>
             <DescriptionListDescription>
-              {formValues.customCpu} CPU, {formValues.customMemoryGb} GB memory
+              {isSNO ? (
+                `${formValues.controlPlaneCpu} CPU, ${formValues.controlPlaneMemoryGb} GB memory`
+              ) : hasControlPlane ? (
+                <List isPlain>
+                  <ListItem>
+                    Worker: {formValues.customCpu} CPU,{" "}
+                    {formValues.customMemoryGb} GB memory
+                  </ListItem>
+                  <ListItem>
+                    Control Plane: {formValues.controlPlaneCpu} CPU,{" "}
+                    {formValues.controlPlaneMemoryGb} GB memory
+                  </ListItem>
+                </List>
+              ) : (
+                `${formValues.customCpu} CPU, ${formValues.customMemoryGb} GB memory`
+              )}
             </DescriptionListDescription>
           </DescriptionListGroup>
 
-          <DescriptionListGroup>
-            <DescriptionListTerm>Over-commitment</DescriptionListTerm>
-            <DescriptionListDescription>
-              CPU {getCpuOvercommitLabel(formValues.cpuOvercommitRatio)}, Memory{" "}
-              {getMemoryOvercommitLabel(formValues.memoryOvercommitRatio)}
-            </DescriptionListDescription>
-          </DescriptionListGroup>
+          {!isSNO && (
+            <DescriptionListGroup>
+              <DescriptionListTerm>Overcommitment</DescriptionListTerm>
+              <DescriptionListDescription>
+                CPU {getCpuOvercommitLabel(formValues.cpuOvercommitRatio)},
+                Memory{" "}
+                {getMemoryOvercommitLabel(formValues.memoryOvercommitRatio)}
+              </DescriptionListDescription>
+            </DescriptionListGroup>
+          )}
 
           <DescriptionListGroup>
             <DescriptionListTerm>Workload details</DescriptionListTerm>
             <DescriptionListDescription>
-              <List isPlain>
-                <ListItem>
+              {isSNO ? (
+                <>
                   VMs to migrate:{" "}
                   {formatNumber(sizerOutput.inventoryTotals.totalVMs)}
-                </ListItem>
-                <ListItem>
-                  CPU over-commit ratio: {formatRatio(cpuOverCommitRatio)}
-                </ListItem>
-                <ListItem>
-                  Memory over-commit ratio: {formatRatio(memoryOverCommitRatio)}
-                </ListItem>
-              </List>
+                </>
+              ) : (
+                <List isPlain>
+                  <ListItem>
+                    VMs to migrate:{" "}
+                    {formatNumber(sizerOutput.inventoryTotals.totalVMs)}
+                  </ListItem>
+                  <ListItem>
+                    CPU over-commit ratio: {formatRatio(cpuOverCommitRatio)}
+                  </ListItem>
+                  <ListItem>
+                    Memory over-commit ratio:{" "}
+                    {formatRatio(memoryOverCommitRatio)}
+                  </ListItem>
+                </List>
+              )}
             </DescriptionListDescription>
           </DescriptionListGroup>
 
           <DescriptionListGroup>
             <DescriptionListTerm>Resources</DescriptionListTerm>
             <DescriptionListDescription>
-              <List isPlain>
-                <ListItem>
+              {isSNO ? (
+                <>
                   VM resources (request):{" "}
                   {formatNumber(sizerOutput.inventoryTotals.totalCPU)} CPU,{" "}
                   {formatNumber(sizerOutput.inventoryTotals.totalMemory)} GB
                   memory
-                </ListItem>
-                <ListItem>
-                  With Over-commit (limits): {formatNumber(cpuLimits)} CPU,{" "}
-                  {formatNumber(memoryLimits)} GB memory
-                </ListItem>
-                <ListItem>
-                  Physical capacity:{" "}
-                  {formatNumber(sizerOutput.clusterSizing.totalCPU)} CPU,{" "}
-                  {formatNumber(sizerOutput.clusterSizing.totalMemory)} GB
-                  memory
-                </ListItem>
-              </List>
+                </>
+              ) : (
+                <List isPlain>
+                  <ListItem>
+                    VM resources (request):{" "}
+                    {formatNumber(sizerOutput.inventoryTotals.totalCPU)} CPU,{" "}
+                    {formatNumber(sizerOutput.inventoryTotals.totalMemory)} GB
+                    memory
+                  </ListItem>
+                  <ListItem>
+                    With Over-commit (limits): {formatNumber(cpuLimits)} CPU,{" "}
+                    {formatNumber(memoryLimits)} GB memory
+                  </ListItem>
+                  <ListItem>
+                    Physical capacity:{" "}
+                    {formatNumber(sizerOutput.clusterSizing.totalCPU)} CPU,{" "}
+                    {formatNumber(sizerOutput.clusterSizing.totalMemory)} GB
+                    memory
+                  </ListItem>
+                </List>
+              )}
             </DescriptionListDescription>
           </DescriptionListGroup>
         </DescriptionList>
       </StackItem>
-
-      <StackItem>
-        <Button
-          variant="link"
-          icon={<CopyIcon />}
-          iconPosition="end"
-          onClick={handleCopyRecommendations}
-        >
-          Copy as plain text
-        </Button>
-      </StackItem>
-
-      {copySuccess && (
-        <StackItem>
-          <Alert
-            variant="success"
-            isInline
-            title="Copied to clipboard"
-            actionClose={
-              <AlertActionCloseButton onClose={() => setCopySuccess(false)} />
-            }
-          />
-        </StackItem>
-      )}
-
-      {copyError && (
-        <StackItem>
-          <Alert
-            variant="danger"
-            isInline
-            title="Failed to copy"
-            actionClose={
-              <AlertActionCloseButton onClose={() => setCopyError(null)} />
-            }
-          >
-            {copyError}
-          </Alert>
-        </StackItem>
-      )}
     </Stack>
   );
 };

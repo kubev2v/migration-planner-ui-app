@@ -10,6 +10,7 @@
 
 import {
   type ClusterRequirementsRequest,
+  ClusterRequirementsRequestControlPlaneNodeCountEnum,
   ClusterRequirementsRequestCpuOverCommitRatioEnum,
   ClusterRequirementsRequestMemoryOverCommitRatioEnum,
 } from "@openshift-migration-advisor/planner-sdk";
@@ -50,9 +51,16 @@ export type MemoryOvercommitRatio = 1 | 2 | 4;
 export type HAReplicaCount = 1 | 2 | 3;
 
 /**
+ * Cluster mode types
+ */
+export type ClusterMode = "full-ha" | "single-node" | "hosted-control-plane";
+
+/**
  * User input for cluster sizing configuration (form state)
  */
 export interface SizingFormValues {
+  /** Cluster mode selection */
+  clusterMode: ClusterMode;
   /** Selected worker node size preset */
   workerNodePreset: WorkerNodePreset;
   /** Custom CPU cores per worker (when preset is 'custom') */
@@ -67,6 +75,14 @@ export interface SizingFormValues {
   memoryOvercommitRatio: MemoryOvercommitRatio;
   /** Whether to schedule VMs on control plane nodes */
   scheduleOnControlPlane: boolean;
+  /** Whether SMT/Hyperthreading is enabled */
+  smtEnabled: boolean;
+  /** Number of SMT threads */
+  smtThreads: number;
+  /** Control plane CPU cores */
+  controlPlaneCpu: number;
+  /** Control plane memory in GB */
+  controlPlaneMemoryGb: number;
 }
 
 /**
@@ -118,20 +134,56 @@ export const memoryOvercommitRatioToApiEnum = (
 };
 
 /**
- * Helper function to convert form values to API request payload
+ * Mapping from ClusterMode to the API's controlPlaneNodeCount enum.
+ * HCP omits the field because the control plane is hosted externally.
+ */
+const CLUSTER_MODE_TO_NODE_COUNT: Record<
+  ClusterMode,
+  ClusterRequirementsRequest["controlPlaneNodeCount"] | undefined
+> = {
+  "full-ha": ClusterRequirementsRequestControlPlaneNodeCountEnum.NUMBER_3,
+  "single-node": ClusterRequirementsRequestControlPlaneNodeCountEnum.NUMBER_1,
+  "hosted-control-plane": undefined,
+};
+
+/**
+ * Helper function to convert form values to API request payload.
+ *
+ * Mode-specific mapping:
+ * - Full HA:  all fields sent (worker node, control plane, overcommit, SMT, scheduling)
+ * - SNO:      only control plane fields; worker/overcommit/SMT are required by the SDK
+ *             but their values are ignored by the backend when controlPlaneNodeCount=1
+ * - HCP:      hostedControlPlane=true; control-plane fields omitted (incompatible per API)
  */
 export const formValuesToRequest = (
   clusterId: string,
   values: SizingFormValues,
   workerCpu: number,
   workerMemory: number,
-): ClusterRequirementsRequest => ({
-  clusterId,
-  cpuOverCommitRatio: cpuOvercommitRatioToApiEnum(values.cpuOvercommitRatio),
-  memoryOverCommitRatio: memoryOvercommitRatioToApiEnum(
-    values.memoryOvercommitRatio,
-  ),
-  workerNodeCPU: workerCpu,
-  workerNodeMemory: workerMemory,
-  controlPlaneSchedulable: values.scheduleOnControlPlane,
-});
+): ClusterRequirementsRequest => {
+  const isHCP = values.clusterMode === "hosted-control-plane";
+  const isSNO = values.clusterMode === "single-node";
+  const isFullHA = values.clusterMode === "full-ha";
+
+  return {
+    clusterId,
+    cpuOverCommitRatio: cpuOvercommitRatioToApiEnum(values.cpuOvercommitRatio),
+    memoryOverCommitRatio: memoryOvercommitRatioToApiEnum(
+      values.memoryOvercommitRatio,
+    ),
+    workerNodeCPU: workerCpu,
+    workerNodeMemory: workerMemory,
+    workerNodeThreads:
+      isFullHA && values.smtEnabled ? values.smtThreads : undefined,
+    hostedControlPlane: isHCP || undefined,
+    controlPlaneSchedulable: isFullHA
+      ? values.scheduleOnControlPlane
+      : undefined,
+    controlPlaneCPU: isSNO || isFullHA ? values.controlPlaneCpu : undefined,
+    controlPlaneMemory:
+      isSNO || isFullHA ? values.controlPlaneMemoryGb : undefined,
+    controlPlaneNodeCount: isHCP
+      ? undefined
+      : CLUSTER_MODE_TO_NODE_COUNT[values.clusterMode],
+  };
+};

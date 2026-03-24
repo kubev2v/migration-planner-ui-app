@@ -7,6 +7,7 @@ import {
   type MenuToggleElement,
   Spinner,
   Tooltip,
+  Truncate,
 } from "@patternfly/react-core";
 import {
   ConnectedIcon,
@@ -60,6 +61,7 @@ const Columns = {
   VMs: "VMs",
   Networks: "Networks",
   Datastores: "Datastores",
+  AssessmentReport: "Assessment report",
   Actions: "",
 } as const;
 
@@ -390,7 +392,7 @@ export const AssessmentsTable: React.FC<Props> = ({
       <Table aria-label="Loading assessments" variant="compact" borders={false}>
         <Tbody>
           <Tr>
-            <Td colSpan={9}>
+            <Td colSpan={10}>
               <Spinner size="xl" />
             </Td>
           </Tr>
@@ -402,48 +404,45 @@ export const AssessmentsTable: React.FC<Props> = ({
     <div
       style={{
         width: "100%",
-        maxHeight: "450px",
-        overflowY: "auto",
-        overflowX: "visible",
+        maxHeight: "60vh",
+        overflow: "auto",
       }}
     >
       <Table
         aria-label="Assessments table"
         variant="compact"
         borders={false}
-        style={{ tableLayout: "auto", width: "100%", fontSize: "16px" }}
+        isStickyHeader
+        style={{ tableLayout: "auto", width: "100%" }}
       >
         <Thead>
           <Tr>
             <Th sort={nameSortParams} modifier="wrap">
               {Columns.Name}
             </Th>
-            <Th sort={sourceTypeSortParams} modifier="wrap">
+            <Th sort={sourceTypeSortParams} modifier="nowrap">
               {Columns.SourceType}
             </Th>
-            <Th sort={lastUpdatedSortParams} modifier="wrap">
+            <Th sort={lastUpdatedSortParams} modifier="nowrap">
               {Columns.LastUpdated}
             </Th>
-            <Th sort={ownerSortParams} modifier="wrap">
+            <Th sort={ownerSortParams} modifier="nowrap">
               {Columns.Owner}
             </Th>
-            <Th sort={hostsSortParams} modifier="wrap">
+            <Th sort={hostsSortParams} modifier="nowrap">
               {Columns.Hosts}
             </Th>
-            <Th sort={vmsSortParams} modifier="wrap">
+            <Th sort={vmsSortParams} modifier="nowrap">
               {Columns.VMs}
             </Th>
-            <Th sort={networksSortParams} modifier="wrap">
+            <Th sort={networksSortParams} modifier="nowrap">
               {Columns.Networks}
             </Th>
-            <Th sort={datastoresSortParams} modifier="wrap">
+            <Th sort={datastoresSortParams} modifier="nowrap">
               {Columns.Datastores}
             </Th>
-            <Th
-              modifier="fitContent"
-              screenReaderText="Actions"
-              style={{ whiteSpace: "nowrap" }}
-            >
+            <Th modifier="nowrap">{Columns.AssessmentReport}</Th>
+            <Th modifier="fitContent" screenReaderText="Actions">
               {Columns.Actions}
             </Th>
           </Tr>
@@ -461,7 +460,7 @@ export const AssessmentsTable: React.FC<Props> = ({
                 >
                   <Button
                     variant={row.hasData ? "link" : "plain"}
-                    style={{ padding: 0 }}
+                    style={{ padding: 0, textAlign: "left" }}
                     isDisabled={!row.hasData}
                     onClick={
                       row.hasData
@@ -469,7 +468,7 @@ export const AssessmentsTable: React.FC<Props> = ({
                         : undefined
                     }
                   >
-                    {row.name}
+                    <Truncate content={row.name} />
                   </Button>
                   {!row.hasData && (
                     <Tooltip
@@ -486,7 +485,10 @@ export const AssessmentsTable: React.FC<Props> = ({
                   )}
                 </div>
               </Td>
-              <Td dataLabel={Columns.SourceType}>
+              <Td
+                dataLabel={Columns.SourceType}
+                style={{ whiteSpace: "nowrap" }}
+              >
                 <div
                   style={{
                     display: "flex",
@@ -506,98 +508,90 @@ export const AssessmentsTable: React.FC<Props> = ({
               </Td>
               <Td dataLabel={Columns.LastUpdated}>{row.lastUpdated}</Td>
               <Td dataLabel={Columns.Owner}>{row.owner}</Td>
-              <Td dataLabel={Columns.Hosts}>{row.hosts}</Td>
-              <Td dataLabel={Columns.VMs}>{row.vms}</Td>
-              <Td dataLabel={Columns.Networks}>{row.networks}</Td>
-              <Td dataLabel={Columns.Datastores}>{row.datastores}</Td>
+              <Td dataLabel={Columns.Hosts} style={{ whiteSpace: "nowrap" }}>
+                {row.hosts}
+              </Td>
+              <Td dataLabel={Columns.VMs} style={{ whiteSpace: "nowrap" }}>
+                {row.vms}
+              </Td>
+              <Td dataLabel={Columns.Networks} style={{ whiteSpace: "nowrap" }}>
+                {row.networks}
+              </Td>
               <Td
-                dataLabel={Columns.Actions}
-                style={{
-                  verticalAlign: "middle",
-                  paddingTop: 0,
-                  paddingBottom: 0,
-                }}
+                dataLabel={Columns.Datastores}
+                style={{ whiteSpace: "nowrap" }}
               >
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "8px",
-                    height: "100%",
-                  }}
+                {row.datastores}
+              </Td>
+              <Td dataLabel={Columns.AssessmentReport}>
+                <Tooltip
+                  content={
+                    row.hasData
+                      ? "View assessment report"
+                      : row.sourceType.toLowerCase().includes("rvtools")
+                        ? "No inventory data found. The uploaded file may be corrupted. Please verify and re-upload."
+                        : "No inventory data yet. Data collection may be in progress or the source connection failed."
+                  }
                 >
-                  <Tooltip
-                    content={
-                      row.hasData
-                        ? "Show assessment report"
-                        : row.sourceType.toLowerCase().includes("rvtools")
-                          ? "No inventory data found. The uploaded file may be corrupted. Please verify and re-upload."
-                          : "No inventory data yet. Data collection may be in progress or the source connection failed."
-                    }
+                  <Button
+                    variant="link"
+                    isAriaDisabled={!row.hasData}
+                    onClick={() => navigate(routes.assessmentReport(row.id))}
+                    icon={<MonitoringIcon />}
+                    style={{ padding: 0, whiteSpace: "nowrap" }}
                   >
-                    <Button
+                    View report
+                  </Button>
+                </Tooltip>
+              </Td>
+              <Td dataLabel={Columns.Actions} modifier="fitContent">
+                <Dropdown
+                  isOpen={openDropdowns[row.id] || false}
+                  popperProps={{
+                    appendTo: () => document.body,
+                    position: "end",
+                  }}
+                  onOpenChange={(isOpen) =>
+                    setOpenDropdowns((prev) => ({
+                      ...prev,
+                      [row.id]: isOpen,
+                    }))
+                  }
+                  toggle={(toggleRef: React.Ref<MenuToggleElement>) => (
+                    <MenuToggle
+                      ref={toggleRef}
+                      aria-label="Actions"
                       variant="plain"
-                      aria-label="Open assessment"
-                      icon={
-                        <MonitoringIcon
-                          style={{ color: row.hasData ? "#0066cc" : "#6a6e73" }}
-                        />
-                      }
+                      onClick={() => toggleDropdown(row.id)}
+                      icon={<EllipsisVIcon />}
                       style={{ padding: 0 }}
-                      isAriaDisabled={!row.hasData}
+                    ></MenuToggle>
+                  )}
+                >
+                  <DropdownList>
+                    <DropdownItem
                       onClick={() => navigate(routes.assessmentReport(row.id))}
-                    />
-                  </Tooltip>
-                  <Dropdown
-                    isOpen={openDropdowns[row.id] || false}
-                    popperProps={{
-                      appendTo: () => document.body,
-                      position: "end",
-                    }}
-                    onOpenChange={(isOpen) =>
-                      setOpenDropdowns((prev) => ({
-                        ...prev,
-                        [row.id]: isOpen,
-                      }))
-                    }
-                    toggle={(toggleRef: React.Ref<MenuToggleElement>) => (
-                      <MenuToggle
-                        ref={toggleRef}
-                        aria-label="Actions"
-                        variant="plain"
-                        onClick={() => toggleDropdown(row.id)}
-                        icon={<EllipsisVIcon />}
-                        style={{ padding: 0 }}
-                      ></MenuToggle>
-                    )}
-                  >
-                    <DropdownList>
-                      <DropdownItem
-                        onClick={() =>
-                          navigate(routes.assessmentReport(row.id))
-                        }
-                        isDisabled={!row.hasData}
-                      >
-                        Show assessment report
-                      </DropdownItem>
-                      <DropdownItem
-                        onClick={() => alert("Edit functionality coming soon!")}
-                        isDisabled={true}
-                      >
-                        Edit assessment
-                      </DropdownItem>
-                      <DropdownItem
-                        onClick={openAssistedInstaller}
-                        isDisabled={!row.hasData}
-                      >
-                        Create a target cluster
-                      </DropdownItem>
-                      <DropdownItem onClick={() => handleDelete(row.id)}>
-                        Delete assessment
-                      </DropdownItem>
-                    </DropdownList>
-                  </Dropdown>
-                </div>
+                      isDisabled={!row.hasData}
+                    >
+                      Show assessment report
+                    </DropdownItem>
+                    <DropdownItem
+                      onClick={() => alert("Edit functionality coming soon!")}
+                      isDisabled={true}
+                    >
+                      Edit assessment
+                    </DropdownItem>
+                    <DropdownItem
+                      onClick={openAssistedInstaller}
+                      isDisabled={!row.hasData}
+                    >
+                      Create a target cluster
+                    </DropdownItem>
+                    <DropdownItem onClick={() => handleDelete(row.id)}>
+                      Delete assessment
+                    </DropdownItem>
+                  </DropdownList>
+                </Dropdown>
               </Td>
             </Tr>
           ))}

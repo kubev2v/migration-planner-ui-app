@@ -3,6 +3,8 @@ import {
   Alert,
   Button,
   ExpandableSection,
+  Flex,
+  FlexItem,
   Panel,
   PanelHeader,
   PanelMain,
@@ -63,6 +65,10 @@ interface RecommendationTemplateProps {
   isPreferencesDisabled?: boolean;
   /** Whether to hide the preferences section entirely (defaults to false) */
   hidePreferences?: boolean;
+  /** Optional action element rendered inline with the results title */
+  headerAction?: ReactNode;
+  /** When true, re-expands the preferences section so the user can adjust values */
+  hasError?: boolean;
 }
 
 export const RecommendationTemplate: React.FC<RecommendationTemplateProps> = ({
@@ -78,10 +84,13 @@ export const RecommendationTemplate: React.FC<RecommendationTemplateProps> = ({
   isPreferencesInitiallyExpanded = true,
   isPreferencesDisabled = false,
   hidePreferences = false,
+  headerAction,
+  hasError = false,
 }) => {
-  const [isPreferencesExpanded, setIsPreferencesExpanded] = useState(
+  const [manualExpanded, setManualExpanded] = useState(
     isPreferencesInitiallyExpanded,
   );
+  const isPreferencesExpanded = hasError || manualExpanded;
 
   const handleGenerate = () => {
     const result = onGenerate();
@@ -91,10 +100,10 @@ export const RecommendationTemplate: React.FC<RecommendationTemplateProps> = ({
           console.error("Generate recommendation failed:", err);
         })
         .finally(() => {
-          setIsPreferencesExpanded(false);
+          setManualExpanded(false);
         });
     } else {
-      setIsPreferencesExpanded(false);
+      setManualExpanded(false);
     }
   };
 
@@ -116,7 +125,7 @@ export const RecommendationTemplate: React.FC<RecommendationTemplateProps> = ({
               onToggle={
                 isPreferencesDisabled
                   ? undefined
-                  : (_event, expanded) => setIsPreferencesExpanded(expanded)
+                  : (_event, expanded) => setManualExpanded(expanded)
               }
               displaySize="lg"
               className={
@@ -146,9 +155,19 @@ export const RecommendationTemplate: React.FC<RecommendationTemplateProps> = ({
       {hasResults && (
         <StackItem>
           <Panel>
-            {resultsTitle && (
+            {(resultsTitle || headerAction) && (
               <PanelHeader>
-                <Title headingLevel="h2">{resultsTitle}</Title>
+                <Flex
+                  justifyContent={{ default: "justifyContentSpaceBetween" }}
+                  alignItems={{ default: "alignItemsCenter" }}
+                >
+                  {resultsTitle && (
+                    <FlexItem>
+                      <Title headingLevel="h2">{resultsTitle}</Title>
+                    </FlexItem>
+                  )}
+                  {headerAction && <FlexItem>{headerAction}</FlexItem>}
+                </Flex>
               </PanelHeader>
             )}
             <PanelMain>
