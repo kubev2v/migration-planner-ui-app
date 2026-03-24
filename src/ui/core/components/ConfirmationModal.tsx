@@ -42,7 +42,7 @@ export const ConfirmationModal: React.FC<
     onCancel,
     variant = "small",
     titleIconVariant = "info",
-    primaryButtonVariant = "primary",
+    primaryButtonVariant = "danger",
     title,
     children,
   } = props;
