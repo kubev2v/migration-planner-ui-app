@@ -155,7 +155,10 @@ export const SizingInputForm: React.FC<SizingInputFormProps> = ({
     values.clusterMode === "hosted-control-plane";
   const showControlPlane =
     values.clusterMode === "full-ha" || values.clusterMode === "single-node";
-  const showCheckboxes = values.clusterMode === "full-ha";
+  const showControlPlaneScheduling = values.clusterMode === "full-ha";
+  const showSmt =
+    values.clusterMode === "full-ha" ||
+    values.clusterMode === "hosted-control-plane";
 
   return (
     <Form>
@@ -180,48 +183,47 @@ export const SizingInputForm: React.FC<SizingInputFormProps> = ({
           </FormGroup>
         </GridItem>
 
-        {/* Checkboxes for Full HA mode only */}
-        {showCheckboxes && (
-          <>
-            <GridItem span={12}>
-              <Checkbox
-                isLabelWrapped
-                id="control-plane-scheduling"
-                label="Run workloads on control plane nodes"
-                isChecked={values.scheduleOnControlPlane}
-                onChange={handleControlPlaneChange}
-              />
-            </GridItem>
+        {showControlPlaneScheduling && (
+          <GridItem span={12}>
+            <Checkbox
+              isLabelWrapped
+              id="control-plane-scheduling"
+              label="Run workloads on control plane nodes"
+              isChecked={values.scheduleOnControlPlane}
+              onChange={handleControlPlaneChange}
+            />
+          </GridItem>
+        )}
 
-            <GridItem span={12}>
-              <Flex
-                alignItems={{ default: "alignItemsCenter" }}
-                spaceItems={{ default: "spaceItemsSm" }}
-              >
-                <FlexItem>
-                  <Checkbox
-                    isLabelWrapped
-                    id="smt-enabled"
-                    label="Enable SMT/Hyperthreading"
-                    isChecked={values.smtEnabled}
-                    onChange={handleSmtEnabledChange}
-                  />
-                </FlexItem>
-                <FlexItem>
-                  <TextInput
-                    id="smt-threads"
-                    value={values.smtThreads}
-                    onChange={handleSmtThreadsChange}
-                    name="smt-threads"
-                    aria-label="SMT threads"
-                    isDisabled={!values.smtEnabled}
-                    type="number"
-                    className={smtInputStyle}
-                  />
-                </FlexItem>
-              </Flex>
-            </GridItem>
-          </>
+        {showSmt && (
+          <GridItem span={12}>
+            <Flex
+              alignItems={{ default: "alignItemsCenter" }}
+              spaceItems={{ default: "spaceItemsSm" }}
+            >
+              <FlexItem>
+                <Checkbox
+                  isLabelWrapped
+                  id="smt-enabled"
+                  label="Enable SMT/Hyperthreading"
+                  isChecked={values.smtEnabled}
+                  onChange={handleSmtEnabledChange}
+                />
+              </FlexItem>
+              <FlexItem>
+                <TextInput
+                  id="smt-threads"
+                  value={values.smtThreads}
+                  onChange={handleSmtThreadsChange}
+                  name="smt-threads"
+                  aria-label="SMT threads"
+                  isDisabled={!values.smtEnabled}
+                  type="number"
+                  className={smtInputStyle}
+                />
+              </FlexItem>
+            </Flex>
+          </GridItem>
         )}
 
         {/* Worker node section - show for Full HA and HCP */}

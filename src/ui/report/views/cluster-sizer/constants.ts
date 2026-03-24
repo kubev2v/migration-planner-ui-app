@@ -60,10 +60,12 @@ export const MEMORY_OPTIONS: { value: number; label: string }[] = [
  * Control plane CPU options
  */
 export const CONTROL_PLANE_CPU_OPTIONS: { value: number; label: string }[] = [
-  { value: 8, label: "8" },
+  { value: 6, label: "6" },
   { value: 16, label: "16" },
   { value: 32, label: "32" },
   { value: 64, label: "64" },
+  { value: 128, label: "128" },
+  { value: 200, label: "200" },
 ];
 
 /**
@@ -75,6 +77,8 @@ export const CONTROL_PLANE_MEMORY_OPTIONS: { value: number; label: string }[] =
     { value: 32, label: "32" },
     { value: 64, label: "64" },
     { value: 128, label: "128" },
+    { value: 256, label: "256" },
+    { value: 512, label: "512" },
   ];
 
 /**

@@ -190,7 +190,8 @@ export const formValuesToRequest = (
     workerNodeCPU: workerCpu,
     workerNodeMemory: workerMemory,
     workerNodeThreads:
-      isFullHA && values.smtEnabled ? values.smtThreads : undefined,
+      (isFullHA || isHCP) && values.smtEnabled ? values.smtThreads : undefined,
+    hostedControlPlane: isHCP || undefined,
     controlPlaneSchedulable: isFullHA
       ? values.scheduleOnControlPlane
       : undefined,
