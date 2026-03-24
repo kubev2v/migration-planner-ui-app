@@ -146,14 +146,17 @@ const CLUSTER_MODE_TO_NODE_COUNT: Record<
   "hosted-control-plane": undefined,
 };
 
+const SNO_DEFAULT_WORKER_CPU = 16;
+const SNO_DEFAULT_WORKER_MEMORY = 128;
+
 /**
  * Helper function to convert form values to API request payload.
  *
  * Mode-specific mapping:
  * - Full HA:  all fields sent (worker node, control plane, overcommit, SMT, scheduling)
- * - SNO:      only control plane fields; worker/overcommit/SMT are required by the SDK
- *             but their values are ignored by the backend when controlPlaneNodeCount=1
- * - HCP:      hostedControlPlane=true; control-plane fields omitted (incompatible per API)
+ * - SNO:      minimal payload — controlPlaneSchedulable=true, control plane CPU/memory
+ *             from form, workerNodeCPU/Memory use fixed defaults (required by SDK)
+ * - HCP:      control-plane fields omitted (hosted externally)
  */
 export const formValuesToRequest = (
   clusterId: string,
@@ -165,6 +168,19 @@ export const formValuesToRequest = (
   const isSNO = values.clusterMode === "single-node";
   const isFullHA = values.clusterMode === "full-ha";
 
+  if (isSNO) {
+    return {
+      clusterId,
+      workerNodeCPU: SNO_DEFAULT_WORKER_CPU,
+      workerNodeMemory: SNO_DEFAULT_WORKER_MEMORY,
+      controlPlaneSchedulable: true,
+      controlPlaneNodeCount:
+        ClusterRequirementsRequestControlPlaneNodeCountEnum.NUMBER_1,
+      controlPlaneCPU: values.controlPlaneCpu,
+      controlPlaneMemory: values.controlPlaneMemoryGb,
+    } as ClusterRequirementsRequest;
+  }
+
   return {
     clusterId,
     cpuOverCommitRatio: cpuOvercommitRatioToApiEnum(values.cpuOvercommitRatio),
@@ -175,13 +191,11 @@ export const formValuesToRequest = (
     workerNodeMemory: workerMemory,
     workerNodeThreads:
       isFullHA && values.smtEnabled ? values.smtThreads : undefined,
-    hostedControlPlane: isHCP || undefined,
     controlPlaneSchedulable: isFullHA
       ? values.scheduleOnControlPlane
       : undefined,
-    controlPlaneCPU: isSNO || isFullHA ? values.controlPlaneCpu : undefined,
-    controlPlaneMemory:
-      isSNO || isFullHA ? values.controlPlaneMemoryGb : undefined,
+    controlPlaneCPU: isFullHA ? values.controlPlaneCpu : undefined,
+    controlPlaneMemory: isFullHA ? values.controlPlaneMemoryGb : undefined,
     controlPlaneNodeCount: isHCP
       ? undefined
       : CLUSTER_MODE_TO_NODE_COUNT[values.clusterMode],

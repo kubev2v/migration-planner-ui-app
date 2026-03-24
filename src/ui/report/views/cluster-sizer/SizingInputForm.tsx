@@ -61,7 +61,13 @@ export const SizingInputForm: React.FC<SizingInputFormProps> = ({
     _event: React.FormEvent<HTMLSelectElement>,
     mode: string,
   ): void => {
-    onChange({ ...values, clusterMode: mode as ClusterMode });
+    const clusterMode = mode as ClusterMode;
+    onChange({
+      ...values,
+      clusterMode,
+      scheduleOnControlPlane:
+        clusterMode === "single-node" ? true : values.scheduleOnControlPlane,
+    });
   };
 
   const handleControlPlaneChange = (
