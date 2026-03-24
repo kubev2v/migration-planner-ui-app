@@ -16,7 +16,15 @@ import {
   FileIcon,
   MonitoringIcon,
 } from "@patternfly/react-icons";
-import { Table, Tbody, Td, Th, Thead, Tr } from "@patternfly/react-table";
+import {
+  Table,
+  TableText,
+  Tbody,
+  Td,
+  Th,
+  Thead,
+  Tr,
+} from "@patternfly/react-table";
 import React, { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -46,13 +54,18 @@ type Props = {
   filterValue?: string;
   selectedSourceTypes?: string[];
   selectedOwners?: string[];
-  sortBy?: { index: number; direction: "asc" | "desc" } | undefined;
-  onSort?: (event: unknown, index: number, direction: "asc" | "desc") => void;
+  sortBy?: { columnKey: SortableColumn; direction: "asc" | "desc" } | undefined;
+  onSort?: (
+    event: unknown,
+    columnKey: SortableColumn,
+    direction: "asc" | "desc",
+  ) => void;
   onDelete?: (assessmentId: string) => void;
   onUpdate?: (assessmentId: string) => void;
+  visibleColumns?: ColumnKey[];
 };
 
-const Columns = {
+export const Columns = {
   Name: "Name",
   SourceType: "Source type",
   LastUpdated: "Last updated",
@@ -65,6 +78,21 @@ const Columns = {
   Actions: "",
 } as const;
 
+export type ColumnKey = keyof typeof Columns;
+export const DEFAULT_VISIBLE_COLUMNS = Object.keys(Columns) as ColumnKey[];
+export const MANDATORY_COLUMNS: ColumnKey[] = ["Name", "Actions"];
+export type SortableColumn = Exclude<ColumnKey, "AssessmentReport" | "Actions">;
+export const SORTABLE_COLUMNS: SortableColumn[] = [
+  "Name",
+  "SourceType",
+  "LastUpdated",
+  "Owner",
+  "Hosts",
+  "VMs",
+  "Networks",
+  "Datastores",
+];
+
 export const AssessmentsTable: React.FC<Props> = ({
   assessments,
   isLoading,
@@ -76,6 +104,7 @@ export const AssessmentsTable: React.FC<Props> = ({
   sortBy,
   onSort,
   onDelete,
+  visibleColumns = Object.keys(Columns) as ColumnKey[],
 }) => {
   const navigate = useNavigate();
   const [openDropdowns, setOpenDropdowns] = useState<Record<string, boolean>>(
@@ -87,6 +116,10 @@ export const AssessmentsTable: React.FC<Props> = ({
       ...prev,
       [assessmentId]: !prev[assessmentId],
     }));
+  };
+
+  const isColumnVisible = (columnKey: ColumnKey): boolean => {
+    return visibleColumns.includes(columnKey);
   };
 
   const handleDelete = (assessmentId: string): void => {
@@ -240,50 +273,50 @@ export const AssessmentsTable: React.FC<Props> = ({
     if (!sortBy) return filtered;
 
     const copy = [...filtered];
-    switch (sortBy.index) {
-      case 0: // Name column
+    switch (sortBy.columnKey) {
+      case "Name":
         copy.sort((a, b) =>
           sortBy.direction === "asc"
             ? a.name.localeCompare(b.name)
             : b.name.localeCompare(a.name),
         );
         break;
-      case 1: // Source type column
+      case "SourceType":
         copy.sort((a, b) =>
           sortBy.direction === "asc"
             ? a.sourceType.localeCompare(b.sourceType)
             : b.sourceType.localeCompare(a.sourceType),
         );
         break;
-      case 2: // Last updated column
+      case "LastUpdated":
         copy.sort((a, b) => {
           const aMs = typeof a.lastUpdatedMs === "number" ? a.lastUpdatedMs : 0;
           const bMs = typeof b.lastUpdatedMs === "number" ? b.lastUpdatedMs : 0;
           return sortBy.direction === "asc" ? aMs - bMs : bMs - aMs;
         });
         break;
-      case 3: // Owner column
+      case "Owner":
         copy.sort((a, b) =>
           sortBy.direction === "asc"
             ? (a.owner || "").localeCompare(b.owner || "")
             : (b.owner || "").localeCompare(a.owner || ""),
         );
         break;
-      case 4: // Hosts column
+      case "Hosts":
         copy.sort((a, b) => {
           const aHosts = typeof a.hosts === "number" ? a.hosts : 0;
           const bHosts = typeof b.hosts === "number" ? b.hosts : 0;
           return sortBy.direction === "asc" ? aHosts - bHosts : bHosts - aHosts;
         });
         break;
-      case 5: // VMs column
+      case "VMs":
         copy.sort((a, b) => {
           const aVms = typeof a.vms === "number" ? a.vms : 0;
           const bVms = typeof b.vms === "number" ? b.vms : 0;
           return sortBy.direction === "asc" ? aVms - bVms : bVms - aVms;
         });
         break;
-      case 6: // Networks column
+      case "Networks":
         copy.sort((a, b) => {
           const aNetworks = typeof a.networks === "number" ? a.networks : 0;
           const bNetworks = typeof b.networks === "number" ? b.networks : 0;
@@ -292,7 +325,7 @@ export const AssessmentsTable: React.FC<Props> = ({
             : bNetworks - aNetworks;
         });
         break;
-      case 7: // Datastores column
+      case "Datastores":
         copy.sort((a, b) => {
           const aDatastores =
             typeof a.datastores === "number" ? a.datastores : 0;
@@ -315,84 +348,28 @@ export const AssessmentsTable: React.FC<Props> = ({
     sortBy,
   ]);
 
-  const nameSortParams =
-    onSort && sortBy
-      ? {
-          sortBy,
-          onSort,
-          columnIndex: 0,
-        }
-      : undefined;
-
-  const sourceTypeSortParams =
-    onSort && sortBy
-      ? {
-          sortBy,
-          onSort,
-          columnIndex: 1,
-        }
-      : undefined;
-
-  const lastUpdatedSortParams =
-    onSort && sortBy
-      ? {
-          sortBy,
-          onSort,
-          columnIndex: 2,
-        }
-      : undefined;
-
-  const ownerSortParams =
-    onSort && sortBy
-      ? {
-          sortBy,
-          onSort,
-          columnIndex: 3,
-        }
-      : undefined;
-
-  const hostsSortParams =
-    onSort && sortBy
-      ? {
-          sortBy,
-          onSort,
-          columnIndex: 4,
-        }
-      : undefined;
-
-  const vmsSortParams =
-    onSort && sortBy
-      ? {
-          sortBy,
-          onSort,
-          columnIndex: 5,
-        }
-      : undefined;
-
-  const networksSortParams =
-    onSort && sortBy
-      ? {
-          sortBy,
-          onSort,
-          columnIndex: 6,
-        }
-      : undefined;
-
-  const datastoresSortParams =
-    onSort && sortBy
-      ? {
-          sortBy,
-          onSort,
-          columnIndex: 7,
-        }
-      : undefined;
+  const getSortParams = (columnKey: SortableColumn) => {
+    if (!onSort || !sortBy) return undefined;
+    const columnIndex = SORTABLE_COLUMNS.indexOf(columnKey);
+    const activeSortColumnIndex = SORTABLE_COLUMNS.indexOf(sortBy.columnKey);
+    return {
+      sortBy: {
+        index: activeSortColumnIndex,
+        direction: sortBy.direction,
+      },
+      onSort: (event: unknown, _index: number, direction: "asc" | "desc") => {
+        onSort(event, columnKey, direction);
+      },
+      columnIndex,
+    };
+  };
 
   if (isLoading && (!assessments || assessments.length === 0)) {
     return (
       <Table aria-label="Loading assessments" variant="compact" borders={false}>
         <Tbody>
           <Tr>
-            <Td colSpan={10}>
+            <Td colSpan={visibleColumns.length}>
               <Spinner size="xl" />
             </Td>
           </Tr>
@@ -401,94 +378,112 @@ export const AssessmentsTable: React.FC<Props> = ({
     );
   }
   return (
-    <div
-      style={{
-        width: "100%",
-        maxHeight: "60vh",
-        overflow: "auto",
-      }}
+    <Table
+      aria-label="Assessments table"
+      variant="compact"
+      borders={false}
+      isStickyHeader
+      gridBreakPoint="grid-md"
     >
-      <Table
-        aria-label="Assessments table"
-        variant="compact"
-        borders={false}
-        isStickyHeader
-        style={{ tableLayout: "auto", width: "100%" }}
-      >
-        <Thead>
-          <Tr>
-            <Th sort={nameSortParams} modifier="wrap">
+      <Thead>
+        <Tr>
+          {isColumnVisible("Name") && (
+            <Th sort={getSortParams("Name")} modifier="nowrap">
               {Columns.Name}
             </Th>
-            <Th sort={sourceTypeSortParams} modifier="nowrap">
+          )}
+          {isColumnVisible("SourceType") && (
+            <Th sort={getSortParams("SourceType")} modifier="nowrap">
               {Columns.SourceType}
             </Th>
-            <Th sort={lastUpdatedSortParams} modifier="nowrap">
+          )}
+          {isColumnVisible("LastUpdated") && (
+            <Th sort={getSortParams("LastUpdated")} modifier="nowrap">
               {Columns.LastUpdated}
             </Th>
-            <Th sort={ownerSortParams} modifier="nowrap">
+          )}
+          {isColumnVisible("Owner") && (
+            <Th sort={getSortParams("Owner")} modifier="nowrap">
               {Columns.Owner}
             </Th>
-            <Th sort={hostsSortParams} modifier="nowrap">
+          )}
+          {isColumnVisible("Hosts") && (
+            <Th sort={getSortParams("Hosts")} modifier="nowrap">
               {Columns.Hosts}
             </Th>
-            <Th sort={vmsSortParams} modifier="nowrap">
+          )}
+          {isColumnVisible("VMs") && (
+            <Th sort={getSortParams("VMs")} modifier="nowrap">
               {Columns.VMs}
             </Th>
-            <Th sort={networksSortParams} modifier="nowrap">
+          )}
+          {isColumnVisible("Networks") && (
+            <Th sort={getSortParams("Networks")} modifier="nowrap">
               {Columns.Networks}
             </Th>
-            <Th sort={datastoresSortParams} modifier="nowrap">
+          )}
+          {isColumnVisible("Datastores") && (
+            <Th sort={getSortParams("Datastores")} modifier="nowrap">
               {Columns.Datastores}
             </Th>
+          )}
+          {isColumnVisible("AssessmentReport") && (
             <Th modifier="nowrap">{Columns.AssessmentReport}</Th>
+          )}
+          {isColumnVisible("Actions") && (
             <Th modifier="fitContent" screenReaderText="Actions">
               {Columns.Actions}
             </Th>
-          </Tr>
-        </Thead>
-        <Tbody>
-          {rows.map((row) => (
-            <Tr key={row.key}>
+          )}
+        </Tr>
+      </Thead>
+      <Tbody>
+        {rows.map((row) => (
+          <Tr key={row.key}>
+            {isColumnVisible("Name") && (
               <Td dataLabel={Columns.Name}>
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "8px",
-                  }}
-                >
-                  <Button
-                    variant={row.hasData ? "link" : "plain"}
-                    style={{ padding: 0, textAlign: "left" }}
-                    isDisabled={!row.hasData}
-                    onClick={
-                      row.hasData
-                        ? (): void => navigate(routes.assessmentById(row.id))
-                        : undefined
-                    }
+                <TableText>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "8px",
+                    }}
                   >
-                    <Truncate content={row.name} />
-                  </Button>
-                  {!row.hasData && (
-                    <Tooltip
-                      content={
-                        row.sourceType.toLowerCase().includes("rvtools")
-                          ? "No inventory data found. The uploaded file may be corrupted. Please verify and re-upload."
-                          : "No inventory data yet. Data collection may be in progress or the source connection failed."
+                    <Button
+                      variant={row.hasData ? "link" : "plain"}
+                      style={{ padding: 0 }}
+                      isDisabled={!row.hasData}
+                      onClick={
+                        row.hasData
+                          ? (): void => navigate(routes.assessmentById(row.id))
+                          : undefined
                       }
                     >
-                      <ExclamationTriangleIcon
-                        style={{ color: "#f0ab00", cursor: "help" }}
-                      />
-                    </Tooltip>
-                  )}
-                </div>
+                      <Truncate content={row.name} />
+                    </Button>
+                    {!row.hasData && (
+                      <Tooltip
+                        content={
+                          row.sourceType.toLowerCase().includes("rvtools")
+                            ? "No inventory data found. The uploaded file may be corrupted. Please verify and re-upload."
+                            : "No inventory data yet. Data collection may be in progress or the source connection failed."
+                        }
+                      >
+                        <ExclamationTriangleIcon
+                          style={{
+                            color: "#f0ab00",
+                            cursor: "help",
+                          }}
+                        />
+                      </Tooltip>
+                    )}
+                  </div>
+                </TableText>
               </Td>
-              <Td
-                dataLabel={Columns.SourceType}
-                style={{ whiteSpace: "nowrap" }}
-              >
+            )}
+            {isColumnVisible("SourceType") && (
+              <Td dataLabel={Columns.SourceType}>
                 <div
                   style={{
                     display: "flex",
@@ -501,49 +496,63 @@ export const AssessmentsTable: React.FC<Props> = ({
                   ) : (
                     <ConnectedIcon />
                   )}
-                  {row.sourceType.toLowerCase() === "rvtools"
-                    ? "RVTools (XLS/X)"
-                    : "Discovery OVA"}
+                  {row.sourceType.toLowerCase() === "rvtools" ? (
+                    <Truncate content="RVTools (XLS/X)" />
+                  ) : (
+                    <Truncate content="Discovery OVA" />
+                  )}
                 </div>
               </Td>
-              <Td dataLabel={Columns.LastUpdated}>{row.lastUpdated}</Td>
-              <Td dataLabel={Columns.Owner}>{row.owner}</Td>
-              <Td dataLabel={Columns.Hosts} style={{ whiteSpace: "nowrap" }}>
-                {row.hosts}
+            )}
+            {isColumnVisible("LastUpdated") && (
+              <Td dataLabel={Columns.LastUpdated}>
+                <Truncate content={row.lastUpdated} />
               </Td>
-              <Td dataLabel={Columns.VMs} style={{ whiteSpace: "nowrap" }}>
-                {row.vms}
+            )}
+            {isColumnVisible("Owner") && (
+              <Td dataLabel={Columns.Owner}>
+                <Truncate content={row.owner} />
               </Td>
-              <Td dataLabel={Columns.Networks} style={{ whiteSpace: "nowrap" }}>
-                {row.networks}
-              </Td>
-              <Td
-                dataLabel={Columns.Datastores}
-                style={{ whiteSpace: "nowrap" }}
-              >
-                {row.datastores}
-              </Td>
+            )}
+            {isColumnVisible("Hosts") && (
+              <Td dataLabel={Columns.Hosts}>{row.hosts}</Td>
+            )}
+            {isColumnVisible("VMs") && (
+              <Td dataLabel={Columns.VMs}>{row.vms}</Td>
+            )}
+            {isColumnVisible("Networks") && (
+              <Td dataLabel={Columns.Networks}>{row.networks}</Td>
+            )}
+            {isColumnVisible("Datastores") && (
+              <Td dataLabel={Columns.Datastores}>{row.datastores}</Td>
+            )}
+            {isColumnVisible("AssessmentReport") && (
               <Td dataLabel={Columns.AssessmentReport}>
-                <Tooltip
-                  content={
-                    row.hasData
-                      ? "View assessment report"
-                      : row.sourceType.toLowerCase().includes("rvtools")
-                        ? "No inventory data found. The uploaded file may be corrupted. Please verify and re-upload."
-                        : "No inventory data yet. Data collection may be in progress or the source connection failed."
-                  }
-                >
-                  <Button
-                    variant="link"
-                    isAriaDisabled={!row.hasData}
-                    onClick={() => navigate(routes.assessmentReport(row.id))}
-                    icon={<MonitoringIcon />}
-                    style={{ padding: 0, whiteSpace: "nowrap" }}
+                <TableText>
+                  <Tooltip
+                    content={
+                      row.hasData
+                        ? "View assessment report"
+                        : row.sourceType.toLowerCase().includes("rvtools")
+                          ? "No inventory data found. The uploaded file may be corrupted. Please verify and re-upload."
+                          : "No inventory data yet. Data collection may be in progress or the source connection failed."
+                    }
                   >
-                    View report
-                  </Button>
-                </Tooltip>
+                    <Button
+                      variant="link"
+                      isAriaDisabled={!row.hasData}
+                      onClick={() => navigate(routes.assessmentReport(row.id))}
+                      icon={<MonitoringIcon />}
+                      aria-label="View assessment report"
+                      style={{ padding: 0 }}
+                    >
+                      View report
+                    </Button>
+                  </Tooltip>
+                </TableText>
               </Td>
+            )}
+            {isColumnVisible("Actions") && (
               <Td dataLabel={Columns.Actions} modifier="fitContent">
                 <Dropdown
                   isOpen={openDropdowns[row.id] || false}
@@ -564,7 +573,7 @@ export const AssessmentsTable: React.FC<Props> = ({
                       variant="plain"
                       onClick={() => toggleDropdown(row.id)}
                       icon={<EllipsisVIcon />}
-                      style={{ padding: 0 }}
+                      style={{ padding: 0, width: "fit-content" }}
                     ></MenuToggle>
                   )}
                 >
@@ -593,11 +602,11 @@ export const AssessmentsTable: React.FC<Props> = ({
                   </DropdownList>
                 </Dropdown>
               </Td>
-            </Tr>
-          ))}
-        </Tbody>
-      </Table>
-    </div>
+            )}
+          </Tr>
+        ))}
+      </Tbody>
+    </Table>
   );
 };
 

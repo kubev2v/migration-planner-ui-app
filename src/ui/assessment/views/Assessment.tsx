@@ -1,3 +1,4 @@
+import { css } from "@emotion/css";
 import {
   Button,
   Dropdown,
@@ -8,11 +9,15 @@ import {
   MenuToggle,
   type MenuToggleElement,
   SearchInput,
+  Select,
+  SelectList,
+  SelectOption,
   Toolbar,
   ToolbarContent,
+  ToolbarGroup,
   ToolbarItem,
 } from "@patternfly/react-core";
-import { FilterIcon, TimesIcon } from "@patternfly/react-icons";
+import { ColumnsIcon, FilterIcon, TimesIcon } from "@patternfly/react-icons";
 import React, { useCallback, useState } from "react";
 
 import type { AssessmentModel } from "../../../models/AssessmentModel";
@@ -21,7 +26,12 @@ import CreateAssessmentDropdown from "../../core/components/CreateAssessmentDrop
 import FilterPill from "../../core/components/FilterPill";
 import StartingPageModal from "../../home/views/StartingPageModal";
 import { useAssessmentPageViewModel } from "../view-models/useAssessmentPageViewModel";
-import AssessmentsTable from "./AssessmentsTable";
+import AssessmentsTable, {
+  type ColumnKey,
+  Columns,
+  MANDATORY_COLUMNS,
+  type SortableColumn,
+} from "./AssessmentsTable";
 import CreateAssessmentModal, {
   type AssessmentMode,
 } from "./CreateAssessmentModal";
@@ -34,6 +44,42 @@ type Props = {
   // When this token changes, the component should open the RVTools modal.
   rvtoolsOpenToken?: string;
 };
+
+const checkboxStyle = css`
+  margin-right: 8px;
+`;
+
+const searchInputStyle = css`
+  min-width: 300px;
+  width: 300px;
+`;
+
+const filterContainerStyle = css`
+  margin-top: 8px;
+`;
+
+const filterInnerStyle = css`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  background: #f5f5f5;
+  padding: 6px 8px;
+  border-radius: 6px;
+`;
+
+const filterLabelStyle = css`
+  background: #e7e7e7;
+  border-radius: 12px;
+  padding: 2px 8px;
+  font-size: 12px;
+`;
+
+const tableContainerStyle = css`
+  margin-top: 10px;
+  max-width: 100%;
+  overflow: auto;
+`;
 
 const Assessment: React.FC<Props> = ({
   assessments,
@@ -49,6 +95,12 @@ const Assessment: React.FC<Props> = ({
     jobError,
     isNavigatingToReport,
     isDeletingAssessment,
+    isColumnSelectOpen,
+    setIsColumnSelectOpen,
+    visibleColumns,
+    toggleColumn,
+    sortBy,
+    setSortBy,
     createRVToolsJob,
     cancelRVToolsJob,
     updateAssessment: vmUpdateAssessment,
@@ -56,12 +108,6 @@ const Assessment: React.FC<Props> = ({
   } = useAssessmentPageViewModel();
 
   const [search, setSearch] = useState("");
-  const [sortBy, setSortBy] = useState<
-    { index: number; direction: "asc" | "desc" } | undefined
-  >({
-    index: 0,
-    direction: "asc",
-  });
   const [isFilterDropdownOpen, setIsFilterDropdownOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState<AssessmentMode>("inventory");
@@ -128,10 +174,10 @@ const Assessment: React.FC<Props> = ({
 
   const onSort = (
     _event: unknown,
-    index: number,
+    columnKey: SortableColumn,
     direction: "asc" | "desc",
   ): void => {
-    setSortBy({ index, direction });
+    setSortBy({ columnKey, direction });
   };
 
   const handleOpenModal = (mode: AssessmentMode): void => {
@@ -227,16 +273,12 @@ const Assessment: React.FC<Props> = ({
         onOpenRVToolsModal={() => handleOpenModal("rvtools")}
       />
 
-      <div
-        style={{
-          background: "white",
-          padding: "0 20px 20px 20px",
-          marginTop: "10px",
-          marginBottom: "10px",
-        }}
-      >
-        <Toolbar inset={{ default: "insetNone" }}>
-          <ToolbarContent>
+      <Toolbar>
+        <ToolbarContent>
+          <ToolbarGroup
+            align={{ default: "alignStart" }}
+            rowWrap={{ default: "wrap", md: "nowrap" }}
+          >
             <ToolbarItem>
               <InputGroup>
                 <InputGroupItem>
@@ -251,8 +293,7 @@ const Assessment: React.FC<Props> = ({
                           setIsFilterDropdownOpen(!isFilterDropdownOpen)
                         }
                         isExpanded={isFilterDropdownOpen}
-                        style={{ minWidth: "220px", width: "220px" }}
-                        icon={<FilterIcon style={{ marginRight: "8px" }} />}
+                        icon={<FilterIcon />}
                       >
                         Filters
                       </MenuToggle>
@@ -288,7 +329,7 @@ const Assessment: React.FC<Props> = ({
                           type="checkbox"
                           readOnly
                           checked={selectedSourceTypes.includes("discovery")}
-                          style={{ marginRight: "8px" }}
+                          className={checkboxStyle}
                         />
                         Discovery OVA
                       </DropdownItem>
@@ -357,99 +398,125 @@ const Assessment: React.FC<Props> = ({
                     value={search}
                     onChange={(_event, value) => setSearch(value)}
                     onClear={() => setSearch("")}
-                    style={{ minWidth: "300px", width: "300px" }}
+                    className={searchInputStyle}
                   />
                 </InputGroupItem>
               </InputGroup>
             </ToolbarItem>
-            {!isTableEmpty() ? (
-              <ToolbarItem align={{ default: "alignStart" }}>
+            <ToolbarItem>
+              <Select
+                isOpen={isColumnSelectOpen}
+                onOpenChange={(isOpen) => setIsColumnSelectOpen(isOpen)}
+                onSelect={(_event, value) => {
+                  if (typeof value === "string") {
+                    toggleColumn(value as ColumnKey);
+                  }
+                }}
+                toggle={(toggleRef: React.Ref<MenuToggleElement>) => (
+                  <MenuToggle
+                    ref={toggleRef}
+                    onClick={() => setIsColumnSelectOpen(!isColumnSelectOpen)}
+                    isExpanded={isColumnSelectOpen}
+                    variant="plain"
+                    icon={<ColumnsIcon />}
+                  >
+                    Manage Columns
+                  </MenuToggle>
+                )}
+              >
+                <SelectList>
+                  {(Object.keys(Columns) as ColumnKey[]).map((columnKey) => {
+                    const isMandatory = MANDATORY_COLUMNS.includes(columnKey);
+                    const isSelected = visibleColumns.includes(columnKey);
+
+                    return (
+                      <SelectOption
+                        key={columnKey}
+                        value={columnKey}
+                        hasCheckbox
+                        isSelected={isSelected}
+                        isDisabled={isMandatory}
+                      >
+                        {Columns[columnKey] || columnKey}
+                      </SelectOption>
+                    );
+                  })}
+                </SelectList>
+              </Select>
+            </ToolbarItem>
+          </ToolbarGroup>
+          {!isTableEmpty() ? (
+            <ToolbarGroup align={{ default: "alignStart", lg: "alignEnd" }}>
+              <ToolbarItem>
                 <CreateAssessmentDropdown
+                  popperProps={{ position: "end" }}
                   onSelectRvtools={() => handleOpenModal("rvtools")}
                 />
               </ToolbarItem>
-            ) : (
-              <></>
-            )}
-          </ToolbarContent>
-        </Toolbar>
+            </ToolbarGroup>
+          ) : (
+            <></>
+          )}
+        </ToolbarContent>
+      </Toolbar>
 
-        {(selectedSourceTypes.length > 0 || selectedOwners.length > 0) && (
-          <div style={{ marginTop: "8px" }}>
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "8px",
-                flexWrap: "wrap",
-                background: "#f5f5f5",
-                padding: "6px 8px",
-                borderRadius: "6px",
+      {(selectedSourceTypes.length > 0 || selectedOwners.length > 0) && (
+        <div className={filterContainerStyle}>
+          <div className={filterInnerStyle}>
+            <span className={filterLabelStyle}>Filters</span>
+
+            {selectedSourceTypes
+              .filter((t) => t === "discovery" || t === "rvtools")
+              .map((t) => (
+                <FilterPill
+                  key={t}
+                  label={`source type=${
+                    t === "discovery" ? "discovery ova" : "rvtools"
+                  }`}
+                  ariaLabel={`Remove source type ${
+                    t === "discovery" ? "discovery ova" : "rvtools"
+                  }`}
+                  onClear={() => toggleSourceType(t)}
+                />
+              ))}
+
+            {selectedOwners
+              .filter((o) => typeof o === "string" && o.trim() !== "")
+              .map((owner) => (
+                <FilterPill
+                  key={owner}
+                  label={`owner=${owner}`}
+                  ariaLabel={`Remove owner ${owner}`}
+                  onClear={() => toggleOwner(owner)}
+                />
+              ))}
+
+            <Button
+              icon={<TimesIcon />}
+              variant="plain"
+              aria-label="Clear all filters"
+              onClick={() => {
+                clearSourceTypes();
+                clearOwners();
               }}
-            >
-              <span
-                style={{
-                  background: "#e7e7e7",
-                  borderRadius: "12px",
-                  padding: "2px 8px",
-                  fontSize: "12px",
-                }}
-              >
-                Filters
-              </span>
-
-              {selectedSourceTypes
-                .filter((t) => t === "discovery" || t === "rvtools")
-                .map((t) => (
-                  <FilterPill
-                    key={t}
-                    label={`source type=${
-                      t === "discovery" ? "discovery ova" : "rvtools"
-                    }`}
-                    ariaLabel={`Remove source type ${
-                      t === "discovery" ? "discovery ova" : "rvtools"
-                    }`}
-                    onClear={() => toggleSourceType(t)}
-                  />
-                ))}
-
-              {selectedOwners
-                .filter((o) => typeof o === "string" && o.trim() !== "")
-                .map((owner) => (
-                  <FilterPill
-                    key={owner}
-                    label={`owner=${owner}`}
-                    ariaLabel={`Remove owner ${owner}`}
-                    onClear={() => toggleOwner(owner)}
-                  />
-                ))}
-
-              <Button
-                icon={<TimesIcon />}
-                variant="plain"
-                aria-label="Clear all filters"
-                onClick={() => {
-                  clearSourceTypes();
-                  clearOwners();
-                }}
-              />
-            </div>
+            />
           </div>
-        )}
-
-        <div style={{ marginTop: "10px" }}>
-          <AssessmentsTable
-            assessments={assessments}
-            isLoading={isLoading}
-            search={search}
-            sortBy={sortBy}
-            onSort={onSort}
-            onDelete={handleDeleteAssessment}
-            onUpdate={handleUpdateAssessment}
-            selectedSourceTypes={selectedSourceTypes}
-            selectedOwners={selectedOwners}
-          />
         </div>
+      )}
+
+      <div className={tableContainerStyle}>
+        <AssessmentsTable
+          assessments={assessments}
+          isLoading={isLoading}
+          search={search}
+          sortBy={sortBy}
+          onSort={onSort}
+          onDelete={handleDeleteAssessment}
+          onUpdate={handleUpdateAssessment}
+          selectedSourceTypes={selectedSourceTypes}
+          selectedOwners={selectedOwners}
+          visibleColumns={visibleColumns}
+        />
       </div>
 
       {isTableEmpty() ? (

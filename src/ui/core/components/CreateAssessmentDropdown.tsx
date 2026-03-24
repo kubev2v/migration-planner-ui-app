@@ -2,6 +2,7 @@ import {
   Dropdown,
   DropdownItem,
   DropdownList,
+  type DropdownProps,
   MenuToggle,
   type MenuToggleElement,
 } from "@patternfly/react-core";
@@ -13,17 +14,26 @@ import { routes } from "../../../routing/Routes";
 type Props = {
   toggleLabel?: string;
   onSelectRvtools: () => void;
-};
+} & Omit<
+  DropdownProps,
+  | "isOpen"
+  | "onOpenChange"
+  | "toggle"
+  | "shouldFocusToggleOnSelect"
+  | "children"
+>;
 
 const CreateAssessmentDropdown: React.FC<Props> = ({
   toggleLabel = "Create",
   onSelectRvtools,
+  ...props
 }) => {
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
 
   return (
     <Dropdown
+      {...props}
       isOpen={isOpen}
       onOpenChange={setIsOpen}
       toggle={(toggleRef: React.Ref<MenuToggleElement>) => (

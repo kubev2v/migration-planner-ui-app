@@ -6,6 +6,7 @@ import {
   useEffect,
   useMemo,
   useRef,
+  useState,
   useSyncExternalStore,
 } from "react";
 import { useNavigate } from "react-router-dom";
@@ -18,7 +19,19 @@ import {
   JOB_POLLING_INTERVAL,
   TERMINAL_JOB_STATUSES,
 } from "../../../data/stores/JobsStore";
+import useLocalStorage from "../../../hooks/useLocalStorage";
 import { routes } from "../../../routing/Routes";
+import type { ColumnKey, SortableColumn } from "../views/AssessmentsTable";
+import {
+  DEFAULT_VISIBLE_COLUMNS,
+  MANDATORY_COLUMNS,
+} from "../views/AssessmentsTable";
+
+// ---------------------------------------------------------------------------
+// Constants
+// ---------------------------------------------------------------------------
+
+const VISIBLE_COLUMNS_KEY = "migration-advisor:visible-columns";
 
 // ---------------------------------------------------------------------------
 // Private helpers — job progress mappers
@@ -99,6 +112,23 @@ export interface AssessmentPageViewModel {
   /** Error from the last update-assessment attempt. */
   updateError?: Error;
 
+  // -- Column visibility & sorting -------------------------------------------
+
+  /** Whether the column selection dropdown is open. */
+  isColumnSelectOpen: boolean;
+  /** Toggle the column selection dropdown. */
+  setIsColumnSelectOpen: (open: boolean) => void;
+  /** Visible columns (includes mandatory columns). */
+  visibleColumns: ColumnKey[];
+  /** Toggle a column's visibility. */
+  toggleColumn: (columnKey: ColumnKey) => void;
+  /** Current sort state. */
+  sortBy: { columnKey: SortableColumn; direction: "asc" | "desc" } | undefined;
+  /** Update the sort state. */
+  setSortBy: (
+    sort: { columnKey: SortableColumn; direction: "asc" | "desc" } | undefined,
+  ) => void;
+
   // -- Actions ---------------------------------------------------------------
 
   /** Create a new RVTools assessment (starts an async job). */
@@ -129,6 +159,57 @@ export const useAssessmentPageViewModel = (): AssessmentPageViewModel => {
   const jobState = useSyncExternalStore(
     jobsStore.subscribe.bind(jobsStore),
     jobsStore.getSnapshot.bind(jobsStore),
+  );
+
+  // ---- Column visibility and sorting --------------------------------------
+
+  const [isColumnSelectOpen, setIsColumnSelectOpen] = useState(false);
+  const [userSelectedColumns, setUserSelectedColumns] = useLocalStorage<
+    ColumnKey[]
+  >(VISIBLE_COLUMNS_KEY, DEFAULT_VISIBLE_COLUMNS);
+
+  const [sortBy, setSortBy] = useState<
+    { columnKey: SortableColumn; direction: "asc" | "desc" } | undefined
+  >({
+    columnKey: "Name",
+    direction: "asc",
+  });
+
+  // Ensure mandatory columns are always included
+  const visibleColumns = useMemo(
+    () =>
+      Array.from(
+        new Set([
+          ...userSelectedColumns.filter((key) =>
+            DEFAULT_VISIBLE_COLUMNS.includes(key),
+          ),
+          ...MANDATORY_COLUMNS,
+        ]),
+      ),
+    [userSelectedColumns],
+  );
+
+  // Reset sort to Name column if the currently sorted column becomes hidden
+  useEffect(() => {
+    if (sortBy) {
+      const sortedColumn = sortBy.columnKey;
+      const sortedColumnNotInVisibleColumns =
+        !visibleColumns.includes(sortedColumn);
+      if (sortedColumn && sortedColumnNotInVisibleColumns) {
+        setSortBy({ columnKey: "Name", direction: "asc" });
+      }
+    }
+  }, [sortBy, visibleColumns]);
+
+  const toggleColumn = useCallback(
+    (columnKey: ColumnKey) => {
+      setUserSelectedColumns((previousColumns) =>
+        previousColumns.includes(columnKey)
+          ? previousColumns.filter((c) => c !== columnKey)
+          : [...previousColumns, columnKey],
+      );
+    },
+    [setUserSelectedColumns],
   );
 
   // ---- Detect job completion and navigate to report -----------------------
@@ -244,6 +325,12 @@ export const useAssessmentPageViewModel = (): AssessmentPageViewModel => {
     deleteError: deleteState.error,
     isUpdatingAssessment: updateState.loading,
     updateError: updateState.error,
+    isColumnSelectOpen,
+    setIsColumnSelectOpen,
+    visibleColumns,
+    toggleColumn,
+    sortBy,
+    setSortBy,
     createRVToolsJob,
     cancelRVToolsJob,
     updateAssessment: doUpdateAssessment,
