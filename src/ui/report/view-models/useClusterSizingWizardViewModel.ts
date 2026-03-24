@@ -26,6 +26,10 @@ import { formValuesToRequest } from "../views/cluster-sizer/types";
 export interface ClusterSizingWizardViewModel {
   formValues: SizingFormValues;
   setFormValues: (v: SizingFormValues) => void;
+  showWorkerNode: boolean;
+  showControlPlane: boolean;
+  showControlPlaneScheduling: boolean;
+  showSmt: boolean;
   sizerOutput: ClusterRequirementsResponse | null;
   isCalculating: boolean;
   calculateError: Error | undefined;
@@ -231,9 +235,24 @@ export const useClusterSizingWizardViewModel = (
     setResetCounter((prev) => prev + 1);
   }, []);
 
+  const showWorkerNode =
+    formValues.clusterMode === "full-ha" ||
+    formValues.clusterMode === "hosted-control-plane";
+  const showControlPlane =
+    formValues.clusterMode === "full-ha" ||
+    formValues.clusterMode === "single-node";
+  const showControlPlaneScheduling = formValues.clusterMode === "full-ha";
+  const showSmt =
+    formValues.clusterMode === "full-ha" ||
+    formValues.clusterMode === "hosted-control-plane";
+
   return {
     formValues,
     setFormValues,
+    showWorkerNode,
+    showControlPlane,
+    showControlPlaneScheduling,
+    showSmt,
     sizerOutput,
     isCalculating: calculateState.loading,
     calculateError:

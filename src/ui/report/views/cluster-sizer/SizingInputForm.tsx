@@ -33,6 +33,10 @@ import type {
 interface SizingInputFormProps {
   values: SizingFormValues;
   onChange: (values: SizingFormValues) => void;
+  showWorkerNode: boolean;
+  showControlPlane: boolean;
+  showControlPlaneScheduling: boolean;
+  showSmt: boolean;
 }
 
 const sectionHeaderStyle = css`
@@ -56,6 +60,10 @@ const sectionDividerStyle = css`
 export const SizingInputForm: React.FC<SizingInputFormProps> = ({
   values,
   onChange,
+  showWorkerNode,
+  showControlPlane,
+  showControlPlaneScheduling,
+  showSmt,
 }) => {
   const handleClusterModeChange = (
     _event: React.FormEvent<HTMLSelectElement>,
@@ -149,16 +157,6 @@ export const SizingInputForm: React.FC<SizingInputFormProps> = ({
   ): void => {
     onChange({ ...values, controlPlaneMemoryGb: parseInt(memory, 10) });
   };
-
-  const showWorkerNode =
-    values.clusterMode === "full-ha" ||
-    values.clusterMode === "hosted-control-plane";
-  const showControlPlane =
-    values.clusterMode === "full-ha" || values.clusterMode === "single-node";
-  const showControlPlaneScheduling = values.clusterMode === "full-ha";
-  const showSmt =
-    values.clusterMode === "full-ha" ||
-    values.clusterMode === "hosted-control-plane";
 
   return (
     <Form>

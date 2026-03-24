@@ -148,6 +148,10 @@ export const ClusterSizingWizard: React.FC<ClusterSizingWizardProps> = ({
               <SizingInputForm
                 values={vm.formValues}
                 onChange={vm.setFormValues}
+                showWorkerNode={vm.showWorkerNode}
+                showControlPlane={vm.showControlPlane}
+                showControlPlaneScheduling={vm.showControlPlaneScheduling}
+                showSmt={vm.showSmt}
               />
             }
             resultsContent={
