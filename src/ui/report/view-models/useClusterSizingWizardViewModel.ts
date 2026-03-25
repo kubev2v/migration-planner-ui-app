@@ -1,7 +1,4 @@
-import type {
-  MigrationComplexityResponse,
-  MigrationEstimationResponse,
-} from "@openshift-migration-advisor/planner-sdk";
+import type { MigrationComplexityResponse } from "@openshift-migration-advisor/planner-sdk";
 import { ResponseError } from "@openshift-migration-advisor/planner-sdk";
 import { useInjection } from "@y0n1/react-ioc";
 import { useCallback, useRef, useState, useSyncExternalStore } from "react";
@@ -15,6 +12,7 @@ import {
 } from "../views/cluster-sizer/constants";
 import type {
   ClusterRequirementsResponse,
+  MigrationEstimationResponse,
   SizingFormValues,
 } from "../views/cluster-sizer/types";
 import { formValuesToRequest } from "../views/cluster-sizer/types";

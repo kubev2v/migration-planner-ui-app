@@ -1,12 +1,12 @@
 import type {
   CalculateAssessmentClusterRequirementsRequest,
   CalculateMigrationComplexityRequest,
+  CalculateMigrationEstimationRequest,
+  ClusterRequirementsResponse,
+  InitOverrideFunction,
+  MigrationComplexityResponse,
+  SchemaEstimationResult,
 } from "@openshift-migration-advisor/planner-sdk";
-import type { CalculateMigrationEstimationRequest } from "@openshift-migration-advisor/planner-sdk";
-import type { ClusterRequirementsResponse } from "@openshift-migration-advisor/planner-sdk";
-import type { InitOverrideFunction } from "@openshift-migration-advisor/planner-sdk";
-import type { MigrationComplexityResponse } from "@openshift-migration-advisor/planner-sdk";
-import type { MigrationEstimationResponse } from "@openshift-migration-advisor/planner-sdk";
 
 import type { ExternalStore } from "../../../lib/mvvm/ExternalStore";
 import type { AssessmentModel } from "../../../models/AssessmentModel";
@@ -46,7 +46,7 @@ export interface IAssessmentsStore extends ExternalStore<AssessmentModel[]> {
   calculateMigrationEstimation(
     requestParameters: CalculateMigrationEstimationRequest,
     initOverrides?: RequestInit | InitOverrideFunction,
-  ): Promise<MigrationEstimationResponse>;
+  ): Promise<Record<string, SchemaEstimationResult>>;
   calculateComplexityEstimation(
     requestParameters: CalculateMigrationComplexityRequest,
     initOverrides?: RequestInit | InitOverrideFunction,

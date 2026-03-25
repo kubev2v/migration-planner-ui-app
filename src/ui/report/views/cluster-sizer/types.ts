@@ -22,13 +22,23 @@ export type {
   ClusterSizing,
   ComplexityDiskScoreEntry,
   ComplexityOSScoreEntry,
+  EstimationDetail,
   InventoryTotals,
   MigrationComplexityRequest,
   MigrationComplexityResponse,
+  SchemaEstimationResult,
   SizingOverCommitRatio,
   SizingResourceConsumption,
   SizingResourceLimits,
 } from "@openshift-migration-advisor/planner-sdk";
+
+/**
+ * Convenience alias for the multi-schema migration estimation response.
+ */
+export type MigrationEstimationResponse = Record<
+  string,
+  import("@openshift-migration-advisor/planner-sdk").SchemaEstimationResult
+>;
 
 /**
  * Worker node size preset options
