@@ -1,16 +1,17 @@
-import {
-  Button,
-  Tab,
-  TabContent,
-  Tabs,
-  TabTitleText,
-} from "@patternfly/react-core";
+import { css } from "@emotion/css";
+import { Tab, TabContent, Tabs, TabTitleText } from "@patternfly/react-core";
 import React from "react";
 import { Outlet } from "react-router-dom";
 
 import { AppPage } from "../../core/components/AppPage";
 import { useHomeScreenViewModel } from "../view-models/useHomeScreenViewModel";
+import HowDoesItWorkAlert from "./HowDoesItWorkAlert";
 import StartingPageModal from "./StartingPageModal";
+
+const captionWrapperStyle = css`
+  width: 100%;
+  max-width: 1250px;
+`;
 
 export const HomeScreen: React.FC = () => {
   const vm = useHomeScreenViewModel();
@@ -18,15 +19,11 @@ export const HomeScreen: React.FC = () => {
   return (
     <AppPage
       breadcrumbs={vm.breadcrumbs}
-      title="Welcome, let's start your migration journey from VMware to OpenShift."
+      title="Start Your VMWare to OpenShift Migration"
       caption={
-        <Button
-          variant="link"
-          isInline
-          onClick={vm.handleOpenStartingPageModal}
-        >
-          How does this work?
-        </Button>
+        <div className={captionWrapperStyle}>
+          <HowDoesItWorkAlert />
+        </div>
       }
     >
       <Tabs

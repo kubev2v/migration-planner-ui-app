@@ -3,13 +3,10 @@ import {
   Breadcrumb,
   BreadcrumbItem,
   type BreadcrumbItemProps,
-  Content,
-  Divider,
   Flex,
   FlexItem,
   PageBreadcrumb,
   PageSection,
-  Stack,
 } from "@patternfly/react-core";
 import {
   PageHeader,
@@ -47,24 +44,22 @@ export const AppPage: React.FC<React.PropsWithChildren<AppPage.Props>> = (
           </Breadcrumb>
         </PageBreadcrumb>
         <PageHeader>
-          <Stack>
-            <Flex justifyContent={{ default: "justifyContentCenter" }}>
+          <Flex>
+            <FlexItem>
               <PageHeaderTitle title={title} />
-              {React.Children.map(headerActions, (action, index) => (
-                <FlexItem
-                  {...(index === 0
-                    ? { align: { default: "alignRight" } }
-                    : null)}
-                >
-                  {action}
-                </FlexItem>
-              ))}
-            </Flex>
-            <Content>{caption}</Content>
-            {alerts && <AlertGroup>{alerts}</AlertGroup>}
-          </Stack>
+            </FlexItem>
+
+            {React.Children.map(headerActions, (action, index) => (
+              <FlexItem
+                {...(index === 0 ? { align: { default: "alignRight" } } : null)}
+              >
+                {action}
+              </FlexItem>
+            ))}
+          </Flex>
+          {caption}
+          {alerts && <AlertGroup>{alerts}</AlertGroup>}
         </PageHeader>
-        <Divider />
       </div>
       <PageSection hasBodyWrapper={false}>{children}</PageSection>
     </div>
