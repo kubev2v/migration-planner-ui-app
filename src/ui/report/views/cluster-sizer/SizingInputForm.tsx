@@ -5,10 +5,13 @@ import {
   FlexItem,
   Form,
   FormGroup,
+  FormHelperText,
   FormSelect,
   FormSelectOption,
   Grid,
   GridItem,
+  HelperText,
+  HelperTextItem,
   TextInput,
 } from "@patternfly/react-core";
 import React from "react";
@@ -21,6 +24,8 @@ import {
   CPU_OVERCOMMIT_OPTIONS,
   MEMORY_OPTIONS,
   MEMORY_OVERCOMMIT_OPTIONS,
+  SMT_THREADS_MAX,
+  SMT_THREADS_MIN,
 } from "./constants";
 import PopoverIcon from "./PopoverIcon";
 import type {
@@ -48,7 +53,7 @@ const sectionHeaderStyle = css`
 `;
 
 const smtInputStyle = css`
-  width: 80px;
+  width: 130px;
 `;
 
 const sectionDividerStyle = css`
@@ -158,6 +163,12 @@ export const SizingInputForm: React.FC<SizingInputFormProps> = ({
     onChange({ ...values, controlPlaneMemoryGb: parseInt(memory, 10) });
   };
 
+  const smtThreadsValidated: "success" | "error" | "default" =
+    values.smtEnabled &&
+    (values.smtThreads < SMT_THREADS_MIN || values.smtThreads > SMT_THREADS_MAX)
+      ? "error"
+      : "default";
+
   return (
     <Form>
       <Grid hasGutter>
@@ -218,7 +229,20 @@ export const SizingInputForm: React.FC<SizingInputFormProps> = ({
                   isDisabled={!values.smtEnabled}
                   type="number"
                   className={smtInputStyle}
+                  min={SMT_THREADS_MIN as number}
+                  max={SMT_THREADS_MAX as number}
+                  validated={smtThreadsValidated}
                 />
+                {smtThreadsValidated === "error" && (
+                  <FormHelperText>
+                    <HelperText>
+                      <HelperTextItem variant="error">
+                        Value must be between {SMT_THREADS_MIN} and{" "}
+                        {SMT_THREADS_MAX}
+                      </HelperTextItem>
+                    </HelperText>
+                  </FormHelperText>
+                )}
               </FlexItem>
             </Flex>
           </GridItem>
