@@ -134,7 +134,8 @@ export const useClusterSizingWizardViewModel = (
         migrationEstimationRequest: { clusterId },
       });
 
-      setMigrationEstimation(result);
+      const hasSchemas = result && Object.keys(result).length > 0;
+      setMigrationEstimation(hasSchemas ? result : null);
     } catch (err) {
       if (err instanceof ResponseError) {
         const message = await err.response.text();

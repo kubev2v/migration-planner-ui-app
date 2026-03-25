@@ -36,7 +36,7 @@ export const parsePostMigrationChecks = (reason: string): ParsedAssumption => {
 export const parseStorageTransfer = (reason: string): ParsedAssumption => {
   const assumptions: ParsedAssumption = {};
 
-  const volumeMatch = reason.match(/([\d,]+\.?\d*)\s+GB/i);
+  const volumeMatch = reason.match(/([\d,]+\.?\d*)\s+GB(?!\/)/i);
   if (volumeMatch) {
     const gb = parseFloat(volumeMatch[1].replace(/,/g, ""));
     assumptions.volume = `${gb.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} GB`;
@@ -60,7 +60,7 @@ export const parseStorageTransfer = (reason: string): ParsedAssumption => {
 export const parseStorageOffload = (reason: string): ParsedAssumption => {
   const assumptions: ParsedAssumption = {};
 
-  const volumeMatch = reason.match(/([\d,]+\.?\d*)\s+GB/i);
+  const volumeMatch = reason.match(/([\d,]+\.?\d*)\s+GB(?!\/)/i);
   if (volumeMatch) {
     const gb = parseFloat(volumeMatch[1].replace(/,/g, ""));
     assumptions.volume = `${gb.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} GB`;

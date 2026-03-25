@@ -1,5 +1,8 @@
 import { css } from "@emotion/css";
-import type { EstimationDetail } from "@openshift-migration-advisor/planner-sdk";
+import type {
+  EstimationDetail,
+  SchemaEstimationResult,
+} from "@openshift-migration-advisor/planner-sdk";
 import {
   Alert,
   Grid,
@@ -20,14 +23,10 @@ import {
   parseStorageTransfer,
 } from "./timeParsingUtils";
 import { parseDuration } from "./timeUtils";
-import type {
-  MigrationEstimationResponse,
-  SchemaEstimationResult,
-} from "./types";
 
 interface TimeEstimationResultProps {
   clusterName: string;
-  estimationOutput: MigrationEstimationResponse | null;
+  estimationOutput: Record<string, SchemaEstimationResult> | null;
   isLoading: boolean;
   error: Error | null;
 }
@@ -107,7 +106,7 @@ const formatDetailDuration = (detail: EstimationDetail): string => {
 };
 
 const extractDetailText = (reason: string): string => {
-  const volumeMatch = reason.match(/([\d,]+\.?\d*)\s+GB/i);
+  const volumeMatch = reason.match(/([\d,]+\.?\d*)\s+GB(?!\/)/i);
   const vmsMatch = reason.match(/(\d+)\s+VMs?/i);
   if (volumeMatch) {
     const gb = parseFloat(volumeMatch[1].replace(/,/g, ""));
@@ -159,12 +158,11 @@ export const TimeEstimationResult: React.FC<TimeEstimationResultProps> = ({
     );
   }
 
-  if (!estimationOutput) {
+  if (!estimationOutput || Object.keys(estimationOutput).length === 0) {
     return null;
   }
 
   const schemas = Object.entries(estimationOutput);
-  if (schemas.length === 0) return null;
 
   const gridSpan = schemas.length > 1 ? 6 : 12;
 

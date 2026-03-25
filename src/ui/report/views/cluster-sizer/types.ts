@@ -13,6 +13,7 @@ import {
   ClusterRequirementsRequestControlPlaneNodeCountEnum,
   ClusterRequirementsRequestCpuOverCommitRatioEnum,
   ClusterRequirementsRequestMemoryOverCommitRatioEnum,
+  type SchemaEstimationResult,
 } from "@openshift-migration-advisor/planner-sdk";
 
 // Re-export API types from api-client
@@ -37,7 +38,7 @@ export type {
  */
 export type MigrationEstimationResponse = Record<
   string,
-  import("@openshift-migration-advisor/planner-sdk").SchemaEstimationResult
+  SchemaEstimationResult
 >;
 
 /**
