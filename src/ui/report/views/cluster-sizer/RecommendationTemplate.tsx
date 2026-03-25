@@ -63,6 +63,8 @@ interface RecommendationTemplateProps {
   isPreferencesInitiallyExpanded?: boolean;
   /** Whether the preferences section is disabled (defaults to false) */
   isPreferencesDisabled?: boolean;
+  /** Whether the generate button is disabled due to validation errors */
+  isGenerateDisabled?: boolean;
   /** Whether to hide the preferences section entirely (defaults to false) */
   hidePreferences?: boolean;
   /** Optional action element rendered inline with the results title */
@@ -83,6 +85,7 @@ export const RecommendationTemplate: React.FC<RecommendationTemplateProps> = ({
   showAlert = true,
   isPreferencesInitiallyExpanded = true,
   isPreferencesDisabled = false,
+  isGenerateDisabled = false,
   hidePreferences = false,
   headerAction,
   hasError = false,
@@ -141,7 +144,9 @@ export const RecommendationTemplate: React.FC<RecommendationTemplateProps> = ({
                     variant="primary"
                     onClick={handleGenerate}
                     isLoading={isLoading}
-                    isDisabled={isLoading || isPreferencesDisabled}
+                    isDisabled={
+                      isLoading || isPreferencesDisabled || isGenerateDisabled
+                    }
                   >
                     {generateButtonText}
                   </Button>

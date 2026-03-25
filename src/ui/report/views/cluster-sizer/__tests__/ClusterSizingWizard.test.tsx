@@ -48,6 +48,7 @@ const mockViewModel = {
   isCalculatingComplexity: false,
   complexityError: null,
   calculateComplexity: mockCalculateComplexity,
+  isFormValid: true,
   ensureEstimationForMenu: mockEnsureEstimationForMenu,
   reset: mockReset,
 };

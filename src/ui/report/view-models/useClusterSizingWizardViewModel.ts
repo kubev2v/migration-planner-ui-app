@@ -8,6 +8,8 @@ import { Symbols } from "../../../config/Dependencies";
 import type { IAssessmentsStore } from "../../../data/stores/interfaces/IAssessmentsStore";
 import {
   DEFAULT_FORM_VALUES,
+  SMT_THREADS_MAX,
+  SMT_THREADS_MIN,
   WORKER_NODE_PRESETS,
 } from "../views/cluster-sizer/constants";
 import type {
@@ -40,6 +42,7 @@ export interface ClusterSizingWizardViewModel {
   isCalculatingComplexity: boolean;
   complexityError: Error | undefined;
   calculateComplexity: () => Promise<void>;
+  isFormValid: boolean;
   ensureEstimationForMenu: (menuItem: string | null) => void;
   reset: () => void;
 }
@@ -80,7 +83,21 @@ export const useClusterSizingWizardViewModel = (
   const [resetCounter, setResetCounter] = useState<number>(0);
   const latestComplexityRequestIdRef = useRef<string>("");
 
+  const smtVisible =
+    formValues.clusterMode === "full-ha" ||
+    formValues.clusterMode === "hosted-control-plane";
+
+  const hasSmtError =
+    smtVisible &&
+    formValues.smtEnabled &&
+    (formValues.smtThreads < SMT_THREADS_MIN ||
+      formValues.smtThreads > SMT_THREADS_MAX);
+
   const [calculateState, doCalculate] = useAsyncFn(async () => {
+    if (hasSmtError) {
+      return;
+    }
+
     setManualCalculateError(undefined);
     // Get worker node CPU and memory based on preset or custom values
     const workerCpu =
@@ -241,9 +258,9 @@ export const useClusterSizingWizardViewModel = (
     formValues.clusterMode === "full-ha" ||
     formValues.clusterMode === "single-node";
   const showControlPlaneScheduling = formValues.clusterMode === "full-ha";
-  const showSmt =
-    formValues.clusterMode === "full-ha" ||
-    formValues.clusterMode === "hosted-control-plane";
+  const showSmt = smtVisible;
+
+  const isFormValid = !hasSmtError;
 
   return {
     formValues,
@@ -270,6 +287,7 @@ export const useClusterSizingWizardViewModel = (
       manualComplexityError ??
       (resetCounter > 0 ? undefined : complexityState.error),
     calculateComplexity: doCalculateComplexity,
+    isFormValid,
     ensureEstimationForMenu,
     reset,
   };

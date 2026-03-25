@@ -165,6 +165,7 @@ export const ClusterSizingWizard: React.FC<ClusterSizingWizardProps> = ({
             }
             onGenerate={handleCalculate}
             isLoading={vm.isCalculating}
+            isGenerateDisabled={!vm.isFormValid}
             hasResults={Boolean(
               vm.sizerOutput || vm.isCalculating || vm.calculateError,
             )}
