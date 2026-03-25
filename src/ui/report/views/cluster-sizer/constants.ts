@@ -8,7 +8,7 @@ import type {
 } from "./types";
 
 export const SMT_THREADS_MIN = 2;
-export const SMT_THREADS_MAX = 1000;
+export const SMT_THREADS_MAX = 2000;
 
 /**
  * Worker node size presets with CPU and memory configurations
