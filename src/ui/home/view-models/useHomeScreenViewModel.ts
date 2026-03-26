@@ -15,7 +15,6 @@ export const useHomeScreenViewModel = () => {
     ? 1
     : 0;
 
-  const [isStartingPageModalOpen, setIsStartingPageModalOpen] = useState(false);
   const [rvtoolsOpenToken, setRvtoolsOpenToken] = useState(false);
 
   const breadcrumbs = [
@@ -35,8 +34,6 @@ export const useHomeScreenViewModel = () => {
     navigate(index === 1 ? routes.environments : routes.assessments);
   };
 
-  const handleOpenStartingPageModal = () => setIsStartingPageModalOpen(true);
-  const handleCloseStartingPageModal = () => setIsStartingPageModalOpen(false);
   const handleOpenRVToolsModal = () => {
     setRvtoolsOpenToken(true);
     navigate(routes.assessments); // switch to assessments tab
@@ -45,11 +42,8 @@ export const useHomeScreenViewModel = () => {
   return {
     activeTabKey,
     breadcrumbs,
-    isStartingPageModalOpen,
     rvtoolsOpenToken,
     handleTabClick,
-    handleOpenStartingPageModal,
-    handleCloseStartingPageModal,
     handleOpenRVToolsModal,
   };
 };

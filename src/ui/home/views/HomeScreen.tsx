@@ -1,17 +1,10 @@
-import { css } from "@emotion/css";
 import { Tab, TabContent, Tabs, TabTitleText } from "@patternfly/react-core";
 import React from "react";
 import { Outlet } from "react-router-dom";
 
 import { AppPage } from "../../core/components/AppPage";
 import { useHomeScreenViewModel } from "../view-models/useHomeScreenViewModel";
-import HowDoesItWorkAlert from "./HowDoesItWorkAlert";
-import StartingPageModal from "./StartingPageModal";
-
-const captionWrapperStyle = css`
-  width: 100%;
-  max-width: 1250px;
-`;
+import HowDoesItWork from "./HowDoesItWork";
 
 export const HomeScreen: React.FC = () => {
   const vm = useHomeScreenViewModel();
@@ -20,11 +13,7 @@ export const HomeScreen: React.FC = () => {
     <AppPage
       breadcrumbs={vm.breadcrumbs}
       title="Start Your VMWare to OpenShift Migration"
-      caption={
-        <div className={captionWrapperStyle}>
-          <HowDoesItWorkAlert />
-        </div>
-      }
+      caption={<HowDoesItWork />}
     >
       <Tabs
         activeKey={vm.activeTabKey}
@@ -47,12 +36,6 @@ export const HomeScreen: React.FC = () => {
       <TabContent id="home-screen-content">
         <Outlet context={{ rvtoolsOpenToken: vm.rvtoolsOpenToken }} />
       </TabContent>
-
-      <StartingPageModal
-        isOpen={vm.isStartingPageModalOpen}
-        onClose={vm.handleCloseStartingPageModal}
-        onOpenRVToolsModal={vm.handleOpenRVToolsModal}
-      />
     </AppPage>
   );
 };

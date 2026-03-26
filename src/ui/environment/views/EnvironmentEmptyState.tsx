@@ -1,7 +1,7 @@
 import {
   Alert,
   Button,
-  EmptyState as PFEmptyState,
+  EmptyState,
   EmptyStateActions,
   EmptyStateBody,
   EmptyStateFooter,
@@ -12,12 +12,12 @@ import React, { useCallback } from "react";
 
 import { useEnvironmentPage } from "../view-models/EnvironmentPageContext";
 
-export interface EmptyStateProps {
+export interface EnvironmentEmptyStateProps {
   onAddEnvironment: () => void;
   isOvaDownloading: boolean;
 }
 
-export const EmptyState: React.FC<EmptyStateProps> = ({
+export const EnvironmentEmptyState: React.FC<EnvironmentEmptyStateProps> = ({
   onAddEnvironment,
   isOvaDownloading,
 }) => {
@@ -30,7 +30,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
   }, [vm]);
 
   let emptyStateNode: React.ReactNode = (
-    <PFEmptyState
+    <EmptyState
       headingLevel="h4"
       icon={SearchIcon}
       titleText="No environments found"
@@ -43,7 +43,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
 
       <EmptyStateFooter>
         <EmptyStateActions>
-          <Button variant="secondary" onClick={onAddEnvironment}>
+          <Button variant="primary" onClick={onAddEnvironment}>
             Add environment
           </Button>
         </EmptyStateActions>
@@ -55,12 +55,12 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
           )}
         </StackItem>
       </EmptyStateFooter>
-    </PFEmptyState>
+    </EmptyState>
   );
 
   if (vm.errorLoadingSources) {
     emptyStateNode = (
-      <PFEmptyState
+      <EmptyState
         headingLevel="h4"
         icon={ExclamationCircleIcon}
         titleText="Something went wrong..."
@@ -77,11 +77,11 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
             </Button>
           </EmptyStateActions>
         </EmptyStateFooter>
-      </PFEmptyState>
+      </EmptyState>
     );
   }
 
   return emptyStateNode;
 };
 
-EmptyState.displayName = "SourcesTableEmptyState";
+EnvironmentEmptyState.displayName = "EnvironmentEmptyState";

@@ -3,7 +3,7 @@ import { lazy } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 
 import { AssessmentsScreen } from "../ui/assessment/views/AssessmentsScreen";
-import { Environment } from "../ui/environment/views/Environment";
+import { EnvironmentsScreen } from "../ui/environment/views/EnvironmentsScreen";
 import { HomeScreen } from "../ui/home/views/HomeScreen";
 
 const Report = lazy(
@@ -38,7 +38,7 @@ export const AppRoutes: React.FC = () => (
     {/* Pathless layout route — HomeScreen renders the shell + <Outlet /> */}
     <Route element={<HomeScreen />} errorElement={<InvalidObject />}>
       <Route path="assessments" element={<AssessmentsScreen />} />
-      <Route path="environments" element={<Environment />} />
+      <Route path="environments" element={<EnvironmentsScreen />} />
     </Route>
 
     {/* Independent routes — they have their own page layout */}

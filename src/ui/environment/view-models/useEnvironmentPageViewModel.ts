@@ -1,5 +1,5 @@
 import { useInjection } from "@y0n1/react-ioc";
-import { useCallback, useState, useSyncExternalStore } from "react";
+import { useCallback, useRef, useState, useSyncExternalStore } from "react";
 import { useAsyncFn, useMount, useUnmount } from "react-use";
 
 import { Symbols } from "../../../config/Dependencies";
@@ -34,6 +34,7 @@ export interface EnvironmentPageViewModel {
   listSources: () => Promise<SourceModel[]>;
   isLoadingSources: boolean;
   errorLoadingSources?: Error;
+  hasInitialLoad: boolean;
 
   // Source deletion
   deleteSource: (id: string) => Promise<SourceModel>;
@@ -146,7 +147,7 @@ export const useEnvironmentPageViewModel = (): EnvironmentPageViewModel => {
 
   useMount(() => {
     startPolling();
-    void Promise.all([sourcesStore.list(), assessmentsStore.list()]);
+    void Promise.all([doListSources(), assessmentsStore.list()]);
   });
 
   useUnmount(() => {
@@ -180,10 +181,15 @@ export const useEnvironmentPageViewModel = (): EnvironmentPageViewModel => {
   );
 
   // ---- Source listing ------------------------------------------------------
-  const [listSourcesState, doListSources] = useAsyncFn(
-    async () => sourcesStore.list(),
-    [sourcesStore],
-  );
+  const hasInitialLoadRef = useRef(false);
+
+  const [listSourcesState, doListSources] = useAsyncFn(async () => {
+    try {
+      return await sourcesStore.list();
+    } finally {
+      hasInitialLoadRef.current = true;
+    }
+  }, [sourcesStore]);
 
   // ---- Source deletion -----------------------------------------------------
   const [deleteSourceState, doDeleteSource] = useAsyncFn(
@@ -378,6 +384,7 @@ export const useEnvironmentPageViewModel = (): EnvironmentPageViewModel => {
     listSources: doListSources,
     isLoadingSources: listSourcesState.loading,
     errorLoadingSources: listSourcesState.error,
+    hasInitialLoad: hasInitialLoadRef.current,
 
     deleteSource: doDeleteSource,
     isDeletingSource: deleteSourceState.loading,

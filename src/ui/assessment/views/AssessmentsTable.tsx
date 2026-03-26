@@ -5,7 +5,6 @@ import {
   DropdownList,
   MenuToggle,
   type MenuToggleElement,
-  Spinner,
   Tooltip,
   Truncate,
 } from "@patternfly/react-core";
@@ -30,6 +29,7 @@ import { useNavigate } from "react-router-dom";
 
 import type { AssessmentModel } from "../../../models/AssessmentModel";
 import { routes } from "../../../routing/Routes";
+import { EmptySearchResults } from "../../core/components/EmptySearchResults";
 
 const openAssistedInstaller = (): void => {
   const currentHost = window.location.hostname;
@@ -48,7 +48,6 @@ const openAssistedInstaller = (): void => {
 
 type Props = {
   assessments: AssessmentModel[];
-  isLoading?: boolean;
   search?: string;
   filterBy?: string;
   filterValue?: string;
@@ -95,7 +94,6 @@ export const SORTABLE_COLUMNS: SortableColumn[] = [
 
 export const AssessmentsTable: React.FC<Props> = ({
   assessments,
-  isLoading,
   search: _search = "",
   filterBy = "Filter",
   filterValue = "",
@@ -348,6 +346,8 @@ export const AssessmentsTable: React.FC<Props> = ({
     sortBy,
   ]);
 
+  const showNoResultFound = assessments.length > 0 && rows.length === 0;
+
   const getSortParams = (columnKey: SortableColumn) => {
     if (!onSort || !sortBy) return undefined;
     const columnIndex = SORTABLE_COLUMNS.indexOf(columnKey);
@@ -364,19 +364,6 @@ export const AssessmentsTable: React.FC<Props> = ({
     };
   };
 
-  if (isLoading && (!assessments || assessments.length === 0)) {
-    return (
-      <Table aria-label="Loading assessments" variant="compact" borders={false}>
-        <Tbody>
-          <Tr>
-            <Td colSpan={visibleColumns.length}>
-              <Spinner size="xl" />
-            </Td>
-          </Tr>
-        </Tbody>
-      </Table>
-    );
-  }
   return (
     <Table
       aria-label="Assessments table"
@@ -438,6 +425,13 @@ export const AssessmentsTable: React.FC<Props> = ({
         </Tr>
       </Thead>
       <Tbody>
+        {showNoResultFound && (
+          <Tr>
+            <Td colSpan={visibleColumns.length}>
+              <EmptySearchResults title="No matching assessment found" />
+            </Td>
+          </Tr>
+        )}
         {rows.map((row) => (
           <Tr key={row.key}>
             {isColumnVisible("Name") && (

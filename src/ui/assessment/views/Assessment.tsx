@@ -24,8 +24,8 @@ import type { AssessmentModel } from "../../../models/AssessmentModel";
 import { ConfirmationModal } from "../../core/components/ConfirmationModal";
 import CreateAssessmentDropdown from "../../core/components/CreateAssessmentDropdown";
 import FilterPill from "../../core/components/FilterPill";
-import StartingPageModal from "../../home/views/StartingPageModal";
 import { useAssessmentPageViewModel } from "../view-models/useAssessmentPageViewModel";
+import AssessmentEmptyState from "./AssessmentEmptyState";
 import AssessmentsTable, {
   type ColumnKey,
   Columns,
@@ -35,12 +35,10 @@ import AssessmentsTable, {
 import CreateAssessmentModal, {
   type AssessmentMode,
 } from "./CreateAssessmentModal";
-import EmptyTableBanner from "./EmptyTableBanner";
 import UpdateAssessment from "./UpdateAssessment";
 
-type Props = {
+type AssessmentProps = {
   assessments: AssessmentModel[];
-  isLoading?: boolean;
   // When this token changes, the component should open the RVTools modal.
   rvtoolsOpenToken?: string;
 };
@@ -81,9 +79,8 @@ const tableContainerStyle = css`
   overflow: auto;
 `;
 
-const Assessment: React.FC<Props> = ({
+const Assessment: React.FC<AssessmentProps> = ({
   assessments,
-  isLoading,
   rvtoolsOpenToken,
 }) => {
   const {
@@ -115,24 +112,10 @@ const Assessment: React.FC<Props> = ({
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedAssessment, setSelectedAssessment] =
     useState<AssessmentModel | null>(null);
-  const [isStartingPageModalOpen, setIsStartingPageModalOpen] = useState(false);
-  const hasShownStartingPageModal = React.useRef(false);
 
   // Multi-select filters (checkbox)
   const [selectedSourceTypes, setSelectedSourceTypes] = useState<string[]>([]);
   const [selectedOwners, setSelectedOwners] = useState<string[]>([]);
-
-  // Show the starting page modal only once on mount when there are no assessments.
-  React.useEffect(() => {
-    if (!isLoading) {
-      if (assessments.length === 0 && !hasShownStartingPageModal.current) {
-        setIsStartingPageModalOpen(true);
-        hasShownStartingPageModal.current = true;
-      } else if (assessments.length > 0) {
-        hasShownStartingPageModal.current = true;
-      }
-    }
-  }, [assessments.length, isLoading]);
 
   const toggleSourceType = (value: "rvtools" | "discovery"): void => {
     setSelectedSourceTypes((prev) =>
@@ -201,20 +184,10 @@ const Assessment: React.FC<Props> = ({
 
   // Close filter dropdown whenever any modal in this page opens
   React.useEffect(() => {
-    if (
-      isModalOpen ||
-      isUpdateModalOpen ||
-      isDeleteModalOpen ||
-      isStartingPageModalOpen
-    ) {
+    if (isModalOpen || isUpdateModalOpen || isDeleteModalOpen) {
       setIsFilterDropdownOpen(false);
     }
-  }, [
-    isModalOpen,
-    isUpdateModalOpen,
-    isDeleteModalOpen,
-    isStartingPageModalOpen,
-  ]);
+  }, [isModalOpen, isUpdateModalOpen, isDeleteModalOpen]);
 
   const handleUpdateAssessment = (assessmentId: string): void => {
     const assessment = assessments.find((a) => a.id === assessmentId);
@@ -267,185 +240,180 @@ const Assessment: React.FC<Props> = ({
 
   return (
     <>
-      <StartingPageModal
-        isOpen={isStartingPageModalOpen}
-        onClose={() => setIsStartingPageModalOpen(false)}
-        onOpenRVToolsModal={() => handleOpenModal("rvtools")}
-      />
-
-      <Toolbar>
-        <ToolbarContent>
-          <ToolbarGroup
-            align={{ default: "alignStart" }}
-            rowWrap={{ default: "wrap", md: "nowrap" }}
-          >
-            <ToolbarItem>
-              <InputGroup>
-                <InputGroupItem>
-                  <Dropdown
-                    isOpen={isFilterDropdownOpen}
-                    onOpenChange={(open) => setIsFilterDropdownOpen(open)}
-                    onSelect={() => setIsFilterDropdownOpen(false)}
-                    toggle={(toggleRef: React.Ref<MenuToggleElement>) => (
-                      <MenuToggle
-                        ref={toggleRef}
-                        onClick={() =>
-                          setIsFilterDropdownOpen(!isFilterDropdownOpen)
-                        }
-                        isExpanded={isFilterDropdownOpen}
-                        icon={<FilterIcon />}
-                      >
-                        Filters
-                      </MenuToggle>
-                    )}
-                  >
-                    <DropdownList>
-                      <DropdownItem isDisabled key="heading-source-type">
-                        Source type
-                      </DropdownItem>
-                      <DropdownItem
-                        key="st-all"
-                        onClick={(
-                          event: React.MouseEvent | React.KeyboardEvent,
-                        ) => {
-                          event.preventDefault();
-                          event.stopPropagation();
-                          clearSourceTypes();
-                        }}
-                      >
-                        All source types
-                      </DropdownItem>
-                      <DropdownItem
-                        key="st-discovery"
-                        onClick={(
-                          event: React.MouseEvent | React.KeyboardEvent,
-                        ) => {
-                          event.preventDefault();
-                          event.stopPropagation();
-                          toggleSourceType("discovery");
-                        }}
-                      >
-                        <input
-                          type="checkbox"
-                          readOnly
-                          checked={selectedSourceTypes.includes("discovery")}
-                          className={checkboxStyle}
-                        />
-                        Discovery OVA
-                      </DropdownItem>
-                      <DropdownItem
-                        key="st-rvtools"
-                        onClick={(
-                          event: React.MouseEvent | React.KeyboardEvent,
-                        ) => {
-                          event.preventDefault();
-                          event.stopPropagation();
-                          toggleSourceType("rvtools");
-                        }}
-                      >
-                        <input
-                          type="checkbox"
-                          readOnly
-                          checked={selectedSourceTypes.includes("rvtools")}
-                          style={{ marginRight: "8px" }}
-                        />
-                        RVTools (XLS/X)
-                      </DropdownItem>
-
-                      <DropdownItem isDisabled key="heading-owner">
-                        Owner
-                      </DropdownItem>
-                      <DropdownItem
-                        key="owner-all"
-                        onClick={(
-                          event: React.MouseEvent | React.KeyboardEvent,
-                        ) => {
-                          event.preventDefault();
-                          event.stopPropagation();
-                          clearOwners();
-                        }}
-                      >
-                        All owners
-                      </DropdownItem>
-                      {owners.map((owner) => (
+      {!isTableEmpty() && (
+        <Toolbar>
+          <ToolbarContent>
+            <ToolbarGroup
+              align={{ default: "alignStart" }}
+              rowWrap={{ default: "wrap", md: "nowrap" }}
+            >
+              <ToolbarItem>
+                <InputGroup>
+                  <InputGroupItem>
+                    <Dropdown
+                      isOpen={isFilterDropdownOpen}
+                      onOpenChange={(open) => setIsFilterDropdownOpen(open)}
+                      onSelect={() => setIsFilterDropdownOpen(false)}
+                      toggle={(toggleRef: React.Ref<MenuToggleElement>) => (
+                        <MenuToggle
+                          ref={toggleRef}
+                          onClick={() =>
+                            setIsFilterDropdownOpen(!isFilterDropdownOpen)
+                          }
+                          isExpanded={isFilterDropdownOpen}
+                          icon={<FilterIcon />}
+                        >
+                          Filters
+                        </MenuToggle>
+                      )}
+                    >
+                      <DropdownList>
+                        <DropdownItem isDisabled key="heading-source-type">
+                          Source type
+                        </DropdownItem>
                         <DropdownItem
-                          key={`owner-${owner}`}
+                          key="st-all"
                           onClick={(
                             event: React.MouseEvent | React.KeyboardEvent,
                           ) => {
                             event.preventDefault();
                             event.stopPropagation();
-                            toggleOwner(owner);
+                            clearSourceTypes();
+                          }}
+                        >
+                          All source types
+                        </DropdownItem>
+                        <DropdownItem
+                          key="st-discovery"
+                          onClick={(
+                            event: React.MouseEvent | React.KeyboardEvent,
+                          ) => {
+                            event.preventDefault();
+                            event.stopPropagation();
+                            toggleSourceType("discovery");
                           }}
                         >
                           <input
                             type="checkbox"
                             readOnly
-                            checked={selectedOwners.includes(owner)}
-                            style={{ marginRight: "8px" }}
+                            checked={selectedSourceTypes.includes("discovery")}
+                            className={checkboxStyle}
                           />
-                          {owner}
+                          Discovery OVA
                         </DropdownItem>
-                      ))}
-                    </DropdownList>
-                  </Dropdown>
-                </InputGroupItem>
-                <InputGroupItem isFill>
-                  <SearchInput
-                    id="assessment-search"
-                    aria-label="Search by name"
-                    placeholder="Search by name"
-                    value={search}
-                    onChange={(_event, value) => setSearch(value)}
-                    onClear={() => setSearch("")}
-                    className={searchInputStyle}
-                  />
-                </InputGroupItem>
-              </InputGroup>
-            </ToolbarItem>
-            <ToolbarItem>
-              <Select
-                isOpen={isColumnSelectOpen}
-                onOpenChange={(isOpen) => setIsColumnSelectOpen(isOpen)}
-                onSelect={(_event, value) => {
-                  if (typeof value === "string") {
-                    toggleColumn(value as ColumnKey);
-                  }
-                }}
-                toggle={(toggleRef: React.Ref<MenuToggleElement>) => (
-                  <MenuToggle
-                    ref={toggleRef}
-                    onClick={() => setIsColumnSelectOpen(!isColumnSelectOpen)}
-                    isExpanded={isColumnSelectOpen}
-                    variant="plain"
-                    icon={<ColumnsIcon />}
-                  >
-                    Manage Columns
-                  </MenuToggle>
-                )}
-              >
-                <SelectList>
-                  {(Object.keys(Columns) as ColumnKey[]).map((columnKey) => {
-                    const isMandatory = MANDATORY_COLUMNS.includes(columnKey);
-                    const isSelected = visibleColumns.includes(columnKey);
+                        <DropdownItem
+                          key="st-rvtools"
+                          onClick={(
+                            event: React.MouseEvent | React.KeyboardEvent,
+                          ) => {
+                            event.preventDefault();
+                            event.stopPropagation();
+                            toggleSourceType("rvtools");
+                          }}
+                        >
+                          <input
+                            type="checkbox"
+                            readOnly
+                            checked={selectedSourceTypes.includes("rvtools")}
+                            className={checkboxStyle}
+                          />
+                          RVTools (XLS/X)
+                        </DropdownItem>
 
-                    return (
-                      <SelectOption
-                        key={columnKey}
-                        value={columnKey}
-                        hasCheckbox
-                        isSelected={isSelected}
-                        isDisabled={isMandatory}
-                      >
-                        {Columns[columnKey] || columnKey}
-                      </SelectOption>
-                    );
-                  })}
-                </SelectList>
-              </Select>
-            </ToolbarItem>
-          </ToolbarGroup>
-          {!isTableEmpty() ? (
+                        <DropdownItem isDisabled key="heading-owner">
+                          Owner
+                        </DropdownItem>
+                        <DropdownItem
+                          key="owner-all"
+                          onClick={(
+                            event: React.MouseEvent | React.KeyboardEvent,
+                          ) => {
+                            event.preventDefault();
+                            event.stopPropagation();
+                            clearOwners();
+                          }}
+                        >
+                          All owners
+                        </DropdownItem>
+                        {owners.map((owner) => (
+                          <DropdownItem
+                            key={`owner-${owner}`}
+                            onClick={(
+                              event: React.MouseEvent | React.KeyboardEvent,
+                            ) => {
+                              event.preventDefault();
+                              event.stopPropagation();
+                              toggleOwner(owner);
+                            }}
+                          >
+                            <input
+                              type="checkbox"
+                              readOnly
+                              checked={selectedOwners.includes(owner)}
+                              className={checkboxStyle}
+                            />
+                            {owner}
+                          </DropdownItem>
+                        ))}
+                      </DropdownList>
+                    </Dropdown>
+                  </InputGroupItem>
+                  <InputGroupItem isFill>
+                    <SearchInput
+                      id="assessment-search"
+                      aria-label="Search by name"
+                      placeholder="Search by name"
+                      value={search}
+                      onChange={(_event, value) => setSearch(value)}
+                      onClear={() => setSearch("")}
+                      className={searchInputStyle}
+                    />
+                  </InputGroupItem>
+                </InputGroup>
+              </ToolbarItem>
+
+              <ToolbarItem>
+                <Select
+                  isOpen={isColumnSelectOpen}
+                  onOpenChange={(isOpen) => setIsColumnSelectOpen(isOpen)}
+                  onSelect={(_event, value) => {
+                    if (typeof value === "string") {
+                      toggleColumn(value as ColumnKey);
+                    }
+                  }}
+                  toggle={(toggleRef: React.Ref<MenuToggleElement>) => (
+                    <MenuToggle
+                      ref={toggleRef}
+                      onClick={() => setIsColumnSelectOpen(!isColumnSelectOpen)}
+                      isExpanded={isColumnSelectOpen}
+                      variant="plain"
+                      icon={<ColumnsIcon />}
+                    >
+                      Manage Columns
+                    </MenuToggle>
+                  )}
+                >
+                  <SelectList>
+                    {(Object.keys(Columns) as ColumnKey[]).map((columnKey) => {
+                      const isMandatory = MANDATORY_COLUMNS.includes(columnKey);
+                      const isSelected = visibleColumns.includes(columnKey);
+
+                      return (
+                        <SelectOption
+                          key={columnKey}
+                          value={columnKey}
+                          hasCheckbox
+                          isSelected={isSelected}
+                          isDisabled={isMandatory}
+                        >
+                          {Columns[columnKey] || columnKey}
+                        </SelectOption>
+                      );
+                    })}
+                  </SelectList>
+                </Select>
+              </ToolbarItem>
+            </ToolbarGroup>
             <ToolbarGroup align={{ default: "alignStart", lg: "alignEnd" }}>
               <ToolbarItem>
                 <CreateAssessmentDropdown
@@ -454,12 +422,9 @@ const Assessment: React.FC<Props> = ({
                 />
               </ToolbarItem>
             </ToolbarGroup>
-          ) : (
-            <></>
-          )}
-        </ToolbarContent>
-      </Toolbar>
-
+          </ToolbarContent>
+        </Toolbar>
+      )}
       {(selectedSourceTypes.length > 0 || selectedOwners.length > 0) && (
         <div className={filterContainerStyle}>
           <div className={filterInnerStyle}>
@@ -504,25 +469,22 @@ const Assessment: React.FC<Props> = ({
         </div>
       )}
 
-      <div className={tableContainerStyle}>
-        <AssessmentsTable
-          assessments={assessments}
-          isLoading={isLoading}
-          search={search}
-          sortBy={sortBy}
-          onSort={onSort}
-          onDelete={handleDeleteAssessment}
-          onUpdate={handleUpdateAssessment}
-          selectedSourceTypes={selectedSourceTypes}
-          selectedOwners={selectedOwners}
-          visibleColumns={visibleColumns}
-        />
-      </div>
-
       {isTableEmpty() ? (
-        <EmptyTableBanner onOpenModal={handleOpenModal} />
+        <AssessmentEmptyState onOpenModal={handleOpenModal} />
       ) : (
-        <></>
+        <div className={tableContainerStyle}>
+          <AssessmentsTable
+            assessments={assessments}
+            search={search}
+            sortBy={sortBy}
+            onSort={onSort}
+            onDelete={handleDeleteAssessment}
+            onUpdate={handleUpdateAssessment}
+            selectedSourceTypes={selectedSourceTypes}
+            selectedOwners={selectedOwners}
+            visibleColumns={visibleColumns}
+          />
+        </div>
       )}
 
       <CreateAssessmentModal

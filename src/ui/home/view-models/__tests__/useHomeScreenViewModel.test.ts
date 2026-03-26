@@ -76,29 +76,6 @@ describe("useHomeScreenViewModel", () => {
     expect(mockNavigate).toHaveBeenCalledWith(routes.environments);
   });
 
-  it("handleOpenStartingPageModal sets isStartingPageModalOpen to true", () => {
-    const { result } = renderHook(() => useHomeScreenViewModel());
-    expect(result.current.isStartingPageModalOpen).toBe(false);
-
-    act(() => {
-      result.current.handleOpenStartingPageModal();
-    });
-    expect(result.current.isStartingPageModalOpen).toBe(true);
-  });
-
-  it("handleCloseStartingPageModal sets isStartingPageModalOpen to false", () => {
-    const { result } = renderHook(() => useHomeScreenViewModel());
-    act(() => {
-      result.current.handleOpenStartingPageModal();
-    });
-    expect(result.current.isStartingPageModalOpen).toBe(true);
-
-    act(() => {
-      result.current.handleCloseStartingPageModal();
-    });
-    expect(result.current.isStartingPageModalOpen).toBe(false);
-  });
-
   it("handleOpenRVToolsModal sets rvtoolsOpenToken to true and navigates to assessments", () => {
     const { result } = renderHook(() => useHomeScreenViewModel());
     expect(result.current.rvtoolsOpenToken).toBe(false);
