@@ -10,6 +10,7 @@ import type {
   SourceCreateInput,
   SourceUpdateInput,
 } from "../../../data/stores/SourcesStore";
+import { parseApiError } from "../../../lib/common/ErrorParser";
 import { DEFAULT_POLLING_DELAY } from "../../../lib/mvvm/PollableStore";
 import type { AssessmentModel } from "../../../models/AssessmentModel";
 import type { SourceModel } from "../../../models/SourceModel";
@@ -194,11 +195,15 @@ export const useEnvironmentPageViewModel = (): EnvironmentPageViewModel => {
   const [createDownloadState, doCreateDownloadSource] = useAsyncFn(
     async (input: SourceCreateInput): Promise<void> => {
       setDismissDownloadError(false);
-      const newSource = await sourcesStore.create(input);
-      await imagesStore.headImage(newSource.id);
-      const url = await imagesStore.getDownloadUrl(newSource.id);
-      setDownloadSourceUrlRaw(url);
-      setSourceCreatedId(newSource.id);
+      try {
+        const newSource = await sourcesStore.create(input);
+        await imagesStore.headImage(newSource.id);
+        const url = await imagesStore.getDownloadUrl(newSource.id);
+        setDownloadSourceUrlRaw(url);
+        setSourceCreatedId(newSource.id);
+      } catch (err) {
+        throw await parseApiError(err, "Failed to create environment");
+      }
     },
     [sourcesStore, imagesStore],
   );
@@ -207,10 +212,14 @@ export const useEnvironmentPageViewModel = (): EnvironmentPageViewModel => {
   const [updateSourceState, doUpdateSource] = useAsyncFn(
     async (input: SourceUpdateInput): Promise<void> => {
       setDismissUpdateError(false);
-      const updated = await sourcesStore.update(input);
-      await imagesStore.headImage(updated.id);
-      const url = await imagesStore.getDownloadUrl(updated.id);
-      setDownloadSourceUrlRaw(url);
+      try {
+        const updated = await sourcesStore.update(input);
+        await imagesStore.headImage(updated.id);
+        const url = await imagesStore.getDownloadUrl(updated.id);
+        setDownloadSourceUrlRaw(url);
+      } catch (err) {
+        throw await parseApiError(err, "Failed to update environment");
+      }
     },
     [sourcesStore, imagesStore],
   );
