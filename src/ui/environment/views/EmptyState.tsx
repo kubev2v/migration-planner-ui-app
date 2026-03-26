@@ -43,7 +43,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
 
       <EmptyStateFooter>
         <EmptyStateActions>
-          <Button variant="secondary" onClick={onAddEnvironment}>
+          <Button variant="primary" onClick={onAddEnvironment}>
             Add environment
           </Button>
         </EmptyStateActions>
