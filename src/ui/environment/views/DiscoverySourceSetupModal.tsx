@@ -25,6 +25,7 @@ import {
 import React, { useCallback, useEffect, useState } from "react";
 
 import { VCenterSetupInstructions } from "../../core/components/VCenterSetupInstructions";
+import { getProxyConfig } from "../helpers/proxyConfig";
 import { normalizeSshKey, validateSshKey } from "../helpers/sshKey";
 import { useEnvironmentPage } from "../view-models/EnvironmentPageContext";
 
@@ -391,30 +392,18 @@ export const DiscoverySourceSetupModal: React.FC<
         const src = vm.getSourceById?.(editSourceId);
         if (src) {
           setEnvironmentName(src.name || "");
-          const proxy =
-            (
-              src as {
-                proxy?: {
-                  httpUrl?: string;
-                  httpsUrl?: string;
-                  noProxy?: string;
-                };
-              }
-            ).proxy || {};
-          const httpUrl = proxy.httpUrl || "";
-          const httpsUrl = proxy.httpsUrl || "";
-          const noProxyVal = proxy.noProxy || "";
-          setHttpProxy(httpUrl);
-          setHttpsProxy(httpsUrl);
-          setNoProxy(noProxyVal);
-          setEnableProxy(Boolean(httpUrl || httpsUrl || noProxyVal));
+          const proxyConfig = getProxyConfig(src);
+          setHttpProxy(proxyConfig.httpUrl);
+          setHttpsProxy(proxyConfig.httpsUrl);
+          setNoProxy(proxyConfig.noProxy);
+          setEnableProxy(proxyConfig.isProxyEnabled);
           setInitialValues({
             sshKey: "",
             environmentName: src.name || "",
-            httpProxy: httpUrl,
-            httpsProxy: httpsUrl,
-            noProxy: noProxyVal,
-            enableProxy: Boolean(httpUrl || httpsUrl || noProxyVal),
+            httpProxy: proxyConfig.httpUrl,
+            httpsProxy: proxyConfig.httpsUrl,
+            noProxy: proxyConfig.noProxy,
+            enableProxy: proxyConfig.isProxyEnabled,
             networkConfigType: "dhcp",
             dns: "",
             subnetMask: "",
