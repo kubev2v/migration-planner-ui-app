@@ -5,6 +5,12 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import { AssessmentsScreen } from "../ui/assessment/views/AssessmentsScreen";
 import { EnvironmentsScreen } from "../ui/environment/views/EnvironmentsScreen";
 import { HomeScreen } from "../ui/home/views/HomeScreen";
+import { OrganizationsScreen } from "../ui/partner/admin/views/OrganizationsScreen";
+import { MyPartnerScreen } from "../ui/partner/customer/views/MyPartnerScreen";
+import { CustomersScreen } from "../ui/partner/partner/views/CustomersScreen";
+import { PartnersScreen } from "../ui/partner/regularUser/views/PartnersScreen";
+import { PartnerViewRequireRole } from "../ui/partner/views/PartnerViewRequireRole";
+import { IdentityWrapper } from "./IdentityWrapper";
 
 const Report = lazy(
   () => import(/* webpackChunkName: "Report" */ "../ui/report/views/Report"),
@@ -31,22 +37,57 @@ const AssessmentDetails = lazy(
     ),
 );
 
+const OrganizationDetailScreen = lazy(
+  () =>
+    import(
+      /* webpackChunkName: "Organization" */ "../ui/partner/admin/views/OrganizationDetailScreen"
+    ),
+);
+
 export const AppRoutes: React.FC = () => (
   <Routes>
-    <Route index element={<Navigate to="assessments" replace />} />
+    {/* Identity wrapper loads current identity and renders child routes */}
+    <Route element={<IdentityWrapper />}>
+      <Route index element={<Navigate to="assessments" replace />} />
 
-    {/* Pathless layout route — HomeScreen renders the shell + <Outlet /> */}
-    <Route element={<HomeScreen />} errorElement={<InvalidObject />}>
-      <Route path="assessments" element={<AssessmentsScreen />} />
-      <Route path="environments" element={<EnvironmentsScreen />} />
+      {/* Pathless layout route — HomeScreen renders the shell + <Outlet /> */}
+      <Route element={<HomeScreen />} errorElement={<InvalidObject />}>
+        <Route path="assessments" element={<AssessmentsScreen />} />
+        <Route path="environments" element={<EnvironmentsScreen />} />
+
+        {/* Partner feature */}
+        <Route
+          path="partners"
+          element={<PartnerViewRequireRole role="regular" />}
+        >
+          <Route index element={<PartnersScreen />} />
+        </Route>
+        <Route
+          path="partners/my"
+          element={<PartnerViewRequireRole role="customer" />}
+        >
+          <Route index element={<MyPartnerScreen />} />
+        </Route>
+        <Route
+          path="partners/customers"
+          element={<PartnerViewRequireRole role="partner" />}
+        >
+          <Route index element={<CustomersScreen />} />
+        </Route>
+        <Route
+          path="partners/organizations"
+          element={<PartnerViewRequireRole role="admin" />}
+        >
+          <Route index element={<OrganizationsScreen />} />
+          <Route path=":id" element={<OrganizationDetailScreen />} />
+        </Route>
+      </Route>
+      {/* Independent routes — they have their own page layout */}
+      <Route path="assessments/:id/report" element={<Report />} />
+      <Route path="assessments/example-report" element={<ExampleReport />} />
+      <Route path="assessments/create" element={<CreateFromOva />} />
+      <Route path="assessments/:id" element={<AssessmentDetails />} />
     </Route>
-
-    {/* Independent routes — they have their own page layout */}
-    <Route path="assessments/:id/report" element={<Report />} />
-    <Route path="assessments/example-report" element={<ExampleReport />} />
-    <Route path="assessments/create" element={<CreateFromOva />} />
-    <Route path="assessments/:id" element={<AssessmentDetails />} />
-
     <Route path="*" element={<InvalidObject />} />
   </Routes>
 );

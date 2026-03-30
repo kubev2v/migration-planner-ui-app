@@ -11,9 +11,23 @@ import { useHomeScreenViewModel } from "../useHomeScreenViewModel";
 let mockPathname = "/assessments";
 const mockNavigate = vi.fn();
 
+let mockIdentityStore = {
+  getIdentity: vi.fn().mockResolvedValue(null),
+  subscribe: vi.fn(() => () => {}),
+  getSnapshot: vi.fn(() => null),
+};
+
 vi.mock("react-router-dom", () => ({
   useLocation: () => ({ pathname: mockPathname }),
   useNavigate: () => mockNavigate,
+}));
+
+vi.mock("@y0n1/react-ioc", () => ({
+  useInjection: (symbol: symbol) => {
+    const key = symbol.description;
+    if (key === "IdentityStore") return mockIdentityStore;
+    throw new Error(`Unexpected symbol: ${String(symbol)}`);
+  },
 }));
 
 // ---------------------------------------------------------------------------
@@ -24,6 +38,12 @@ describe("useHomeScreenViewModel", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockPathname = "/assessments";
+
+    mockIdentityStore = {
+      getIdentity: vi.fn().mockResolvedValue(null),
+      subscribe: vi.fn(() => () => {}),
+      getSnapshot: vi.fn(() => null),
+    };
   });
 
   it("activeTabKey is 0 when location.pathname does NOT start with /environments", () => {
