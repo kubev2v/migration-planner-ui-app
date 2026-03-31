@@ -183,13 +183,17 @@ export const useEnvironmentPageViewModel = (): EnvironmentPageViewModel => {
   // ---- Source listing ------------------------------------------------------
   const hasInitialLoadRef = useRef(false);
 
-  const [listSourcesState, doListSources] = useAsyncFn(async () => {
-    try {
-      return await sourcesStore.list();
-    } finally {
-      hasInitialLoadRef.current = true;
-    }
-  }, [sourcesStore]);
+  const [listSourcesState, doListSources] = useAsyncFn(
+    async () => {
+      try {
+        return await sourcesStore.list();
+      } finally {
+        hasInitialLoadRef.current = true;
+      }
+    },
+    [sourcesStore],
+    { loading: true },
+  );
 
   // ---- Source deletion -----------------------------------------------------
   const [deleteSourceState, doDeleteSource] = useAsyncFn(

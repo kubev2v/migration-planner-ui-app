@@ -177,8 +177,8 @@ const EnvironmentContent: React.FC<EnvironmentContentProps> = ({ vm }) => {
 export const EnvironmentPage: React.FC = () => {
   const vm = useEnvironmentPage();
 
-  // Show spinner if loading or if no initial load
-  if (vm.isLoadingSources || !vm.hasInitialLoad) {
+  // Show spinner only during initial load
+  if (vm.isLoadingSources && !vm.hasInitialLoad) {
     return <LoadingSpinner />;
   }
 

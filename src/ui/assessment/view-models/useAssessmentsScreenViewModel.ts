@@ -29,13 +29,17 @@ export const useAssessmentsScreenViewModel = (): AssessmentsScreenViewModel => {
 
   const hasInitialLoadRef = useRef(false);
 
-  const [fetchState, fetchAssessments] = useAsyncFn(async () => {
-    try {
-      return await assessmentsStore.list();
-    } finally {
-      hasInitialLoadRef.current = true;
-    }
-  }, [assessmentsStore]);
+  const [fetchState, fetchAssessments] = useAsyncFn(
+    async () => {
+      try {
+        return await assessmentsStore.list();
+      } finally {
+        hasInitialLoadRef.current = true;
+      }
+    },
+    [assessmentsStore],
+    { loading: true },
+  );
 
   useMount(() => {
     void fetchAssessments();
