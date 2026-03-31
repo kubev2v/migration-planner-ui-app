@@ -1,5 +1,6 @@
 const assert = require("node:assert");
 const webpack = require("webpack");
+const dependencies = require("./package.json").dependencies;
 
 assert(
   process.env.MIGRATION_PLANNER_API_BASE_URL,
@@ -50,7 +51,7 @@ module.exports = {
         "react-router-dom": {
           singleton: true,
           import: false,
-          version: "^6.3.0",
+          version: dependencies["react-router-dom"],
         },
       },
     ],
