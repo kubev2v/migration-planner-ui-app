@@ -32,7 +32,7 @@ const ProxyInputFields = ({
             <Popover bodyContent="The HTTP proxy URL that agents should use to access the discovery service.">
               <button
                 type="button"
-                aria-label="More info"
+                aria-label="More info about HTTP proxy URL"
                 onClick={(e) => e.preventDefault()}
                 className="pf-v6-c-form__group-label-help"
               >
@@ -63,7 +63,7 @@ const ProxyInputFields = ({
             <Popover bodyContent="Specify the HTTPS proxy that agents should use to access the discovery service. If you don't provide a value, your HTTP proxy URL will be used by default for both HTTP and HTTPS connections.">
               <button
                 type="button"
-                aria-label="More info"
+                aria-label="More info about HTTPS proxy URL"
                 onClick={(e) => e.preventDefault()}
                 className="pf-v6-c-form__group-label-help"
               >
@@ -94,7 +94,7 @@ const ProxyInputFields = ({
             <Popover bodyContent="Exclude destination domain names, IP addresses, or other network CIDRs from proxying by adding them to this comma-separated list.">
               <button
                 type="button"
-                aria-label="More info"
+                aria-label="More info about no proxy domains"
                 onClick={(e) => e.preventDefault()}
                 className="pf-v6-c-form__group-label-help"
               >
