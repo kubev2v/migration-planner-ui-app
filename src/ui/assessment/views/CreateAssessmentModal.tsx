@@ -93,7 +93,8 @@ export const CreateAssessmentModal: React.FC<CreateAssessmentModalProps> = ({
 
   // Helper to check if file operations should be disabled (RVTools mode during job creation/processing)
   const isFileOperationsDisabled =
-    mode === "rvtools" && (isLoading || isJobProcessing);
+    mode === "rvtools" &&
+    (isLoading || isJobProcessing || isNavigatingToReport);
 
   // Combine with existing error logic - job error takes priority
   const effectiveError = jobError || error;

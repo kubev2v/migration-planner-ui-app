@@ -224,9 +224,10 @@ export const useAssessmentPageViewModel = (): AssessmentPageViewModel => {
         navigate(routes.assessmentReport(assessmentId));
       } finally {
         isNavigatingRef.current = false;
+        jobsStore.reset();
       }
     },
-    [assessmentsStore, navigate],
+    [assessmentsStore, navigate, jobsStore],
   );
 
   useEffect(() => {
@@ -243,7 +244,6 @@ export const useAssessmentPageViewModel = (): AssessmentPageViewModel => {
       const assessmentId = currentJob.assessmentId;
       isNavigatingRef.current = true;
       jobsStore.stopPolling();
-      jobsStore.reset();
 
       void navigateToReport(assessmentId);
     }
@@ -312,6 +312,16 @@ export const useAssessmentPageViewModel = (): AssessmentPageViewModel => {
 
   // ---- Return -------------------------------------------------------------
 
+  // Cover the one-render gap between the poll that marks the job Completed
+  // (isJobProcessing becomes false) and the effect that starts navigation
+  // (navigationState.loading becomes true).  Without this, form inputs
+  // briefly re-enable.
+  const isNavigatingToReport =
+    navigationState.loading ||
+    Boolean(
+      currentJob?.status === JobStatus.Completed && currentJob?.assessmentId,
+    );
+
   return {
     currentJob,
     isCreatingJob: jobState.isCreating,
@@ -320,7 +330,7 @@ export const useAssessmentPageViewModel = (): AssessmentPageViewModel => {
     jobProgressValue,
     jobProgressLabel,
     jobError,
-    isNavigatingToReport: navigationState.loading,
+    isNavigatingToReport,
     isDeletingAssessment: deleteState.loading,
     deleteError: deleteState.error,
     isUpdatingAssessment: updateState.loading,

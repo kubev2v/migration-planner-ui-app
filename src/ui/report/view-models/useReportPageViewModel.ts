@@ -498,9 +498,10 @@ export const useReportPageViewModel = (): ReportPageViewModel => {
         navigate(routes.assessmentReport(assessmentId));
       } finally {
         isNavigatingRef.current = false;
+        jobsStore.reset();
       }
     },
-    [assessmentsStore, navigate],
+    [assessmentsStore, navigate, jobsStore],
   );
 
   useEffect(() => {
@@ -517,7 +518,6 @@ export const useReportPageViewModel = (): ReportPageViewModel => {
       const assessmentId = currentJob.assessmentId;
       isNavigatingRef.current = true;
       jobsStore.stopPolling();
-      jobsStore.reset();
       setIsRvtoolsModalOpen(false);
 
       void navigateToReport(assessmentId);
@@ -594,6 +594,13 @@ export const useReportPageViewModel = (): ReportPageViewModel => {
     jobProgressValue,
     jobProgressLabel,
     jobError,
-    isNavigatingToReport: rvtoolsNavigationState.loading,
+    // Cover the one-render gap between the poll that marks the job Completed
+    // (isJobProcessing becomes false) and the effect that starts navigation
+    // (rvtoolsNavigationState.loading becomes true).
+    isNavigatingToReport:
+      rvtoolsNavigationState.loading ||
+      Boolean(
+        currentJob?.status === JobStatus.Completed && currentJob?.assessmentId,
+      ),
   };
 };

@@ -249,6 +249,29 @@ describe("useAssessmentPageViewModel", () => {
 
   // -- Job completion detection ---------------------------------------------
 
+  it("sets isNavigatingToReport immediately when job transitions to Completed", () => {
+    const { result } = renderHook(() => useAssessmentPageViewModel());
+
+    act(() => {
+      setJobsState({
+        currentJob: makeJob({ status: JobStatus.Parsing }),
+      });
+    });
+
+    expect(result.current.isNavigatingToReport).toBe(false);
+
+    act(() => {
+      setJobsState({
+        currentJob: makeJob({
+          status: JobStatus.Completed,
+          assessmentId: "a-42",
+        }),
+      });
+    });
+
+    expect(result.current.isNavigatingToReport).toBe(true);
+  });
+
   it("stops polling, resets, and navigates to report on job completion", async () => {
     renderHook(() => useAssessmentPageViewModel());
 
