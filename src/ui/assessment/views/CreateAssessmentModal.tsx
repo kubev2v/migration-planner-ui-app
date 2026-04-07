@@ -91,10 +91,24 @@ export const CreateAssessmentModal: React.FC<CreateAssessmentModalProps> = ({
   const [nameErrorDismissed, setNameErrorDismissed] = useState(false);
   const [generalErrorDismissed, setGeneralErrorDismissed] = useState(false);
 
-  // Helper to check if file operations should be disabled (RVTools mode during job creation/processing)
-  const isFileOperationsDisabled =
-    mode === "rvtools" &&
-    (isLoading || isJobProcessing || isNavigatingToReport);
+  // Reset all form state when the modal is closed — covers both explicit
+  // (Cancel / X) and programmatic closes (e.g. navigation after job completion).
+  React.useEffect(() => {
+    if (!isOpen) {
+      setAssessmentName("");
+      setSelectedFile(null);
+      setFilename("");
+      setNameValidationError("");
+      setFileValidationError("");
+      setSelectedEnvironmentId("");
+      setNameErrorDismissed(false);
+      setGeneralErrorDismissed(false);
+      setRvtoolsConsentChecked(false);
+    }
+  }, [isOpen]);
+
+  // Disable all form inputs while the job is being created/processed or the report is loading.
+  const isFormDisabled = isLoading || isJobProcessing || isNavigatingToReport;
 
   // Combine with existing error logic - job error takes priority
   const effectiveError = jobError || error;
@@ -172,8 +186,7 @@ export const CreateAssessmentModal: React.FC<CreateAssessmentModalProps> = ({
   const config = getFileConfig();
 
   const handleFileChange = (_event: DropEvent, file: File): void => {
-    // Prevent file changes during RVTools job creation/processing
-    if (isFileOperationsDisabled) {
+    if (isFormDisabled) {
       return;
     }
 
@@ -208,8 +221,7 @@ export const CreateAssessmentModal: React.FC<CreateAssessmentModalProps> = ({
   };
 
   const handleFileClear = (): void => {
-    // Prevent file clearing during RVTools job creation/processing
-    if (isFileOperationsDisabled) {
+    if (isFormDisabled) {
       return;
     }
 
@@ -331,7 +343,7 @@ export const CreateAssessmentModal: React.FC<CreateAssessmentModalProps> = ({
               }}
               validated={nameErrorToDisplay ? "error" : "default"}
               placeholder="Enter assessment name"
-              isDisabled={isFileOperationsDisabled}
+              isDisabled={isFormDisabled}
             />
             {nameErrorToDisplay && (
               <HelperText>
@@ -366,6 +378,7 @@ export const CreateAssessmentModal: React.FC<CreateAssessmentModalProps> = ({
                   }
                 }}
                 validated={fileValidationError ? "error" : "default"}
+                isDisabled={isFormDisabled}
               >
                 <FormSelectOption value="" label="Select an environment" />
                 {availableEnvironments.map((env) => (
@@ -428,7 +441,7 @@ export const CreateAssessmentModal: React.FC<CreateAssessmentModalProps> = ({
                 validated={fileValidationError ? "error" : "default"}
                 accept={config.accept}
                 hideDefaultPreview
-                isDisabled={isFileOperationsDisabled}
+                isDisabled={isFormDisabled}
               />
               {fileValidationError && (
                 <FormHelperText>
@@ -452,7 +465,7 @@ export const CreateAssessmentModal: React.FC<CreateAssessmentModalProps> = ({
                       setRvtoolsConsentChecked(Boolean(checked));
                     }}
                     isRequired
-                    isDisabled={isFileOperationsDisabled}
+                    isDisabled={isFormDisabled}
                   />
                 </div>
               )}

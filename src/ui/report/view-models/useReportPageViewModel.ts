@@ -495,6 +495,7 @@ export const useReportPageViewModel = (): ReportPageViewModel => {
     async (assessmentId: string) => {
       try {
         await assessmentsStore.list();
+        setIsRvtoolsModalOpen(false);
         navigate(routes.assessmentReport(assessmentId));
       } finally {
         isNavigatingRef.current = false;
@@ -518,7 +519,7 @@ export const useReportPageViewModel = (): ReportPageViewModel => {
       const assessmentId = currentJob.assessmentId;
       isNavigatingRef.current = true;
       jobsStore.stopPolling();
-      setIsRvtoolsModalOpen(false);
+      jobsStore.reset();
 
       void navigateToReport(assessmentId);
     }
