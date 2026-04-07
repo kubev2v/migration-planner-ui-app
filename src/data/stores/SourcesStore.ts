@@ -3,6 +3,7 @@ import { UpdateInventoryFromJSON } from "@openshift-migration-advisor/planner-sd
 
 import { PollableStoreBase } from "../../lib/mvvm/PollableStore";
 import { createSourceModel, type SourceModel } from "../../models/SourceModel";
+import { createStubSources } from "../stubs/stubSources";
 import type { ISourcesStore } from "./interfaces/ISourcesStore";
 
 export type SourceNetworkConfigType = "dhcp" | "static";
@@ -140,6 +141,7 @@ export class SourcesStore
 {
   private sources: SourceModel[] = [];
   private api: SourceApiInterface;
+  private usingStubs = false;
 
   constructor(api: SourceApiInterface) {
     super();
@@ -147,10 +149,25 @@ export class SourcesStore
   }
 
   async list(signal?: AbortSignal): Promise<SourceModel[]> {
-    const sources = await this.api.listSources({ signal });
-    this.sources = sources.map(createSourceModel);
-    this.notify();
-    return this.sources;
+    try {
+      const sources = await this.api.listSources({ signal });
+      this.sources = sources.map(createSourceModel);
+      this.usingStubs = false;
+      this.notify();
+      return this.sources;
+    } catch (error) {
+      if (process.env.NODE_ENV !== "production" && !this.usingStubs) {
+        console.warn(
+          "[SourcesStore] API unreachable, using stub sources for development:",
+          error,
+        );
+        this.sources = createStubSources().map(createSourceModel);
+        this.usingStubs = true;
+        this.notify();
+        return this.sources;
+      }
+      throw error;
+    }
   }
 
   getById(id: string): SourceModel | undefined {
@@ -226,6 +243,7 @@ export class SourcesStore
   }
 
   protected override async poll(signal: AbortSignal): Promise<void> {
+    if (this.usingStubs) return;
     await this.list(signal);
   }
 }
