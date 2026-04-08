@@ -54,7 +54,7 @@ export interface CreateFromOvaViewModel {
   selectedEnv: SourceModel | undefined;
   isSelectedNotReady: boolean;
   isSubmitDisabled: boolean;
-  hasDuplicateNameError: boolean;
+  hasNameError: boolean;
   hasGeneralApiError: boolean;
 
   // Actions
@@ -131,13 +131,15 @@ export const useCreateFromOvaViewModel = (): CreateFromOvaViewModel => {
     useExisting && selectedEnv && !selectedEnv.isReady,
   );
 
-  const isDuplicateNameError = useCallback(
-    (error: Error | null): boolean =>
-      !!error &&
-      (/assessment with name '.*' already exists/i.test(error.message || "") ||
-        /already exists/i.test(error.message || "")),
-    [],
-  );
+  const isNameError = useCallback((error: Error | null): boolean => {
+    if (!error) return false;
+    const msg = error.message || "";
+    return (
+      /assessment with name '.*' already exists/i.test(msg) ||
+      /already exists/i.test(msg) ||
+      /provided name.+invalid/i.test(msg)
+    );
+  }, []);
 
   const isSubmitDisabled =
     !name || (useExisting ? !selectedEnvironmentId : !envVm.sourceCreatedId);
@@ -300,8 +302,8 @@ export const useCreateFromOvaViewModel = (): CreateFromOvaViewModel => {
       ? null
       : (submitState.error ?? null);
 
-  const hasDuplicateNameError = isDuplicateNameError(apiError);
-  const hasGeneralApiError = !!apiError && !isDuplicateNameError(apiError);
+  const hasNameError = isNameError(apiError);
+  const hasGeneralApiError = !!apiError && !isNameError(apiError);
 
   return {
     sources: envVm.sources,
@@ -333,7 +335,7 @@ export const useCreateFromOvaViewModel = (): CreateFromOvaViewModel => {
     selectedEnv,
     isSelectedNotReady,
     isSubmitDisabled,
-    hasDuplicateNameError,
+    hasNameError,
     hasGeneralApiError,
 
     handleSubmit: doSubmit,

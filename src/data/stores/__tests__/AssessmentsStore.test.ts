@@ -143,6 +143,66 @@ describe("AssessmentsStore", () => {
     expect(store.getSnapshot()[0].name).toBe("New");
   });
 
+  it("create() extracts error message from ResponseError with JSON body", async () => {
+    const mockResponse = {
+      text: vi.fn().mockResolvedValue(
+        JSON.stringify({
+          message: 'assessment with name "dup" already exists',
+        }),
+      ),
+      status: 409,
+      ok: false,
+      statusText: "Conflict",
+    } as unknown as Response;
+
+    const responseError = new ResponseError(mockResponse, "Response error");
+    vi.mocked(api.createAssessment).mockRejectedValue(responseError);
+
+    const form = { name: "dup" } as Parameters<
+      AssessmentApiInterface["createAssessment"]
+    >[0]["assessmentForm"];
+
+    await expect(store.create(form)).rejects.toThrow(
+      'assessment with name "dup" already exists',
+    );
+  });
+
+  it("create() extracts error message from ResponseError with name validation error", async () => {
+    const mockResponse = {
+      text: vi.fn().mockResolvedValue(
+        JSON.stringify({
+          message: "The provided name: aaa aaa is invalid.",
+        }),
+      ),
+      status: 400,
+      ok: false,
+      statusText: "Bad Request",
+    } as unknown as Response;
+
+    const responseError = new ResponseError(mockResponse, "Response error");
+    vi.mocked(api.createAssessment).mockRejectedValue(responseError);
+
+    const form = { name: "aaa aaa" } as Parameters<
+      AssessmentApiInterface["createAssessment"]
+    >[0]["assessmentForm"];
+
+    await expect(store.create(form)).rejects.toThrow(
+      "The provided name: aaa aaa is invalid.",
+    );
+  });
+
+  it("create() uses fallback message when error is not a ResponseError", async () => {
+    vi.mocked(api.createAssessment).mockRejectedValue(
+      new Error("Network failure"),
+    );
+
+    const form = { name: "test" } as Parameters<
+      AssessmentApiInterface["createAssessment"]
+    >[0]["assessmentForm"];
+
+    await expect(store.create(form)).rejects.toThrow("Network failure");
+  });
+
   it("update() replaces existing item", async () => {
     const initial = makeAssessment({ id: "a-1", name: "Old" });
     vi.mocked(api.listAssessments).mockResolvedValue([initial] as never);
@@ -163,6 +223,34 @@ describe("AssessmentsStore", () => {
     expect(result.name).toBe("Updated");
     expect(store.getSnapshot()).toHaveLength(1);
     expect(store.getSnapshot()[0].name).toBe("Updated");
+  });
+
+  it("update() extracts error message from ResponseError with JSON body", async () => {
+    const initial = makeAssessment({ id: "a-1", name: "Old" });
+    vi.mocked(api.listAssessments).mockResolvedValue([initial] as never);
+    await store.list();
+
+    const mockResponse = {
+      text: vi.fn().mockResolvedValue(
+        JSON.stringify({
+          message: "The provided name: bad name is invalid.",
+        }),
+      ),
+      status: 400,
+      ok: false,
+      statusText: "Bad Request",
+    } as unknown as Response;
+
+    const responseError = new ResponseError(mockResponse, "Response error");
+    vi.mocked(api.updateAssessment).mockRejectedValue(responseError);
+
+    const form = { name: "bad name" } as Parameters<
+      AssessmentApiInterface["updateAssessment"]
+    >[0]["assessmentUpdate"];
+
+    await expect(store.update("a-1", form)).rejects.toThrow(
+      "The provided name: bad name is invalid.",
+    );
   });
 
   it("remove() filters out item and refreshes from server", async () => {

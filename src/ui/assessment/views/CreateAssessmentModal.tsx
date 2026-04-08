@@ -25,6 +25,7 @@ interface CreateAssessmentModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (name: string, file: File | null, mode: AssessmentMode) => void;
+  onClearError?: () => void;
   mode: AssessmentMode;
   isLoading?: boolean;
   error?: Error | null;
@@ -42,10 +43,15 @@ interface CreateAssessmentModalProps {
   isNavigatingToReport?: boolean;
 }
 
-const isDuplicateNameError = (error: Error | null): boolean =>
-  !!error &&
-  (/assessment with name '.*' already exists/i.test(error.message || "") ||
-    /already exists/i.test(error.message || ""));
+const isNameError = (error: Error | null): boolean => {
+  if (!error) return false;
+  const msg = error.message || "";
+  return (
+    /assessment with name '.*' already exists/i.test(msg) ||
+    /already exists/i.test(msg) ||
+    /provided name.+invalid/i.test(msg)
+  );
+};
 
 const isAbortError = (error: Error | null): boolean => {
   if (!error) return false;
@@ -64,6 +70,7 @@ export const CreateAssessmentModal: React.FC<CreateAssessmentModalProps> = ({
   isOpen,
   onClose,
   onSubmit,
+  onClearError,
   mode,
   isLoading = false,
   error = null,
@@ -87,10 +94,6 @@ export const CreateAssessmentModal: React.FC<CreateAssessmentModalProps> = ({
   const [nameValidationError, setNameValidationError] = useState("");
   const [fileValidationError, setFileValidationError] = useState("");
 
-  // Track dismissed API errors (reset on new submission)
-  const [nameErrorDismissed, setNameErrorDismissed] = useState(false);
-  const [generalErrorDismissed, setGeneralErrorDismissed] = useState(false);
-
   // Reset all form state when the modal is closed — covers both explicit
   // (Cancel / X) and programmatic closes (e.g. navigation after job completion).
   React.useEffect(() => {
@@ -101,8 +104,6 @@ export const CreateAssessmentModal: React.FC<CreateAssessmentModalProps> = ({
       setNameValidationError("");
       setFileValidationError("");
       setSelectedEnvironmentId("");
-      setNameErrorDismissed(false);
-      setGeneralErrorDismissed(false);
       setRvtoolsConsentChecked(false);
     }
   }, [isOpen]);
@@ -113,25 +114,14 @@ export const CreateAssessmentModal: React.FC<CreateAssessmentModalProps> = ({
   // Combine with existing error logic - job error takes priority
   const effectiveError = jobError || error;
 
-  // Reset dismissed flags when a new error occurs
-  React.useEffect(() => {
-    if (error || jobError) {
-      setNameErrorDismissed(false);
-      setGeneralErrorDismissed(false);
-    }
-  }, [error, jobError]);
-
-  const hasDuplicateNameError =
-    !nameErrorDismissed && isDuplicateNameError(effectiveError);
+  const hasNameError = isNameError(effectiveError);
   const hasGeneralApiError =
-    !generalErrorDismissed &&
     !!effectiveError &&
-    !isDuplicateNameError(effectiveError) &&
+    !isNameError(effectiveError) &&
     !isAbortError(effectiveError);
 
   const nameErrorToDisplay =
-    nameValidationError ||
-    (hasDuplicateNameError ? effectiveError?.message : "");
+    nameValidationError || (hasNameError ? effectiveError?.message : "");
 
   const availableEnvironments = selectedEnvironment
     ? [selectedEnvironment]
@@ -268,8 +258,7 @@ export const CreateAssessmentModal: React.FC<CreateAssessmentModalProps> = ({
     setNameValidationError("");
     setFileValidationError("");
     setSelectedEnvironmentId("");
-    setNameErrorDismissed(true);
-    setGeneralErrorDismissed(true);
+    onClearError?.();
     setRvtoolsConsentChecked(false);
     onClose();
   };
@@ -338,8 +327,7 @@ export const CreateAssessmentModal: React.FC<CreateAssessmentModalProps> = ({
                 if (nameValidationError && value.trim()) {
                   setNameValidationError("");
                 }
-                setNameErrorDismissed(true);
-                setGeneralErrorDismissed(true);
+                onClearError?.();
               }}
               validated={nameErrorToDisplay ? "error" : "default"}
               placeholder="Enter assessment name"

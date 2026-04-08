@@ -56,15 +56,19 @@ export class JobsStore
     }
     this.abortController = new AbortController();
 
+    // Capture in a local variable so this invocation always checks its OWN
+    // controller, even if a subsequent call reassigns `this.abortController`.
+    const controller = this.abortController;
+
     this.setState({ isCreating: true, createError: undefined });
 
     try {
       const job = await this.api.createRVToolsAssessment(
         { name, file },
-        { signal: this.abortController.signal },
+        { signal: controller.signal },
       );
 
-      if (this.abortController.signal.aborted) {
+      if (controller.signal.aborted) {
         if (job?.id && !TERMINAL_JOB_STATUSES.includes(job.status)) {
           this.api.cancelJob({ id: job.id }).catch(() => undefined);
         }
@@ -74,7 +78,7 @@ export class JobsStore
       this.setState({ currentJob: job, isCreating: false });
       return job;
     } catch (err) {
-      if (this.abortController.signal.aborted) {
+      if (controller.signal.aborted) {
         return undefined;
       }
 
@@ -82,6 +86,12 @@ export class JobsStore
         err,
         "Failed to create RVTools job",
       );
+
+      // A newer call may have started while parseApiError was resolving.
+      // If so, this invocation is stale — don't overwrite the newer state.
+      if (this.abortController !== controller) {
+        return undefined;
+      }
 
       this.setState({ createError: errorToStore, isCreating: false });
       return undefined;
@@ -128,6 +138,31 @@ export class JobsStore
     this.reset();
     this.cancelInProgress = false;
     return latestJob;
+  }
+
+  /**
+   * Clear error state so the user can retry with a fresh form.
+   * Clears `createError` and, if the current job reached a terminal state
+   * (Failed / Cancelled / Completed), also clears `currentJob`.
+   * Active (non-terminal) jobs are left untouched.
+   */
+  clearCreateError(): void {
+    const updates: Partial<JobsStoreState> = {};
+
+    if (this.state.createError !== undefined) {
+      updates.createError = undefined;
+    }
+
+    if (
+      this.state.currentJob &&
+      TERMINAL_JOB_STATUSES.includes(this.state.currentJob.status)
+    ) {
+      updates.currentJob = null;
+    }
+
+    if (Object.keys(updates).length > 0) {
+      this.setState(updates);
+    }
   }
 
   /**

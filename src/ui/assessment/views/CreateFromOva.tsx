@@ -69,15 +69,13 @@ const CreateFromOvaContent: React.FC = () => {
                     vm.setName(v);
                     if (vm.apiError) vm.setApiError(null);
                   }}
-                  validated={vm.hasDuplicateNameError ? "error" : "default"}
+                  validated={vm.hasNameError ? "error" : "default"}
                 />
               </InputGroupItem>
             </InputGroup>
             <HelperText>
-              <HelperTextItem
-                variant={vm.hasDuplicateNameError ? "error" : "default"}
-              >
-                {vm.hasDuplicateNameError
+              <HelperTextItem variant={vm.hasNameError ? "error" : "default"}>
+                {vm.hasNameError
                   ? vm.apiError?.message
                   : "Name your assessment"}
               </HelperTextItem>

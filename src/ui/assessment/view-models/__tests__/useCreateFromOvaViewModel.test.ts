@@ -157,12 +157,10 @@ describe("useCreateFromOvaViewModel", () => {
     expect(result.current.isSubmitDisabled).toBe(true);
   });
 
-  it("hasDuplicateNameError detects duplicate name error message", async () => {
-    // Make create reject with a duplicate-name error
+  it("hasNameError detects duplicate name error message", async () => {
     mockAssessmentsStore.create.mockRejectedValueOnce(
       new Error("An assessment with name 'Foo' already exists"),
     );
-    // Provide a source so the submit path is valid
     const source = makeSource({ id: "s-1", name: "Test" });
     mockEnvVm.sourceCreatedId = "s-1";
     mockEnvVm.getSourceById.mockReturnValue(source);
@@ -177,11 +175,32 @@ describe("useCreateFromOvaViewModel", () => {
       await result.current.handleSubmit();
     });
 
-    expect(result.current.hasDuplicateNameError).toBe(true);
+    expect(result.current.hasNameError).toBe(true);
   });
 
-  it("hasGeneralApiError is true for non-duplicate errors", async () => {
-    // Make create reject with a generic error
+  it("hasNameError detects backend name validation error", async () => {
+    mockAssessmentsStore.create.mockRejectedValueOnce(
+      new Error("The provided name: aaa aaa is invalid."),
+    );
+    const source = makeSource({ id: "s-1", name: "Test" });
+    mockEnvVm.sourceCreatedId = "s-1";
+    mockEnvVm.getSourceById.mockReturnValue(source);
+
+    const { result } = renderHook(() => useCreateFromOvaViewModel());
+
+    act(() => {
+      result.current.setName("aaa aaa");
+    });
+
+    await act(async () => {
+      await result.current.handleSubmit();
+    });
+
+    expect(result.current.hasNameError).toBe(true);
+    expect(result.current.hasGeneralApiError).toBe(false);
+  });
+
+  it("hasGeneralApiError is true for non-name-related errors", async () => {
     mockAssessmentsStore.create.mockRejectedValueOnce(
       new Error("Network error"),
     );
@@ -200,7 +219,7 @@ describe("useCreateFromOvaViewModel", () => {
     });
 
     expect(result.current.hasGeneralApiError).toBe(true);
-    expect(result.current.hasDuplicateNameError).toBe(false);
+    expect(result.current.hasNameError).toBe(false);
   });
 
   it("sources comes from envVm.sources", () => {

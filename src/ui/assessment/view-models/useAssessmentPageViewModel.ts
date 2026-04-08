@@ -133,6 +133,8 @@ export interface AssessmentPageViewModel {
 
   /** Create a new RVTools assessment (starts an async job). */
   createRVToolsJob: (name: string, file: File) => Promise<void>;
+  /** Clear the create-job error (e.g. when the user edits the form). */
+  clearJobCreateError: () => void;
   /**
    * Cancel the current job.
    * If the job had already completed, the created assessment is cleaned up.
@@ -261,6 +263,10 @@ export const useAssessmentPageViewModel = (): AssessmentPageViewModel => {
     [jobsStore],
   );
 
+  const clearJobCreateError = useCallback((): void => {
+    jobsStore.clearCreateError();
+  }, [jobsStore]);
+
   const cancelRVToolsJob = useCallback(async (): Promise<void> => {
     jobsStore.stopPolling();
     const latestJob = await jobsStore.cancelRVToolsJob();
@@ -342,6 +348,7 @@ export const useAssessmentPageViewModel = (): AssessmentPageViewModel => {
     sortBy,
     setSortBy,
     createRVToolsJob,
+    clearJobCreateError,
     cancelRVToolsJob,
     updateAssessment: doUpdateAssessment,
     deleteAssessment: doDeleteAssessment,
