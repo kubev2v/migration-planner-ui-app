@@ -11,10 +11,6 @@ export class PartnersStore
 
   // eslint-disable-next-line @typescript-eslint/require-await
   async list(): Promise<Partner[]> {
-    if (process.env.NODE_ENV === "production") {
-      return [];
-    }
-
     this.partners = getFakePartners();
     console.log("[PartnersStore] GET /api/partners", this.partners);
     this.notify();

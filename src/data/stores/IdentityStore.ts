@@ -9,10 +9,8 @@ export class IdentityStore
 {
   private identity: Identity | null = null;
 
+  // eslint-disable-next-line @typescript-eslint/require-await
   async getIdentity(): Promise<Identity> {
-    if (process.env.NODE_ENV === "production") {
-      return Promise.reject(new Error("GET /api/identity not implemented"));
-    }
     this.identity = getFakeIdentity();
     console.log("[IdentityStore] GET /api/identity:", this.identity);
     this.notify();

@@ -12,9 +12,6 @@ export class OrganizationsStore
 
   // eslint-disable-next-line @typescript-eslint/require-await
   async list(): Promise<Organization[]> {
-    if (process.env.NODE_ENV === "production") {
-      return [];
-    }
     this.organizations = getFakeOrganizations();
     console.log(
       "[OrganizationsStore] GET /api/organizations",
@@ -26,9 +23,6 @@ export class OrganizationsStore
 
   // eslint-disable-next-line @typescript-eslint/require-await
   async get(organizationId: string): Promise<Organization | undefined> {
-    if (process.env.NODE_ENV === "production") {
-      return undefined;
-    }
     const organization = getFakeOrganizations().find(
       (organization) => organization.id === organizationId,
     );
@@ -41,9 +35,6 @@ export class OrganizationsStore
 
   // eslint-disable-next-line @typescript-eslint/require-await
   async getUsers(organizationId: string): Promise<User[]> {
-    if (process.env.NODE_ENV === "production") {
-      return [];
-    }
     console.log(
       `[OrganizationsStore] GET /api/organizations/${organizationId}/users`,
       [],

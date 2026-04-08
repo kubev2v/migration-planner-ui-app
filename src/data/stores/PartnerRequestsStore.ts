@@ -18,10 +18,6 @@ export class PartnerRequestsStore
 
   // eslint-disable-next-line @typescript-eslint/require-await
   async list(): Promise<PartnerRequest[]> {
-    if (process.env.NODE_ENV === "production") {
-      return [];
-    }
-
     this.partnerRequests = getFakePartnerRequests();
     console.log(
       "[PartnerRequestsStore] GET /api/partners/requests",
@@ -31,12 +27,8 @@ export class PartnerRequestsStore
     return this.partnerRequests;
   }
 
+  // eslint-disable-next-line @typescript-eslint/require-await
   async create(data: PartnerRequestCreate): Promise<PartnerRequest> {
-    if (process.env.NODE_ENV === "production") {
-      return Promise.reject(
-        new Error("POST /api/partners/requests not implemented"),
-      );
-    }
     console.log("[PartnerRequestsStore] POST /api/partners/requests", data);
     const organization = getFakeOrganizations().find(
       (organization) => organization.id === data.request.partnerId,
@@ -50,15 +42,8 @@ export class PartnerRequestsStore
     return newRequest;
   }
 
+  // eslint-disable-next-line @typescript-eslint/require-await
   async delete(request: PartnerRequest): Promise<void> {
-    if (process.env.NODE_ENV === "production") {
-      return Promise.reject(
-        new Error(
-          `DELETE /api/partners/requests/${request.id} not implemented`,
-        ),
-      );
-    }
-
     this.partnerRequests = this.partnerRequests.filter(
       (r) => r.id !== request.id,
     );
