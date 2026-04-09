@@ -5,6 +5,7 @@ import { useAsyncFn } from "react-use";
 
 import { Symbols } from "../../../config/Dependencies";
 import type { IAssessmentsStore } from "../../../data/stores/interfaces/IAssessmentsStore";
+import { isNameError } from "../../../lib/common/ErrorParser";
 import type { SourceModel } from "../../../models/SourceModel";
 import { routes } from "../../../routing/Routes";
 import { useEnvironmentPage } from "../../environment/view-models/EnvironmentPageContext";
@@ -130,16 +131,6 @@ export const useCreateFromOvaViewModel = (): CreateFromOvaViewModel => {
   const isSelectedNotReady = Boolean(
     useExisting && selectedEnv && !selectedEnv.isReady,
   );
-
-  const isNameError = useCallback((error: Error | null): boolean => {
-    if (!error) return false;
-    const msg = error.message || "";
-    return (
-      /assessment with name '.*' already exists/i.test(msg) ||
-      /already exists/i.test(msg) ||
-      /provided name.+invalid/i.test(msg)
-    );
-  }, []);
 
   const isSubmitDisabled =
     !name || (useExisting ? !selectedEnvironmentId : !envVm.sourceCreatedId);

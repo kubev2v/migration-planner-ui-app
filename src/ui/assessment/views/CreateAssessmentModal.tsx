@@ -19,6 +19,8 @@ import {
 } from "@patternfly/react-core";
 import React, { useState } from "react";
 
+import { isNameError } from "../../../lib/common/ErrorParser";
+
 export type AssessmentMode = "inventory" | "rvtools" | "agent";
 
 interface CreateAssessmentModalProps {
@@ -42,16 +44,6 @@ interface CreateAssessmentModalProps {
   /** `true` while loading assessments and navigating to report after job completion. */
   isNavigatingToReport?: boolean;
 }
-
-const isNameError = (error: Error | null): boolean => {
-  if (!error) return false;
-  const msg = error.message || "";
-  return (
-    /assessment with name '.*' already exists/i.test(msg) ||
-    /already exists/i.test(msg) ||
-    /provided name.+invalid/i.test(msg)
-  );
-};
 
 const isAbortError = (error: Error | null): boolean => {
   if (!error) return false;
