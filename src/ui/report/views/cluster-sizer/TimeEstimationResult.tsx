@@ -35,6 +35,11 @@ const sectionStyle = css`
   border: 1px solid var(--pf-t--global--border--color--default);
   border-radius: var(--pf-t--global--border--radius--small);
   padding: var(--pf-t--global--spacer--400);
+  height: 100%;
+`;
+
+const equalHeightGridStyle = css`
+  align-items: stretch;
 `;
 
 const totalTimeStyle = css`
@@ -169,7 +174,7 @@ export const TimeEstimationResult: React.FC<TimeEstimationResultProps> = ({
   return (
     <Stack hasGutter>
       <StackItem>
-        <Grid hasGutter>
+        <Grid hasGutter className={equalHeightGridStyle}>
           {schemas.map(([schemaName, result]) => {
             const display = getSchemaDisplay(schemaName);
             const breakdownEntries = result.breakdown
@@ -216,7 +221,7 @@ export const TimeEstimationResult: React.FC<TimeEstimationResultProps> = ({
       </StackItem>
 
       <StackItem>
-        <Grid hasGutter>
+        <Grid hasGutter className={equalHeightGridStyle}>
           {schemas.map(([schemaName, result]) => {
             const display = getSchemaDisplay(schemaName);
             const breakdownEntries = result.breakdown
