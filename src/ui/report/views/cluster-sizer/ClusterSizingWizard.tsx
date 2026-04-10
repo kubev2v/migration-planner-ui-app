@@ -222,6 +222,13 @@ export const ClusterSizingWizard: React.FC<ClusterSizingWizardProps> = ({
                 complexityOutput={vm.complexityEstimation}
                 isLoading={vm.isCalculatingComplexity}
                 error={vm.complexityError ?? null}
+                estimationByComplexity={vm.estimationByComplexity}
+                isLoadingEstimationByComplexity={
+                  vm.isCalculatingEstimationByComplexity
+                }
+                estimationByComplexityError={
+                  vm.estimationByComplexityError ?? null
+                }
               />
             }
             onGenerate={handleCalculateComplexity}

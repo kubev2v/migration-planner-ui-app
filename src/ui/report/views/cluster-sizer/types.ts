@@ -27,6 +27,8 @@ export type {
   InventoryTotals,
   MigrationComplexityRequest,
   MigrationComplexityResponse,
+  MigrationEstimationByComplexityResponse,
+  OsDiskEstimationEntry,
   SchemaEstimationResult,
   SizingOverCommitRatio,
   SizingResourceConsumption,

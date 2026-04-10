@@ -3,6 +3,9 @@ import type {
   ComplexityDiskScoreEntry,
   ComplexityOSNameEntry,
   MigrationComplexityResponse,
+  MigrationEstimationByComplexityResponse,
+  OsDiskEstimationEntry,
+  SchemaEstimationResult,
 } from "@openshift-migration-advisor/planner-sdk";
 import {
   Chart,
@@ -16,8 +19,6 @@ import {
 import {
   Alert,
   Badge,
-  Card,
-  CardBody,
   Flex,
   FlexItem,
   Spinner,
@@ -30,11 +31,16 @@ import {
 import { Table, Tbody, Td, Th, Thead, Tr } from "@patternfly/react-table";
 import React, { useState } from "react";
 
+import { parseDuration } from "./timeUtils";
+
 interface ComplexityResultProps {
   clusterName: string;
   complexityOutput: MigrationComplexityResponse | null;
   isLoading: boolean;
   error: Error | null;
+  estimationByComplexity: MigrationEstimationByComplexityResponse | null;
+  isLoadingEstimationByComplexity: boolean;
+  estimationByComplexityError: Error | null;
 }
 
 interface ChartDatumWithScore {
@@ -50,11 +56,6 @@ interface ChartDatum {
 
 const headerStyle = css`
   margin-bottom: var(--pf-t--global--spacer--200);
-`;
-
-const subtitleStyle = css`
-  color: var(--pf-t--global--text--color--subtle);
-  margin-bottom: var(--pf-t--global--spacer--400);
 `;
 
 const legendContainerStyle = css`
@@ -119,11 +120,37 @@ const DISK_SIZE_LABELS: Record<number, string> = {
   4: "> 50 TB",
 };
 
+const durationToHours = (duration: string): number =>
+  Math.ceil(parseDuration(duration) / 3600);
+
+const formatDiskSize = (tb: number): string => {
+  if (tb === 0) return "0 TB";
+  return `${tb.toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 2 })} TB`;
+};
+
+const timeEstimationCellStyle = css`
+  display: flex;
+  flex-direction: column;
+  gap: var(--pf-t--global--spacer--100);
+`;
+
+const timeEstimationLabelStyle = css`
+  color: var(--pf-t--global--text--color--subtle);
+  font-size: var(--pf-t--global--font--size--xs);
+`;
+
+const timeEstimationValueStyle = css`
+  font-weight: var(--pf-t--global--font--weight--body--bold);
+`;
+
 export const ComplexityResult: React.FC<ComplexityResultProps> = ({
   clusterName,
   complexityOutput,
   isLoading,
   error,
+  estimationByComplexity,
+  isLoadingEstimationByComplexity,
+  estimationByComplexityError,
 }) => {
   const [activeTabKey, setActiveTabKey] = useState<string | number>(0);
 
@@ -401,23 +428,112 @@ export const ComplexityResult: React.FC<ComplexityResultProps> = ({
 
   // Render By Disk & OS tab content
   const renderByDiskAndOSTab = () => {
+    if (isLoadingEstimationByComplexity) {
+      return (
+        <Stack hasGutter>
+          <StackItem>
+            <Spinner
+              size="lg"
+              aria-label="Calculating estimation by complexity"
+            />
+          </StackItem>
+          <StackItem>
+            <p>Calculating estimation by complexity for {clusterName}...</p>
+          </StackItem>
+        </Stack>
+      );
+    }
+
+    if (estimationByComplexityError) {
+      return (
+        <Alert variant="danger" isInline title="Calculation failed">
+          {estimationByComplexityError.message}
+        </Alert>
+      );
+    }
+
+    if (!estimationByComplexity) {
+      return (
+        <Stack hasGutter>
+          <StackItem>
+            <Spinner size="lg" aria-label="Loading estimation by complexity" />
+          </StackItem>
+          <StackItem>
+            <p>Loading estimation data...</p>
+          </StackItem>
+        </Stack>
+      );
+    }
+
+    const entries = estimationByComplexity.complexityByOsDisk;
+    const activeEntries = entries.filter(
+      (e: OsDiskEstimationEntry) => e.vmCount > 0,
+    );
+
     return (
       <Stack hasGutter>
         <StackItem>
-          <div className={headerStyle}>
-            <Title headingLevel="h3">Complexity by Disk & OS</Title>
-            <p className={subtitleStyle}>
-              Combined view of disk size and operating system complexity.
-            </p>
-          </div>
+          <Title headingLevel="h3">Estimation by complexity</Title>
         </StackItem>
-
         <StackItem>
-          <Card>
-            <CardBody>
-              <p>Combined disk and OS complexity analysis coming soon.</p>
-            </CardBody>
-          </Card>
+          <Table aria-label="Estimation by complexity table" variant="compact">
+            <Thead>
+              <Tr>
+                <Th>Complexity</Th>
+                <Th>VM count</Th>
+                <Th>Disk size</Th>
+                <Th>Time estimation</Th>
+              </Tr>
+            </Thead>
+            <Tbody>
+              {activeEntries.map((entry: OsDiskEstimationEntry) => {
+                const networkResult: SchemaEstimationResult | undefined =
+                  entry.estimation?.["network-based"];
+                const storageResult: SchemaEstimationResult | undefined =
+                  entry.estimation?.["storage-offload"];
+                return (
+                  <Tr key={entry.score}>
+                    <Td>
+                      <Badge
+                        style={{
+                          backgroundColor: COMPLEXITY_COLORS[entry.score],
+                          color: "white",
+                        }}
+                      >
+                        {COMPLEXITY_LABELS[entry.score]}
+                      </Badge>
+                    </Td>
+                    <Td>{formatNumber(entry.vmCount)}</Td>
+                    <Td>{formatDiskSize(entry.totalDiskSizeTB)}</Td>
+                    <Td>
+                      <div className={timeEstimationCellStyle}>
+                        <div>
+                          <span className={timeEstimationLabelStyle}>
+                            Network-based:{" "}
+                          </span>
+                          <span className={timeEstimationValueStyle}>
+                            {networkResult
+                              ? `${durationToHours(networkResult.maxTotalDuration)} h`
+                              : "\u2014"}
+                          </span>
+                        </div>
+                        <div>
+                          <span className={timeEstimationLabelStyle}>
+                            Storage-offload:{" "}
+                          </span>
+                          <span className={timeEstimationValueStyle}>
+                            {storageResult
+                              ? `${durationToHours(storageResult.maxTotalDuration)} h`
+                              : "\u2014"}
+                          </span>
+                        </div>
+                      </div>
+                    </Td>
+                  </Tr>
+                );
+              })}
+            </Tbody>
+          </Table>
         </StackItem>
       </Stack>
     );
@@ -433,16 +549,12 @@ export const ComplexityResult: React.FC<ComplexityResultProps> = ({
         >
           <FlexItem>
             <div className={headerStyle}>
-              <Title headingLevel="h2">Complexity</Title>
-              <p className={subtitleStyle}>
-                Estimate migration complexity across operating systems, disk
-                types, and their combination.
-              </p>
+              <Title headingLevel="h2">Migration complexity</Title>
             </div>
           </FlexItem>
           <FlexItem>
             <div className={legendContainerStyle}>
-              {[0, 1, 2, 3, 4].map((score) => (
+              {[1, 2, 3, 4, 0].map((score) => (
                 <Badge
                   key={score}
                   style={{
@@ -462,19 +574,19 @@ export const ComplexityResult: React.FC<ComplexityResultProps> = ({
         <div className={toggleGroupStyle}>
           <ToggleGroup aria-label="Complexity view selector">
             <ToggleGroupItem
-              text="By OS"
+              text="By Operation System"
               buttonId="toggle-by-os"
               isSelected={activeTabKey === 0}
               onChange={() => setActiveTabKey(0)}
             />
             <ToggleGroupItem
-              text="By Disk"
+              text="By Disk size"
               buttonId="toggle-by-disk"
               isSelected={activeTabKey === 1}
               onChange={() => setActiveTabKey(1)}
             />
             <ToggleGroupItem
-              text="By Disk & OS"
+              text="By Disk size & Operating system"
               buttonId="toggle-by-disk-os"
               isSelected={activeTabKey === 2}
               onChange={() => setActiveTabKey(2)}

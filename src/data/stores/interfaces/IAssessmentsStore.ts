@@ -1,10 +1,12 @@
 import type {
   CalculateAssessmentClusterRequirementsRequest,
   CalculateMigrationComplexityRequest,
+  CalculateMigrationEstimationByComplexityRequest,
   CalculateMigrationEstimationRequest,
   ClusterRequirementsResponse,
   InitOverrideFunction,
   MigrationComplexityResponse,
+  MigrationEstimationByComplexityResponse,
   SchemaEstimationResult,
 } from "@openshift-migration-advisor/planner-sdk";
 
@@ -51,6 +53,10 @@ export interface IAssessmentsStore extends ExternalStore<AssessmentModel[]> {
     requestParameters: CalculateMigrationComplexityRequest,
     initOverrides?: RequestInit | InitOverrideFunction,
   ): Promise<MigrationComplexityResponse>;
+  calculateEstimationByComplexity(
+    requestParameters: CalculateMigrationEstimationByComplexityRequest,
+    initOverrides?: RequestInit | InitOverrideFunction,
+  ): Promise<MigrationEstimationByComplexityResponse>;
   startPolling(intervalMs?: number): void;
   stopPolling(): void;
 }

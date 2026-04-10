@@ -1,4 +1,7 @@
-import type { MigrationComplexityResponse } from "@openshift-migration-advisor/planner-sdk";
+import type {
+  MigrationComplexityResponse,
+  MigrationEstimationByComplexityResponse,
+} from "@openshift-migration-advisor/planner-sdk";
 import { ResponseError } from "@openshift-migration-advisor/planner-sdk";
 import { useInjection } from "@y0n1/react-ioc";
 import { useCallback, useRef, useState, useSyncExternalStore } from "react";
@@ -42,6 +45,9 @@ export interface ClusterSizingWizardViewModel {
   isCalculatingComplexity: boolean;
   complexityError: Error | undefined;
   calculateComplexity: () => Promise<void>;
+  estimationByComplexity: MigrationEstimationByComplexityResponse | null;
+  isCalculatingEstimationByComplexity: boolean;
+  estimationByComplexityError: Error | undefined;
   isFormValid: boolean;
   ensureEstimationForMenu: (menuItem: string | null) => void;
   reset: () => void;
@@ -71,6 +77,8 @@ export const useClusterSizingWizardViewModel = (
     useState<MigrationEstimationResponse | null>(null);
   const [complexityEstimation, setComplexityEstimation] =
     useState<MigrationComplexityResponse | null>(null);
+  const [estimationByComplexity, setEstimationByComplexity] =
+    useState<MigrationEstimationByComplexityResponse | null>(null);
   const [manualCalculateError, setManualCalculateError] = useState<
     Error | undefined
   >(undefined);
@@ -78,6 +86,9 @@ export const useClusterSizingWizardViewModel = (
     Error | undefined
   >(undefined);
   const [manualComplexityError, setManualComplexityError] = useState<
+    Error | undefined
+  >(undefined);
+  const [manualEstByComplexityError, setManualEstByComplexityError] = useState<
     Error | undefined
   >(undefined);
   const [resetCounter, setResetCounter] = useState<number>(0);
@@ -209,6 +220,42 @@ export const useClusterSizingWizardViewModel = (
     }
   }, [assessmentId, assessmentsStore, clusterId]);
 
+  const [estByComplexityState, doCalculateEstimationByComplexity] =
+    useAsyncFn(async () => {
+      setManualEstByComplexityError(undefined);
+      try {
+        const result = await assessmentsStore.calculateEstimationByComplexity({
+          id: assessmentId,
+          migrationEstimationRequest: {
+            clusterId,
+            estimationSchema: ["network-based", "storage-offload"],
+            params: {
+              work_hours_per_day: 6,
+              post_migration_engineers: 4,
+              transfer_rate_mbps: 600,
+            },
+          },
+        });
+        setEstimationByComplexity(result);
+      } catch (err) {
+        if (err instanceof ResponseError) {
+          const message = await err.response.text();
+          const combinedMessage = message
+            ? `${err.message}: ${message}`
+            : err.message;
+          const error = new Error(combinedMessage, { cause: message });
+          setManualEstByComplexityError(error);
+          throw error;
+        }
+        const error =
+          err instanceof Error
+            ? err
+            : new Error("Failed to calculate estimation by complexity");
+        setManualEstByComplexityError(error);
+        throw error;
+      }
+    }, [assessmentId, assessmentsStore, clusterId]);
+
   const ensureEstimationForMenu = useCallback(
     (menuItem: string | null) => {
       if (
@@ -219,13 +266,21 @@ export const useClusterSizingWizardViewModel = (
       ) {
         void doCalculateEstimation();
       }
-      if (
-        menuItem === "complexity" &&
-        !complexityEstimation &&
-        !complexityState.loading &&
-        !manualComplexityError
-      ) {
-        void doCalculateComplexity();
+      if (menuItem === "complexity") {
+        if (
+          !complexityEstimation &&
+          !complexityState.loading &&
+          !manualComplexityError
+        ) {
+          void doCalculateComplexity();
+        }
+        if (
+          !estimationByComplexity &&
+          !estByComplexityState.loading &&
+          !manualEstByComplexityError
+        ) {
+          void doCalculateEstimationByComplexity();
+        }
       }
     },
     [
@@ -237,6 +292,10 @@ export const useClusterSizingWizardViewModel = (
       complexityState.loading,
       manualComplexityError,
       doCalculateComplexity,
+      estimationByComplexity,
+      estByComplexityState.loading,
+      manualEstByComplexityError,
+      doCalculateEstimationByComplexity,
     ],
   );
 
@@ -245,9 +304,11 @@ export const useClusterSizingWizardViewModel = (
     setSizerOutput(null);
     setMigrationEstimation(null);
     setComplexityEstimation(null);
+    setEstimationByComplexity(null);
     setManualCalculateError(undefined);
     setManualEstimationError(undefined);
     setManualComplexityError(undefined);
+    setManualEstByComplexityError(undefined);
     setResetCounter((prev) => prev + 1);
   }, []);
 
@@ -287,6 +348,11 @@ export const useClusterSizingWizardViewModel = (
       manualComplexityError ??
       (resetCounter > 0 ? undefined : complexityState.error),
     calculateComplexity: doCalculateComplexity,
+    estimationByComplexity,
+    isCalculatingEstimationByComplexity: estByComplexityState.loading,
+    estimationByComplexityError:
+      manualEstByComplexityError ??
+      (resetCounter > 0 ? undefined : estByComplexityState.error),
     isFormValid,
     ensureEstimationForMenu,
     reset,

@@ -2,6 +2,7 @@ import {
   type AssessmentApiInterface,
   type CalculateAssessmentClusterRequirementsRequest,
   type CalculateMigrationComplexityRequest,
+  type CalculateMigrationEstimationByComplexityRequest,
   type CalculateMigrationEstimationRequest,
   ResponseError,
 } from "@openshift-migration-advisor/planner-sdk";
@@ -219,6 +220,16 @@ export class AssessmentsStore
     initOverrides?: RequestInit | InitOverrideFunction,
   ) {
     return this.api.calculateMigrationComplexity(
+      requestParameters,
+      initOverrides,
+    );
+  }
+
+  calculateEstimationByComplexity(
+    requestParameters: CalculateMigrationEstimationByComplexityRequest,
+    initOverrides?: RequestInit | InitOverrideFunction,
+  ) {
+    return this.api.calculateMigrationEstimationByComplexity(
       requestParameters,
       initOverrides,
     );
