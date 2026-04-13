@@ -6,6 +6,7 @@ import type { JobsStoreState } from "../JobsStore";
 export interface IJobsStore extends ExternalStore<JobsStoreState> {
   createRVToolsJob(name: string, file: File): Promise<Job | undefined>;
   cancelRVToolsJob(): Promise<Job | null>;
+  clearCreateError(): void;
   reset(): void;
   startPolling(intervalMs: number): void;
   stopPolling(): void;

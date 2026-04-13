@@ -1,27 +1,89 @@
-import { useState } from "react";
+import { useInjection } from "@y0n1/react-ioc";
+import { useState, useSyncExternalStore } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
+import { Symbols } from "../../../config/Dependencies";
+import type { IIdentityStore } from "../../../data/stores/interfaces/IIdentityStore";
+import { PARTNER_FEATURE_VISIBLE_KEY } from "../../../data/stubs/stubPartners";
+import useLocalStorage from "../../../hooks/useLocalStorage";
 import { routes } from "../../../routing/Routes";
 
 export type HomeScreenOutletContext = {
   rvtoolsOpenToken?: string;
 };
 
-export const useHomeScreenViewModel = () => {
+export interface HomeScreenViewModel {
+  activeTabKey: number;
+  breadcrumbs: Array<{
+    key: number;
+    children: string;
+    isActive?: boolean;
+  }>;
+  rvtoolsOpenToken: boolean;
+  partnerTab: {
+    label: string;
+    path: string;
+    key: number;
+  } | null;
+  handleTabClick: (
+    event: React.MouseEvent<HTMLElement> | React.KeyboardEvent | MouseEvent,
+    tabIndex: string | number,
+  ) => void;
+  handleOpenRVToolsModal: () => void;
+}
+
+export const useHomeScreenViewModel = (): HomeScreenViewModel => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const activeTabKey = location.pathname.startsWith(routes.environments)
-    ? 1
-    : 0;
+  // User store injection
+  const identityStore = useInjection<IIdentityStore>(Symbols.IdentityStore);
+  const identity = useSyncExternalStore(
+    identityStore.subscribe.bind(identityStore),
+    identityStore.getSnapshot.bind(identityStore),
+  );
+
+  // Partner feature visibility
+  const [isPartnerFeatureVisible] = useLocalStorage(
+    PARTNER_FEATURE_VISIBLE_KEY,
+    false,
+  );
+
+  const getActiveTabKey = (): number => {
+    if (location.pathname.startsWith(routes.environments)) return 1;
+    if (
+      location.pathname.startsWith(routes.partners) ||
+      location.pathname.startsWith(routes.myPartner) ||
+      location.pathname.startsWith(routes.customers) ||
+      location.pathname.startsWith(routes.adminOrganizations)
+    ) {
+      return 2;
+    }
+    return 0; // assessments
+  };
+
+  const activeTabKey = getActiveTabKey();
 
   const [rvtoolsOpenToken, setRvtoolsOpenToken] = useState(false);
+
+  const getBreadcrumbLabel = (): string => {
+    switch (activeTabKey) {
+      case 0:
+        return "assessments";
+      case 1:
+        return "environments";
+      case 2:
+        return "partners";
+      default:
+        return "assessments";
+    }
+  };
 
   const breadcrumbs = [
     { key: 1, children: "Migration advisor" },
     {
       key: 2,
-      children: activeTabKey === 1 ? "environments" : "assessments",
+      children: getBreadcrumbLabel(),
       isActive: true,
     },
   ];
@@ -31,7 +93,20 @@ export const useHomeScreenViewModel = () => {
     tabIndex: string | number,
   ): void => {
     const index = typeof tabIndex === "number" ? tabIndex : Number(tabIndex);
-    navigate(index === 1 ? routes.environments : routes.assessments);
+
+    switch (index) {
+      case 0:
+        navigate(routes.assessments);
+        break;
+      case 1:
+        navigate(routes.environments);
+        break;
+      case 2:
+        navigate(partnerTab?.path ?? routes.partners);
+        break;
+      default:
+        navigate(routes.assessments);
+    }
   };
 
   const handleOpenRVToolsModal = () => {
@@ -39,10 +114,45 @@ export const useHomeScreenViewModel = () => {
     navigate(routes.assessments); // switch to assessments tab
   };
 
+  const getPartnerTabConfig = () => {
+    if (!identity || !isPartnerFeatureVisible) return null;
+
+    switch (identity.kind) {
+      case "regular":
+        return {
+          label: "Partners",
+          path: routes.partners,
+          key: 2,
+        };
+      case "customer":
+        return {
+          label: "My Partner",
+          path: routes.myPartner,
+          key: 2,
+        };
+      case "partner":
+        return {
+          label: "Customers",
+          path: routes.customers,
+          key: 2,
+        };
+      case "admin":
+        return {
+          label: "Partners administration",
+          path: routes.adminOrganizations,
+          key: 2,
+        };
+      default:
+        return null;
+    }
+  };
+  const partnerTab = getPartnerTabConfig();
+
   return {
     activeTabKey,
     breadcrumbs,
     rvtoolsOpenToken,
+    partnerTab,
     handleTabClick,
     handleOpenRVToolsModal,
   };

@@ -133,6 +133,8 @@ export interface AssessmentPageViewModel {
 
   /** Create a new RVTools assessment (starts an async job). */
   createRVToolsJob: (name: string, file: File) => Promise<void>;
+  /** Clear the create-job error (e.g. when the user edits the form). */
+  clearJobCreateError: () => void;
   /**
    * Cancel the current job.
    * If the job had already completed, the created assessment is cleaned up.
@@ -224,9 +226,10 @@ export const useAssessmentPageViewModel = (): AssessmentPageViewModel => {
         navigate(routes.assessmentReport(assessmentId));
       } finally {
         isNavigatingRef.current = false;
+        jobsStore.reset();
       }
     },
-    [assessmentsStore, navigate],
+    [assessmentsStore, navigate, jobsStore],
   );
 
   useEffect(() => {
@@ -243,7 +246,6 @@ export const useAssessmentPageViewModel = (): AssessmentPageViewModel => {
       const assessmentId = currentJob.assessmentId;
       isNavigatingRef.current = true;
       jobsStore.stopPolling();
-      jobsStore.reset();
 
       void navigateToReport(assessmentId);
     }
@@ -260,6 +262,10 @@ export const useAssessmentPageViewModel = (): AssessmentPageViewModel => {
     },
     [jobsStore],
   );
+
+  const clearJobCreateError = useCallback((): void => {
+    jobsStore.clearCreateError();
+  }, [jobsStore]);
 
   const cancelRVToolsJob = useCallback(async (): Promise<void> => {
     jobsStore.stopPolling();
@@ -312,6 +318,16 @@ export const useAssessmentPageViewModel = (): AssessmentPageViewModel => {
 
   // ---- Return -------------------------------------------------------------
 
+  // Cover the one-render gap between the poll that marks the job Completed
+  // (isJobProcessing becomes false) and the effect that starts navigation
+  // (navigationState.loading becomes true).  Without this, form inputs
+  // briefly re-enable.
+  const isNavigatingToReport =
+    navigationState.loading ||
+    Boolean(
+      currentJob?.status === JobStatus.Completed && currentJob?.assessmentId,
+    );
+
   return {
     currentJob,
     isCreatingJob: jobState.isCreating,
@@ -320,7 +336,7 @@ export const useAssessmentPageViewModel = (): AssessmentPageViewModel => {
     jobProgressValue,
     jobProgressLabel,
     jobError,
-    isNavigatingToReport: navigationState.loading,
+    isNavigatingToReport,
     isDeletingAssessment: deleteState.loading,
     deleteError: deleteState.error,
     isUpdatingAssessment: updateState.loading,
@@ -332,6 +348,7 @@ export const useAssessmentPageViewModel = (): AssessmentPageViewModel => {
     sortBy,
     setSortBy,
     createRVToolsJob,
+    clearJobCreateError,
     cancelRVToolsJob,
     updateAssessment: doUpdateAssessment,
     deleteAssessment: doDeleteAssessment,

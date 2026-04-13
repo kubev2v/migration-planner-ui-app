@@ -28,6 +28,8 @@ export namespace ConfirmationModal {
       | "plain"
       | "control";
     title: string;
+    confirmButtonText?: string;
+    cancelButtonText?: string;
   };
 }
 
@@ -43,6 +45,8 @@ export const ConfirmationModal: React.FC<
     variant = "small",
     titleIconVariant = "info",
     primaryButtonVariant = "danger",
+    confirmButtonText = "Delete",
+    cancelButtonText = "Cancel",
     title,
     children,
   } = props;
@@ -70,11 +74,11 @@ export const ConfirmationModal: React.FC<
             isDisabled={isDisabled}
             onClick={onConfirm}
           >
-            Delete
+            {confirmButtonText}
           </Button>
           {onCancel && (
             <Button key="cancel" variant="link" onClick={onCancel}>
-              Cancel
+              {cancelButtonText}
             </Button>
           )}
         </Flex>

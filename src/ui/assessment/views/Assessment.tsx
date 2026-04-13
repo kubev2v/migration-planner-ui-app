@@ -99,6 +99,7 @@ const Assessment: React.FC<AssessmentProps> = ({
     sortBy,
     setSortBy,
     createRVToolsJob,
+    clearJobCreateError,
     cancelRVToolsJob,
     updateAssessment: vmUpdateAssessment,
     deleteAssessment: vmDeleteAssessment,
@@ -491,6 +492,7 @@ const Assessment: React.FC<AssessmentProps> = ({
         isOpen={isModalOpen}
         onClose={handleCloseModal}
         onSubmit={handleSubmitAssessment}
+        onClearError={clearJobCreateError}
         mode={modalMode}
         isLoading={isCreatingJob}
         error={jobCreateError}

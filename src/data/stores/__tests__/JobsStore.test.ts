@@ -142,6 +142,37 @@ describe("JobsStore", () => {
     expect(store.getSnapshot().isCreating).toBe(false);
   });
 
+  it("stale call does not overwrite state when a newer call has started", async () => {
+    let rejectFirst!: (err: Error) => void;
+    vi.mocked(api.createRVToolsAssessment)
+      .mockImplementationOnce(
+        () =>
+          new Promise<Job>((_resolve, reject) => {
+            rejectFirst = reject;
+          }),
+      )
+      .mockRejectedValueOnce(new Error("second error"));
+
+    const firstPromise = store.createRVToolsJob(
+      "first",
+      new File([], "f.xlsx"),
+    );
+
+    const secondPromise = store.createRVToolsJob(
+      "second",
+      new File([], "f.xlsx"),
+    );
+
+    // First call was aborted when second started; resolve it now.
+    // The catch guard should prevent it from overwriting state.
+    rejectFirst(new Error("first error"));
+
+    await firstPromise;
+    await secondPromise;
+
+    expect(store.getSnapshot().createError?.message).toBe("second error");
+  });
+
   // -- Polling --------------------------------------------------------------
 
   it("polls the job and updates state on each tick", async () => {
@@ -227,6 +258,59 @@ describe("JobsStore", () => {
   it("returns null when there is no current job", async () => {
     const result = await store.cancelRVToolsJob();
     expect(result).toBeNull();
+  });
+
+  // -- clearCreateError ------------------------------------------------------
+
+  it("clears createError", async () => {
+    vi.mocked(api.createRVToolsAssessment).mockRejectedValue(
+      new Error("name error"),
+    );
+    await store.createRVToolsJob("bad", new File([], "f.xlsx"));
+    expect(store.getSnapshot().createError).toBeDefined();
+
+    store.clearCreateError();
+
+    expect(store.getSnapshot().createError).toBeUndefined();
+    expect(store.getSnapshot().isCreating).toBe(false);
+  });
+
+  it("also clears currentJob when it is in a terminal state", async () => {
+    const failedJob = makeJob({ status: JobStatus.Failed, error: "boom" });
+    vi.mocked(api.createRVToolsAssessment).mockResolvedValue(
+      makeJob({ status: JobStatus.Pending }),
+    );
+    await store.createRVToolsJob("t", new File([], "f.xlsx"));
+
+    // Simulate polling setting the job to Failed
+    vi.mocked(api.getJob).mockResolvedValue(failedJob);
+    store.startPolling(1000);
+    await vi.advanceTimersByTimeAsync(1000);
+    store.stopPolling();
+    expect(store.getSnapshot().currentJob?.status).toBe(JobStatus.Failed);
+
+    store.clearCreateError();
+
+    expect(store.getSnapshot().currentJob).toBeNull();
+  });
+
+  it("does NOT clear a non-terminal currentJob", async () => {
+    const runningJob = makeJob({ status: JobStatus.Parsing });
+    vi.mocked(api.createRVToolsAssessment).mockResolvedValue(runningJob);
+    await store.createRVToolsJob("t", new File([], "f.xlsx"));
+
+    store.clearCreateError();
+
+    expect(store.getSnapshot().currentJob).toEqual(runningJob);
+  });
+
+  it("clearCreateError is a no-op when there is nothing to clear", () => {
+    const listener = vi.fn();
+    store.subscribe(listener);
+
+    store.clearCreateError();
+
+    expect(listener).not.toHaveBeenCalled();
   });
 
   // -- reset ----------------------------------------------------------------

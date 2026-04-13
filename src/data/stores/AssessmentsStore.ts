@@ -8,6 +8,7 @@ import {
 import { type Assessment } from "@openshift-migration-advisor/planner-sdk";
 import { type InitOverrideFunction } from "@openshift-migration-advisor/planner-sdk";
 
+import { parseApiError } from "../../lib/common/ErrorParser";
 import { PollableStoreBase } from "../../lib/mvvm/PollableStore";
 import {
   type AssessmentModel,
@@ -97,10 +98,15 @@ export class AssessmentsStore
     assessmentForm: AssessmentCreateForm,
     initOverrides?: RequestInit | InitOverrideFunction,
   ): Promise<AssessmentModel> {
-    const created = await this.api.createAssessment(
-      { assessmentForm },
-      initOverrides,
-    );
+    let created;
+    try {
+      created = await this.api.createAssessment(
+        { assessmentForm },
+        initOverrides,
+      );
+    } catch (err) {
+      throw await parseApiError(err, "Failed to create assessment");
+    }
     const model = createAssessmentModel(created);
     this.assessments = [...this.assessments, model];
     this.notify();
@@ -112,10 +118,15 @@ export class AssessmentsStore
     assessmentUpdate: AssessmentUpdateForm,
     initOverrides?: RequestInit | InitOverrideFunction,
   ): Promise<AssessmentModel> {
-    const updated = await this.api.updateAssessment(
-      { id, assessmentUpdate },
-      initOverrides,
-    );
+    let updated;
+    try {
+      updated = await this.api.updateAssessment(
+        { id, assessmentUpdate },
+        initOverrides,
+      );
+    } catch (err) {
+      throw await parseApiError(err, "Failed to update assessment");
+    }
     const model = createAssessmentModel(updated);
     this.assessments = this.assessments.map((assessment) =>
       assessment.id === model.id ? model : assessment,

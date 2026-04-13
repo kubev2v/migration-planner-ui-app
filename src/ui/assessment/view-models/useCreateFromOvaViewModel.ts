@@ -5,6 +5,7 @@ import { useAsyncFn } from "react-use";
 
 import { Symbols } from "../../../config/Dependencies";
 import type { IAssessmentsStore } from "../../../data/stores/interfaces/IAssessmentsStore";
+import { isNameError } from "../../../lib/common/ErrorParser";
 import type { SourceModel } from "../../../models/SourceModel";
 import { routes } from "../../../routing/Routes";
 import { useEnvironmentPage } from "../../environment/view-models/EnvironmentPageContext";
@@ -54,7 +55,7 @@ export interface CreateFromOvaViewModel {
   selectedEnv: SourceModel | undefined;
   isSelectedNotReady: boolean;
   isSubmitDisabled: boolean;
-  hasDuplicateNameError: boolean;
+  hasNameError: boolean;
   hasGeneralApiError: boolean;
 
   // Actions
@@ -129,14 +130,6 @@ export const useCreateFromOvaViewModel = (): CreateFromOvaViewModel => {
 
   const isSelectedNotReady = Boolean(
     useExisting && selectedEnv && !selectedEnv.isReady,
-  );
-
-  const isDuplicateNameError = useCallback(
-    (error: Error | null): boolean =>
-      !!error &&
-      (/assessment with name '.*' already exists/i.test(error.message || "") ||
-        /already exists/i.test(error.message || "")),
-    [],
   );
 
   const isSubmitDisabled =
@@ -300,8 +293,8 @@ export const useCreateFromOvaViewModel = (): CreateFromOvaViewModel => {
       ? null
       : (submitState.error ?? null);
 
-  const hasDuplicateNameError = isDuplicateNameError(apiError);
-  const hasGeneralApiError = !!apiError && !isDuplicateNameError(apiError);
+  const hasNameError = isNameError(apiError);
+  const hasGeneralApiError = !!apiError && !isNameError(apiError);
 
   return {
     sources: envVm.sources,
@@ -333,7 +326,7 @@ export const useCreateFromOvaViewModel = (): CreateFromOvaViewModel => {
     selectedEnv,
     isSelectedNotReady,
     isSubmitDisabled,
-    hasDuplicateNameError,
+    hasNameError,
     hasGeneralApiError,
 
     handleSubmit: doSubmit,

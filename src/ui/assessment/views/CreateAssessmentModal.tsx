@@ -19,12 +19,15 @@ import {
 } from "@patternfly/react-core";
 import React, { useState } from "react";
 
+import { isNameError } from "../../../lib/common/ErrorParser";
+
 export type AssessmentMode = "inventory" | "rvtools" | "agent";
 
 interface CreateAssessmentModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (name: string, file: File | null, mode: AssessmentMode) => void;
+  onClearError?: () => void;
   mode: AssessmentMode;
   isLoading?: boolean;
   error?: Error | null;
@@ -41,11 +44,6 @@ interface CreateAssessmentModalProps {
   /** `true` while loading assessments and navigating to report after job completion. */
   isNavigatingToReport?: boolean;
 }
-
-const isDuplicateNameError = (error: Error | null): boolean =>
-  !!error &&
-  (/assessment with name '.*' already exists/i.test(error.message || "") ||
-    /already exists/i.test(error.message || ""));
 
 const isAbortError = (error: Error | null): boolean => {
   if (!error) return false;
@@ -64,6 +62,7 @@ export const CreateAssessmentModal: React.FC<CreateAssessmentModalProps> = ({
   isOpen,
   onClose,
   onSubmit,
+  onClearError,
   mode,
   isLoading = false,
   error = null,
@@ -87,36 +86,34 @@ export const CreateAssessmentModal: React.FC<CreateAssessmentModalProps> = ({
   const [nameValidationError, setNameValidationError] = useState("");
   const [fileValidationError, setFileValidationError] = useState("");
 
-  // Track dismissed API errors (reset on new submission)
-  const [nameErrorDismissed, setNameErrorDismissed] = useState(false);
-  const [generalErrorDismissed, setGeneralErrorDismissed] = useState(false);
+  // Reset all form state when the modal is closed — covers both explicit
+  // (Cancel / X) and programmatic closes (e.g. navigation after job completion).
+  React.useEffect(() => {
+    if (!isOpen) {
+      setAssessmentName("");
+      setSelectedFile(null);
+      setFilename("");
+      setNameValidationError("");
+      setFileValidationError("");
+      setSelectedEnvironmentId("");
+      setRvtoolsConsentChecked(false);
+    }
+  }, [isOpen]);
 
-  // Helper to check if file operations should be disabled (RVTools mode during job creation/processing)
-  const isFileOperationsDisabled =
-    mode === "rvtools" && (isLoading || isJobProcessing);
+  // Disable all form inputs while the job is being created/processed or the report is loading.
+  const isFormDisabled = isLoading || isJobProcessing || isNavigatingToReport;
 
   // Combine with existing error logic - job error takes priority
   const effectiveError = jobError || error;
 
-  // Reset dismissed flags when a new error occurs
-  React.useEffect(() => {
-    if (error || jobError) {
-      setNameErrorDismissed(false);
-      setGeneralErrorDismissed(false);
-    }
-  }, [error, jobError]);
-
-  const hasDuplicateNameError =
-    !nameErrorDismissed && isDuplicateNameError(effectiveError);
+  const hasNameError = isNameError(effectiveError);
   const hasGeneralApiError =
-    !generalErrorDismissed &&
     !!effectiveError &&
-    !isDuplicateNameError(effectiveError) &&
+    !isNameError(effectiveError) &&
     !isAbortError(effectiveError);
 
   const nameErrorToDisplay =
-    nameValidationError ||
-    (hasDuplicateNameError ? effectiveError?.message : "");
+    nameValidationError || (hasNameError ? effectiveError?.message : "");
 
   const availableEnvironments = selectedEnvironment
     ? [selectedEnvironment]
@@ -171,8 +168,7 @@ export const CreateAssessmentModal: React.FC<CreateAssessmentModalProps> = ({
   const config = getFileConfig();
 
   const handleFileChange = (_event: DropEvent, file: File): void => {
-    // Prevent file changes during RVTools job creation/processing
-    if (isFileOperationsDisabled) {
+    if (isFormDisabled) {
       return;
     }
 
@@ -207,8 +203,7 @@ export const CreateAssessmentModal: React.FC<CreateAssessmentModalProps> = ({
   };
 
   const handleFileClear = (): void => {
-    // Prevent file clearing during RVTools job creation/processing
-    if (isFileOperationsDisabled) {
+    if (isFormDisabled) {
       return;
     }
 
@@ -255,8 +250,7 @@ export const CreateAssessmentModal: React.FC<CreateAssessmentModalProps> = ({
     setNameValidationError("");
     setFileValidationError("");
     setSelectedEnvironmentId("");
-    setNameErrorDismissed(true);
-    setGeneralErrorDismissed(true);
+    onClearError?.();
     setRvtoolsConsentChecked(false);
     onClose();
   };
@@ -325,12 +319,11 @@ export const CreateAssessmentModal: React.FC<CreateAssessmentModalProps> = ({
                 if (nameValidationError && value.trim()) {
                   setNameValidationError("");
                 }
-                setNameErrorDismissed(true);
-                setGeneralErrorDismissed(true);
+                onClearError?.();
               }}
               validated={nameErrorToDisplay ? "error" : "default"}
               placeholder="Enter assessment name"
-              isDisabled={isFileOperationsDisabled}
+              isDisabled={isFormDisabled}
             />
             {nameErrorToDisplay && (
               <HelperText>
@@ -365,6 +358,7 @@ export const CreateAssessmentModal: React.FC<CreateAssessmentModalProps> = ({
                   }
                 }}
                 validated={fileValidationError ? "error" : "default"}
+                isDisabled={isFormDisabled}
               >
                 <FormSelectOption value="" label="Select an environment" />
                 {availableEnvironments.map((env) => (
@@ -427,7 +421,7 @@ export const CreateAssessmentModal: React.FC<CreateAssessmentModalProps> = ({
                 validated={fileValidationError ? "error" : "default"}
                 accept={config.accept}
                 hideDefaultPreview
-                isDisabled={isFileOperationsDisabled}
+                isDisabled={isFormDisabled}
               />
               {fileValidationError && (
                 <FormHelperText>
@@ -451,7 +445,7 @@ export const CreateAssessmentModal: React.FC<CreateAssessmentModalProps> = ({
                       setRvtoolsConsentChecked(Boolean(checked));
                     }}
                     isRequired
-                    isDisabled={isFileOperationsDisabled}
+                    isDisabled={isFormDisabled}
                   />
                 </div>
               )}

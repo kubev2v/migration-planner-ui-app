@@ -43,3 +43,16 @@ export async function parseApiError(
 
   return new Error(fallbackMessage);
 }
+
+/**
+ * Returns `true` when the error message indicates a name-related validation
+ * failure from the backend (duplicate name or invalid characters).
+ */
+export const isNameError = (error: Error | null): boolean => {
+  if (!error) return false;
+  const msg = error.message || "";
+  return (
+    /assessment with name '.*' already exists/i.test(msg) ||
+    /provided name.+invalid/i.test(msg)
+  );
+};

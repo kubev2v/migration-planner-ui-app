@@ -31,6 +31,13 @@ export const HomeScreen: React.FC = () => {
           title={<TabTitleText>Environments</TabTitleText>}
           aria-label="Environments tab"
         />
+        {vm.partnerTab && (
+          <Tab
+            eventKey={vm.partnerTab.key}
+            title={<TabTitleText>{vm.partnerTab.label}</TabTitleText>}
+            aria-label={`${vm.partnerTab.label} tab`}
+          />
+        )}
       </Tabs>
 
       <TabContent id="home-screen-content">

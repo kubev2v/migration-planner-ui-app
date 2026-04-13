@@ -94,4 +94,18 @@ export const routes = {
   get environments() {
     return `${getAppBasename()}/environments`;
   },
+  get partners() {
+    return `${getAppBasename()}/partners`;
+  },
+  get myPartner() {
+    return `${getAppBasename()}/partners/my`;
+  },
+  get customers() {
+    return `${getAppBasename()}/partners/customers`;
+  },
+  get adminOrganizations() {
+    return `${getAppBasename()}/partners/organizations`;
+  },
+  adminOrganizationById: (id: string) =>
+    `${getAppBasename()}/partners/organizations/${id}`,
 } as const;
