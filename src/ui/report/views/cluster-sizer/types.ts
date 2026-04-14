@@ -96,6 +96,32 @@ export interface SizingFormValues {
 export type WizardStep = "input" | "result";
 
 /**
+ * User input for migration time estimation parameters (form state)
+ */
+export interface EstimationFormValues {
+  /** Network transfer rate in Mbps */
+  transferRateMbps: number;
+  /** Work hours per day */
+  workHoursPerDay: number;
+  /** Troubleshooting time per VM in minutes */
+  troubleshootMinsPerVm: number;
+  /** Number of post-migration engineers */
+  postMigrationEngineers: number;
+}
+
+/**
+ * Convert estimation form values to the params map expected by the API
+ */
+export const estimationFormToParams = (
+  values: EstimationFormValues,
+): Record<string, number> => ({
+  transfer_rate_mbps: values.transferRateMbps,
+  work_hours_per_day: values.workHoursPerDay,
+  troubleshoot_mins_per_vm: values.troubleshootMinsPerVm,
+  post_migration_engineers: values.postMigrationEngineers,
+});
+
+/**
  * Mapping from numeric CPU over-commit ratio to API enum value
  */
 const CPU_OVERCOMMIT_RATIO_MAP: Record<

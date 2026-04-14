@@ -1,119 +1,201 @@
+import { css } from "@emotion/css";
 import {
-  Form,
+  Flex,
+  FlexItem,
   FormGroup,
-  Grid,
-  GridItem,
+  Slider,
+  type SliderOnChangeEvent,
+  Stack,
+  StackItem,
   TextInput,
-  Title,
 } from "@patternfly/react-core";
-import React from "react";
+import React, { useCallback } from "react";
 
-import PopoverIcon from "./PopoverIcon";
-import type { SizingFormValues } from "./types";
+import { ESTIMATION_SLIDER_LIMITS } from "./constants";
+import type { EstimationFormValues } from "./types";
 
 interface TimeEstimationFormProps {
-  values: SizingFormValues;
+  values: EstimationFormValues;
+  onChange: (values: EstimationFormValues) => void;
 }
+
+const sliderRowStyle = css`
+  align-items: center;
+  gap: var(--pf-t--global--spacer--300);
+`;
+
+const inputStyle = css`
+  max-width: 80px;
+`;
+
+const inputWideStyle = css`
+  max-width: 110px;
+`;
+
+const rangeLabelsStyle = css`
+  display: flex;
+  justify-content: space-between;
+  color: var(--pf-t--global--text--color--subtle);
+  font-size: var(--pf-t--global--font--size--sm);
+  margin-top: calc(-1 * var(--pf-t--global--spacer--100));
+`;
+
+const sliderWrapperStyle = css`
+  flex: 1;
+`;
+
+interface SliderFieldProps {
+  label: string;
+  fieldId: string;
+  value: number;
+  min: number;
+  max: number;
+  step: number;
+  minLabel: string;
+  maxLabel: string;
+  wideInput?: boolean;
+  onChange: (value: number) => void;
+}
+
+const SliderField: React.FC<SliderFieldProps> = ({
+  label,
+  fieldId,
+  value,
+  min,
+  max,
+  step,
+  minLabel,
+  maxLabel,
+  wideInput = false,
+  onChange,
+}) => {
+  const handleSliderChange = useCallback(
+    (_event: SliderOnChangeEvent, sliderValue: number) => {
+      onChange(sliderValue);
+    },
+    [onChange],
+  );
+
+  const handleInputChange = useCallback(
+    (_event: React.FormEvent<HTMLInputElement>, inputValue: string) => {
+      const parsed = parseFloat(inputValue);
+      if (!isNaN(parsed)) {
+        const clamped = Math.min(max, Math.max(min, parsed));
+        const rounded = Math.round(clamped / step) * step;
+        onChange(parseFloat(rounded.toFixed(10)));
+      }
+    },
+    [onChange, min, max, step],
+  );
+
+  return (
+    <FormGroup label={label} fieldId={fieldId}>
+      <Flex className={sliderRowStyle}>
+        <FlexItem>
+          <TextInput
+            id={fieldId}
+            type="number"
+            value={value}
+            onChange={handleInputChange}
+            aria-label={label}
+            className={wideInput ? inputWideStyle : inputStyle}
+          />
+        </FlexItem>
+        <FlexItem grow={{ default: "grow" }}>
+          <div className={sliderWrapperStyle}>
+            <Slider
+              value={value}
+              min={min}
+              max={max}
+              step={step}
+              onChange={handleSliderChange}
+              aria-label={label}
+              showBoundaries={false}
+              showTicks={false}
+            />
+            <div className={rangeLabelsStyle}>
+              <span>{minLabel}</span>
+              <span>{maxLabel}</span>
+            </div>
+          </div>
+        </FlexItem>
+      </Flex>
+    </FormGroup>
+  );
+};
 
 export const TimeEstimationForm: React.FC<TimeEstimationFormProps> = ({
   values,
+  onChange,
 }) => {
+  const limits = ESTIMATION_SLIDER_LIMITS;
+
+  const handleFieldChange = useCallback(
+    (field: keyof EstimationFormValues) => (raw: number) => {
+      onChange({ ...values, [field]: raw });
+    },
+    [values, onChange],
+  );
+
   return (
-    <Form>
-      <Grid hasGutter>
-        <GridItem span={12}>
-          <Title headingLevel="h2">Migration parameters</Title>
-        </GridItem>
+    <Stack hasGutter>
+      <StackItem>
+        <SliderField
+          label="Network transfer rate"
+          fieldId="estimation-transfer-rate"
+          value={values.transferRateMbps}
+          min={limits.transferRateMbps.min}
+          max={limits.transferRateMbps.max}
+          step={limits.transferRateMbps.step}
+          minLabel="0 Mbps"
+          maxLabel="10,000 Mbps"
+          wideInput
+          onChange={handleFieldChange("transferRateMbps")}
+        />
+      </StackItem>
 
-        <GridItem span={6}>
-          <FormGroup
-            label="Worker node CPU cores"
-            isRequired
-            fieldId="time-worker-cpu"
-            labelHelp={
-              <PopoverIcon
-                noVerticalAlign
-                headerContent="Worker node CPU cores"
-                bodyContent="The number of CPU cores allocated to each worker node."
-              />
-            }
-          >
-            <TextInput
-              id="time-worker-cpu"
-              value={String(values.customCpu)}
-              isDisabled
-              aria-label="Worker node CPU cores"
-            />
-          </FormGroup>
-        </GridItem>
+      <StackItem>
+        <SliderField
+          label="Work hours per day"
+          fieldId="estimation-work-hours"
+          value={values.workHoursPerDay}
+          min={limits.workHoursPerDay.min}
+          max={limits.workHoursPerDay.max}
+          step={limits.workHoursPerDay.step}
+          minLabel="0 hours"
+          maxLabel="24 hours"
+          onChange={handleFieldChange("workHoursPerDay")}
+        />
+      </StackItem>
 
-        <GridItem span={6}>
-          <FormGroup
-            label="Worker node memory size (GB)"
-            isRequired
-            fieldId="time-worker-memory"
-            labelHelp={
-              <PopoverIcon
-                noVerticalAlign
-                headerContent="Worker node memory size"
-                bodyContent="The amount of memory in GB allocated to each worker node."
-              />
-            }
-          >
-            <TextInput
-              id="time-worker-memory"
-              value={String(values.customMemoryGb)}
-              isDisabled
-              aria-label="Worker node memory size"
-            />
-          </FormGroup>
-        </GridItem>
+      <StackItem>
+        <SliderField
+          label="Troubleshooting time per VM"
+          fieldId="estimation-troubleshoot"
+          value={values.troubleshootMinsPerVm}
+          min={limits.troubleshootMinsPerVm.min}
+          max={limits.troubleshootMinsPerVm.max}
+          step={limits.troubleshootMinsPerVm.step}
+          minLabel="0 minutes"
+          maxLabel="180 minutes"
+          onChange={handleFieldChange("troubleshootMinsPerVm")}
+        />
+      </StackItem>
 
-        <GridItem span={6}>
-          <FormGroup
-            label="CPU overcommitment"
-            isRequired
-            fieldId="time-cpu-overcommit"
-            labelHelp={
-              <PopoverIcon
-                noVerticalAlign
-                headerContent="CPU overcommitment"
-                bodyContent="The ratio of virtual CPUs to physical cores."
-              />
-            }
-          >
-            <TextInput
-              id="time-cpu-overcommit"
-              value={`1:${values.cpuOvercommitRatio}`}
-              isDisabled
-              aria-label="CPU overcommitment ratio"
-            />
-          </FormGroup>
-        </GridItem>
-
-        <GridItem span={6}>
-          <FormGroup
-            label="Memory overcommitment"
-            isRequired
-            fieldId="time-memory-overcommit"
-            labelHelp={
-              <PopoverIcon
-                noVerticalAlign
-                headerContent="Memory overcommitment"
-                bodyContent="The ratio of virtual memory to physical memory."
-              />
-            }
-          >
-            <TextInput
-              id="time-memory-overcommit"
-              value={`1:${values.memoryOvercommitRatio}`}
-              isDisabled
-              aria-label="Memory overcommitment ratio"
-            />
-          </FormGroup>
-        </GridItem>
-      </Grid>
-    </Form>
+      <StackItem>
+        <SliderField
+          label="Post-migration engineers"
+          fieldId="estimation-engineers"
+          value={values.postMigrationEngineers}
+          min={limits.postMigrationEngineers.min}
+          max={limits.postMigrationEngineers.max}
+          step={limits.postMigrationEngineers.step}
+          minLabel="0 engineers"
+          maxLabel="50 engineers"
+          onChange={handleFieldChange("postMigrationEngineers")}
+        />
+      </StackItem>
+    </Stack>
   );
 };
 

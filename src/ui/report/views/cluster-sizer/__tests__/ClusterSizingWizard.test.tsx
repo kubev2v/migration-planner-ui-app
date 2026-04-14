@@ -20,6 +20,8 @@ const mockCalculateEstimation = vi.fn();
 const mockCalculateComplexity = vi.fn();
 const mockEnsureEstimationForMenu = vi.fn();
 
+const mockSetEstimationFormValues = vi.fn();
+
 const mockViewModel = {
   formValues: {
     clusterMode: "full-ha" as const,
@@ -36,6 +38,13 @@ const mockViewModel = {
     controlPlaneMemoryGb: 32,
   },
   setFormValues: mockSetFormValues,
+  estimationFormValues: {
+    transferRateMbps: 5000,
+    workHoursPerDay: 12,
+    troubleshootMinsPerVm: 90,
+    postMigrationEngineers: 25,
+  },
+  setEstimationFormValues: mockSetEstimationFormValues,
   calculate: mockCalculate,
   isCalculating: false,
   sizerOutput: null,

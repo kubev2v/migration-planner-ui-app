@@ -188,8 +188,13 @@ export const ClusterSizingWizard: React.FC<ClusterSizingWizardProps> = ({
       case "time-estimation":
         return (
           <RecommendationTemplate
-            preferencesTitle="Migration estimation parameters"
-            preferencesContent={<TimeEstimationForm values={vm.formValues} />}
+            preferencesTitle="Migration preferences"
+            preferencesContent={
+              <TimeEstimationForm
+                values={vm.estimationFormValues}
+                onChange={vm.setEstimationFormValues}
+              />
+            }
             resultsContent={
               <TimeEstimationResult
                 clusterName={clusterName}
@@ -205,10 +210,10 @@ export const ClusterSizingWizard: React.FC<ClusterSizingWizardProps> = ({
               vm.isCalculatingEstimation ||
               vm.estimationError,
             )}
-            generateButtonText="Calculate time estimation"
+            generateButtonText="Calculate"
             resultsTitle=""
             showAlert={false}
-            hidePreferences={true}
+            hasError={Boolean(vm.estimationError)}
           />
         );
       case "complexity":

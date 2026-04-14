@@ -10,6 +10,7 @@ import { useAsyncFn } from "react-use";
 import { Symbols } from "../../../config/Dependencies";
 import type { IAssessmentsStore } from "../../../data/stores/interfaces/IAssessmentsStore";
 import {
+  DEFAULT_ESTIMATION_FORM_VALUES,
   DEFAULT_FORM_VALUES,
   SMT_THREADS_MAX,
   SMT_THREADS_MIN,
@@ -17,10 +18,14 @@ import {
 } from "../views/cluster-sizer/constants";
 import type {
   ClusterRequirementsResponse,
-  SchemaEstimationResult,
+  EstimationFormValues,
+  MigrationEstimationResponse,
   SizingFormValues,
 } from "../views/cluster-sizer/types";
-import { formValuesToRequest } from "../views/cluster-sizer/types";
+import {
+  estimationFormToParams,
+  formValuesToRequest,
+} from "../views/cluster-sizer/types";
 
 // ---------------------------------------------------------------------------
 // Public interface
@@ -37,7 +42,9 @@ export interface ClusterSizingWizardViewModel {
   isCalculating: boolean;
   calculateError: Error | undefined;
   calculate: () => Promise<void>;
-  migrationEstimation: Record<string, SchemaEstimationResult> | null;
+  estimationFormValues: EstimationFormValues;
+  setEstimationFormValues: (v: EstimationFormValues) => void;
+  migrationEstimation: MigrationEstimationResponse | null;
   isCalculatingEstimation: boolean;
   estimationError: Error | undefined;
   calculateEstimation: () => Promise<void>;
@@ -71,6 +78,8 @@ export const useClusterSizingWizardViewModel = (
 
   const [formValues, setFormValues] =
     useState<SizingFormValues>(DEFAULT_FORM_VALUES);
+  const [estimationFormValues, setEstimationFormValues] =
+    useState<EstimationFormValues>(DEFAULT_ESTIMATION_FORM_VALUES);
   const [sizerOutput, setSizerOutput] =
     useState<ClusterRequirementsResponse | null>(null);
   const [migrationEstimation, setMigrationEstimation] = useState<Record<
@@ -161,7 +170,11 @@ export const useClusterSizingWizardViewModel = (
     try {
       const result = await assessmentsStore.calculateMigrationEstimation({
         id: assessmentId,
-        migrationEstimationRequest: { clusterId },
+        migrationEstimationRequest: {
+          clusterId,
+          estimationSchema: ["network-based", "storage-offload"],
+          params: estimationFormToParams(estimationFormValues),
+        },
       });
 
       const schemas = result?.estimation;
@@ -184,7 +197,7 @@ export const useClusterSizingWizardViewModel = (
       setManualEstimationError(error);
       throw error;
     }
-  }, [assessmentId, assessmentsStore, clusterId]);
+  }, [assessmentId, assessmentsStore, clusterId, estimationFormValues]);
 
   const [complexityState, doCalculateComplexity] = useAsyncFn(async () => {
     setManualComplexityError(undefined);
@@ -261,14 +274,6 @@ export const useClusterSizingWizardViewModel = (
 
   const ensureEstimationForMenu = useCallback(
     (menuItem: string | null) => {
-      if (
-        menuItem === "time-estimation" &&
-        !migrationEstimation &&
-        !estimationState.loading &&
-        !manualEstimationError
-      ) {
-        void doCalculateEstimation();
-      }
       if (menuItem === "complexity") {
         if (
           !complexityEstimation &&
@@ -287,10 +292,6 @@ export const useClusterSizingWizardViewModel = (
       }
     },
     [
-      migrationEstimation,
-      estimationState.loading,
-      manualEstimationError,
-      doCalculateEstimation,
       complexityEstimation,
       complexityState.loading,
       manualComplexityError,
@@ -304,6 +305,7 @@ export const useClusterSizingWizardViewModel = (
 
   const reset = useCallback(() => {
     setFormValues(DEFAULT_FORM_VALUES);
+    setEstimationFormValues(DEFAULT_ESTIMATION_FORM_VALUES);
     setSizerOutput(null);
     setMigrationEstimation(null);
     setComplexityEstimation(null);
@@ -339,6 +341,8 @@ export const useClusterSizingWizardViewModel = (
       manualCalculateError ??
       (resetCounter > 0 ? undefined : calculateState.error),
     calculate: doCalculate,
+    estimationFormValues,
+    setEstimationFormValues,
     migrationEstimation,
     isCalculatingEstimation: estimationState.loading,
     estimationError:

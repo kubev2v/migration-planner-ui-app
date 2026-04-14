@@ -1,5 +1,6 @@
 import type {
   ClusterMode,
+  EstimationFormValues,
   HAReplicaCount,
   MemoryOvercommitRatio,
   OvercommitRatio,
@@ -223,6 +224,23 @@ export const DEFAULT_FORM_VALUES: SizingFormValues = {
   controlPlaneCpu: 16,
   controlPlaneMemoryGb: 32,
 };
+
+/**
+ * Default migration estimation form values
+ */
+export const DEFAULT_ESTIMATION_FORM_VALUES: EstimationFormValues = {
+  transferRateMbps: 5000,
+  workHoursPerDay: 12,
+  troubleshootMinsPerVm: 90,
+  postMigrationEngineers: 25,
+};
+
+export const ESTIMATION_SLIDER_LIMITS = {
+  transferRateMbps: { min: 0.1, max: 10_000, step: 0.1 },
+  workHoursPerDay: { min: 0.5, max: 24, step: 0.5 },
+  troubleshootMinsPerVm: { min: 1, max: 180, step: 1 },
+  postMigrationEngineers: { min: 1, max: 50, step: 1 },
+} as const;
 
 /**
  * Validation constraints for custom worker node configuration

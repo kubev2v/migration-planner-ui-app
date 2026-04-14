@@ -5,6 +5,9 @@ import type {
 } from "@openshift-migration-advisor/planner-sdk";
 import {
   Alert,
+  Button,
+  Flex,
+  FlexItem,
   Grid,
   GridItem,
   List,
@@ -14,10 +17,13 @@ import {
   StackItem,
   Title,
 } from "@patternfly/react-core";
+import { CopyIcon } from "@patternfly/react-icons";
 import { Table, Tbody, Td, Th, Thead, Tr } from "@patternfly/react-table";
-import React from "react";
+import React, { useCallback } from "react";
 
+import PopoverIcon from "./PopoverIcon";
 import {
+  type ParsedAssumption,
   parsePostMigrationChecks,
   parseStorageOffload,
   parseStorageTransfer,
@@ -31,81 +37,110 @@ interface TimeEstimationResultProps {
   error: Error | null;
 }
 
-const sectionStyle = css`
-  border: 1px solid var(--pf-t--global--border--color--default);
-  border-radius: var(--pf-t--global--border--radius--small);
+const cardStyle = css`
+  background-color: var(--pf-t--global--background--color--secondary--default);
+  border-radius: var(--pf-t--global--border--radius--medium);
   padding: var(--pf-t--global--spacer--400);
   height: 100%;
+  display: flex;
+  flex-direction: column;
+`;
+
+const outerCardStyle = css`
+  border: 1px solid var(--pf-t--global--border--color--default);
+  border-radius: var(--pf-t--global--border--radius--medium);
+  padding: var(--pf-t--global--spacer--400);
+`;
+
+const cardHeaderStyle = css`
+  margin-bottom: var(--pf-t--global--spacer--400);
 `;
 
 const equalHeightGridStyle = css`
   align-items: stretch;
 `;
 
-const totalTimeStyle = css`
-  font-size: var(--pf-t--global--font--size--xl);
-  font-weight: var(--pf-t--global--font--weight--body--bold);
-  margin-bottom: var(--pf-t--global--spacer--300);
-`;
-
 const schemaTitleStyle = css`
+  display: flex;
+  align-items: center;
+  gap: var(--pf-t--global--spacer--100);
   color: var(--pf-t--global--text--color--subtle);
-  margin-bottom: var(--pf-t--global--spacer--200);
-`;
-
-const assumptionsSubtitleStyle = css`
-  color: var(--pf-t--global--text--color--subtle);
-  margin-bottom: var(--pf-t--global--spacer--300);
-`;
-
-const phaseHeaderStyle = css`
+  font-size: var(--pf-t--global--font--size--sm);
   font-weight: var(--pf-t--global--font--weight--body--bold);
-  margin-top: var(--pf-t--global--spacer--300);
   margin-bottom: var(--pf-t--global--spacer--200);
+  justify-content: center;
 `;
 
-const SCHEMA_DISPLAY: Record<
-  string,
-  { summaryTitle: string; summarySubtitle: string; assumptionsTitle: string }
-> = {
-  "network-based": {
-    summaryTitle: "Migration Time Summary",
-    summarySubtitle: "Network-based Estimation",
-    assumptionsTitle: "Migration Assumptions",
-  },
-  "storage-offload": {
-    summaryTitle: "Storage-offload Estimation",
-    summarySubtitle: "Storage-offload Estimation",
-    assumptionsTitle: "Storage-offload Assumptions",
-  },
+const totalTimeStyle = css`
+  font-size: var(--pf-t--global--font--size--2xl);
+  font-weight: var(--pf-t--global--font--weight--body--bold);
+  text-align: center;
+  margin-bottom: var(--pf-t--global--spacer--100);
+`;
+
+const hoursSubtitleStyle = css`
+  font-size: var(--pf-t--global--font--size--sm);
+  color: var(--pf-t--global--text--color--subtle);
+  text-align: center;
+  margin-bottom: var(--pf-t--global--spacer--400);
+`;
+
+const popoverPhaseTitle = css`
+  font-weight: var(--pf-t--global--font--weight--body--bold);
+  margin-top: var(--pf-t--global--spacer--200);
+  margin-bottom: var(--pf-t--global--spacer--100);
+`;
+
+const SCHEMA_LABELS: Record<string, string> = {
+  "network-based": "Network-based estimation",
+  "storage-offload": "Storage-offload estimation",
 };
 
-const getSchemaDisplay = (schemaName: string) =>
-  SCHEMA_DISPLAY[schemaName] ?? {
-    summaryTitle: schemaName,
-    summarySubtitle: schemaName,
-    assumptionsTitle: `${schemaName} Assumptions`,
-  };
+const getSchemaLabel = (schemaName: string): string =>
+  SCHEMA_LABELS[schemaName] ?? schemaName;
 
 const durationToHours = (duration: string): number =>
   Math.ceil(parseDuration(duration) / 3600);
 
-const formatTotalTime = (result: SchemaEstimationResult): string => {
+const formatHumanDuration = (hours: number): string => {
+  if (hours >= 730) {
+    const months = hours / 730;
+    return months % 1 === 0
+      ? `${months} months`
+      : `${months.toFixed(1)} months`;
+  }
+  if (hours >= 24) {
+    const days = Math.ceil(hours / 24);
+    return `${days} days`;
+  }
+  return `${hours} hours`;
+};
+
+const formatTotalDisplay = (result: SchemaEstimationResult): string => {
   const minH = durationToHours(result.minTotalDuration);
   const maxH = durationToHours(result.maxTotalDuration);
-  if (minH === maxH) return `${minH} Hours`;
-  return `${minH} \u2013 ${maxH} Hours`;
+  if (minH === maxH) return formatHumanDuration(minH);
+  return `${formatHumanDuration(minH)}\u2013${formatHumanDuration(maxH)}`;
+};
+
+const formatHoursSubtitle = (result: SchemaEstimationResult): string => {
+  const minH = durationToHours(result.minTotalDuration);
+  const maxH = durationToHours(result.maxTotalDuration);
+  const fmt = (h: number) => h.toLocaleString("en-US");
+  if (minH === maxH) return `${fmt(minH)} hours`;
+  return `${fmt(minH)}\u2013${fmt(maxH)} hours`;
 };
 
 const formatDetailDuration = (detail: EstimationDetail): string => {
   if (detail.duration) {
-    return `${durationToHours(detail.duration)} Hours`;
+    const h = durationToHours(detail.duration);
+    return `${h.toLocaleString("en-US")} hours`;
   }
   if (detail.minDuration && detail.maxDuration) {
     const minH = durationToHours(detail.minDuration);
     const maxH = durationToHours(detail.maxDuration);
-    if (minH === maxH) return `${minH} Hours`;
-    return `${minH} \u2013 ${maxH} Hours`;
+    if (minH === maxH) return `${minH.toLocaleString("en-US")} hours`;
+    return `${minH.toLocaleString("en-US")}\u2013${maxH.toLocaleString("en-US")} hours`;
   }
   return "N/A";
 };
@@ -115,15 +150,19 @@ const extractDetailText = (reason: string): string => {
   const vmsMatch = reason.match(/(\d+)\s+VMs?/i);
   if (volumeMatch) {
     const gb = parseFloat(volumeMatch[1].replace(/,/g, ""));
-    return `${(gb / 1000).toFixed(1)} TB Total Volume`;
+    return `${(gb / 1000).toFixed(1)} TB total volume`;
   }
   if (vmsMatch) {
-    return `${vmsMatch[1]} Virtual Machines`;
+    return `${Number(vmsMatch[1]).toLocaleString("en-US")} VMs`;
   }
   return "";
 };
 
-const getAssumptions = (schemaName: string, phase: string, reason: string) => {
+const getAssumptions = (
+  schemaName: string,
+  phase: string,
+  reason: string,
+): ParsedAssumption => {
   if (phase.toLowerCase().includes("post-migration")) {
     return parsePostMigrationChecks(reason);
   }
@@ -133,12 +172,85 @@ const getAssumptions = (schemaName: string, phase: string, reason: string) => {
   return parseStorageTransfer(reason);
 };
 
+const renderAssumptionItems = (assumptions: ParsedAssumption) => {
+  const entries: [string, string | undefined][] = [
+    ["Workload", assumptions.workload],
+    ["Resources", assumptions.resources],
+    ["Schedule", assumptions.schedule],
+    ["Volume", assumptions.volume],
+    ["Transfer Speed", assumptions.transferSpeed],
+    ["Transfer Rate", assumptions.transferRate],
+    ["Assumption", assumptions.assumption],
+  ];
+
+  return entries
+    .filter(([, value]) => value)
+    .map(([label, value]) => (
+      <ListItem key={label}>
+        {label}: {value}
+      </ListItem>
+    ));
+};
+
+const buildPopoverBody = (
+  schemaName: string,
+  breakdownEntries: [string, EstimationDetail][],
+): React.ReactNode => (
+  <div>
+    {breakdownEntries.map(([phase, detail]) => {
+      const assumptions = getAssumptions(schemaName, phase, detail.reason);
+      const items = renderAssumptionItems(assumptions);
+      if (items.length === 0) return null;
+      return (
+        <div key={phase}>
+          <div className={popoverPhaseTitle}>{phase}</div>
+          <List>{items}</List>
+        </div>
+      );
+    })}
+  </div>
+);
+
+const generatePlainText = (
+  output: Record<string, SchemaEstimationResult>,
+): string => {
+  const lines: string[] = ["Migration time estimation", ""];
+
+  for (const [schemaName, result] of Object.entries(output)) {
+    lines.push(getSchemaLabel(schemaName));
+    lines.push(
+      `  Total: ${formatTotalDisplay(result)} (${formatHoursSubtitle(result)})`,
+    );
+
+    if (result.breakdown) {
+      for (const [phase, detail] of Object.entries(result.breakdown)) {
+        const dur = formatDetailDuration(detail);
+        const text = extractDetailText(detail.reason);
+        lines.push(`  ${phase}: ${dur}${text ? ` - ${text}` : ""}`);
+      }
+    }
+    lines.push("");
+  }
+
+  return lines.join("\n");
+};
+
 export const TimeEstimationResult: React.FC<TimeEstimationResultProps> = ({
   clusterName,
   estimationOutput,
   isLoading,
   error,
 }) => {
+  const handleCopy = useCallback(() => {
+    if (
+      !estimationOutput ||
+      !navigator.clipboard?.writeText ||
+      (typeof window !== "undefined" && !window.isSecureContext)
+    ) {
+      return;
+    }
+    void navigator.clipboard.writeText(generatePlainText(estimationOutput));
+  }, [estimationOutput]);
   if (isLoading) {
     return (
       <Stack hasGutter>
@@ -168,135 +280,86 @@ export const TimeEstimationResult: React.FC<TimeEstimationResultProps> = ({
   }
 
   const schemas = Object.entries(estimationOutput);
-
   const gridSpan = schemas.length > 1 ? 6 : 12;
 
   return (
-    <Stack hasGutter>
-      <StackItem>
-        <Grid hasGutter className={equalHeightGridStyle}>
-          {schemas.map(([schemaName, result]) => {
-            const display = getSchemaDisplay(schemaName);
-            const breakdownEntries = result.breakdown
-              ? Object.entries(result.breakdown)
-              : [];
+    <div className={outerCardStyle}>
+      <Flex
+        justifyContent={{ default: "justifyContentSpaceBetween" }}
+        alignItems={{ default: "alignItemsCenter" }}
+        className={cardHeaderStyle}
+      >
+        <FlexItem>
+          <Title headingLevel="h3">Migration time estimation</Title>
+        </FlexItem>
+        <FlexItem>
+          <Button
+            variant="link"
+            icon={<CopyIcon />}
+            iconPosition="end"
+            onClick={handleCopy}
+          >
+            Copy as plain text
+          </Button>
+        </FlexItem>
+      </Flex>
+      <Grid hasGutter className={equalHeightGridStyle}>
+        {schemas.map(([schemaName, result]) => {
+          const breakdownEntries: [string, EstimationDetail][] =
+            result.breakdown ? Object.entries(result.breakdown) : [];
 
-            return (
-              <GridItem key={schemaName} span={gridSpan}>
-                <div className={sectionStyle}>
-                  <Title headingLevel="h3">{display.summaryTitle}</Title>
-                  <div className={schemaTitleStyle}>
-                    {display.summarySubtitle}
-                  </div>
-                  <div className={totalTimeStyle}>
-                    Total Estimated Time: {formatTotalTime(result)}
-                  </div>
-
-                  <Table
-                    aria-label={`${schemaName} time breakdown`}
-                    variant="compact"
-                  >
-                    <Thead>
-                      <Tr>
-                        <Th>Phase</Th>
-                        <Th>Duration</Th>
-                        <Th>Details</Th>
-                      </Tr>
-                    </Thead>
-                    <Tbody>
-                      {breakdownEntries.map(([phase, detail]) => (
-                        <Tr key={phase}>
-                          <Td>{phase}</Td>
-                          <Td>{formatDetailDuration(detail)}</Td>
-                          <Td>{extractDetailText(detail.reason)}</Td>
-                        </Tr>
-                      ))}
-                    </Tbody>
-                  </Table>
-                </div>
-              </GridItem>
-            );
-          })}
-        </Grid>
-      </StackItem>
-
-      <StackItem>
-        <Grid hasGutter className={equalHeightGridStyle}>
-          {schemas.map(([schemaName, result]) => {
-            const display = getSchemaDisplay(schemaName);
-            const breakdownEntries = result.breakdown
-              ? Object.entries(result.breakdown)
-              : [];
-
-            return (
-              <GridItem key={schemaName} span={gridSpan}>
-                <div className={sectionStyle}>
-                  <Title headingLevel="h3">{display.assumptionsTitle}</Title>
-                  <p className={assumptionsSubtitleStyle}>
-                    The following parameters were used to calculate these
-                    estimates:
-                  </p>
-
-                  {breakdownEntries.map(([phase, detail]) => {
-                    const assumptions = getAssumptions(
-                      schemaName,
-                      phase,
-                      detail.reason,
-                    );
-                    return (
-                      <div key={phase}>
-                        <div className={phaseHeaderStyle}>{phase}</div>
-                        <List>
-                          {assumptions.workload && (
-                            <ListItem>
-                              <strong>Workload:</strong> {assumptions.workload}
-                            </ListItem>
-                          )}
-                          {assumptions.resources && (
-                            <ListItem>
-                              <strong>Resources:</strong>{" "}
-                              {assumptions.resources}
-                            </ListItem>
-                          )}
-                          {assumptions.schedule && (
-                            <ListItem>
-                              <strong>Schedule:</strong> {assumptions.schedule}
-                            </ListItem>
-                          )}
-                          {assumptions.volume && (
-                            <ListItem>
-                              <strong>Volume:</strong> {assumptions.volume}
-                            </ListItem>
-                          )}
-                          {assumptions.transferSpeed && (
-                            <ListItem>
-                              <strong>Transfer Speed:</strong>{" "}
-                              {assumptions.transferSpeed}
-                            </ListItem>
-                          )}
-                          {assumptions.transferRate && (
-                            <ListItem>
-                              <strong>Transfer Rate:</strong>{" "}
-                              {assumptions.transferRate}
-                            </ListItem>
-                          )}
-                          {assumptions.assumption && (
-                            <ListItem>
-                              <strong>Assumption:</strong>{" "}
-                              {assumptions.assumption}
-                            </ListItem>
-                          )}
-                        </List>
+          return (
+            <GridItem key={schemaName} span={gridSpan}>
+              <div className={cardStyle}>
+                <div className={schemaTitleStyle}>
+                  <span>{getSchemaLabel(schemaName)}</span>
+                  <PopoverIcon
+                    noVerticalAlign
+                    headerContent={getSchemaLabel(schemaName)}
+                    bodyContent={
+                      <div>
+                        <p>Estimates are based on the following parameters:</p>
+                        {buildPopoverBody(schemaName, breakdownEntries)}
                       </div>
-                    );
-                  })}
+                    }
+                  />
                 </div>
-              </GridItem>
-            );
-          })}
-        </Grid>
-      </StackItem>
-    </Stack>
+
+                <Title headingLevel="h2" className={totalTimeStyle}>
+                  {formatTotalDisplay(result)}
+                </Title>
+
+                <div className={hoursSubtitleStyle}>
+                  {formatHoursSubtitle(result)}
+                </div>
+
+                <Table
+                  aria-label={`${schemaName} time breakdown`}
+                  variant="compact"
+                >
+                  <Thead>
+                    <Tr>
+                      <Th>Phase</Th>
+                      <Th>Duration</Th>
+                      <Th>Details</Th>
+                    </Tr>
+                  </Thead>
+                  <Tbody>
+                    {breakdownEntries.map(([phase, detail]) => (
+                      <Tr key={phase}>
+                        <Td>{phase}</Td>
+                        <Td>{formatDetailDuration(detail)}</Td>
+                        <Td>{extractDetailText(detail.reason)}</Td>
+                      </Tr>
+                    ))}
+                  </Tbody>
+                </Table>
+              </div>
+            </GridItem>
+          );
+        })}
+      </Grid>
+    </div>
   );
 };
 
