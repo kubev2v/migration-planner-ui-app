@@ -17,7 +17,7 @@ import {
 } from "../views/cluster-sizer/constants";
 import type {
   ClusterRequirementsResponse,
-  MigrationEstimationResponse,
+  SchemaEstimationResult,
   SizingFormValues,
 } from "../views/cluster-sizer/types";
 import { formValuesToRequest } from "../views/cluster-sizer/types";
@@ -37,7 +37,7 @@ export interface ClusterSizingWizardViewModel {
   isCalculating: boolean;
   calculateError: Error | undefined;
   calculate: () => Promise<void>;
-  migrationEstimation: MigrationEstimationResponse | null;
+  migrationEstimation: Record<string, SchemaEstimationResult> | null;
   isCalculatingEstimation: boolean;
   estimationError: Error | undefined;
   calculateEstimation: () => Promise<void>;
@@ -73,8 +73,10 @@ export const useClusterSizingWizardViewModel = (
     useState<SizingFormValues>(DEFAULT_FORM_VALUES);
   const [sizerOutput, setSizerOutput] =
     useState<ClusterRequirementsResponse | null>(null);
-  const [migrationEstimation, setMigrationEstimation] =
-    useState<MigrationEstimationResponse | null>(null);
+  const [migrationEstimation, setMigrationEstimation] = useState<Record<
+    string,
+    SchemaEstimationResult
+  > | null>(null);
   const [complexityEstimation, setComplexityEstimation] =
     useState<MigrationComplexityResponse | null>(null);
   const [estimationByComplexity, setEstimationByComplexity] =
@@ -162,8 +164,9 @@ export const useClusterSizingWizardViewModel = (
         migrationEstimationRequest: { clusterId },
       });
 
-      const hasSchemas = result && Object.keys(result).length > 0;
-      setMigrationEstimation(hasSchemas ? result : null);
+      const schemas = result?.estimation;
+      const hasSchemas = schemas && Object.keys(schemas).length > 0;
+      setMigrationEstimation(hasSchemas ? schemas : null);
     } catch (err) {
       if (err instanceof ResponseError) {
         const message = await err.response.text();
