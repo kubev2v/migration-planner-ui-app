@@ -5,7 +5,7 @@ import {
   Content,
   StackItem,
 } from "@patternfly/react-core";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 
 import { LoadingSpinner } from "../../core/components/LoadingSpinner";
 import { useEnvironmentPage } from "../view-models/EnvironmentPageContext";
@@ -22,12 +22,6 @@ const EnvironmentContent: React.FC<EnvironmentContentProps> = ({ vm }) => {
     shouldShowDiscoverySourceSetupModal,
     setShouldShowDiscoverySetupModal,
   ] = useState(false);
-
-  const [editSourceId, setEditSourceId] = useState<string | null>(null);
-
-  const toggleDiscoverySourceSetupModal = useCallback((): void => {
-    setShouldShowDiscoverySetupModal((lastState) => !lastState);
-  }, []);
   const [firstSource, ..._otherSources] = vm.sources ?? [];
   const sourceSelected =
     (vm.sourceSelected &&
@@ -58,6 +52,11 @@ const EnvironmentContent: React.FC<EnvironmentContentProps> = ({ vm }) => {
       return () => clearTimeout(timeout);
     }
   }, [isOvaDownloading]);
+
+  const closeModalAndLoadSources = () => {
+    setShouldShowDiscoverySetupModal(false);
+    void vm.listSources();
+  };
 
   return (
     <>
@@ -100,13 +99,11 @@ const EnvironmentContent: React.FC<EnvironmentContentProps> = ({ vm }) => {
 
       <SourcesTable
         onEditEnvironment={(sourceId) => {
-          setEditSourceId(sourceId);
           vm.selectSourceById?.(sourceId);
           setShouldShowDiscoverySetupModal(true);
         }}
         onAddEnvironment={() => {
-          setEditSourceId(null);
-          toggleDiscoverySourceSetupModal();
+          setShouldShowDiscoverySetupModal(true);
         }}
       />
 
@@ -157,17 +154,12 @@ const EnvironmentContent: React.FC<EnvironmentContentProps> = ({ vm }) => {
       {shouldShowDiscoverySourceSetupModal && (
         <DiscoverySourceSetupModal
           isOpen={shouldShowDiscoverySourceSetupModal}
-          onClose={() => {
-            setEditSourceId(null);
-            toggleDiscoverySourceSetupModal();
-            void vm.listSources();
-          }}
+          onClose={closeModalAndLoadSources}
           isDisabled={vm.isDownloadingSource}
           onStartDownload={() => setIsOvaDownloading(true)}
           onAfterDownload={async () => {
             await vm.listSources();
           }}
-          editSourceId={editSourceId || undefined}
         />
       )}
     </>

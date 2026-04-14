@@ -182,18 +182,6 @@ describe("useEnvironmentPageViewModel", () => {
   });
 
   // ---- Source selection ----------------------------------------------------
-
-  it("selects a source by reference", () => {
-    const { result } = renderHook(() => useEnvironmentPageViewModel());
-    const src = makeSource();
-
-    act(() => result.current.selectSource(src));
-    expect(result.current.sourceSelected).toEqual(src);
-
-    act(() => result.current.selectSource(null));
-    expect(result.current.sourceSelected).toBeNull();
-  });
-
   it("selects a source by ID (from store cache)", () => {
     const src = makeSource({ id: "src-42" });
     mockSourcesStore.getById.mockReturnValue(src);
@@ -250,6 +238,7 @@ describe("useEnvironmentPageViewModel", () => {
     mockImagesStore.getDownloadUrl.mockResolvedValue(
       "https://dl.example.com/new.ova",
     );
+    mockSourcesStore.getById.mockReturnValue(newSrc);
 
     const { result } = renderHook(() => useEnvironmentPageViewModel());
 
@@ -257,6 +246,7 @@ describe("useEnvironmentPageViewModel", () => {
       result.current.createDownloadSource({
         name: "my-env",
         sshPublicKey: "ssh-rsa AAAA",
+        enableProxy: false,
         httpProxy: "",
         httpsProxy: "",
         noProxy: "",
@@ -271,7 +261,7 @@ describe("useEnvironmentPageViewModel", () => {
     expect(result.current.downloadSourceUrl).toBe(
       "https://dl.example.com/new.ova",
     );
-    expect(result.current.sourceCreatedId).toBe("new-1");
+    expect(result.current.sourceSelected?.id).toBe("new-1");
     expect(result.current.isDownloadingSource).toBe(false);
   });
 
@@ -284,6 +274,7 @@ describe("useEnvironmentPageViewModel", () => {
       result.current.createDownloadSource({
         name: "bad",
         sshPublicKey: "",
+        enableProxy: false,
         httpProxy: "",
         httpsProxy: "",
         noProxy: "",
@@ -310,6 +301,7 @@ describe("useEnvironmentPageViewModel", () => {
       result.current.updateSource({
         sourceId: "upd-1",
         sshPublicKey: "ssh-ed25519 BBB",
+        enableProxy: false,
         httpProxy: "",
         httpsProxy: "",
         noProxy: "",
@@ -335,6 +327,7 @@ describe("useEnvironmentPageViewModel", () => {
       result.current.updateSource({
         sourceId: "fail-1",
         sshPublicKey: "",
+        enableProxy: false,
         httpProxy: "",
         httpsProxy: "",
         noProxy: "",
@@ -382,27 +375,6 @@ describe("useEnvironmentPageViewModel", () => {
     expect(result.current.downloadSourceUrl).toBe("");
   });
 
-  it("clears sourceCreatedId via deleteSourceCreated", async () => {
-    const newSrc = makeSource({ id: "c-1" });
-    mockSourcesStore.create.mockResolvedValue(newSrc);
-
-    const { result } = renderHook(() => useEnvironmentPageViewModel());
-
-    await act(() =>
-      result.current.createDownloadSource({
-        name: "tmp",
-        sshPublicKey: "",
-        httpProxy: "",
-        httpsProxy: "",
-        noProxy: "",
-      }),
-    );
-    expect(result.current.sourceCreatedId).toBe("c-1");
-
-    act(() => result.current.deleteSourceCreated());
-    expect(result.current.sourceCreatedId).toBeNull();
-  });
-
   it("manages assessmentFromAgentState", () => {
     const { result } = renderHook(() => useEnvironmentPageViewModel());
     expect(result.current.assessmentFromAgentState).toBe(false);
@@ -422,6 +394,7 @@ describe("useEnvironmentPageViewModel", () => {
       result.current.createDownloadSource({
         name: "err",
         sshPublicKey: "",
+        enableProxy: false,
         httpProxy: "",
         httpsProxy: "",
         noProxy: "",
@@ -442,6 +415,7 @@ describe("useEnvironmentPageViewModel", () => {
       result.current.updateSource({
         sourceId: "x",
         sshPublicKey: "",
+        enableProxy: false,
         httpProxy: "",
         httpsProxy: "",
         noProxy: "",
@@ -463,6 +437,7 @@ describe("useEnvironmentPageViewModel", () => {
       result.current.createDownloadSource({
         name: "err1",
         sshPublicKey: "",
+        enableProxy: false,
         httpProxy: "",
         httpsProxy: "",
         noProxy: "",
@@ -483,6 +458,7 @@ describe("useEnvironmentPageViewModel", () => {
       result.current.createDownloadSource({
         name: "err",
         sshPublicKey: "",
+        enableProxy: false,
         httpProxy: "",
         httpsProxy: "",
         noProxy: "",
@@ -585,6 +561,7 @@ describe("useEnvironmentPageViewModel", () => {
       promise = result.current.createDownloadSource({
         name: "loading-test",
         sshPublicKey: "",
+        enableProxy: false,
         httpProxy: "",
         httpsProxy: "",
         noProxy: "",
@@ -625,6 +602,7 @@ describe("useEnvironmentPageViewModel", () => {
       promise = result.current.updateSource({
         sourceId: "upd-loading",
         sshPublicKey: "",
+        enableProxy: false,
         httpProxy: "",
         httpsProxy: "",
         noProxy: "",

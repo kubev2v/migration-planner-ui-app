@@ -193,7 +193,6 @@ function makeBaseVm(
     assessments: [],
 
     sourceSelected: null,
-    selectSource: vi.fn(),
     selectSourceById: vi.fn(),
     getSourceById: vi.fn(),
 
@@ -208,8 +207,6 @@ function makeBaseVm(
     isDownloadingSource: false,
     downloadSourceUrl: "",
     setDownloadUrl: vi.fn(),
-    sourceCreatedId: null,
-    deleteSourceCreated: vi.fn(),
 
     updateSource: vi.fn().mockResolvedValue(undefined),
     isUpdatingSource: false,

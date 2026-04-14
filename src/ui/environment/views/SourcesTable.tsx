@@ -193,7 +193,6 @@ export const SourcesTable: React.FC<SourceTableProps> = ({
     return sourcesToUse;
   }, [vm.sources]);
 
-  const [firstSource, ..._otherSources] = memoizedSources ?? [];
   const hasSources = memoizedSources && memoizedSources.length > 0;
 
   const filteredSources = useMemo(() => {
@@ -272,16 +271,6 @@ export const SourcesTable: React.FC<SourceTableProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [vm.refreshOnFocus]);
 
-  useEffect(
-    () => {
-      if (!vm.sourceSelected && firstSource) {
-        vm.selectSource(firstSource);
-      }
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [firstSource, vm.sources],
-  );
-
   // Build map of sourceId -> assessmentId to enable report action
   const sourceToAssessmentId = useMemo(() => {
     const map: Record<string, string> = {};
@@ -307,11 +296,7 @@ export const SourcesTable: React.FC<SourceTableProps> = ({
 
   const handleDelete = (source: SourceModel): void => {
     setDeleteTarget(null);
-    void vm.deleteAndRefresh(source.id).then((sources) => {
-      if (sources?.length) {
-        vm.selectSource(sources[0]);
-      }
-    });
+    void vm.deleteAndRefresh(source.id);
   };
 
   const handleShowReport = (sourceId: string): void => {

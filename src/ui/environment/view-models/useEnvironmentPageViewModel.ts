@@ -26,7 +26,6 @@ export interface EnvironmentPageViewModel {
 
   // Source selection
   sourceSelected: SourceModel | null;
-  selectSource: (source: SourceModel | null) => void;
   selectSourceById: (id: string) => void;
   getSourceById: (id: string) => SourceModel | undefined;
 
@@ -46,8 +45,6 @@ export interface EnvironmentPageViewModel {
   errorDownloadingSource?: Error;
   downloadSourceUrl: string;
   setDownloadUrl: (url: string) => void;
-  sourceCreatedId: string | null;
-  deleteSourceCreated: () => void;
 
   // Update source flow (update source → head image → get URL)
   updateSource: (input: SourceUpdateInput) => Promise<void>;
@@ -124,7 +121,6 @@ export const useEnvironmentPageViewModel = (): EnvironmentPageViewModel => {
     null,
   );
   const [downloadSourceUrl, setDownloadSourceUrlRaw] = useState("");
-  const [sourceCreatedId, setSourceCreatedId] = useState<string | null>(null);
   const [assessmentFromAgentState, setAssessmentFromAgent] = useState(false);
 
   // Error-dismiss flags
@@ -155,11 +151,6 @@ export const useEnvironmentPageViewModel = (): EnvironmentPageViewModel => {
   });
 
   // ---- Source selection ----------------------------------------------------
-  const selectSource = useCallback(
-    (source: SourceModel | null) => setSourceSelected(source),
-    [],
-  );
-
   const selectSourceById = useCallback(
     (id: string) => {
       const found = sourcesStore.getById(id);
@@ -210,7 +201,7 @@ export const useEnvironmentPageViewModel = (): EnvironmentPageViewModel => {
         await imagesStore.headImage(newSource.id);
         const url = await imagesStore.getDownloadUrl(newSource.id);
         setDownloadSourceUrlRaw(url);
-        setSourceCreatedId(newSource.id);
+        selectSourceById(newSource.id);
       } catch (err) {
         throw await parseApiError(err, "Failed to create environment");
       }
@@ -223,10 +214,11 @@ export const useEnvironmentPageViewModel = (): EnvironmentPageViewModel => {
     async (input: SourceUpdateInput): Promise<void> => {
       setDismissUpdateError(false);
       try {
-        const updated = await sourcesStore.update(input);
-        await imagesStore.headImage(updated.id);
-        const url = await imagesStore.getDownloadUrl(updated.id);
+        const updatedSource = await sourcesStore.update(input);
+        await imagesStore.headImage(updatedSource.id);
+        const url = await imagesStore.getDownloadUrl(updatedSource.id);
         setDownloadSourceUrlRaw(url);
+        selectSourceById(updatedSource.id);
       } catch (err) {
         throw await parseApiError(err, "Failed to update environment");
       }
@@ -358,10 +350,6 @@ export const useEnvironmentPageViewModel = (): EnvironmentPageViewModel => {
     setDownloadSourceUrlRaw(url);
   }, []);
 
-  const deleteSourceCreated = useCallback(() => {
-    setSourceCreatedId(null);
-  }, []);
-
   const clearErrors = useCallback(
     (options?: {
       downloading?: boolean;
@@ -371,6 +359,8 @@ export const useEnvironmentPageViewModel = (): EnvironmentPageViewModel => {
       const { downloading, updating, creating } = options ?? {};
       if (!options || downloading || creating) setDismissDownloadError(true);
       if (!options || updating) setDismissUpdateError(true);
+      setDownloadSourceUrlRaw("");
+      setSourceSelected(null);
     },
     [],
   );
@@ -381,7 +371,6 @@ export const useEnvironmentPageViewModel = (): EnvironmentPageViewModel => {
     assessments,
 
     sourceSelected,
-    selectSource,
     selectSourceById,
     getSourceById,
 
@@ -401,8 +390,6 @@ export const useEnvironmentPageViewModel = (): EnvironmentPageViewModel => {
         : createDownloadState.error,
     downloadSourceUrl,
     setDownloadUrl,
-    sourceCreatedId,
-    deleteSourceCreated,
 
     updateSource: doUpdateSource,
     isUpdatingSource: updateSourceState.loading,

@@ -23,6 +23,7 @@
   },
   "dependencies": {
     "@emotion/css": "^11.13.0",
+    "@hookform/resolvers": "^5.2.2",
     "@openshift-migration-advisor/planner-sdk": "0.10.0",
     "@patternfly/react-charts": "7.4.9",
     "@patternfly/react-core": "^6.4.0",
@@ -40,10 +41,12 @@
     "lodash": "^4.17.23",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "react-hook-form": "^7.72.1",
     "react-markdown": "^10.1.0",
     "react-router-dom": "^6.30.3",
     "react-syntax-highlighter": "^16.1.0",
-    "react-use": "^17.6.0"
+    "react-use": "^17.6.0",
+    "yup": "^1.7.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.2",

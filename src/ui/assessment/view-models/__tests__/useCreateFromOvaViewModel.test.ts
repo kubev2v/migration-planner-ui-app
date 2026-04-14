@@ -34,7 +34,6 @@ let mockAssessmentsStore: {
 
 let mockEnvVm: {
   sources: SourceModel[];
-  sourceCreatedId: string | null;
   sourceSelected: SourceModel | null;
   isDownloadingSource: boolean;
   errorUpdatingInventory: Error | undefined;
@@ -90,7 +89,6 @@ describe("useCreateFromOvaViewModel", () => {
 
     mockEnvVm = {
       sources: [],
-      sourceCreatedId: null,
       sourceSelected: null,
       isDownloadingSource: false,
       errorUpdatingInventory: undefined,
@@ -137,7 +135,7 @@ describe("useCreateFromOvaViewModel", () => {
   });
 
   it("isSubmitDisabled is true when name is empty", () => {
-    mockEnvVm.sourceCreatedId = "s-1";
+    mockEnvVm.sourceSelected = makeSource({ id: "s-1" });
 
     const { result } = renderHook(() => useCreateFromOvaViewModel());
 
@@ -162,7 +160,7 @@ describe("useCreateFromOvaViewModel", () => {
       new Error("An assessment with name 'Foo' already exists"),
     );
     const source = makeSource({ id: "s-1", name: "Test" });
-    mockEnvVm.sourceCreatedId = "s-1";
+    mockEnvVm.sourceSelected = makeSource({ id: "s-1" });
     mockEnvVm.getSourceById.mockReturnValue(source);
 
     const { result } = renderHook(() => useCreateFromOvaViewModel());
@@ -183,7 +181,7 @@ describe("useCreateFromOvaViewModel", () => {
       new Error("The provided name: aaa aaa is invalid."),
     );
     const source = makeSource({ id: "s-1", name: "Test" });
-    mockEnvVm.sourceCreatedId = "s-1";
+    mockEnvVm.sourceSelected = makeSource({ id: "s-1" });
     mockEnvVm.getSourceById.mockReturnValue(source);
 
     const { result } = renderHook(() => useCreateFromOvaViewModel());
@@ -205,7 +203,7 @@ describe("useCreateFromOvaViewModel", () => {
       new Error("Network error"),
     );
     const source = makeSource({ id: "s-1", name: "Test" });
-    mockEnvVm.sourceCreatedId = "s-1";
+    mockEnvVm.sourceSelected = makeSource({ id: "s-1" });
     mockEnvVm.getSourceById.mockReturnValue(source);
 
     const { result } = renderHook(() => useCreateFromOvaViewModel());
@@ -235,7 +233,7 @@ describe("useCreateFromOvaViewModel", () => {
   });
 
   it("sourceCreatedId comes from envVm.sourceCreatedId", () => {
-    mockEnvVm.sourceCreatedId = "s-created-123";
+    mockEnvVm.sourceSelected = makeSource({ id: "s-created-123" });
 
     const { result } = renderHook(() => useCreateFromOvaViewModel());
 
@@ -246,7 +244,7 @@ describe("useCreateFromOvaViewModel", () => {
 
   it("handleSubmit creates assessment and navigates to report", async () => {
     mockAssessmentsStore.create.mockResolvedValue({ id: "a-new" });
-    mockEnvVm.sourceCreatedId = "s-1";
+    mockEnvVm.sourceSelected = makeSource({ id: "s-1" });
 
     const { result } = renderHook(() => useCreateFromOvaViewModel());
 
@@ -292,7 +290,7 @@ describe("useCreateFromOvaViewModel", () => {
   });
 
   it("handleSubmit does nothing when no sourceId is available", async () => {
-    mockEnvVm.sourceCreatedId = null;
+    mockEnvVm.sourceSelected = null;
 
     const { result } = renderHook(() => useCreateFromOvaViewModel());
 
@@ -309,7 +307,7 @@ describe("useCreateFromOvaViewModel", () => {
 
   it("handleSubmit throws when create returns no id", async () => {
     mockAssessmentsStore.create.mockResolvedValue({});
-    mockEnvVm.sourceCreatedId = "s-1";
+    mockEnvVm.sourceSelected = makeSource({ id: "s-1" });
 
     const { result } = renderHook(() => useCreateFromOvaViewModel());
 
@@ -326,7 +324,7 @@ describe("useCreateFromOvaViewModel", () => {
 
   it("handleSubmit clears sessionStorage draft on success", async () => {
     mockAssessmentsStore.create.mockResolvedValue({ id: "a-ok" });
-    mockEnvVm.sourceCreatedId = "s-1";
+    mockEnvVm.sourceSelected = makeSource({ id: "s-1" });
 
     const { result } = renderHook(() => useCreateFromOvaViewModel());
 
@@ -357,7 +355,7 @@ describe("useCreateFromOvaViewModel", () => {
   // ---- Modal close flow ----------------------------------------------------
 
   it("handleSetupModalClose refreshes sources and preselects created source", async () => {
-    mockEnvVm.sourceCreatedId = "new-src-1";
+    mockEnvVm.sourceSelected = makeSource({ id: "new-src-1" });
     mockEnvVm.listSources.mockResolvedValue([]);
 
     const { result } = renderHook(() => useCreateFromOvaViewModel());
@@ -407,7 +405,7 @@ describe("useCreateFromOvaViewModel", () => {
   });
 
   it("isSubmitDisabled is false when useExisting is false and sourceCreatedId exists", () => {
-    mockEnvVm.sourceCreatedId = "s-created";
+    mockEnvVm.sourceSelected = makeSource({ id: "s-created" });
 
     const { result } = renderHook(() => useCreateFromOvaViewModel());
 
@@ -424,7 +422,7 @@ describe("useCreateFromOvaViewModel", () => {
     mockAssessmentsStore.create.mockRejectedValueOnce(
       new Error("Server Error"),
     );
-    mockEnvVm.sourceCreatedId = "s-1";
+    mockEnvVm.sourceSelected = makeSource({ id: "s-1" });
 
     const { result } = renderHook(() => useCreateFromOvaViewModel());
 
@@ -502,7 +500,7 @@ describe("useCreateFromOvaViewModel", () => {
 
   it("createdSource looks up source via getSourceById", () => {
     const source = makeSource({ id: "s-created" });
-    mockEnvVm.sourceCreatedId = "s-created";
+    mockEnvVm.sourceSelected = makeSource({ id: "s-created" });
     mockEnvVm.getSourceById.mockReturnValue(source);
 
     const { result } = renderHook(() => useCreateFromOvaViewModel());
@@ -512,7 +510,7 @@ describe("useCreateFromOvaViewModel", () => {
   });
 
   it("createdSource is undefined when sourceCreatedId is null", () => {
-    mockEnvVm.sourceCreatedId = null;
+    mockEnvVm.sourceSelected = null;
 
     const { result } = renderHook(() => useCreateFromOvaViewModel());
 

@@ -11,6 +11,7 @@ export type SourceNetworkConfigType = "dhcp" | "static";
 export type SourceCreateInput = {
   name: string;
   sshPublicKey: string;
+  enableProxy: boolean;
   httpProxy: string;
   httpsProxy: string;
   noProxy: string;
@@ -97,7 +98,7 @@ const buildSourceCreatePayload = (
     input.httpsProxy,
     input.noProxy,
   );
-  if (proxy) {
+  if (input.enableProxy) {
     payload.proxy = proxy;
   }
 
@@ -123,8 +124,14 @@ const buildSourceUpdatePayload = (
     input.httpsProxy,
     input.noProxy,
   );
-  if (proxy) {
+  if (input.enableProxy) {
     payload.proxy = proxy;
+  } else {
+    payload.proxy = {
+      httpUrl: null,
+      httpsUrl: null,
+      noProxy: null,
+    };
   }
 
   const network = buildNetworkPayload(input);

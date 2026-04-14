@@ -110,8 +110,9 @@ export const useCreateFromOvaViewModel = (): CreateFromOvaViewModel => {
   // Derived data
   // ---------------------------------------------------------------------------
 
-  const createdSource = envVm.sourceCreatedId
-    ? envVm.getSourceById(envVm.sourceCreatedId)
+  const sourceCreatedId = envVm.sourceSelected?.id || null;
+  const createdSource = sourceCreatedId
+    ? envVm.getSourceById(sourceCreatedId)
     : undefined;
 
   const availableEnvironments = useMemo(
@@ -133,7 +134,7 @@ export const useCreateFromOvaViewModel = (): CreateFromOvaViewModel => {
   );
 
   const isSubmitDisabled =
-    !name || (useExisting ? !selectedEnvironmentId : !envVm.sourceCreatedId);
+    !name || (useExisting ? !selectedEnvironmentId : !sourceCreatedId);
 
   // ---------------------------------------------------------------------------
   // Effects — draft persistence
@@ -225,7 +226,7 @@ export const useCreateFromOvaViewModel = (): CreateFromOvaViewModel => {
     setDismissSubmitError(false);
     const sourceIdToUse = useExisting
       ? selectedEnvironmentId
-      : (envVm.sourceCreatedId ?? "");
+      : (sourceCreatedId ?? "");
     if (!sourceIdToUse) return;
 
     const assessment = await assessmentsStore.create({
@@ -247,7 +248,7 @@ export const useCreateFromOvaViewModel = (): CreateFromOvaViewModel => {
     }
   }, [
     assessmentsStore,
-    envVm.sourceCreatedId,
+    sourceCreatedId,
     name,
     navigate,
     selectedEnvironmentId,
@@ -264,7 +265,7 @@ export const useCreateFromOvaViewModel = (): CreateFromOvaViewModel => {
   }, [navigate]);
 
   const [refreshAfterCloseState, doRefreshAfterClose] = useAsyncFn(async () => {
-    const newId = envVm.sourceCreatedId;
+    const newId = sourceCreatedId;
     await envVm.listSources();
     if (newId) {
       setUseExisting(true);
@@ -278,7 +279,7 @@ export const useCreateFromOvaViewModel = (): CreateFromOvaViewModel => {
   }, [doRefreshAfterClose]);
 
   const [, doRefreshAfterDownload] = useAsyncFn(async () => {
-    const newId = envVm.sourceCreatedId;
+    const newId = sourceCreatedId;
     await envVm.listSources();
     if (newId) {
       setUseExisting(true);
@@ -298,7 +299,7 @@ export const useCreateFromOvaViewModel = (): CreateFromOvaViewModel => {
 
   return {
     sources: envVm.sources,
-    sourceCreatedId: envVm.sourceCreatedId,
+    sourceCreatedId,
     createdSource,
     isDownloadingSource: envVm.isDownloadingSource,
     errorUpdatingInventory: envVm.errorUpdatingInventory,
