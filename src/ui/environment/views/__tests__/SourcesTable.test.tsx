@@ -296,9 +296,9 @@ describe("SourcesTable — all status states", () => {
 
   // --- Agent version column -----------------------------------------------
 
-  it('shows "Downloading OVA" when agent is not connected and not uploaded manually', () => {
+  it('shows "Download pending" when agent is not connected and not uploaded manually', () => {
     render(<SourcesTable onAddEnvironment={vi.fn()} />);
-    expect(screen.getByText("Downloading OVA")).toBeInTheDocument();
+    expect(screen.getByText("Download pending")).toBeInTheDocument();
   });
 
   it('shows "-" for the agent version of an uploaded-manually source', () => {

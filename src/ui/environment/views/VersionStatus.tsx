@@ -45,7 +45,7 @@ const ovaDownloadingStyle = css`
 const OvaDownloading: React.FC = () => (
   <Split hasGutter className={splitGap}>
     <SplitItem>
-      <span className={ovaDownloadingStyle}>Downloading OVA</span>
+      <span className={ovaDownloadingStyle}>Download pending</span>
     </SplitItem>
     <SplitItem>
       <Popover
