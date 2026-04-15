@@ -6,10 +6,10 @@ import type { Source } from "@openshift-migration-advisor/planner-sdk";
  * and provides compile-time safety if the SDK structure changes.
  */
 export interface ProxyConfig {
-  httpUrl: string;
-  httpsUrl: string;
+  httpProxy: string;
+  httpsProxy: string;
   noProxy: string;
-  isProxyEnabled: boolean;
+  enableProxy: boolean;
 }
 
 /**
@@ -19,14 +19,16 @@ export interface ProxyConfig {
 export const getProxyConfig = (source: Source | undefined): ProxyConfig => {
   const proxy = source?.infra?.proxy;
 
-  const httpUrl = proxy?.httpUrl ?? "";
-  const httpsUrl = proxy?.httpsUrl ?? "";
+  const httpProxy = proxy?.httpUrl ?? "";
+  const httpsProxy = proxy?.httpsUrl ?? "";
   const noProxy = proxy?.noProxy ?? "";
 
   return {
-    httpUrl,
-    httpsUrl,
+    httpProxy,
+    httpsProxy,
     noProxy,
-    isProxyEnabled: Boolean(httpUrl || httpsUrl || noProxy),
+    enableProxy: Boolean(
+      httpProxy.trim() || httpsProxy.trim() || noProxy.trim(),
+    ),
   };
 };
