@@ -17,6 +17,7 @@ import {
   ModalHeader,
   TextInput,
 } from "@patternfly/react-core";
+import { ExternalLinkAltIcon } from "@patternfly/react-icons";
 import React, { useState } from "react";
 
 import { isNameError } from "../../../lib/common/ErrorParser";
@@ -439,7 +440,19 @@ export const CreateAssessmentModal: React.FC<CreateAssessmentModalProps> = ({
                 <div style={{ marginTop: "8px" }}>
                   <Checkbox
                     id="rvtools-data-share-consent"
-                    label="I agree to share aggregated data about my environment with Red Hat."
+                    label={
+                      <>
+                        I agree to share aggregated data about my environment
+                        with Red Hat.{" "}
+                        <a
+                          href="https://kubev2v.github.io/openshift-migration-advisor-docs/docs/aggregated-data-report/"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          Learn more <ExternalLinkAltIcon />
+                        </a>
+                      </>
+                    }
                     isChecked={rvtoolsConsentChecked}
                     onChange={(_event, checked) => {
                       setRvtoolsConsentChecked(Boolean(checked));
