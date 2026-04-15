@@ -81,9 +81,8 @@ function osSortGroup(osInfo: {
   supported: boolean;
   upgradeRecommendation?: string;
 }): number {
-  if (!osInfo.supported && (osInfo.upgradeRecommendation?.trim() ?? "") !== "")
-    return 1;
-  if (!osInfo.supported) return 2;
+  if (osInfo.supported) return 1;
+  if ((osInfo.upgradeRecommendation?.trim() ?? "") !== "") return 2;
   return 3;
 }
 
