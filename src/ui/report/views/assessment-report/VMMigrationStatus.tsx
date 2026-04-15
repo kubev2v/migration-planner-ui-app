@@ -3,6 +3,7 @@ import VirtualMachineIcon from "@patternfly/react-icons/dist/esm/icons/virtual-m
 import React from "react";
 
 import MigrationDonutChart from "../../../core/components/MigrationDonutChart";
+import { chartColorFailure, chartColorSuccess } from "./constants";
 import { dashboardCard } from "./styles";
 
 interface VmMigrationStatusProps {
@@ -33,8 +34,8 @@ export const VMMigrationStatus: React.FC<VmMigrationStatusProps> = ({
   ];
 
   const legend = {
-    Migratable: "#28a745",
-    "Unready for migration": "#dc3545",
+    Migratable: chartColorSuccess,
+    "Unready for migration": chartColorFailure,
   };
 
   return (

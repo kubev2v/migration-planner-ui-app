@@ -12,6 +12,7 @@ import { InfoCircleIcon } from "@patternfly/react-icons";
 import React from "react";
 
 import MigrationChart from "../../../core/components/MigrationChart";
+import { chartColorFailure, chartColorSuccess } from "./constants";
 import { dashboardCard } from "./styles";
 
 interface OSDistributionProps {
@@ -110,8 +111,8 @@ export const OSBarChart: React.FC<OSBarChartProps> = ({
 
   // Define custom colors: green for supported, red for not supported
   const customLegend = {
-    "Supported by MTV": "#28a745", // Green
-    "Not supported by MTV": "#f0ad4e", // Yellow
+    "Supported by MTV": chartColorSuccess,
+    "Not supported by MTV": chartColorFailure,
   };
 
   const tableHeight = isExportMode ? "auto !important" : "350px";

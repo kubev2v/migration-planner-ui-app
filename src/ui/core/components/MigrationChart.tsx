@@ -9,6 +9,8 @@ import {
 } from "@patternfly/react-core";
 import { InfoCircleIcon } from "@patternfly/react-icons";
 import { Table, Tbody, Td, Tr } from "@patternfly/react-table";
+import { chart_color_blue_300 } from "@patternfly/react-tokens/dist/esm/chart_color_blue_300";
+import { chart_color_red_orange_400 } from "@patternfly/react-tokens/dist/esm/chart_color_red_orange_400";
 import React, { useMemo } from "react";
 
 interface OSData {
@@ -55,7 +57,12 @@ const upgradeRecommendationPopover = css`
   }
 `;
 
-const legendColors = ["#28a745", "#f0ad4e", "#d9534f", "#C9190B"];
+const legendColors = [
+  chart_color_blue_300.value,
+  chart_color_red_orange_400.value,
+  "#f0ad4e",
+  "#6a6e73",
+];
 
 const MigrationChart: React.FC<MigrationChartProps> = ({
   data,
