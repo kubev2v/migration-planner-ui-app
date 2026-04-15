@@ -77,7 +77,7 @@ export const AgentStatusView: React.FC<AgentStatusView.Props> = (props) => {
         return {
           icon: uploadedManually ? (
             <Icon size="md" isInline>
-              <CheckCircleIcon color={globalSuccessColor100.value} />
+              <CheckCircleIcon color={globalSuccessColor100.var} />
             </Icon>
           ) : (
             <Icon isInline>
@@ -90,7 +90,7 @@ export const AgentStatusView: React.FC<AgentStatusView.Props> = (props) => {
         return {
           icon: (
             <Icon size="md" isInline>
-              <InfoCircleIcon color={globalInfoColor100.value} />
+              <InfoCircleIcon color={globalInfoColor100.var} />
             </Icon>
           ),
           text: "Waiting for credentials",
@@ -108,7 +108,7 @@ export const AgentStatusView: React.FC<AgentStatusView.Props> = (props) => {
         return {
           icon: (
             <Icon size="md" isInline>
-              <ExclamationCircleIcon color={globalDangerColor200.value} />
+              <ExclamationCircleIcon color={globalDangerColor200.var} />
             </Icon>
           ),
           text: "Error",
@@ -117,7 +117,7 @@ export const AgentStatusView: React.FC<AgentStatusView.Props> = (props) => {
         return {
           icon: (
             <Icon size="md" isInline>
-              <CheckCircleIcon color={globalSuccessColor100.value} />
+              <CheckCircleIcon color={globalSuccessColor100.var} />
             </Icon>
           ),
           text: "Ready",
@@ -190,7 +190,7 @@ export const AgentStatusView: React.FC<AgentStatusView.Props> = (props) => {
               style={{ padding: 0, minWidth: "auto" }}
             >
               <Icon isInline>
-                <QuestionCircleIcon color={globalInfoColor100.value} />
+                <QuestionCircleIcon color={globalInfoColor100.var} />
               </Icon>
             </Button>
           </Popover>

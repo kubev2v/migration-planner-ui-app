@@ -20,7 +20,7 @@ export const WarningsTable: React.FC<WarningsTableProps> = ({
   return (
     <Card className={dashboardCard} id="warnings-table">
       <CardTitle>
-        <Icon style={{ color: globalWarningColor100.value }}>
+        <Icon style={{ color: globalWarningColor100.var }}>
           <ExclamationTriangleIcon />
         </Icon>{" "}
         Warnings

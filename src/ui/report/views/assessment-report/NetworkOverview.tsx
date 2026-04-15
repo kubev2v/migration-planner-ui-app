@@ -267,7 +267,12 @@ export const NetworkOverview: React.FC<NetworkOverviewProps> = ({
                 <i className="fas fa-network-wired" /> Networks
               </div>
               {!isExportMode && viewMode === "networkDistribution" && (
-                <div style={{ color: "#6a6e73", fontSize: "0.85rem" }}>
+                <div
+                  style={{
+                    color: "var(--pf-t--global--text--color--subtle)",
+                    fontSize: "0.85rem",
+                  }}
+                >
                   Top 5 networks
                 </div>
               )}
@@ -322,7 +327,7 @@ export const NetworkOverview: React.FC<NetworkOverviewProps> = ({
                 legend={legend}
                 title={title}
                 subTitle={subTitle}
-                subTitleColor="#9a9da0"
+                subTitleColor="var(--pf-t--global--text--color--subtle)"
                 itemsPerRow={Math.ceil(chartData.length / 2)}
                 labelFontSize={18}
                 tooltipLabelFormatter={({ datum, percent }) =>
@@ -343,7 +348,7 @@ export const NetworkOverview: React.FC<NetworkOverviewProps> = ({
                 legend={nicLegend}
                 title={nicTitle}
                 subTitle={nicSubTitle}
-                subTitleColor="#9a9da0"
+                subTitleColor="var(--pf-t--global--text--color--subtle)"
                 itemsPerRow={Math.ceil((nicChartData?.length ?? 0) / 2)}
                 labelFontSize={18}
                 tooltipLabelFormatter={({ datum, percent }) =>
@@ -364,7 +369,7 @@ export const NetworkOverview: React.FC<NetworkOverviewProps> = ({
                 legend={legend}
                 title={title}
                 subTitle={subTitle}
-                subTitleColor="#9a9da0"
+                subTitleColor="var(--pf-t--global--text--color--subtle)"
                 itemsPerRow={Math.ceil(chartData.length / 2)}
                 labelFontSize={18}
                 tooltipLabelFormatter={({ datum, percent }) =>
@@ -382,7 +387,7 @@ export const NetworkOverview: React.FC<NetworkOverviewProps> = ({
                 legend={nicLegend}
                 title={nicTitle}
                 subTitle={nicSubTitle}
-                subTitleColor="#9a9da0"
+                subTitleColor="var(--pf-t--global--text--color--subtle)"
                 itemsPerRow={Math.ceil((nicChartData?.length ?? 0) / 2)}
                 labelFontSize={18}
                 tooltipLabelFormatter={({ datum, percent }) =>

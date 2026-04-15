@@ -61,13 +61,13 @@ const filterInnerStyle = css`
   align-items: center;
   gap: 8px;
   flex-wrap: wrap;
-  background: #f5f5f5;
+  background: var(--pf-t--global--background--color--secondary--default);
   padding: 6px 8px;
   border-radius: 6px;
 `;
 
 const filterLabelStyle = css`
-  background: #e7e7e7;
+  background: var(--pf-t--global--background--color--secondary--hover);
   border-radius: 12px;
   padding: 2px 8px;
   font-size: 12px;

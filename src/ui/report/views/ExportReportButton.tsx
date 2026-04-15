@@ -21,10 +21,14 @@ const dropdownListReset = css`
   padding: 0 !important;
 
   .pf-v6-c-menu__list-item {
-    background-color: #ffffff !important;
+    background-color: var(
+      --pf-t--global--background--color--primary--default
+    ) !important;
   }
   .pf-v6-c-menu__list-item:hover {
-    background-color: #f0f0f0 !important;
+    background-color: var(
+      --pf-t--global--background--color--primary--hover
+    ) !important;
   }
 `;
 

@@ -27,7 +27,9 @@ export function ReportTable<DataItem>(
       variant="compact"
       borders={true}
       style={{
-        border: noBorder ? "none" : "1px solid lightgray",
+        border: noBorder
+          ? "none"
+          : "1px solid var(--pf-t--global--border--color--default)",
         borderRight: "none",
         ...style,
       }}
@@ -39,14 +41,20 @@ export function ReportTable<DataItem>(
             fontSize: "14px",
             textAlign: "left",
             padding: "8px 16px",
-            color: "#151515",
+            color: "var(--pf-t--global--text--color--regular)",
           }}
         >
           {caption}
         </caption>
       )}
       <Thead>
-        <Tr style={{ border: noBorder ? "none" : "1px solid lightgray" }}>
+        <Tr
+          style={{
+            border: noBorder
+              ? "none"
+              : "1px solid var(--pf-t--global--border--color--default)",
+          }}
+        >
           {cols.map((name, index) => (
             <Th
               key={index}
@@ -54,7 +62,9 @@ export function ReportTable<DataItem>(
               style={{
                 whiteSpace: "normal",
                 wordBreak: "break-word",
-                border: noBorder ? "none" : "1px solid lightgray",
+                border: noBorder
+                  ? "none"
+                  : "1px solid var(--pf-t--global--border--color--default)",
               }}
             >
               {name}
@@ -68,7 +78,9 @@ export function ReportTable<DataItem>(
             key={idx}
             style={{
               width: 100,
-              border: noBorder ? "none" : "1px solid lightgray",
+              border: noBorder
+                ? "none"
+                : "1px solid var(--pf-t--global--border--color--default)",
             }}
           >
             {flds.map((f, fieldIdx) => (

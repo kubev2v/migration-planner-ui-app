@@ -30,14 +30,17 @@ export const MigrationAssessmentStepsModal: React.FC<
               cursor: "pointer",
               border:
                 activeTab === "existing"
-                  ? "2px solid #0066CC"
-                  : "1px solid #D2D2D2",
-              backgroundColor: activeTab === "existing" ? "#E7F1FA" : "#FFFFFF",
+                  ? "2px solid var(--pf-t--global--border--color--status--info--default)"
+                  : "1px solid var(--pf-t--global--border--color--default)",
+              backgroundColor:
+                activeTab === "existing"
+                  ? "var(--pf-t--global--background--color--status--info--default)"
+                  : "var(--pf-t--global--background--color--primary--default)",
               borderRadius: "12px",
               padding: "12px 24px",
               fontSize: "14px",
               fontWeight: 500,
-              color: "#151515",
+              color: "var(--pf-t--global--text--color--regular)",
               transition: "all 0.2s ease",
             }}
             type="button"
@@ -50,13 +53,18 @@ export const MigrationAssessmentStepsModal: React.FC<
               flex: 1,
               cursor: "pointer",
               border:
-                activeTab === "new" ? "2px solid #0066CC" : "1px solid #D2D2D2",
-              backgroundColor: activeTab === "new" ? "#E7F1FA" : "#FFFFFF",
+                activeTab === "new"
+                  ? "2px solid var(--pf-t--global--border--color--status--info--default)"
+                  : "1px solid var(--pf-t--global--border--color--default)",
+              backgroundColor:
+                activeTab === "new"
+                  ? "var(--pf-t--global--background--color--status--info--default)"
+                  : "var(--pf-t--global--background--color--primary--default)",
               borderRadius: "12px",
               padding: "12px 24px",
               fontSize: "14px",
               fontWeight: 500,
-              color: "#151515",
+              color: "var(--pf-t--global--text--color--regular)",
               transition: "all 0.2s ease",
             }}
             type="button"

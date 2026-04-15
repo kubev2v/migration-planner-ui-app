@@ -58,8 +58,8 @@ const MigrationDonutChart: React.FC<MigrationDonutChartProps> = ({
   width = 420,
   title,
   subTitle,
-  titleColor = "#000000",
-  subTitleColor = "#000000",
+  titleColor = "var(--pf-t--global--text--color--regular)",
+  subTitleColor = "var(--pf-t--global--text--color--subtle)",
   itemsPerRow = 1,
   labelFontSize = 25,
   titleFontSize = 28,
@@ -234,7 +234,10 @@ const MigrationDonutChart: React.FC<MigrationDonutChartProps> = ({
               x={legendX}
               itemsPerRow={itemsPerRow}
               style={{
-                labels: { fontSize: labelFontSize },
+                labels: {
+                  fontSize: labelFontSize,
+                  fill: "var(--pf-t--global--text--color--regular)",
+                },
               }}
             />
           </FlexItem>

@@ -17,7 +17,7 @@ const cardBase = `
 /** Standard dashboard card with min/max height and shadow. */
 export const dashboardCard = css`
   ${cardBase}
-  border: 1px solid #d2d2d2 !important;
+  border: 1px solid var(--pf-t--global--border--color--default) !important;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   min-height: 430px;
   max-height: 520px;
@@ -27,14 +27,14 @@ export const dashboardCard = css`
 /** Lighter card variant used for infra-overview stat boxes. */
 export const dashboardCardBorder = css`
   ${cardBase}
-  border: 1px solid #d2d2d2 !important;
+  border: 1px solid var(--pf-t--global--border--color--default) !important;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 `;
 
 /** Clip wrapper that rounds inner card corners. */
 export const dashboardCardClip = css`
   clip-path: inset(0 round 10px);
-  background: #fff;
+  background: var(--pf-t--global--background--color--primary--default);
   height: 100%;
   width: 100%;
 `;
@@ -95,7 +95,7 @@ export const storageChartWrapper = css`
 `;
 
 export const storageTotalsNote = css`
-  color: #6a6e73;
+  color: var(--pf-t--global--text--color--subtle);
   margin-left: 20px;
 `;
 

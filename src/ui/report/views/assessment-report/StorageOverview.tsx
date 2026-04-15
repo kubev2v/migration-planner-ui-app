@@ -421,7 +421,7 @@ export const StorageOverview: React.FC<StorageOverviewProps> = ({
               titleFontSize={34}
               title={`${totalVMs} VMs`}
               subTitle={`${normalizedWithShared} with shared disks`}
-              subTitleColor="#9a9da0"
+              subTitleColor="var(--pf-t--global--text--color--subtle)"
               itemsPerRow={Math.ceil(sharedDisksChartData.length / 2)}
               labelFontSize={18}
               marginLeft="52%"
@@ -446,7 +446,7 @@ export const StorageOverview: React.FC<StorageOverviewProps> = ({
                   ? `${totals.totalVMs} VMs`
                   : `${totals.totalSize.toFixed(2)} TB`
               }
-              subTitleColor="#9a9da0"
+              subTitleColor="var(--pf-t--global--text--color--subtle)"
               itemsPerRow={Math.ceil(chartData.length / 2)}
               labelFontSize={18}
               marginLeft={viewMode === "totalSize" ? "42%" : "52%"}
@@ -535,7 +535,7 @@ export const StorageOverview: React.FC<StorageOverviewProps> = ({
                 titleFontSize={34}
                 title={`${totals.totalVMs} VMs`}
                 subTitle={`${totals.totalSize.toFixed(2)} TB`}
-                subTitleColor="#9a9da0"
+                subTitleColor="var(--pf-t--global--text--color--subtle)"
                 itemsPerRow={Math.ceil(chartDataForVmCount.length / 2)}
                 labelFontSize={18}
                 marginLeft="52%"
@@ -556,7 +556,7 @@ export const StorageOverview: React.FC<StorageOverviewProps> = ({
                 titleFontSize={34}
                 title={`${totals.totalSize.toFixed(2)} TB`}
                 subTitle={`${totals.totalVMs} VMs`}
-                subTitleColor="#9a9da0"
+                subTitleColor="var(--pf-t--global--text--color--subtle)"
                 itemsPerRow={Math.ceil(chartDataForTotalSize.length / 2)}
                 labelFontSize={18}
                 marginLeft="42%"
@@ -577,7 +577,7 @@ export const StorageOverview: React.FC<StorageOverviewProps> = ({
                 titleFontSize={34}
                 title={`${totalVMs} VMs`}
                 subTitle={`${normalizedWithShared} with shared disks`}
-                subTitleColor="#9a9da0"
+                subTitleColor="var(--pf-t--global--text--color--subtle)"
                 itemsPerRow={Math.ceil(sharedDisksChartData.length / 2)}
                 labelFontSize={18}
                 marginLeft="52%"

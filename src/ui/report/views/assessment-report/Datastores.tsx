@@ -61,11 +61,11 @@ export const Datastores: React.FC<DatastoresProps> = ({
               ),
               hardwareAcceleratedMoveDisplay: ds.hardwareAcceleratedMove ? (
                 <Icon size="md" isInline>
-                  <CheckCircleIcon color={globalSuccessColor100.value} />
+                  <CheckCircleIcon color={globalSuccessColor100.var} />
                 </Icon>
               ) : (
                 <Icon size="md" isInline>
-                  <ExclamationCircleIcon color={globalDangerColor100.value} />
+                  <ExclamationCircleIcon color={globalDangerColor100.var} />
                 </Icon>
               ),
             }))}

@@ -112,7 +112,12 @@ export const HostsOverview: React.FC<HostsOverviewProps> = ({
                 <i className="fas fa-server" /> Host distribution by model
               </div>
               {!isExportMode && (
-                <div style={{ color: "#6a6e73", fontSize: "0.85rem" }}>
+                <div
+                  style={{
+                    color: "var(--pf-t--global--text--color--subtle)",
+                    fontSize: "0.85rem",
+                  }}
+                >
                   Top 5 models
                 </div>
               )}
@@ -131,7 +136,7 @@ export const HostsOverview: React.FC<HostsOverviewProps> = ({
           legendWidth={680}
           title={`${totalHosts}`}
           subTitle="Hosts"
-          subTitleColor="#9a9da0"
+          subTitleColor="var(--pf-t--global--text--color--subtle)"
           itemsPerRow={2}
           labelFontSize={16}
           marginLeft="0%"
