@@ -64,3 +64,27 @@ export const formatDuration = (duration: string): string => {
 
   return parts.join(" ");
 };
+
+/**
+ * Converts a Go duration string to a whole number of hours (rounded up).
+ */
+export const durationToHours = (duration: string): number =>
+  Math.ceil(parseDuration(duration) / 3600);
+
+/**
+ * Formats a number of hours into the most appropriate human-readable unit
+ * (months, days, or hours).
+ */
+export const formatHumanDuration = (hours: number): string => {
+  if (hours >= 730) {
+    const months = hours / 730;
+    return months % 1 === 0
+      ? `${months} months`
+      : `${months.toFixed(1)} months`;
+  }
+  if (hours >= 24) {
+    const days = Math.ceil(hours / 24);
+    return `${days} days`;
+  }
+  return `${hours} hours`;
+};

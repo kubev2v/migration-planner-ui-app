@@ -1,6 +1,7 @@
 import { css } from "@emotion/css";
 import type {
   EstimationDetail,
+  MigrationEstimationResponse,
   SchemaEstimationResult,
 } from "@openshift-migration-advisor/planner-sdk";
 import {
@@ -19,7 +20,7 @@ import {
 } from "@patternfly/react-core";
 import { CopyIcon } from "@patternfly/react-icons";
 import { Table, Tbody, Td, Th, Thead, Tr } from "@patternfly/react-table";
-import React, { useCallback } from "react";
+import React, { useCallback, useMemo } from "react";
 
 import PopoverIcon from "./PopoverIcon";
 import {
@@ -28,11 +29,11 @@ import {
   parseStorageOffload,
   parseStorageTransfer,
 } from "./timeParsingUtils";
-import { parseDuration } from "./timeUtils";
+import { durationToHours, formatHumanDuration } from "./timeUtils";
 
 interface TimeEstimationResultProps {
   clusterName: string;
-  estimationOutput: Record<string, SchemaEstimationResult> | null;
+  estimationOutput: MigrationEstimationResponse | null;
   isLoading: boolean;
   error: Error | null;
 }
@@ -98,23 +99,6 @@ const SCHEMA_LABELS: Record<string, string> = {
 
 const getSchemaLabel = (schemaName: string): string =>
   SCHEMA_LABELS[schemaName] ?? schemaName;
-
-const durationToHours = (duration: string): number =>
-  Math.ceil(parseDuration(duration) / 3600);
-
-const formatHumanDuration = (hours: number): string => {
-  if (hours >= 730) {
-    const months = hours / 730;
-    return months % 1 === 0
-      ? `${months} months`
-      : `${months.toFixed(1)} months`;
-  }
-  if (hours >= 24) {
-    const days = Math.ceil(hours / 24);
-    return `${days} days`;
-  }
-  return `${hours} hours`;
-};
 
 const formatTotalDisplay = (result: SchemaEstimationResult): string => {
   const minH = durationToHours(result.minTotalDuration);
@@ -211,12 +195,10 @@ const buildPopoverBody = (
   </div>
 );
 
-const generatePlainText = (
-  output: Record<string, SchemaEstimationResult>,
-): string => {
+const generatePlainText = (output: MigrationEstimationResponse): string => {
   const lines: string[] = ["Migration time estimation", ""];
 
-  for (const [schemaName, result] of Object.entries(output)) {
+  for (const [schemaName, result] of Object.entries(output.estimation)) {
     lines.push(getSchemaLabel(schemaName));
     lines.push(
       `  Total: ${formatTotalDisplay(result)} (${formatHoursSubtitle(result)})`,
@@ -241,16 +223,25 @@ export const TimeEstimationResult: React.FC<TimeEstimationResultProps> = ({
   isLoading,
   error,
 }) => {
+  const canCopy = useMemo(
+    () =>
+      !!estimationOutput &&
+      typeof navigator.clipboard?.writeText === "function" &&
+      (typeof window === "undefined" || window.isSecureContext),
+    [estimationOutput],
+  );
+
   const handleCopy = useCallback(() => {
-    if (
-      !estimationOutput ||
-      !navigator.clipboard?.writeText ||
-      (typeof window !== "undefined" && !window.isSecureContext)
-    ) {
+    if (!canCopy || !estimationOutput) {
       return;
     }
-    void navigator.clipboard.writeText(generatePlainText(estimationOutput));
-  }, [estimationOutput]);
+    navigator.clipboard
+      .writeText(generatePlainText(estimationOutput))
+      .catch((err: unknown) => {
+        console.error("Failed to copy estimation to clipboard", err);
+      });
+  }, [canCopy, estimationOutput]);
+
   if (isLoading) {
     return (
       <Stack hasGutter>
@@ -275,11 +266,14 @@ export const TimeEstimationResult: React.FC<TimeEstimationResultProps> = ({
     );
   }
 
-  if (!estimationOutput || Object.keys(estimationOutput).length === 0) {
+  if (
+    !estimationOutput ||
+    Object.keys(estimationOutput.estimation).length === 0
+  ) {
     return null;
   }
 
-  const schemas = Object.entries(estimationOutput);
+  const schemas = Object.entries(estimationOutput.estimation);
   const gridSpan = schemas.length > 1 ? 6 : 12;
 
   return (
@@ -298,6 +292,7 @@ export const TimeEstimationResult: React.FC<TimeEstimationResultProps> = ({
             icon={<CopyIcon />}
             iconPosition="end"
             onClick={handleCopy}
+            isDisabled={!canCopy}
           >
             Copy as plain text
           </Button>

@@ -82,10 +82,8 @@ export const useClusterSizingWizardViewModel = (
     useState<EstimationFormValues>(DEFAULT_ESTIMATION_FORM_VALUES);
   const [sizerOutput, setSizerOutput] =
     useState<ClusterRequirementsResponse | null>(null);
-  const [migrationEstimation, setMigrationEstimation] = useState<Record<
-    string,
-    SchemaEstimationResult
-  > | null>(null);
+  const [migrationEstimation, setMigrationEstimation] =
+    useState<MigrationEstimationResponse | null>(null);
   const [complexityEstimation, setComplexityEstimation] =
     useState<MigrationComplexityResponse | null>(null);
   const [estimationByComplexity, setEstimationByComplexity] =
@@ -177,9 +175,9 @@ export const useClusterSizingWizardViewModel = (
         },
       });
 
-      const schemas = result?.estimation;
-      const hasSchemas = schemas && Object.keys(schemas).length > 0;
-      setMigrationEstimation(hasSchemas ? schemas : null);
+      const hasSchemas =
+        result?.estimation && Object.keys(result.estimation).length > 0;
+      setMigrationEstimation(hasSchemas ? result : null);
     } catch (err) {
       if (err instanceof ResponseError) {
         const message = await err.response.text();

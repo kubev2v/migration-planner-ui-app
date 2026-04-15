@@ -31,7 +31,7 @@ import {
 import { Table, Tbody, Td, Th, Thead, Tr } from "@patternfly/react-table";
 import React, { useState } from "react";
 
-import { parseDuration } from "./timeUtils";
+import { durationToHours } from "./timeUtils";
 
 interface ComplexityResultProps {
   clusterName: string;
@@ -119,9 +119,6 @@ const DISK_SIZE_LABELS: Record<number, string> = {
   3: "21-50 TB",
   4: "> 50 TB",
 };
-
-const durationToHours = (duration: string): number =>
-  Math.ceil(parseDuration(duration) / 3600);
 
 const formatDiskSize = (tb: number): string => {
   if (tb === 0) return "0 TB";
