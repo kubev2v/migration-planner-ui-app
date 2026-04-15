@@ -111,14 +111,24 @@ describe("formatHumanDuration", () => {
     expect(formatHumanDuration(23)).toBe("23 hours");
   });
 
+  it("uses singular 'hour' when value is 1", () => {
+    expect(formatHumanDuration(1)).toBe("1 hour");
+  });
+
+  it("formats 24 hours as singular day", () => {
+    expect(formatHumanDuration(24)).toBe("1 day");
+  });
+
   it("formats 24+ hours as days (rounded up)", () => {
-    expect(formatHumanDuration(24)).toBe("1 days");
     expect(formatHumanDuration(48)).toBe("2 days");
     expect(formatHumanDuration(49)).toBe("3 days");
   });
 
-  it("formats 730+ hours as months", () => {
-    expect(formatHumanDuration(730)).toBe("1 months");
+  it("formats 730 hours as singular month", () => {
+    expect(formatHumanDuration(730)).toBe("1 month");
+  });
+
+  it("formats multiple months", () => {
     expect(formatHumanDuration(1460)).toBe("2 months");
   });
 

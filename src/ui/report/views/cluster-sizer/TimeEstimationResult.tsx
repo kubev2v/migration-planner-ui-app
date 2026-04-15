@@ -111,19 +111,23 @@ const formatHoursSubtitle = (result: SchemaEstimationResult): string => {
   const minH = durationToHours(result.minTotalDuration);
   const maxH = durationToHours(result.maxTotalDuration);
   const fmt = (h: number) => h.toLocaleString("en-US");
-  if (minH === maxH) return `${fmt(minH)} hours`;
+  if (minH === maxH) {
+    return `${fmt(minH)} ${minH === 1 ? "hour" : "hours"}`;
+  }
   return `${fmt(minH)}\u2013${fmt(maxH)} hours`;
 };
 
 const formatDetailDuration = (detail: EstimationDetail): string => {
   if (detail.duration) {
     const h = durationToHours(detail.duration);
-    return `${h.toLocaleString("en-US")} hours`;
+    return `${h.toLocaleString("en-US")} ${h === 1 ? "hour" : "hours"}`;
   }
   if (detail.minDuration && detail.maxDuration) {
     const minH = durationToHours(detail.minDuration);
     const maxH = durationToHours(detail.maxDuration);
-    if (minH === maxH) return `${minH.toLocaleString("en-US")} hours`;
+    if (minH === maxH) {
+      return `${minH.toLocaleString("en-US")} ${minH === 1 ? "hour" : "hours"}`;
+    }
     return `${minH.toLocaleString("en-US")}\u2013${maxH.toLocaleString("en-US")} hours`;
   }
   return "N/A";

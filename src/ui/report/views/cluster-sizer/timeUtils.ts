@@ -78,13 +78,14 @@ export const durationToHours = (duration: string): number =>
 export const formatHumanDuration = (hours: number): string => {
   if (hours >= 730) {
     const months = hours / 730;
+    const label = months === 1 ? "month" : "months";
     return months % 1 === 0
-      ? `${months} months`
-      : `${months.toFixed(1)} months`;
+      ? `${months} ${label}`
+      : `${months.toFixed(1)} ${label}`;
   }
   if (hours >= 24) {
     const days = Math.ceil(hours / 24);
-    return `${days} days`;
+    return `${days} ${days === 1 ? "day" : "days"}`;
   }
-  return `${hours} hours`;
+  return `${hours} ${hours === 1 ? "hour" : "hours"}`;
 };
