@@ -22,33 +22,33 @@ import { useNavigate } from "react-router-dom";
 
 import { routes } from "../../../../routing/Routes";
 import { LoadingSpinner } from "../../../core/components/LoadingSpinner";
-import { useOrganizationsViewModel } from "../view-models/useOrganizationsViewModel";
+import { useGroupsViewModel } from "../view-models/useGroupsViewModel";
 
 const introStyle = css`
   padding-bottom: 1em;
 `;
 
-export const OrganizationsScreen: React.FC = () => {
-  const vm = useOrganizationsViewModel();
+export const GroupsScreen: React.FC = () => {
+  const vm = useGroupsViewModel();
   const navigate = useNavigate();
 
   return (
     <PageSection>
       <Content className={introStyle}>
-        <Title headingLevel="h1">Orgs administration</Title>
+        <Title headingLevel="h1">Groups administration</Title>
       </Content>
       {vm.isLoading && <LoadingSpinner />}
-      {vm.error && <div>Error loading organizations: {vm.error.message}</div>}
-      {!vm.isLoading && !vm.error && vm.organizations.length === 0 && (
+      {vm.error && <div>Error loading groups: {vm.error.message}</div>}
+      {!vm.isLoading && !vm.error && vm.groups.length === 0 && (
         <EmptyState
           headingLevel="h4"
           icon={SearchIcon}
-          titleText="No organizations available"
+          titleText="No groups available"
           variant="sm"
         />
       )}
-      {!vm.isLoading && !vm.error && vm.organizations.length > 0 && (
-        <Table aria-label="Organizations table" variant="compact">
+      {!vm.isLoading && !vm.error && vm.groups.length > 0 && (
+        <Table aria-label="Groups table" variant="compact">
           <Thead>
             <Tr>
               <Th>Icon</Th>
@@ -59,12 +59,12 @@ export const OrganizationsScreen: React.FC = () => {
             </Tr>
           </Thead>
           <Tbody>
-            {vm.organizations.map((organization) => (
-              <Tr key={organization.id}>
-                <Td dataLabel="Org icon" textCenter>
+            {vm.groups.map((group) => (
+              <Tr key={group.id}>
+                <Td dataLabel="Group icon" textCenter>
                   <img
-                    src={organization.icon}
-                    alt={`${organization.name} icon`}
+                    src={group.icon}
+                    alt={`${group.name} icon`}
                     style={{
                       height: "60px",
                     }}
@@ -72,21 +72,21 @@ export const OrganizationsScreen: React.FC = () => {
                 </Td>
                 <Td dataLabel="ID">
                   <TableText>
-                    <Truncate content={organization.id} />
+                    <Truncate content={group.id} />
                   </TableText>
                 </Td>
                 <Td dataLabel="Name">
                   <Button
                     variant="link"
                     onClick={(): void =>
-                      navigate(routes.adminOrganizationById(organization.id))
+                      navigate(routes.adminGroupById(group.id))
                     }
                   >
-                    {organization.name}
+                    {group.name}
                   </Button>
                 </Td>
-                <Td dataLabel="Kind">{organization.kind}</Td>
-                <Td dataLabel="Description">{organization.description}</Td>
+                <Td dataLabel="Kind">{group.kind}</Td>
+                <Td dataLabel="Description">{group.description}</Td>
               </Tr>
             ))}
           </Tbody>
@@ -96,4 +96,4 @@ export const OrganizationsScreen: React.FC = () => {
   );
 };
 
-OrganizationsScreen.displayName = "OrganizationsScreen";
+GroupsScreen.displayName = "GroupsScreen";

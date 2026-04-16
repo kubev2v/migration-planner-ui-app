@@ -3,7 +3,7 @@ import {
   type PartnerRequest,
   type PartnerRequestCreate,
 } from "../../models/PartnerRequestModel";
-import { getFakeOrganizations } from "../stubs/stubOrganizations";
+import { getFakeGroups } from "../stubs/stubGroups";
 import {
   createFakePartnerRequest,
   getFakePartnerRequests,
@@ -30,13 +30,13 @@ export class PartnerRequestsStore
   // eslint-disable-next-line @typescript-eslint/require-await
   async create(data: PartnerRequestCreate): Promise<PartnerRequest> {
     console.log("[PartnerRequestsStore] POST /api/partners/requests", data);
-    const organization = getFakeOrganizations().find(
-      (organization) => organization.id === data.request.partnerId,
+    const group = getFakeGroups().find(
+      (group) => group.id === data.request.partnerId,
     );
-    if (!organization) {
-      throw new Error(`Organization ${data.request.partnerId} not found`);
+    if (!group) {
+      throw new Error(`Group ${data.request.partnerId} not found`);
     }
-    const newRequest = createFakePartnerRequest(data, organization);
+    const newRequest = createFakePartnerRequest(data, group);
     this.partnerRequests = [...this.partnerRequests, newRequest];
     this.notify();
     return newRequest;

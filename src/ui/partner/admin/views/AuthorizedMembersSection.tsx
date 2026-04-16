@@ -12,12 +12,12 @@ import { Table, Tbody, Td, Th, Thead, Tr } from "@patternfly/react-table";
 import React from "react";
 
 import { LoadingSpinner } from "../../../core/components/LoadingSpinner";
-import { useOrganizationUsersViewModel } from "../view-models/useOrganizationUsersViewModel";
+import { useGroupMembersViewModel } from "../view-models/useGroupMembersViewModel";
 
-export const AuthorizedUsersSection: React.FC = () => {
-  const vm = useOrganizationUsersViewModel();
+export const AuthorizedMembersSection: React.FC = () => {
+  const vm = useGroupMembersViewModel();
 
-  const addAuthorizedUser = () => {
+  const addAuthorizedMember = () => {
     // TODO: Implement add authorized user logic
   };
 
@@ -26,11 +26,11 @@ export const AuthorizedUsersSection: React.FC = () => {
       <Content>
         <Flex justifyContent={{ default: "justifyContentSpaceBetween" }}>
           <FlexItem>
-            <Title headingLevel="h1">Authorized users</Title>
+            <Title headingLevel="h1">Authorized members</Title>
           </FlexItem>
           <FlexItem>
-            <Button onClick={addAuthorizedUser} isDisabled>
-              Add authorized user
+            <Button onClick={addAuthorizedMember} isDisabled>
+              Add authorized members
             </Button>
           </FlexItem>
         </Flex>
@@ -38,28 +38,30 @@ export const AuthorizedUsersSection: React.FC = () => {
       {vm.isLoading && <LoadingSpinner />}
       {vm.error && (
         <div>
-          Error loading users (id: {vm.id}): {vm.error.message}
+          Error loading members (id: {vm.id}): {vm.error.message}
         </div>
       )}
-      {vm.users && vm.users.length === 0 && (
+      {vm.members && vm.members.length === 0 && (
         <EmptyState
           headingLevel="h4"
           icon={SearchIcon}
-          titleText={`No users in this organization`}
+          titleText={`No members in this group`}
           variant="sm"
         />
       )}
-      {vm.users && vm.users.length > 0 && (
-        <Table aria-label="Users table" variant="compact">
+      {vm.members && vm.members.length > 0 && (
+        <Table aria-label="Members table" variant="compact">
           <Thead>
             <Tr>
               <Th>Username</Th>
+              <Th>Email</Th>
             </Tr>
           </Thead>
           <Tbody>
-            {vm.users.map((user) => (
-              <Tr key={user.username}>
-                <Td dataLabel="Username">{user.username}</Td>
+            {vm.members.map((member) => (
+              <Tr key={member.username}>
+                <Td dataLabel="Username">{member.username}</Td>
+                <Td dataLabel="Email">{member.email}</Td>
               </Tr>
             ))}
           </Tbody>
@@ -69,4 +71,4 @@ export const AuthorizedUsersSection: React.FC = () => {
   );
 };
 
-AuthorizedUsersSection.displayName = "AuthorizedUsersSection";
+AuthorizedMembersSection.displayName = "AuthorizedUsersSection";

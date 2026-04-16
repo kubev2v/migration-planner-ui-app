@@ -1,4 +1,5 @@
 import {
+  AccountApi,
   AssessmentApi,
   ImageApi,
   InfoApi,
@@ -9,11 +10,11 @@ import { Configuration } from "@openshift-migration-advisor/planner-sdk";
 import type { ChromeAPI } from "@redhat-cloud-services/types";
 import { Container } from "@y0n1/react-ioc";
 
+import { AccountStore } from "../data/stores/AccountStore";
 import { AssessmentsStore } from "../data/stores/AssessmentsStore";
-import { IdentityStore } from "../data/stores/IdentityStore";
+import { GroupsStore } from "../data/stores/GroupsStore";
 import { ImagesStore } from "../data/stores/ImagesStore";
 import { JobsStore } from "../data/stores/JobsStore";
-import { OrganizationsStore } from "../data/stores/OrganizationsStore";
 import { PartnerRequestsStore } from "../data/stores/PartnerRequestsStore";
 import { PartnersStore } from "../data/stores/PartnersStore";
 import { ReportStore } from "../data/stores/ReportStore";
@@ -26,14 +27,14 @@ import { PdfExportService } from "../services/pdf-export/PdfExportService";
 /** Symbols used by the DI container */
 export const Symbols = Object.freeze({
   // Stores
+  AccountStore: Symbol.for("AccountStore"),
   AssessmentsStore: Symbol.for("AssessmentsStore"),
   ImagesStore: Symbol.for("ImagesStore"),
   SourcesStore: Symbol.for("SourcesStore"),
-  IdentityStore: Symbol.for("IdentityStore"),
   VersionsStore: Symbol.for("VersionsStore"),
   JobsStore: Symbol.for("JobsStore"),
   ReportStore: Symbol.for("ReportStore"),
-  OrganizationsStore: Symbol.for("OrganizationsStore"),
+  GroupsStore: Symbol.for("GroupsStore"),
   PartnersStore: Symbol.for("PartnersStore"),
   PartnerRequestsStore: Symbol.for("PartnerRequestsStore"),
 });
@@ -49,17 +50,18 @@ export const createContainer = (auth: ChromeAPI["auth"]): Container => {
   const assessmentApi = new AssessmentApi(plannerApiConfig);
   const infoApi = new InfoApi(plannerApiConfig);
   const jobApi = new JobApi(plannerApiConfig);
+  const accountApi = new AccountApi(plannerApiConfig);
 
   const c = new Container();
 
   // Stores
+  c.register(Symbols.AccountStore, new AccountStore(accountApi));
   c.register(Symbols.AssessmentsStore, new AssessmentsStore(assessmentApi));
   c.register(Symbols.ImagesStore, new ImagesStore(imageApi));
-  c.register(Symbols.IdentityStore, new IdentityStore());
   c.register(Symbols.VersionsStore, new VersionsStore(infoApi));
   c.register(Symbols.SourcesStore, new SourcesStore(sourceApi));
   c.register(Symbols.JobsStore, new JobsStore(jobApi));
-  c.register(Symbols.OrganizationsStore, new OrganizationsStore());
+  c.register(Symbols.GroupsStore, new GroupsStore(accountApi));
   c.register(Symbols.PartnersStore, new PartnersStore());
   c.register(Symbols.PartnerRequestsStore, new PartnerRequestsStore());
 

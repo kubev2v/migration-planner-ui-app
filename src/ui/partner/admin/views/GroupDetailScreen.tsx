@@ -19,25 +19,23 @@ import { SearchIcon } from "@patternfly/react-icons";
 import React, { useState } from "react";
 
 import { LoadingSpinner } from "../../../core/components/LoadingSpinner";
-import {
-  type EditOrganizationFormValues,
-  EditOrganizationModal,
-} from "../components/EditOrganizationModal";
-import { useOrganizationDetailsViewModel } from "../view-models/useOrganizationDetailsViewModel";
-import { AuthorizedUsersSection } from "./AuthorizedUsersSection";
+import type { EditGroupFormValues } from "../components/EditGroupForm";
+import { EditGroupModal } from "../components/EditGroupModal";
+import { useGroupDetailsViewModel } from "../view-models/useGroupDetailsViewModel";
+import { AuthorizedMembersSection } from "./AuthorizedMembersSection";
 
 const introStyle = css`
   padding-bottom: 1em;
 `;
 
-export const OrganizationDetailScreen: React.FC = () => {
-  const vm = useOrganizationDetailsViewModel();
+export const GroupDetailScreen: React.FC = () => {
+  const vm = useGroupDetailsViewModel();
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
-  const handleEditSubmit = (values: EditOrganizationFormValues) => {
-    console.log("Edit organization:", values);
-    // TODO: Implement organization update logic
-    // vm.editOrganization(values)
+  const handleEditSubmit = (values: EditGroupFormValues) => {
+    console.log("Edit group:", values);
+    // TODO: Implement group update logic
+    // vm.editGroup(values)
   };
 
   return (
@@ -46,10 +44,15 @@ export const OrganizationDetailScreen: React.FC = () => {
         <Content className={introStyle}>
           <Flex justifyContent={{ default: "justifyContentSpaceBetween" }}>
             <FlexItem>
-              <Title headingLevel="h1">Partner {vm.organization?.name}</Title>
+              <Title headingLevel="h1">Group {vm.group?.name}</Title>
             </FlexItem>
             <FlexItem>
-              <Button onClick={() => setIsEditModalOpen(true)}>Edit</Button>
+              <Button
+                onClick={() => setIsEditModalOpen(true)}
+                isDisabled={!vm.group || vm.isLoading || Boolean(vm.error)}
+              >
+                Edit
+              </Button>
             </FlexItem>
           </Flex>
         </Content>
@@ -59,7 +62,7 @@ export const OrganizationDetailScreen: React.FC = () => {
             Error loading partner (id: {vm.id}): {vm.error.message}
           </div>
         )}
-        {!vm.isLoading && !vm.error && !vm.organization && (
+        {!vm.isLoading && !vm.error && !vm.group && (
           <EmptyState
             headingLevel="h4"
             icon={SearchIcon}
@@ -67,13 +70,13 @@ export const OrganizationDetailScreen: React.FC = () => {
             variant="sm"
           />
         )}
-        {vm.organization && (
+        {vm.group && (
           <>
             <Card>
               <CardHeader>
                 <img
-                  src={vm.organization.icon}
-                  alt={`${vm.organization.name} icon`}
+                  src={vm.group.icon}
+                  alt={`${vm.group.name} icon`}
                   style={{ height: "80px", objectFit: "contain" }}
                 />
               </CardHeader>
@@ -82,28 +85,28 @@ export const OrganizationDetailScreen: React.FC = () => {
                   <DescriptionListGroup>
                     <DescriptionListTerm>ID</DescriptionListTerm>
                     <DescriptionListDescription>
-                      {vm.organization.id}
+                      {vm.group.id}
                     </DescriptionListDescription>
                   </DescriptionListGroup>
                   <DescriptionListGroup>
                     <DescriptionListTerm>Name</DescriptionListTerm>
                     <DescriptionListDescription>
-                      {vm.organization.name}
+                      {vm.group.name}
                     </DescriptionListDescription>
                   </DescriptionListGroup>
                   <DescriptionListGroup>
                     <DescriptionListTerm>Description</DescriptionListTerm>
                     <DescriptionListDescription>
-                      {vm.organization.description}
+                      {vm.group.description}
                     </DescriptionListDescription>
                   </DescriptionListGroup>
                 </DescriptionList>
               </CardBody>
             </Card>
             {isEditModalOpen && (
-              <EditOrganizationModal
+              <EditGroupModal
                 isOpen={isEditModalOpen}
-                organization={vm.organization}
+                group={vm.group}
                 onClose={() => setIsEditModalOpen(false)}
                 onSubmit={handleEditSubmit}
               />
@@ -111,11 +114,11 @@ export const OrganizationDetailScreen: React.FC = () => {
           </>
         )}
       </PageSection>
-      {vm.organization && <AuthorizedUsersSection />}
+      {vm.group && <AuthorizedMembersSection />}
     </>
   );
 };
 
-OrganizationDetailScreen.displayName = "OrganizationDetailScreen";
+GroupDetailScreen.displayName = "GroupDetailScreen";
 
-export default OrganizationDetailScreen;
+export default GroupDetailScreen;

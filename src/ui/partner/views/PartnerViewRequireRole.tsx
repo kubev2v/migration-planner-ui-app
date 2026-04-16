@@ -1,11 +1,15 @@
+import type { IdentityKindEnum } from "@openshift-migration-advisor/planner-sdk";
 import { Outlet } from "react-router-dom";
 
-import type { IdentityKind } from "../../../models/IdentityModel";
 import { LoadingSpinner } from "../../core/components/LoadingSpinner";
 import { useIdentityViewModel } from "../view-models/useIdentityViewModel";
 import { PartnerViewRedirect } from "./PartnerViewRedirect";
 
-export const PartnerViewRequireRole = ({ role }: { role: IdentityKind }) => {
+export const PartnerViewRequireRole = ({
+  role,
+}: {
+  role: IdentityKindEnum;
+}) => {
   const { identity: user } = useIdentityViewModel();
 
   if (!user) return <LoadingSpinner />;

@@ -103,9 +103,8 @@ export const routes = {
   get customers() {
     return `${getAppBasename()}/partners/customers`;
   },
-  get adminOrganizations() {
-    return `${getAppBasename()}/partners/organizations`;
+  get adminGroups() {
+    return `${getAppBasename()}/partners/groups`;
   },
-  adminOrganizationById: (id: string) =>
-    `${getAppBasename()}/partners/organizations/${id}`,
+  adminGroupById: (id: string) => `${getAppBasename()}/partners/groups/${id}`,
 } as const;

@@ -17,7 +17,7 @@ export const PartnerViewRedirect = () => {
     case "partner":
       return <Navigate to={routes.customers} replace />;
     case "admin":
-      return <Navigate to={routes.adminOrganizations} replace />;
+      return <Navigate to={routes.adminGroups} replace />;
     default:
       return <Navigate to={routes.partners} replace />;
   }

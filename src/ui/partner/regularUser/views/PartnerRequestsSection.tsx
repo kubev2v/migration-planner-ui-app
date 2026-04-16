@@ -58,7 +58,7 @@ export const PartnerRequestsSection: React.FC<PartnerRequestsSectionProps> = ({
           <Tbody>
             {sortByNewestFirst(vm.requests).map((request) => (
               <Tr key={request.id}>
-                <Td dataLabel="Partner">{request.organization.name}</Td>
+                <Td dataLabel="Partner">{request.group.name}</Td>
                 <Td dataLabel="Status" hasAction>
                   <RequestStatus status={request.status} />
                   {request.status === "pending" && (

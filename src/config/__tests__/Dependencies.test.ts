@@ -8,6 +8,7 @@ import { createContainer, Symbols } from "../Dependencies";
 // ---------------------------------------------------------------------------
 
 vi.mock("@openshift-migration-advisor/planner-sdk", () => ({
+  AccountApi: vi.fn(),
   AssessmentApi: vi.fn(),
   ImageApi: vi.fn(),
   InfoApi: vi.fn(),
@@ -16,6 +17,26 @@ vi.mock("@openshift-migration-advisor/planner-sdk", () => ({
   Configuration: vi.fn(),
 }));
 
+vi.mock("../../data/stores/AccountStore", () => ({
+  AccountStore: class {
+    _type = "AccountStore";
+  },
+}));
+vi.mock("../../data/stores/GroupsStore", () => ({
+  GroupsStore: class {
+    _type = "GroupsStore";
+  },
+}));
+vi.mock("../../data/stores/PartnersStore", () => ({
+  PartnersStore: class {
+    _type = "PartnersStore";
+  },
+}));
+vi.mock("../../data/stores/PartnerRequestsStore", () => ({
+  PartnerRequestsStore: class {
+    _type = "PartnerRequestsStore";
+  },
+}));
 vi.mock("../../data/stores/AssessmentsStore", () => ({
   AssessmentsStore: class {
     _type = "AssessmentsStore";
@@ -74,12 +95,16 @@ describe("Symbols", () => {
     expect(Object.isFrozen(Symbols)).toBe(true);
 
     const expected = [
+      "AccountStore",
       "AssessmentsStore",
       "ImagesStore",
       "SourcesStore",
       "VersionsStore",
       "JobsStore",
       "ReportStore",
+      "GroupsStore",
+      "PartnersStore",
+      "PartnerRequestsStore",
     ];
 
     for (const key of expected) {
@@ -104,6 +129,11 @@ describe("createContainer", () => {
 
   it("returns a Container instance", () => {
     expect(container).toBeInstanceOf(Container);
+  });
+  it("registers AccountStore", () => {
+    const store = container.get(Symbols.AccountStore);
+    expect(store).toBeDefined();
+    expect((store as Record<string, string>)._type).toBe("AccountStore");
   });
 
   it("registers AssessmentsStore", () => {
@@ -140,5 +170,11 @@ describe("createContainer", () => {
     const store = container.get(Symbols.ReportStore);
     expect(store).toBeDefined();
     expect((store as Record<string, string>)._type).toBe("ReportStore");
+  });
+
+  it("registers GroupsStore", () => {
+    const store = container.get(Symbols.GroupsStore);
+    expect(store).toBeDefined();
+    expect((store as Record<string, string>)._type).toBe("GroupsStore");
   });
 });

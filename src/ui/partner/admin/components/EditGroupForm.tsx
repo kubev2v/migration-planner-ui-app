@@ -1,3 +1,4 @@
+import type { Group } from "@openshift-migration-advisor/planner-sdk";
 import {
   Form,
   FormGroup,
@@ -9,22 +10,20 @@ import {
 } from "@patternfly/react-core";
 import React, { useState } from "react";
 
-import type { Organization } from "../../../../models/OrganizationModel";
-
 interface FormFieldValues {
   name: string;
   description: string;
   icon: string;
 }
 
-export interface EditOrganizationFormValues extends FormFieldValues {
+export interface EditGroupFormValues extends FormFieldValues {
   id: string;
 }
 
-interface EditOrganizationFormProps {
+interface EditGroupFormProps {
   id: string;
-  organization: Organization;
-  onSubmit: (values: EditOrganizationFormValues) => void;
+  group: Group;
+  onSubmit: (values: EditGroupFormValues) => void;
 }
 
 interface FormErrors {
@@ -33,15 +32,15 @@ interface FormErrors {
   icon?: string;
 }
 
-export const EditOrganizationForm: React.FC<EditOrganizationFormProps> = ({
+export const EditGroupForm: React.FC<EditGroupFormProps> = ({
   id,
-  organization,
+  group,
   onSubmit,
 }) => {
   const [values, setValues] = useState<FormFieldValues>({
-    name: organization.name,
-    description: organization.description,
-    icon: organization.icon,
+    name: group.name,
+    description: group.description || "",
+    icon: group.icon,
   });
 
   const [errors, setErrors] = useState<FormErrors>({});
@@ -53,7 +52,7 @@ export const EditOrganizationForm: React.FC<EditOrganizationFormProps> = ({
   ): string | undefined => {
     if (!value.trim()) {
       const fieldNames: Record<string, string> = {
-        name: "Partner Name",
+        name: "Group Name",
         description: "Description",
       };
       return `${fieldNames[field]} is required`;
@@ -83,7 +82,7 @@ export const EditOrganizationForm: React.FC<EditOrganizationFormProps> = ({
     if (validateForm()) {
       onSubmit({
         ...values,
-        id: organization.id,
+        id: group.id,
       });
     }
   };
@@ -111,15 +110,15 @@ export const EditOrganizationForm: React.FC<EditOrganizationFormProps> = ({
 
   return (
     <Form id={id} onSubmit={handleSubmit}>
-      <FormGroup label="Partner Name" isRequired fieldId="partner-name">
+      <FormGroup label="Group Name" isRequired fieldId="group-name">
         <TextInput
-          id="partner-name"
+          id="group-name"
           name="name"
           value={values.name}
           onChange={(_, value) => handleChange("name", value)}
           onBlur={() => handleBlur("name")}
           validated={touched.name && errors.name ? "error" : "default"}
-          aria-label="Partner Name"
+          aria-label="Group Name"
         />
         {touched.name && errors.name && (
           <HelperText>
@@ -128,9 +127,9 @@ export const EditOrganizationForm: React.FC<EditOrganizationFormProps> = ({
         )}
       </FormGroup>
 
-      <FormGroup label="Description" isRequired fieldId="partner-description">
+      <FormGroup label="Description" isRequired fieldId="group-description">
         <TextArea
-          id="partner-description"
+          id="group-description"
           name="description"
           value={values.description}
           onChange={(_, value) => handleChange("description", value)}
@@ -150,9 +149,9 @@ export const EditOrganizationForm: React.FC<EditOrganizationFormProps> = ({
         )}
       </FormGroup>
 
-      <FormGroup label="Icon" fieldId="partner-icon">
+      <FormGroup label="Icon" fieldId="group-icon">
         <TextInput
-          id="partner-icon"
+          id="group-icon"
           name="icon"
           value={values.icon}
           onChange={(_, value) => handleChange("icon", value)}
@@ -170,4 +169,4 @@ export const EditOrganizationForm: React.FC<EditOrganizationFormProps> = ({
   );
 };
 
-EditOrganizationForm.displayName = "EditOrganizationForm";
+EditGroupForm.displayName = "EditGroupForm";

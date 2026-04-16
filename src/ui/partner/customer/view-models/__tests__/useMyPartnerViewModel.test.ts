@@ -1,20 +1,20 @@
+import type { Group } from "@openshift-migration-advisor/planner-sdk";
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { getFakeIdentity } from "../../../../../data/stubs/stubIdentity";
-import type { Organization } from "../../../../../models/OrganizationModel";
 import { useMyPartnerViewModel } from "../useMyPartnerViewModel";
 
 // ---------------------------------------------------------------------------
 // Mocks
 // ---------------------------------------------------------------------------
 
-let mockIdentityStore: {
+let mockAccountStore: {
   subscribe: ReturnType<typeof vi.fn>;
   getSnapshot: ReturnType<typeof vi.fn>;
 };
 
-let mockOrganizationsStore: {
+let mockGroupsStore: {
   subscribe: ReturnType<typeof vi.fn>;
   getSnapshot: ReturnType<typeof vi.fn>;
   get: ReturnType<typeof vi.fn>;
@@ -23,8 +23,8 @@ let mockOrganizationsStore: {
 vi.mock("@y0n1/react-ioc", () => ({
   useInjection: (symbol: symbol) => {
     const key = symbol.description;
-    if (key === "IdentityStore") return mockIdentityStore;
-    if (key === "OrganizationsStore") return mockOrganizationsStore;
+    if (key === "AccountStore") return mockAccountStore;
+    if (key === "GroupsStore") return mockGroupsStore;
     throw new Error(`Unexpected symbol: ${String(symbol)}`);
   },
 }));
@@ -38,31 +38,31 @@ describe("useMyPartnerViewModel", () => {
     vi.clearAllMocks();
   });
 
-  it("should fetch partner organization when identity has partnerId", async () => {
+  it("should fetch partner group when identity has partnerId", async () => {
     const mockIdentity = getFakeIdentity("customer");
-    const mockPartnerOrganization: Organization = {
+    const mockPartnerGroup: Group = {
       id: "partner-1",
       name: "Test Partner",
-      description: "A test partner organization",
+      description: "A test partner group",
       kind: "partner",
       company: "Test Company",
       icon: "test-icon",
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+      createdAt: new Date(),
+      updatedAt: new Date(),
     };
 
     const unsubscribe = vi.fn();
-    const cachedOrganizations: Organization[] = [];
+    const cachedGroups: Group[] = [];
 
-    mockIdentityStore = {
+    mockAccountStore = {
       subscribe: vi.fn(() => unsubscribe),
       getSnapshot: vi.fn(() => mockIdentity),
     };
 
-    mockOrganizationsStore = {
+    mockGroupsStore = {
       subscribe: vi.fn(() => unsubscribe),
-      getSnapshot: vi.fn(() => cachedOrganizations),
-      get: vi.fn().mockResolvedValue(mockPartnerOrganization),
+      getSnapshot: vi.fn(() => cachedGroups),
+      get: vi.fn().mockResolvedValue(mockPartnerGroup),
     };
 
     const { result } = renderHook(() => useMyPartnerViewModel());
@@ -72,10 +72,8 @@ describe("useMyPartnerViewModel", () => {
       expect(result.current.isLoading).toBe(false);
     });
 
-    expect(mockOrganizationsStore.get).toHaveBeenCalledWith(
-      mockIdentity.partnerId,
-    );
-    expect(result.current.partnerOrganization).toEqual(mockPartnerOrganization);
+    expect(mockGroupsStore.get).toHaveBeenCalledWith(mockIdentity.partnerId);
+    expect(result.current.partnerGroup).toEqual(mockPartnerGroup);
     expect(result.current.error).toBeUndefined();
   });
 
@@ -83,16 +81,16 @@ describe("useMyPartnerViewModel", () => {
     const mockIdentity = getFakeIdentity("regular");
 
     const unsubscribe = vi.fn();
-    const cachedOrganizations: Organization[] = [];
+    const cachedGroups: Group[] = [];
 
-    mockIdentityStore = {
+    mockAccountStore = {
       subscribe: vi.fn(() => unsubscribe),
       getSnapshot: vi.fn(() => mockIdentity),
     };
 
-    mockOrganizationsStore = {
+    mockGroupsStore = {
       subscribe: vi.fn(() => unsubscribe),
-      getSnapshot: vi.fn(() => cachedOrganizations),
+      getSnapshot: vi.fn(() => cachedGroups),
       get: vi.fn().mockResolvedValue(null),
     };
 
@@ -102,23 +100,23 @@ describe("useMyPartnerViewModel", () => {
       await Promise.resolve();
     });
 
-    expect(mockOrganizationsStore.get).not.toHaveBeenCalled();
-    expect(result.current.partnerOrganization).toBeUndefined();
+    expect(mockGroupsStore.get).not.toHaveBeenCalled();
+    expect(result.current.partnerGroup).toBeUndefined();
     expect(result.current.isLoading).toBe(false);
   });
 
   it("should not fetch when identity is null", async () => {
     const unsubscribe = vi.fn();
-    const cachedOrganizations: Organization[] = [];
+    const cachedGroups: Group[] = [];
 
-    mockIdentityStore = {
+    mockAccountStore = {
       subscribe: vi.fn(() => unsubscribe),
       getSnapshot: vi.fn(() => null),
     };
 
-    mockOrganizationsStore = {
+    mockGroupsStore = {
       subscribe: vi.fn(() => unsubscribe),
-      getSnapshot: vi.fn(() => cachedOrganizations),
+      getSnapshot: vi.fn(() => cachedGroups),
       get: vi.fn().mockResolvedValue(null),
     };
 
@@ -128,26 +126,26 @@ describe("useMyPartnerViewModel", () => {
       await Promise.resolve();
     });
 
-    expect(mockOrganizationsStore.get).not.toHaveBeenCalled();
-    expect(result.current.partnerOrganization).toBeUndefined();
+    expect(mockGroupsStore.get).not.toHaveBeenCalled();
+    expect(result.current.partnerGroup).toBeUndefined();
     expect(result.current.isLoading).toBe(false);
   });
 
   it("should handle error when fetch fails", async () => {
     const mockIdentity = getFakeIdentity("customer");
-    const mockError = new Error("Failed to fetch organization");
+    const mockError = new Error("Failed to fetch group");
 
     const unsubscribe = vi.fn();
-    const cachedOrganizations: Organization[] = [];
+    const cachedGroups: Group[] = [];
 
-    mockIdentityStore = {
+    mockAccountStore = {
       subscribe: vi.fn(() => unsubscribe),
       getSnapshot: vi.fn(() => mockIdentity),
     };
 
-    mockOrganizationsStore = {
+    mockGroupsStore = {
       subscribe: vi.fn(() => unsubscribe),
-      getSnapshot: vi.fn(() => cachedOrganizations),
+      getSnapshot: vi.fn(() => cachedGroups),
       get: vi.fn().mockRejectedValue(mockError),
     };
 
@@ -157,41 +155,39 @@ describe("useMyPartnerViewModel", () => {
       expect(result.current.isLoading).toBe(false);
     });
 
-    expect(mockOrganizationsStore.get).toHaveBeenCalledWith(
-      mockIdentity.partnerId,
-    );
-    expect(result.current.partnerOrganization).toBeUndefined();
+    expect(mockGroupsStore.get).toHaveBeenCalledWith(mockIdentity.partnerId);
+    expect(result.current.partnerGroup).toBeUndefined();
     expect(result.current.error).toEqual(mockError);
   });
 
   it("should show loading state while fetching", async () => {
     const mockIdentity = getFakeIdentity("customer");
-    const mockPartnerOrganization: Organization = {
+    const mockPartnerGroup: Group = {
       id: "partner-1",
       name: "Test Partner",
-      description: "A test partner organization",
+      description: "A test partner group",
       kind: "partner",
       company: "Test Company",
       icon: "test-icon",
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+      createdAt: new Date(),
+      updatedAt: new Date(),
     };
 
     const unsubscribe = vi.fn();
-    const cachedOrganizations: Organization[] = [];
+    const cachedGroups: Group[] = [];
 
-    mockIdentityStore = {
+    mockAccountStore = {
       subscribe: vi.fn(() => unsubscribe),
       getSnapshot: vi.fn(() => mockIdentity),
     };
 
-    mockOrganizationsStore = {
+    mockGroupsStore = {
       subscribe: vi.fn(() => unsubscribe),
-      getSnapshot: vi.fn(() => cachedOrganizations),
+      getSnapshot: vi.fn(() => cachedGroups),
       get: vi.fn().mockImplementation(
         () =>
           new Promise((resolve) => {
-            setTimeout(() => resolve(mockPartnerOrganization), 100);
+            setTimeout(() => resolve(mockPartnerGroup), 100);
           }),
       ),
     };
@@ -204,7 +200,7 @@ describe("useMyPartnerViewModel", () => {
     });
 
     expect(result.current.isLoading).toBe(true);
-    expect(result.current.partnerOrganization).toBeUndefined();
+    expect(result.current.partnerGroup).toBeUndefined();
 
     // Wait for the fetch to complete
     await waitFor(
@@ -214,6 +210,6 @@ describe("useMyPartnerViewModel", () => {
       { timeout: 200 },
     );
 
-    expect(result.current.partnerOrganization).toEqual(mockPartnerOrganization);
+    expect(result.current.partnerGroup).toEqual(mockPartnerGroup);
   });
 });

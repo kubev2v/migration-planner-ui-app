@@ -1,36 +1,36 @@
 import "@testing-library/jest-dom";
 
+import type { Group } from "@openshift-migration-advisor/planner-sdk";
 import { Button } from "@patternfly/react-core";
 import { render, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 
-import type { Organization } from "../../../../../models/OrganizationModel";
-import { EditOrganizationForm } from "../EditOrganizationForm";
+import { EditGroupForm } from "../EditGroupForm";
 
-const mockOrganization: Organization = {
+const mockGroup: Group = {
   id: "org-1",
   name: "Tech Solutions Inc",
   company: "",
   description: "Test partner description",
   icon: "data:image/svg+xml;base64,test",
   kind: "partner",
-  createdAt: new Date().toISOString(),
-  updatedAt: new Date().toISOString(),
+  createdAt: new Date(),
+  updatedAt: new Date(),
 };
 
-describe("EditOrganizationForm", () => {
+describe("EditGroupForm", () => {
   it("renders all form fields with partner data", () => {
     const mockOnSubmit = vi.fn();
     const { getByRole } = render(
-      <EditOrganizationForm
-        id="edit-organization-form"
-        organization={mockOrganization}
+      <EditGroupForm
+        id="edit-group-form"
+        group={mockGroup}
         onSubmit={mockOnSubmit}
       />,
     );
 
-    expect(getByRole("textbox", { name: /Partner Name/i })).toHaveValue(
+    expect(getByRole("textbox", { name: /Group Name/i })).toHaveValue(
       "Tech Solutions Inc",
     );
     expect(getByRole("textbox", { name: /Description/i })).toHaveValue(
@@ -46,20 +46,20 @@ describe("EditOrganizationForm", () => {
     const user = userEvent.setup();
     const { getByRole } = render(
       <>
-        <EditOrganizationForm
-          id="edit-organization-form"
-          organization={mockOrganization}
+        <EditGroupForm
+          id="edit-group-form"
+          group={mockGroup}
           onSubmit={mockOnSubmit}
         />
-        <Button variant="primary" type="submit" form="edit-organization-form">
+        <Button variant="primary" type="submit" form="edit-group-form">
           Save
         </Button>
       </>,
     );
 
-    const partnerName = getByRole("textbox", { name: /Partner Name/i });
-    await user.clear(partnerName);
-    await user.type(partnerName, "Updated Partner Name");
+    const groupName = getByRole("textbox", { name: /Group Name/i });
+    await user.clear(groupName);
+    await user.type(groupName, "Updated Partner Name");
 
     const description = getByRole("textbox", { name: /Description/i });
     await user.clear(description);
@@ -88,19 +88,19 @@ describe("EditOrganizationForm", () => {
     const user = userEvent.setup();
     const { getByRole, getByText } = render(
       <>
-        <EditOrganizationForm
-          id="edit-organization-form"
-          organization={mockOrganization}
+        <EditGroupForm
+          id="edit-group-form"
+          group={mockGroup}
           onSubmit={mockOnSubmit}
         />
-        <Button variant="primary" type="submit" form="edit-organization-form">
+        <Button variant="primary" type="submit" form="edit-group-form">
           Save
         </Button>
       </>,
     );
 
-    const partnerName = getByRole("textbox", { name: /Partner Name/i });
-    await user.clear(partnerName);
+    const groupName = getByRole("textbox", { name: /Group Name/i });
+    await user.clear(groupName);
 
     const description = getByRole("textbox", { name: /Description/i });
     await user.clear(description);
@@ -112,7 +112,7 @@ describe("EditOrganizationForm", () => {
     expect(mockOnSubmit).not.toHaveBeenCalled();
 
     // Error messages should appear
-    expect(getByText("Partner Name is required")).toBeInTheDocument();
+    expect(getByText("Group Name is required")).toBeInTheDocument();
     expect(getByText("Description is required")).toBeInTheDocument();
   });
 
@@ -121,32 +121,32 @@ describe("EditOrganizationForm", () => {
     const user = userEvent.setup();
     const { getByRole, getByText, queryByText } = render(
       <>
-        <EditOrganizationForm
-          id="edit-organization-form"
-          organization={mockOrganization}
+        <EditGroupForm
+          id="edit-group-form"
+          group={mockGroup}
           onSubmit={mockOnSubmit}
         />
-        <Button variant="primary" type="submit" form="edit-organization-form">
+        <Button variant="primary" type="submit" form="edit-group-form">
           Save
         </Button>
       </>,
     );
 
-    const partnerName = getByRole("textbox", { name: /Partner Name/i });
-    await user.clear(partnerName);
+    const groupName = getByRole("textbox", { name: /Group Name/i });
+    await user.clear(groupName);
 
     const saveButton = getByRole("button", { name: /Save/i });
     await user.click(saveButton);
 
     // Error should appear
-    expect(getByText("Partner Name is required")).toBeInTheDocument();
+    expect(getByText("Group Name is required")).toBeInTheDocument();
 
     // Type in the field
-    await user.type(partnerName, "A");
+    await user.type(groupName, "A");
 
     // Error should disappear
     await waitFor(() => {
-      expect(queryByText("Partner Name is required")).not.toBeInTheDocument();
+      expect(queryByText("Group Name is required")).not.toBeInTheDocument();
     });
   });
 
@@ -154,39 +154,39 @@ describe("EditOrganizationForm", () => {
     const mockOnSubmit = vi.fn();
     const user = userEvent.setup();
     const { getByRole } = render(
-      <EditOrganizationForm
-        id="edit-organization-form"
-        organization={mockOrganization}
+      <EditGroupForm
+        id="edit-group-form"
+        group={mockGroup}
         onSubmit={mockOnSubmit}
       />,
     );
 
-    const partnerName = getByRole("textbox", { name: /Partner Name/i });
-    await user.clear(partnerName);
-    await user.type(partnerName, "New Partner Name");
+    const groupName = getByRole("textbox", { name: /Group Name/i });
+    await user.clear(groupName);
+    await user.type(groupName, "New Partner Name");
 
-    expect(partnerName).toHaveValue("New Partner Name");
+    expect(groupName).toHaveValue("New Partner Name");
   });
 
   it("displays error on blur for empty required field", async () => {
     const mockOnSubmit = vi.fn();
     const user = userEvent.setup();
     const { getByRole, getByText } = render(
-      <EditOrganizationForm
-        id="edit-organization-form"
-        organization={mockOrganization}
+      <EditGroupForm
+        id="edit-group-form"
+        group={mockGroup}
         onSubmit={mockOnSubmit}
       />,
     );
 
-    const partnerName = getByRole("textbox", { name: /Partner Name/i });
+    const groupName = getByRole("textbox", { name: /Group Name/i });
 
     // Clear and then blur
-    await user.clear(partnerName);
+    await user.clear(groupName);
     await user.tab();
 
     await waitFor(() => {
-      expect(getByText("Partner Name is required")).toBeInTheDocument();
+      expect(getByText("Group Name is required")).toBeInTheDocument();
     });
   });
 
@@ -195,12 +195,12 @@ describe("EditOrganizationForm", () => {
     const user = userEvent.setup();
     const { getByRole } = render(
       <>
-        <EditOrganizationForm
-          id="edit-organization-form"
-          organization={mockOrganization}
+        <EditGroupForm
+          id="edit-group-form"
+          group={mockGroup}
           onSubmit={mockOnSubmit}
         />
-        <Button variant="primary" type="submit" form="edit-organization-form">
+        <Button variant="primary" type="submit" form="edit-group-form">
           Save
         </Button>
       </>,

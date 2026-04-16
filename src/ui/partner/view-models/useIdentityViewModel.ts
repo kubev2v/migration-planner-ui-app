@@ -1,19 +1,19 @@
+import type { Identity } from "@openshift-migration-advisor/planner-sdk";
 import { useInjection } from "@y0n1/react-ioc";
 import { useSyncExternalStore } from "react";
 
 import { Symbols } from "../../../config/Dependencies";
-import type { IIdentityStore } from "../../../data/stores/interfaces/IIdentityStore";
-import type { Identity } from "../../../models/IdentityModel";
+import type { IAccountStore } from "../../../data/stores/interfaces/IAccountStore";
 
 export interface IdentityViewModel {
   identity: Identity | null;
 }
 
 export const useIdentityViewModel = (): IdentityViewModel => {
-  const identityStore = useInjection<IIdentityStore>(Symbols.IdentityStore);
+  const accountStore = useInjection<IAccountStore>(Symbols.AccountStore);
   const identity = useSyncExternalStore(
-    identityStore.subscribe.bind(identityStore),
-    identityStore.getSnapshot.bind(identityStore),
+    accountStore.subscribe.bind(accountStore),
+    accountStore.getSnapshot.bind(accountStore),
   );
 
   return {

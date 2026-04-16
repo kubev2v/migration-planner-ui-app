@@ -31,25 +31,23 @@ export const MyPartnerScreen: React.FC = () => {
         <Title headingLevel="h1">My Partner Team</Title>
       </Content>
       {vm.isLoading && <LoadingSpinner />}
-      {vm.error && (
-        <div>Error loading partner organization: {vm.error.message}</div>
-      )}
-      {!vm.isLoading && !vm.error && !vm.partnerOrganization && (
+      {vm.error && <div>Error loading partner group: {vm.error.message}</div>}
+      {!vm.isLoading && !vm.error && !vm.partnerGroup && (
         <EmptyState
           headingLevel="h4"
           icon={WarningTriangleIcon}
-          titleText="No partner organization available"
+          titleText="No partner group available"
           variant="sm"
         >
           Please contact an administrator
         </EmptyState>
       )}
-      {vm.partnerOrganization && (
+      {vm.partnerGroup && (
         <Card>
           <CardHeader>
             <img
-              src={vm.partnerOrganization.icon}
-              alt={`${vm.partnerOrganization.name} icon`}
+              src={vm.partnerGroup.icon}
+              alt={`${vm.partnerGroup.name} icon`}
               style={{ height: "80px", objectFit: "contain" }}
             />
           </CardHeader>
@@ -58,19 +56,19 @@ export const MyPartnerScreen: React.FC = () => {
               <DescriptionListGroup>
                 <DescriptionListTerm>ID</DescriptionListTerm>
                 <DescriptionListDescription>
-                  {vm.partnerOrganization.id}
+                  {vm.partnerGroup.id}
                 </DescriptionListDescription>
               </DescriptionListGroup>
               <DescriptionListGroup>
                 <DescriptionListTerm>Name</DescriptionListTerm>
                 <DescriptionListDescription>
-                  {vm.partnerOrganization.name}
+                  {vm.partnerGroup.name}
                 </DescriptionListDescription>
               </DescriptionListGroup>
               <DescriptionListGroup>
                 <DescriptionListTerm>Description</DescriptionListTerm>
                 <DescriptionListDescription>
-                  {vm.partnerOrganization.description}
+                  {vm.partnerGroup.description}
                 </DescriptionListDescription>
               </DescriptionListGroup>
             </DescriptionList>

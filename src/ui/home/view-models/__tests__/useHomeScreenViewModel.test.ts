@@ -11,7 +11,7 @@ import { useHomeScreenViewModel } from "../useHomeScreenViewModel";
 let mockPathname = "/assessments";
 const mockNavigate = vi.fn();
 
-let mockIdentityStore = {
+let mockAccountStore = {
   getIdentity: vi.fn().mockResolvedValue(null),
   subscribe: vi.fn(() => () => {}),
   getSnapshot: vi.fn(() => null),
@@ -25,7 +25,7 @@ vi.mock("react-router-dom", () => ({
 vi.mock("@y0n1/react-ioc", () => ({
   useInjection: (symbol: symbol) => {
     const key = symbol.description;
-    if (key === "IdentityStore") return mockIdentityStore;
+    if (key === "AccountStore") return mockAccountStore;
     throw new Error(`Unexpected symbol: ${String(symbol)}`);
   },
 }));
@@ -39,7 +39,7 @@ describe("useHomeScreenViewModel", () => {
     vi.clearAllMocks();
     mockPathname = "/assessments";
 
-    mockIdentityStore = {
+    mockAccountStore = {
       getIdentity: vi.fn().mockResolvedValue(null),
       subscribe: vi.fn(() => () => {}),
       getSnapshot: vi.fn(() => null),

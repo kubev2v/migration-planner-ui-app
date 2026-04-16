@@ -1,4 +1,4 @@
-import type { Organization } from "./OrganizationModel";
+import type { Group } from "@openshift-migration-advisor/planner-sdk";
 
 export type PartnerRequestStatus = "pending" | "rejected";
 
@@ -6,7 +6,7 @@ export interface PartnerRequest {
   id: string;
   status: PartnerRequestStatus;
   statusReason: string;
-  organization: Organization;
+  group: Group;
   username: string;
   createdAt: string;
   updatedAt: string;

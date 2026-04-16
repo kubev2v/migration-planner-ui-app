@@ -23,7 +23,7 @@ export const usePartnerRequestsViewModel = (): PartnerRequestsViewModel => {
     partnerRequestsStore.getSnapshot.bind(partnerRequestsStore),
   );
 
-  // Load organizations on mount
+  // Load partner requests on mount
   const { loading, error } = useAsync(() => partnerRequestsStore.list(), []);
 
   const cancelRequest = async (request: PartnerRequest) => {

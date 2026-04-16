@@ -3,7 +3,7 @@ import { useCallback, useSyncExternalStore } from "react";
 import { useAsync } from "react-use";
 
 import { Symbols } from "../../../../config/Dependencies";
-import type { IIdentityStore } from "../../../../data/stores/interfaces/IIdentityStore";
+import type { IAccountStore } from "../../../../data/stores/interfaces/IAccountStore";
 import type { IPartnerRequestsStore } from "../../../../data/stores/interfaces/IPartnerRequestsStore";
 import type { IPartnersStore } from "../../../../data/stores/interfaces/IPartnersStore";
 import type { Partner } from "../../../../models/PartnerModel";
@@ -21,7 +21,7 @@ export const usePartnersViewModel = (): PartnersViewModel => {
   const partnerRequestsStore = useInjection<IPartnerRequestsStore>(
     Symbols.PartnerRequestsStore,
   );
-  const identityStore = useInjection<IIdentityStore>(Symbols.IdentityStore);
+  const accountStore = useInjection<IAccountStore>(Symbols.AccountStore);
 
   const partners = useSyncExternalStore<Partner[]>(
     partnersStore.subscribe.bind(partnersStore),
@@ -33,7 +33,7 @@ export const usePartnersViewModel = (): PartnersViewModel => {
 
   const createPartnerRequest = useCallback(
     async (request: PartnerRequestValues) => {
-      const identity = identityStore.getSnapshot();
+      const identity = accountStore.getSnapshot();
       if (!identity) {
         throw new Error("No identity found");
       }
@@ -42,7 +42,7 @@ export const usePartnersViewModel = (): PartnersViewModel => {
         request,
       });
     },
-    [partnerRequestsStore, identityStore],
+    [partnerRequestsStore, accountStore],
   );
 
   return {

@@ -1,10 +1,5 @@
-export interface Partner {
-  id: string;
-  name: string;
-  description: string;
+import type { Group } from "@openshift-migration-advisor/planner-sdk";
+
+export interface Partner extends Group {
   kind: "partner";
-  company: string;
-  icon: string;
-  createdAt: string;
-  updatedAt: string;
 }

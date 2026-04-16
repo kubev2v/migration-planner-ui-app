@@ -5,7 +5,7 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import { AssessmentsScreen } from "../ui/assessment/views/AssessmentsScreen";
 import { EnvironmentsScreen } from "../ui/environment/views/EnvironmentsScreen";
 import { HomeScreen } from "../ui/home/views/HomeScreen";
-import { OrganizationsScreen } from "../ui/partner/admin/views/OrganizationsScreen";
+import { GroupsScreen } from "../ui/partner/admin/views/GroupsScreen";
 import { MyPartnerScreen } from "../ui/partner/customer/views/MyPartnerScreen";
 import { CustomersScreen } from "../ui/partner/partner/views/CustomersScreen";
 import { PartnersScreen } from "../ui/partner/regularUser/views/PartnersScreen";
@@ -37,10 +37,10 @@ const AssessmentDetails = lazy(
     ),
 );
 
-const OrganizationDetailScreen = lazy(
+const GroupDetailScreen = lazy(
   () =>
     import(
-      /* webpackChunkName: "Organization" */ "../ui/partner/admin/views/OrganizationDetailScreen"
+      /* webpackChunkName: "Group" */ "../ui/partner/admin/views/GroupDetailScreen"
     ),
 );
 
@@ -75,11 +75,11 @@ export const AppRoutes: React.FC = () => (
           <Route index element={<CustomersScreen />} />
         </Route>
         <Route
-          path="partners/organizations"
+          path="partners/groups"
           element={<PartnerViewRequireRole role="admin" />}
         >
-          <Route index element={<OrganizationsScreen />} />
-          <Route path=":id" element={<OrganizationDetailScreen />} />
+          <Route index element={<GroupsScreen />} />
+          <Route path=":id" element={<GroupDetailScreen />} />
         </Route>
       </Route>
       {/* Independent routes — they have their own page layout */}

@@ -1,52 +1,50 @@
+import type { Group } from "@openshift-migration-advisor/planner-sdk";
 import { useInjection } from "@y0n1/react-ioc";
 import { useEffect, useSyncExternalStore } from "react";
 import { useAsyncFn } from "react-use";
 
 import { Symbols } from "../../../../config/Dependencies";
-import type { IIdentityStore } from "../../../../data/stores/interfaces/IIdentityStore";
-import type { IOrganizationsStore } from "../../../../data/stores/interfaces/IOrganizationsStore";
-import type { Organization } from "../../../../models/OrganizationModel";
+import type { IAccountStore } from "../../../../data/stores/interfaces/IAccountStore";
+import type { IGroupsStore } from "../../../../data/stores/interfaces/IGroupsStore";
 
 export interface MyPartnerViewModel {
-  partnerOrganization?: Organization;
+  partnerGroup?: Group;
   isLoading: boolean;
   error?: Error;
 }
 
 export const useMyPartnerViewModel = (): MyPartnerViewModel => {
-  const identityStore = useInjection<IIdentityStore>(Symbols.IdentityStore);
+  const accountStore = useInjection<IAccountStore>(Symbols.AccountStore);
   const identity = useSyncExternalStore(
-    identityStore.subscribe.bind(identityStore),
-    identityStore.getSnapshot.bind(identityStore),
+    accountStore.subscribe.bind(accountStore),
+    accountStore.getSnapshot.bind(accountStore),
   );
 
-  const organizationsStore = useInjection<IOrganizationsStore>(
-    Symbols.OrganizationsStore,
+  const groupsStore = useInjection<IGroupsStore>(Symbols.GroupsStore);
+
+  useSyncExternalStore<Group[]>(
+    groupsStore.subscribe.bind(groupsStore),
+    groupsStore.getSnapshot.bind(groupsStore),
   );
 
-  useSyncExternalStore<Organization[]>(
-    organizationsStore.subscribe.bind(organizationsStore),
-    organizationsStore.getSnapshot.bind(organizationsStore),
-  );
-
-  // Fetch organization by identity's partnerId
-  const [fetchState, doFetchOrganization] = useAsyncFn(
+  // Fetch group by identity's partnerId
+  const [fetchState, doFetchGroup] = useAsyncFn(
     async (partnerId: string) => {
-      const organization = await organizationsStore.get(partnerId);
-      return organization;
+      const group = await groupsStore.get(partnerId);
+      return group;
     },
-    [organizationsStore],
+    [groupsStore],
   );
 
-  // Load partner organization when identity is available
+  // Load partner group when identity is available
   useEffect(() => {
     if (identity?.partnerId) {
-      void doFetchOrganization(identity.partnerId);
+      void doFetchGroup(identity.partnerId);
     }
-  }, [identity?.partnerId, doFetchOrganization]);
+  }, [identity?.partnerId, doFetchGroup]);
 
   return {
-    partnerOrganization: fetchState.value,
+    partnerGroup: fetchState.value,
     isLoading: fetchState.loading,
     error: fetchState.error,
   };

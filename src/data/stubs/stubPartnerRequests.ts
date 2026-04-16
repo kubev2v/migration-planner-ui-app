@@ -1,9 +1,10 @@
-import type { Organization } from "../../models/OrganizationModel";
+import type { Group } from "@openshift-migration-advisor/planner-sdk";
+
 import type {
   PartnerRequest,
   PartnerRequestCreate,
 } from "../../models/PartnerRequestModel";
-import { PARTNER_1, PARTNER_2 } from "./stubOrganizations";
+import { PARTNER_1, PARTNER_2 } from "./stubGroups";
 
 // Fake partner requests
 const _FAKE_PARTNER_REQUESTS: PartnerRequest[] = [
@@ -12,7 +13,7 @@ const _FAKE_PARTNER_REQUESTS: PartnerRequest[] = [
     status: "rejected",
     statusReason:
       "insufficient capacity and unavailable resources at this time",
-    organization: PARTNER_1,
+    group: PARTNER_1,
     username: "user1",
     createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(), // 7 days ago
     updatedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(), // 5 days ago
@@ -21,7 +22,7 @@ const _FAKE_PARTNER_REQUESTS: PartnerRequest[] = [
     id: "pr-2",
     status: "pending",
     statusReason: "",
-    organization: PARTNER_2,
+    group: PARTNER_2,
     username: "user1",
     createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(), // 2 days ago
     updatedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
@@ -36,14 +37,14 @@ export const getFakePartnerRequests = (): PartnerRequest[] => {
 
 export const createFakePartnerRequest = (
   data: PartnerRequestCreate,
-  organization: Organization,
+  group: Group,
 ): PartnerRequest => {
   const now = new Date().toISOString();
   return {
     id: `req-${Date.now()}`,
     status: "pending",
     statusReason: "",
-    organization,
+    group,
     username: data.username,
     createdAt: now,
     updatedAt: now,

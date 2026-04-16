@@ -19,7 +19,7 @@ let mockPartnerRequestsStore: {
   create: ReturnType<typeof vi.fn>;
 };
 
-let mockIdentityStore: {
+let mockAccountStore: {
   getSnapshot: ReturnType<typeof vi.fn>;
 };
 
@@ -28,7 +28,7 @@ vi.mock("@y0n1/react-ioc", () => ({
     const key = symbol.description;
     if (key === "PartnersStore") return mockPartnersStore;
     if (key === "PartnerRequestsStore") return mockPartnerRequestsStore;
-    if (key === "IdentityStore") return mockIdentityStore;
+    if (key === "AccountStore") return mockAccountStore;
     throw new Error(`Unexpected symbol: ${String(symbol)}`);
   },
 }));
@@ -65,7 +65,7 @@ describe("usePartnersViewModel - createPartnerRequest", () => {
       create: vi.fn().mockResolvedValue(undefined),
     };
 
-    mockIdentityStore = {
+    mockAccountStore = {
       getSnapshot: vi.fn(() => mockIdentity),
     };
 
@@ -108,7 +108,7 @@ describe("usePartnersViewModel - createPartnerRequest", () => {
       create: vi.fn().mockResolvedValue(undefined),
     };
 
-    mockIdentityStore = {
+    mockAccountStore = {
       getSnapshot: vi.fn(() => null),
     };
 

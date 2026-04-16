@@ -1,6 +1,6 @@
-import type { Organization } from "../../models/OrganizationModel";
+import type { Group } from "@openshift-migration-advisor/planner-sdk";
 import type { Partner } from "../../models/PartnerModel";
-import { FAKE_ORGANIZATIONS } from "./stubOrganizations";
+import { FAKE_GROUPS } from "./stubGroups";
 
 /**
  * LocalStorage key for partner feature visibility
@@ -26,14 +26,14 @@ export function isPartnerFeatureEnabled(): boolean {
 }
 
 export const getFakePartners = () => {
-  return FAKE_ORGANIZATIONS.filter(
-    (organization) => organization.kind === "partner",
-  ).map(organizationToPartner);
+  return FAKE_GROUPS.filter((group) => group.kind === "partner").map(
+    groupToPartner,
+  );
 };
 
-export const organizationToPartner = (organization: Organization): Partner => {
+export const groupToPartner = (group: Group): Partner => {
   return {
-    ...organization,
+    ...group,
     kind: "partner",
   };
 };

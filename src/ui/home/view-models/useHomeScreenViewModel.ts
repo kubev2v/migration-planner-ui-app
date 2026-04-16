@@ -3,7 +3,7 @@ import { useState, useSyncExternalStore } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 import { Symbols } from "../../../config/Dependencies";
-import type { IIdentityStore } from "../../../data/stores/interfaces/IIdentityStore";
+import type { IAccountStore } from "../../../data/stores/interfaces/IAccountStore";
 import { PARTNER_FEATURE_VISIBLE_KEY } from "../../../data/stubs/stubPartners";
 import useLocalStorage from "../../../hooks/useLocalStorage";
 import { routes } from "../../../routing/Routes";
@@ -37,10 +37,10 @@ export const useHomeScreenViewModel = (): HomeScreenViewModel => {
   const navigate = useNavigate();
 
   // User store injection
-  const identityStore = useInjection<IIdentityStore>(Symbols.IdentityStore);
+  const accountStore = useInjection<IAccountStore>(Symbols.AccountStore);
   const identity = useSyncExternalStore(
-    identityStore.subscribe.bind(identityStore),
-    identityStore.getSnapshot.bind(identityStore),
+    accountStore.subscribe.bind(accountStore),
+    accountStore.getSnapshot.bind(accountStore),
   );
 
   // Partner feature visibility
@@ -55,7 +55,7 @@ export const useHomeScreenViewModel = (): HomeScreenViewModel => {
       location.pathname.startsWith(routes.partners) ||
       location.pathname.startsWith(routes.myPartner) ||
       location.pathname.startsWith(routes.customers) ||
-      location.pathname.startsWith(routes.adminOrganizations)
+      location.pathname.startsWith(routes.adminGroups)
     ) {
       return 2;
     }
@@ -139,7 +139,7 @@ export const useHomeScreenViewModel = (): HomeScreenViewModel => {
       case "admin":
         return {
           label: "Partners administration",
-          path: routes.adminOrganizations,
+          path: routes.adminGroups,
           key: 2,
         };
       default:

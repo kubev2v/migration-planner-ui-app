@@ -15,8 +15,8 @@ const mockPartner: Partner = {
   description: "Test partner description",
   icon: "data:image/svg+xml;base64,test",
   kind: "partner",
-  createdAt: new Date().toISOString(),
-  updatedAt: new Date().toISOString(),
+  createdAt: new Date(),
+  updatedAt: new Date(),
 };
 
 describe("ContactForm", () => {
