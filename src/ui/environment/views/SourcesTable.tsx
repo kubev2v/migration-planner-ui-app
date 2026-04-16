@@ -564,6 +564,7 @@ export const SourcesTable: React.FC<SourceTableProps> = ({
                         Boolean(source.onPremises) &&
                         source.inventory !== undefined
                       }
+                      agentVersion={source.agentVersion}
                       agentVersionWarning={source.agentVersionWarning}
                     />
                   </Td>

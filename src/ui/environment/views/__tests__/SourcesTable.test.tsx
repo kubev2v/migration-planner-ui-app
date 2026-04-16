@@ -120,18 +120,35 @@ const makeSource = (
   } as Source);
 
 const ALL_STATUS_SOURCES: SourceModel[] = [
-  // 1. Not connected — no agent → "OVA downloading"
+  // 1. Not connected — no agent, no agentVersion → "Download pending"
   makeSource({
     id: "src-ova-downloading",
     name: "Lab vCenter (OVA downloading)",
   }),
 
-  // 2. Uploaded manually — no agent, onPremises with inventory
+  // 2. Not connected — no agent, agentVersion set → "OVA downloaded"
+  makeSource({
+    id: "src-ova-downloaded",
+    name: "Lab vCenter (OVA downloaded)",
+    agentVersion: "1.4.0",
+  }),
+
+  // 3. Uploaded manually — no agent, onPremises with inventory
   makeSource({
     id: "src-uploaded-manually",
     name: "On-prem vCenter (uploaded)",
     onPremises: true,
     inventory: SAMPLE_INVENTORY,
+  }),
+
+  // 4. Uploaded manually — with agentVersionWarning → "N/A" + popover
+  makeSource({
+    id: "src-uploaded-manually-warning",
+    name: "On-prem vCenter (uploaded, warning)",
+    onPremises: true,
+    inventory: SAMPLE_INVENTORY,
+    agentVersionWarning:
+      "No version information available for this OVA. Current system version: release-0.12-093b9bb. Consider downloading a new OVA to ensure compatibility.",
   }),
 
   // 3. Waiting for credentials
@@ -256,20 +273,24 @@ describe("SourcesTable — all status states", () => {
     render(<SourcesTable onAddEnvironment={vi.fn()} />);
     const table = screen.getByRole("grid", { name: "Sources table" });
     const rows = within(table).getAllByRole("row");
-    // header row + 7 data rows
+    // header row + 9 data rows
     expect(rows).toHaveLength(1 + ALL_STATUS_SOURCES.length);
   });
 
   // --- Discovery VM Status column -----------------------------------------
 
-  it('shows "Not connected" for a source with no agent', () => {
+  it('shows "Not connected" for sources with no agent', () => {
     render(<SourcesTable onAddEnvironment={vi.fn()} />);
-    expect(screen.getByText("Not connected")).toBeInTheDocument();
+    // Two not-connected sources: one with no agentVersion, one with agentVersion set
+    const labels = screen.getAllByText("Not connected");
+    expect(labels.length).toBeGreaterThanOrEqual(2);
   });
 
-  it('shows "Uploaded manually" for an on-premises source with inventory', () => {
+  it('shows "Uploaded manually" for on-premises sources with inventory', () => {
     render(<SourcesTable onAddEnvironment={vi.fn()} />);
-    expect(screen.getByText("Uploaded manually")).toBeInTheDocument();
+    // Two uploaded-manually sources: one without warning, one with agentVersionWarning
+    const labels = screen.getAllByText("Uploaded manually");
+    expect(labels.length).toBeGreaterThanOrEqual(2);
   });
 
   it('shows "Waiting for credentials" status', () => {
@@ -296,12 +317,31 @@ describe("SourcesTable — all status states", () => {
 
   // --- Agent version column -----------------------------------------------
 
-  it('shows "Download pending" when agent is not connected and not uploaded manually', () => {
+  it('shows "Download pending" when agent is not connected, no agentVersion', () => {
     render(<SourcesTable onAddEnvironment={vi.fn()} />);
     expect(screen.getByText("Download pending")).toBeInTheDocument();
   });
 
-  it('shows "-" for the agent version of an uploaded-manually source', () => {
+  it('shows "OVA downloaded" when not connected but agentVersion is set', () => {
+    mockVm = makeBaseVm({
+      sources: [
+        makeSource({
+          id: "src-ova-downloaded-only",
+          name: "OVA downloaded only",
+          agentVersion: "1.4.0",
+        }),
+      ],
+    });
+
+    render(<SourcesTable onAddEnvironment={vi.fn()} />);
+
+    const table = screen.getByRole("grid", { name: "Sources table" });
+    const dataRow = within(table).getAllByRole("row")[1];
+    const cells = within(dataRow).getAllByRole("cell");
+    expect(cells[2]).toHaveTextContent("OVA downloaded");
+  });
+
+  it('shows "N/A" for the agent version of an uploaded-manually source', () => {
     mockVm = makeBaseVm({
       sources: [
         makeSource({
@@ -319,7 +359,32 @@ describe("SourcesTable — all status states", () => {
     const dataRow = within(table).getAllByRole("row")[1];
     const cells = within(dataRow).getAllByRole("cell");
     // Agent version is the 3rd column (index 2)
-    expect(cells[2]).toHaveTextContent("-");
+    expect(cells[2]).toHaveTextContent("N/A");
+  });
+
+  it('shows "N/A" with an info popover when uploaded manually and agentVersionWarning is set', () => {
+    mockVm = makeBaseVm({
+      sources: [
+        makeSource({
+          id: "src-uploaded-warning",
+          name: "Uploaded with warning",
+          onPremises: true,
+          inventory: SAMPLE_INVENTORY,
+          agentVersionWarning:
+            "No version information available for this OVA. Current system version: release-0.12-093b9bb. Consider downloading a new OVA to ensure compatibility.",
+        }),
+      ],
+    });
+
+    render(<SourcesTable onAddEnvironment={vi.fn()} />);
+
+    const table = screen.getByRole("grid", { name: "Sources table" });
+    const dataRow = within(table).getAllByRole("row")[1];
+    const cells = within(dataRow).getAllByRole("cell");
+    expect(cells[2]).toHaveTextContent("N/A");
+    expect(
+      within(cells[2]).getByRole("button", { name: "Version information" }),
+    ).toBeInTheDocument();
   });
 
   it('shows "Up to date" in the agent version column for sources with a current agent', () => {
