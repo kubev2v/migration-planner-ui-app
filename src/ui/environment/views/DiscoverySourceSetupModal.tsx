@@ -25,6 +25,7 @@ import {
 import React, { useCallback, useEffect, useState } from "react";
 
 import { VCenterSetupInstructions } from "../../core/components/VCenterSetupInstructions";
+import { getNetworkConfig } from "../helpers/networkConfig";
 import { getProxyConfig } from "../helpers/proxyConfig";
 import { normalizeSshKey, validateSshKey } from "../helpers/sshKey";
 import { useEnvironmentPage } from "../view-models/EnvironmentPageContext";
@@ -393,22 +394,22 @@ export const DiscoverySourceSetupModal: React.FC<
         if (src) {
           setEnvironmentName(src.name || "");
           const proxyConfig = getProxyConfig(src);
-          setHttpProxy(proxyConfig.httpUrl);
-          setHttpsProxy(proxyConfig.httpsUrl);
+          setHttpProxy(proxyConfig.httpProxy);
+          setHttpsProxy(proxyConfig.httpsProxy);
           setNoProxy(proxyConfig.noProxy);
-          setEnableProxy(proxyConfig.isProxyEnabled);
+          setEnableProxy(proxyConfig.enableProxy);
+
+          const networkConfig = getNetworkConfig(src);
+          setNetworkConfigType(networkConfig.networkConfigType);
+          setIpAddress(networkConfig.ipAddress);
+          setSubnetMask(networkConfig.subnetMask);
+          setDefaultGateway(networkConfig.defaultGateway);
+          setDns(networkConfig.dns);
           setInitialValues({
             sshKey: "",
             environmentName: src.name || "",
-            httpProxy: proxyConfig.httpUrl,
-            httpsProxy: proxyConfig.httpsUrl,
-            noProxy: proxyConfig.noProxy,
-            enableProxy: proxyConfig.isProxyEnabled,
-            networkConfigType: "dhcp",
-            dns: "",
-            subnetMask: "",
-            defaultGateway: "",
-            ipAddress: "",
+            ...proxyConfig,
+            ...networkConfig,
           });
         }
       }

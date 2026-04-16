@@ -19,10 +19,10 @@ describe("proxyConfig helpers", () => {
       const config = getProxyConfig(source as Source);
 
       expect(config).toEqual({
-        httpUrl: "http://proxy.example.com:8080",
-        httpsUrl: "https://proxy.example.com:8443",
+        httpProxy: "http://proxy.example.com:8080",
+        httpsProxy: "https://proxy.example.com:8443",
         noProxy: "test.example.org",
-        isProxyEnabled: true,
+        enableProxy: true,
       });
     });
 
@@ -40,10 +40,10 @@ describe("proxyConfig helpers", () => {
       const config = getProxyConfig(source as Source);
 
       expect(config).toEqual({
-        httpUrl: "",
-        httpsUrl: "",
+        httpProxy: "",
+        httpsProxy: "",
         noProxy: "",
-        isProxyEnabled: false,
+        enableProxy: false,
       });
     });
 
@@ -55,14 +55,14 @@ describe("proxyConfig helpers", () => {
       const config = getProxyConfig(source as Source);
 
       expect(config).toEqual({
-        httpUrl: "",
-        httpsUrl: "",
+        httpProxy: "",
+        httpsProxy: "",
         noProxy: "",
-        isProxyEnabled: false,
+        enableProxy: false,
       });
     });
 
-    it("should detect isProxyEnabled when only noProxy is set", () => {
+    it("should detect enableProxy when only noProxy is set", () => {
       const source: Partial<Source> = {
         infra: {
           proxy: {
@@ -75,7 +75,7 @@ describe("proxyConfig helpers", () => {
 
       const config = getProxyConfig(source as Source);
 
-      expect(config.isProxyEnabled).toBe(true);
+      expect(config.enableProxy).toBe(true);
       expect(config.noProxy).toBe("test.example.org");
     });
 
@@ -83,10 +83,31 @@ describe("proxyConfig helpers", () => {
       const config = getProxyConfig(undefined);
 
       expect(config).toEqual({
-        httpUrl: "",
-        httpsUrl: "",
+        httpProxy: "",
+        httpsProxy: "",
         noProxy: "",
-        isProxyEnabled: false,
+        enableProxy: false,
+      });
+    });
+
+    it("should treat whitespace-only proxy values as empty (enableProxy=false)", () => {
+      const source: Partial<Source> = {
+        infra: {
+          proxy: {
+            httpUrl: "   ",
+            httpsUrl: "  ",
+            noProxy: " ",
+          },
+        },
+      };
+
+      const config = getProxyConfig(source as Source);
+
+      expect(config).toEqual({
+        httpProxy: "   ",
+        httpsProxy: "  ",
+        noProxy: " ",
+        enableProxy: false,
       });
     });
   });

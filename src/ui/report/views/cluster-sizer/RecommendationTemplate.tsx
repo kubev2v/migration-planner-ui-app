@@ -27,11 +27,15 @@ const preferencesWrapperCollapsedStyle = css`
 `;
 
 const expandableSectionStyle = css`
-  background-color: #e0f0ff !important;
+  background-color: var(
+    --pf-t--global--background--color--status--info--default
+  ) !important;
 `;
 
 const expandableSectionDisabledStyle = css`
-  background-color: #e0f0ff !important;
+  background-color: var(
+    --pf-t--global--background--color--status--info--default
+  ) !important;
   opacity: 0.6;
   pointer-events: none;
 `;

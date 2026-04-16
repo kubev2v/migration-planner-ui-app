@@ -2032,7 +2032,7 @@ const ExampleReport: React.FC = () => {
           <StackItem>
             Discovery VM status :{" "}
             <Icon size="md" isInline>
-              <CheckCircleIcon color={globalSuccessColor100.value} />
+              <CheckCircleIcon color={globalSuccessColor100.var} />
             </Icon>{" "}
             Ready
             <br />

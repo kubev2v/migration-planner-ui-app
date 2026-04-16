@@ -47,7 +47,7 @@ export const OSDistribution: React.FC<OSDistributionProps> = ({
           >
             <FlexItem>
               <Icon>
-                <InfoCircleIcon color="#6a6ec8" />
+                <InfoCircleIcon color="var(--pf-t--global--icon--color--status--info--default)" />
               </Icon>
             </FlexItem>
             <FlexItem>

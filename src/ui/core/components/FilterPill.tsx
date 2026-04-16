@@ -12,7 +12,7 @@ const FilterPill: React.FC<Props> = ({ label, onClear, ariaLabel }) => {
   return (
     <span
       style={{
-        background: "#e7e7e7",
+        background: "var(--pf-t--global--background--color--secondary--hover)",
         borderRadius: "12px",
         padding: "2px 6px 2px 8px",
         fontSize: "12px",

@@ -20,7 +20,7 @@ export const ErrorTable: React.FC<ErrorTableProps> = ({
   return (
     <Card className={dashboardCard} id="errors-table">
       <CardTitle>
-        <Icon style={{ color: globalDangerColor100.value }}>
+        <Icon style={{ color: globalDangerColor100.var }}>
           <ExclamationCircleIcon />
         </Icon>{" "}
         Errors
@@ -31,7 +31,7 @@ export const ErrorTable: React.FC<ErrorTableProps> = ({
             style={{
               padding: "16px",
               textAlign: "center",
-              color: "#6a6e73",
+              color: "var(--pf-t--global--text--color--subtle)",
               fontStyle: "italic",
             }}
           >

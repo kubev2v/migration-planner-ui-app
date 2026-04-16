@@ -1,4 +1,4 @@
-import { ChartPie } from "@patternfly/react-charts";
+import { ChartLegend, ChartPie } from "@patternfly/react-charts";
 import { Content } from "@patternfly/react-core";
 import React from "react";
 
@@ -68,6 +68,16 @@ export function ReportPieChart(props: ReportPieChart.Props): React.ReactNode {
         legendData={getLegendData(histogram, legendLabel)}
         legendOrientation="vertical"
         legendPosition="right"
+        legendComponent={
+          <ChartLegend
+            style={{
+              labels: { fill: "var(--pf-t--global--text--color--regular)" },
+            }}
+          />
+        }
+        style={{
+          labels: { fill: "var(--pf-t--global--text--color--regular)" },
+        }}
         padding={{
           bottom: 20,
           left: 20,

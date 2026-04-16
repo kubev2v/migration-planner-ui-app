@@ -87,11 +87,17 @@ const AssessmentDetails: React.FC = () => {
       title={vm.assessment.name || `Assessment ${vm.id}`}
     >
       <div
-        style={{ background: "white", padding: "16px", borderRadius: "4px" }}
+        style={{
+          background:
+            "var(--pf-t--global--background--color--primary--default)",
+          padding: "16px",
+          borderRadius: "4px",
+        }}
       >
         <div
           style={{
-            borderBottom: "1px solid #eee",
+            borderBottom:
+              "1px solid var(--pf-t--global--border--color--default)",
             paddingBottom: "8px",
             marginBottom: "16px",
           }}
@@ -170,7 +176,8 @@ const AssessmentDetails: React.FC = () => {
 
       <div
         style={{
-          background: "white",
+          background:
+            "var(--pf-t--global--background--color--primary--default)",
           padding: "16px",
           borderRadius: "4px",
           marginTop: "16px",
@@ -178,7 +185,8 @@ const AssessmentDetails: React.FC = () => {
       >
         <div
           style={{
-            borderBottom: "1px solid #eee",
+            borderBottom:
+              "1px solid var(--pf-t--global--border--color--default)",
             paddingBottom: "8px",
             marginBottom: "16px",
           }}
@@ -231,7 +239,12 @@ const AssessmentDetails: React.FC = () => {
                       <Button
                         icon={
                           <Icon isInline>
-                            <MonitoringIcon style={{ color: "#0066cc" }} />
+                            <MonitoringIcon
+                              style={{
+                                color:
+                                  "var(--pf-t--global--text--color--link--default)",
+                              }}
+                            />
                           </Icon>
                         }
                         variant="plain"

@@ -466,7 +466,8 @@ export const AssessmentsTable: React.FC<Props> = ({
                       >
                         <ExclamationTriangleIcon
                           style={{
-                            color: "#f0ab00",
+                            color:
+                              "var(--pf-t--global--icon--color--status--warning--default)",
                             cursor: "help",
                           }}
                         />

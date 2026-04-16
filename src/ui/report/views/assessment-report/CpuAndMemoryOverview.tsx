@@ -170,7 +170,12 @@ export const CpuAndMemoryOverview: React.FC<CpuAndMemoryOverviewProps> = ({
                 <i className="fas fa-microchip" /> CPU &amp; memory
               </div>
               {!isExportMode && (
-                <div style={{ color: "#6a6e73", fontSize: "0.85rem" }}>
+                <div
+                  style={{
+                    color: "var(--pf-t--global--text--color--subtle)",
+                    fontSize: "0.85rem",
+                  }}
+                >
                   {viewMode === "memoryTiers"
                     ? "Memory size tiers"
                     : "vCPU count tiers"}
@@ -231,7 +236,7 @@ export const CpuAndMemoryOverview: React.FC<CpuAndMemoryOverviewProps> = ({
                     ? `${memoryTotalGB} GB`
                     : undefined
                 }
-                subTitleColor="#9a9da0"
+                subTitleColor="var(--pf-t--global--text--color--subtle)"
                 itemsPerRow={Math.ceil(memorySlices.length / 2)}
                 labelFontSize={18}
                 marginLeft="0%"
@@ -260,7 +265,7 @@ export const CpuAndMemoryOverview: React.FC<CpuAndMemoryOverviewProps> = ({
                     ? `${cpuTotalCores.toLocaleString()} Cores`
                     : undefined
                 }
-                subTitleColor="#9a9da0"
+                subTitleColor="var(--pf-t--global--text--color--subtle)"
                 itemsPerRow={Math.ceil(vcpuSlices.length / 2)}
                 labelFontSize={18}
                 marginLeft="52%"
@@ -288,7 +293,7 @@ export const CpuAndMemoryOverview: React.FC<CpuAndMemoryOverviewProps> = ({
                   ? `${cpuTotalCores.toLocaleString()} Cores`
                   : undefined
             }
-            subTitleColor="#9a9da0"
+            subTitleColor="var(--pf-t--global--text--color--subtle)"
             itemsPerRow={Math.ceil(activeSlices.length / 2)}
             labelFontSize={18}
             marginLeft="52%"

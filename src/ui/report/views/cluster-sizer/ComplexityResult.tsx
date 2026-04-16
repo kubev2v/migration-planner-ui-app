@@ -226,11 +226,15 @@ export const ComplexityResult: React.FC<ComplexityResultProps> = ({
                   }}
                   labelComponent={
                     <ChartTooltip
-                      style={{ fontSize: 8, fill: "white" }}
+                      style={{
+                        fontSize: 8,
+                        fill: "var(--pf-t--global--text--color--inverse)",
+                      }}
                       flyoutStyle={{
-                        stroke: "#151515",
+                        stroke:
+                          "var(--pf-t--global--background--color--inverse)",
                         strokeWidth: 1,
-                        fill: "#151515",
+                        fill: "var(--pf-t--global--background--color--inverse)",
                       }}
                     />
                   }
@@ -255,14 +259,23 @@ export const ComplexityResult: React.FC<ComplexityResultProps> = ({
             >
               <ChartAxis
                 style={{
-                  tickLabels: { fontSize: 9 },
+                  tickLabels: {
+                    fontSize: 9,
+                    fill: "var(--pf-t--global--text--color--regular)",
+                  },
                 }}
               />
               <ChartAxis
                 dependentAxis
                 showGrid
                 style={{
-                  tickLabels: { fontSize: 9 },
+                  tickLabels: {
+                    fontSize: 9,
+                    fill: "var(--pf-t--global--text--color--regular)",
+                  },
+                  grid: {
+                    stroke: "var(--pf-t--global--border--color--default)",
+                  },
                 }}
               />
               <ChartBar
@@ -362,11 +375,14 @@ export const ComplexityResult: React.FC<ComplexityResultProps> = ({
                 }}
                 labelComponent={
                   <ChartTooltip
-                    style={{ fontSize: 14, fill: "white" }}
+                    style={{
+                      fontSize: 14,
+                      fill: "var(--pf-t--global--text--color--inverse)",
+                    }}
                     flyoutStyle={{
-                      stroke: "#151515",
+                      stroke: "var(--pf-t--global--background--color--inverse)",
                       strokeWidth: 1,
-                      fill: "#151515",
+                      fill: "var(--pf-t--global--background--color--inverse)",
                     }}
                   />
                 }

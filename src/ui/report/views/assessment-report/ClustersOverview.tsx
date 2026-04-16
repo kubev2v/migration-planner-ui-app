@@ -39,7 +39,7 @@ const cpuOvercommitBoxes = css`
 `;
 
 const cpuOvercommitBox = css`
-  color: #000;
+  color: var(--pf-t--global--text--color--regular);
   min-width: 120px;
   height: 64px;
   border-radius: 12px;
@@ -466,7 +466,12 @@ export const ClustersOverview: React.FC<ClustersOverviewProps> = ({
                 <i className="fas fa-database" /> Clusters
               </div>
               {!isExportMode && (
-                <div style={{ color: "#6a6e73", fontSize: "0.85rem" }}>
+                <div
+                  style={{
+                    color: "var(--pf-t--global--text--color--subtle)",
+                    fontSize: "0.85rem",
+                  }}
+                >
                   {viewMode === "dataCenterDistribution"
                     ? "Top 5 datacenters"
                     : "Top 5 clusters"}
@@ -530,7 +535,7 @@ export const ClustersOverview: React.FC<ClustersOverviewProps> = ({
                   legend={vmByClusterData.legend}
                   title={vmByClusterData.title}
                   subTitle={vmByClusterData.subTitle}
-                  subTitleColor="#9a9da0"
+                  subTitleColor="var(--pf-t--global--text--color--subtle)"
                   itemsPerRow={Math.ceil(vmByClusterData.chartData.length / 2)}
                   labelFontSize={18}
                   marginLeft="12%"
@@ -554,7 +559,7 @@ export const ClustersOverview: React.FC<ClustersOverviewProps> = ({
                   legend={dataCenterDistributionData.legend}
                   title={dataCenterDistributionData.title}
                   subTitle={dataCenterDistributionData.subTitle}
-                  subTitleColor="#9a9da0"
+                  subTitleColor="var(--pf-t--global--text--color--subtle)"
                   itemsPerRow={Math.ceil(
                     dataCenterDistributionData.chartData.length / 2,
                   )}
@@ -572,7 +577,12 @@ export const ClustersOverview: React.FC<ClustersOverviewProps> = ({
                   {VIEW_MODE_LABELS["cpuOverCommitment"]}
                 </div>
                 {cpuOverCommitmentData.chartData.length === 0 ? (
-                  <div style={{ color: "#6a6e73", textAlign: "center" }}>
+                  <div
+                    style={{
+                      color: "var(--pf-t--global--text--color--subtle)",
+                      textAlign: "center",
+                    }}
+                  >
                     This inventory has no cpuOverCommitment information.
                   </div>
                 ) : (
@@ -620,7 +630,12 @@ export const ClustersOverview: React.FC<ClustersOverviewProps> = ({
         ) : viewMode === "cpuOverCommitment" ? (
           <>
             {chartData.length === 0 ? (
-              <div style={{ color: "#6a6e73", textAlign: "center" }}>
+              <div
+                style={{
+                  color: "var(--pf-t--global--text--color--subtle)",
+                  textAlign: "center",
+                }}
+              >
                 This inventory has no cpuOverCommitment information.
               </div>
             ) : (
@@ -665,7 +680,7 @@ export const ClustersOverview: React.FC<ClustersOverviewProps> = ({
             legend={legend}
             title={title}
             subTitle={subTitle}
-            subTitleColor="#9a9da0"
+            subTitleColor="var(--pf-t--global--text--color--subtle)"
             itemsPerRow={Math.ceil(chartData.length / 2)}
             labelFontSize={viewMode === "vmByCluster" ? 18 : 17}
             marginLeft={viewMode === "vmByCluster" ? "12%" : "0%"}

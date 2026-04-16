@@ -27,15 +27,15 @@ const popoverButton = css`
 `;
 
 const latestStyle = css`
-  color: ${globalSuccessColor.value};
+  color: ${globalSuccessColor.var};
 `;
 
 const outdatedStyle = css`
-  color: ${globalWarningColor.value};
+  color: ${globalWarningColor.var};
 `;
 
 const ovaDownloadingStyle = css`
-  color: ${globalInfoColor.value};
+  color: ${globalInfoColor.var};
 `;
 
 // ---------------------------------------------------------------------------
@@ -61,7 +61,7 @@ const OvaDownloading: React.FC = () => (
           className={popoverButton}
         >
           <Icon isInline>
-            <QuestionCircleIcon color={globalInfoColor.value} />
+            <QuestionCircleIcon color={globalInfoColor.var} />
           </Icon>
         </Button>
       </Popover>
@@ -87,7 +87,7 @@ const VersionWarning: React.FC<{ warning: string }> = ({ warning }) => (
           className={popoverButton}
         >
           <Icon isInline>
-            <InfoCircleIcon color={globalWarningColor.value} />
+            <InfoCircleIcon color={globalWarningColor.var} />
           </Icon>
         </Button>
       </Popover>

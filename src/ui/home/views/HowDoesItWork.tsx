@@ -55,7 +55,7 @@ const linkButtonStyle = css`
 `;
 
 const cardStyle = css`
-  --pf-v6-c-card--BorderColor: ${globalTextColorStatusInfoDefault.value};
+  --pf-v6-c-card--BorderColor: ${globalTextColorStatusInfoDefault.var};
 `;
 
 const HOW_DOES_IT_WORK_EXPANDED_KEY =
@@ -73,7 +73,7 @@ export const HowDoesItWork: React.FC = () => {
       <CardHeader onExpand={() => setIsExpanded(!isExpanded)}>
         <CardTitle>
           <Icon size="md" style={{ marginRight: "0.5rem" }}>
-            <InfoCircleIcon color={globalTextColorStatusInfoDefault.value} />
+            <InfoCircleIcon color={globalTextColorStatusInfoDefault.var} />
           </Icon>
           How does this work?
         </CardTitle>
@@ -90,14 +90,14 @@ export const HowDoesItWork: React.FC = () => {
           >
             <FlexItem flex={{ default: "flex_1" }} className={flexItemStyle}>
               <Icon size="xl">
-                <CustomEnterpriseIcon color={globalNonStatusGrayColor.value} />
+                <CustomEnterpriseIcon color={globalNonStatusGrayColor.var} />
               </Icon>
               <Content component="h3" className={headingStyle}>
                 Assess VMware
                 <Tooltip content="As part of the discovery process, we're collecting aggregated data about your VMware environment. This includes information such as the number of clusters, hosts, and VMs; VM counts per operating system type; total CPU cores and memory; network types and VLANs; and a list of datastores.">
                   <Icon size="lg" className={questionIconStyle}>
                     <OutlinedQuestionCircleIcon
-                      color={globalActiveColor300.value}
+                      color={globalActiveColor300.var}
                     />
                   </Icon>
                 </Tooltip>
@@ -117,7 +117,7 @@ export const HowDoesItWork: React.FC = () => {
             </FlexItem>
             <FlexItem flex={{ default: "flex_1" }} className={flexItemStyle}>
               <Icon size="xl">
-                <ClusterIcon color={globalNonStatusGrayColor.value} />
+                <ClusterIcon color={globalNonStatusGrayColor.var} />
               </Icon>
               <Content component="h3" className={headingStyle}>
                 Select Target Cluster
@@ -128,7 +128,7 @@ export const HowDoesItWork: React.FC = () => {
             </FlexItem>
             <FlexItem flex={{ default: "flex_1" }} className={flexItemStyle}>
               <Icon size="xl">
-                <MigrationIcon color={globalNonStatusGrayColor.value} />
+                <MigrationIcon color={globalNonStatusGrayColor.var} />
               </Icon>
               <Content component="h3" className={headingStyle}>
                 Plan Migration

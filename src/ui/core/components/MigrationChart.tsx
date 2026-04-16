@@ -50,10 +50,10 @@ type DLength =
 
 const upgradeRecommendationPopover = css`
   .popover-override .pf-v5-c-popover__close .pf-v5-c-button.pf-m-plain {
-    color: #151515;
+    color: var(--pf-t--global--text--color--regular);
   }
   .popover-override .pf-v5-c-popover__close .pf-v5-c-button.pf-m-plain:hover {
-    color: #000;
+    color: var(--pf-t--global--text--color--regular);
   }
 `;
 
@@ -192,7 +192,7 @@ const MigrationChart: React.FC<MigrationChartProps> = ({
                                   verticalAlign: "middle",
                                 }}
                               >
-                                <InfoCircleIcon color="#6a6ec8" />
+                                <InfoCircleIcon color="var(--pf-t--global--icon--color--status--info--default)" />
                               </Button>
                             </Popover>
                           </FlexItem>
@@ -206,7 +206,8 @@ const MigrationChart: React.FC<MigrationChartProps> = ({
                           style={{
                             position: "relative",
                             height: `${barHeight}px`,
-                            backgroundColor: "#F5F5F5",
+                            backgroundColor:
+                              "var(--pf-t--global--background--color--secondary--default)",
                             overflow: "hidden",
                           }}
                         >
