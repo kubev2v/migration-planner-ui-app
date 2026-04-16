@@ -5,11 +5,13 @@ import react from "@vitejs/plugin-react-swc";
 import { defineConfig, loadEnv, type UserConfig } from "vite";
 
 const DEFAULT_TARGET_HOST = "http://localhost:3443";
+const DEFAULT_CHAT_API_HOST = "http://localhost:8081";
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, path.resolve(process.cwd(), ".."), [
     "VITE_",
     "MIGRATION_PLANNER_",
+    "CHAT_",
   ]);
 
   assert(
@@ -25,6 +27,9 @@ export default defineConfig(({ mode }) => {
    */
   const target = env.MIGRATION_PLANNER_TARGET_HOST ?? DEFAULT_TARGET_HOST;
 
+  const chatApiUrl = env.CHAT_API_URL ?? "/api/chat/v1/query";
+  const chatApiTarget = env.CHAT_API_TARGET_HOST ?? DEFAULT_CHAT_API_HOST;
+
   const config: UserConfig = {
     plugins: [react()],
     define: {
@@ -37,6 +42,7 @@ export default defineConfig(({ mode }) => {
       "process.env.MIGRATION_PLANNER_UI_VERSION": JSON.stringify(
         env.MIGRATION_PLANNER_UI_VERSION,
       ),
+      "process.env.CHAT_API_URL": JSON.stringify(chatApiUrl),
     },
     resolve: {
       alias: {
@@ -66,6 +72,12 @@ export default defineConfig(({ mode }) => {
                   "",
                 )
               : path,
+        },
+        "/api/chat": {
+          target: chatApiTarget,
+          secure: false,
+          changeOrigin: true,
+          rewrite: (path: string) => path.replace(/^\/api\/chat/, ""),
         },
       },
     },
