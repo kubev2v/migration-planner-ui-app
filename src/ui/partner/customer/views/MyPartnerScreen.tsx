@@ -31,12 +31,12 @@ export const MyPartnerScreen: React.FC = () => {
         <Title headingLevel="h1">My Partner Team</Title>
       </Content>
       {vm.isLoading && <LoadingSpinner />}
-      {vm.error && <div>Error loading partner group: {vm.error.message}</div>}
+      {vm.error && <div>Error loading partner: {vm.error.message}</div>}
       {!vm.isLoading && !vm.error && !vm.partnerGroup && (
         <EmptyState
           headingLevel="h4"
           icon={WarningTriangleIcon}
-          titleText="No partner group available"
+          titleText="No partner available"
           variant="sm"
         >
           Please contact an administrator

@@ -15,7 +15,7 @@ export const PARTNER_FEATURE_ROLE_KEY =
 /**
  * Gets the user kind from localStorage, or initializes it to "regular" as default
  */
-function getUserKindFromStorage(): IdentityKindEnum {
+export function getUserKindFromStorage(): IdentityKindEnum {
   try {
     const storedKind = window.localStorage.getItem(PARTNER_FEATURE_ROLE_KEY);
     if (storedKind && isValidUserKind(storedKind)) {

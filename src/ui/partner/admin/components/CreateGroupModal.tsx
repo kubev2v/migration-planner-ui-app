@@ -1,4 +1,3 @@
-import type { Group } from "@openshift-migration-advisor/planner-sdk";
 import {
   Button,
   Modal,
@@ -9,22 +8,20 @@ import {
 } from "@patternfly/react-core";
 import React from "react";
 
-import { type EditGroupFormValues, GroupForm } from "./GroupForm";
+import { type CreateGroupFormValues, GroupForm } from "./GroupForm";
 
-interface EditGroupModalProps {
+interface CreateGroupModalProps {
   isOpen: boolean;
-  group: Group;
   onClose: () => void;
-  onSubmit: (values: EditGroupFormValues) => void | Promise<void>;
+  onSubmit: (values: CreateGroupFormValues) => void | Promise<void>;
 }
 
-export const EditGroupModal: React.FC<EditGroupModalProps> = ({
+export const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
   isOpen,
-  group,
   onClose,
   onSubmit,
 }) => {
-  const handleSubmit = async (values: EditGroupFormValues) => {
+  const handleSubmit = async (values: CreateGroupFormValues) => {
     await onSubmit(values);
     onClose();
   };
@@ -34,21 +31,20 @@ export const EditGroupModal: React.FC<EditGroupModalProps> = ({
       variant={ModalVariant.medium}
       isOpen={isOpen}
       onClose={onClose}
-      aria-label="Edit group"
+      aria-label="Create group"
     >
-      <ModalHeader title={`Edit group - ${group.name}`} />
+      <ModalHeader title="Create group" />
       <ModalBody>
         <GroupForm
-          id="edit-group-form"
-          group={group}
+          id="create-group-form"
           onSubmit={(values) => {
             void handleSubmit(values);
           }}
         />
       </ModalBody>
       <ModalFooter>
-        <Button variant="primary" type="submit" form="edit-group-form">
-          Save Changes
+        <Button variant="primary" type="submit" form="create-group-form">
+          Create
         </Button>
         <Button variant="link" onClick={onClose}>
           Cancel
@@ -58,4 +54,4 @@ export const EditGroupModal: React.FC<EditGroupModalProps> = ({
   );
 };
 
-EditGroupModal.displayName = "EditGroupModal";
+CreateGroupModal.displayName = "CreateGroupModal";

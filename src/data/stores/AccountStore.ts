@@ -4,6 +4,7 @@ import type {
 } from "@openshift-migration-advisor/planner-sdk";
 
 import { ExternalStoreBase } from "../../lib/mvvm/ExternalStore";
+import { getUserKindFromStorage } from "../stubs/stubIdentity";
 import type { IAccountStore } from "./interfaces/IAccountStore";
 
 export class AccountStore
@@ -20,6 +21,8 @@ export class AccountStore
 
   async getIdentity(): Promise<Identity> {
     this.identity = await this.api.getIdentity();
+    // keep identity kind from localstorage until feature flag is removed
+    this.identity.kind = getUserKindFromStorage();
     this.notify();
     return this.identity;
   }

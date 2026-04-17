@@ -32,7 +32,7 @@ const _FAKE_PARTNER_REQUESTS: PartnerRequest[] = [
 const _EMPTY_PARTNER_REQUESTS: PartnerRequest[] = [];
 
 export const getFakePartnerRequests = (): PartnerRequest[] => {
-  return [..._FAKE_PARTNER_REQUESTS];
+  return [..._EMPTY_PARTNER_REQUESTS];
 };
 
 export const createFakePartnerRequest = (

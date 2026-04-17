@@ -19,8 +19,8 @@ import { SearchIcon } from "@patternfly/react-icons";
 import React, { useState } from "react";
 
 import { LoadingSpinner } from "../../../core/components/LoadingSpinner";
-import type { EditGroupFormValues } from "../components/EditGroupForm";
 import { EditGroupModal } from "../components/EditGroupModal";
+import type { EditGroupFormValues } from "../components/GroupForm";
 import { useGroupDetailsViewModel } from "../view-models/useGroupDetailsViewModel";
 import { AuthorizedMembersSection } from "./AuthorizedMembersSection";
 
@@ -32,10 +32,10 @@ export const GroupDetailScreen: React.FC = () => {
   const vm = useGroupDetailsViewModel();
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
-  const handleEditSubmit = (values: EditGroupFormValues) => {
-    console.log("Edit group:", values);
-    // TODO: Implement group update logic
-    // vm.editGroup(values)
+  const handleEditSubmit = async (values: EditGroupFormValues) => {
+    const { id: _id, ...updateData } = values;
+    await vm.updateGroup(updateData);
+    setIsEditModalOpen(false);
   };
 
   return (
@@ -95,6 +95,18 @@ export const GroupDetailScreen: React.FC = () => {
                     </DescriptionListDescription>
                   </DescriptionListGroup>
                   <DescriptionListGroup>
+                    <DescriptionListTerm>Company</DescriptionListTerm>
+                    <DescriptionListDescription>
+                      {vm.group.company}
+                    </DescriptionListDescription>
+                  </DescriptionListGroup>
+                  <DescriptionListGroup>
+                    <DescriptionListTerm>Kind</DescriptionListTerm>
+                    <DescriptionListDescription>
+                      {vm.group.kind}
+                    </DescriptionListDescription>
+                  </DescriptionListGroup>
+                  <DescriptionListGroup>
                     <DescriptionListTerm>Description</DescriptionListTerm>
                     <DescriptionListDescription>
                       {vm.group.description}
@@ -108,7 +120,9 @@ export const GroupDetailScreen: React.FC = () => {
                 isOpen={isEditModalOpen}
                 group={vm.group}
                 onClose={() => setIsEditModalOpen(false)}
-                onSubmit={handleEditSubmit}
+                onSubmit={(values) => {
+                  void handleEditSubmit(values);
+                }}
               />
             )}
           </>

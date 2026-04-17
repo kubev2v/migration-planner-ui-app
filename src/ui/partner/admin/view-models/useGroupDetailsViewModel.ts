@@ -1,4 +1,7 @@
-import type { Group } from "@openshift-migration-advisor/planner-sdk";
+import type {
+  Group,
+  GroupUpdate,
+} from "@openshift-migration-advisor/planner-sdk";
 import { useInjection } from "@y0n1/react-ioc";
 import { useEffect } from "react";
 import { useParams } from "react-router-dom";
@@ -12,6 +15,7 @@ export interface GroupDetailsViewModel {
   group?: Group;
   isLoading: boolean;
   error?: Error;
+  updateGroup: (data: GroupUpdate) => Promise<void>;
 }
 
 export const useGroupDetailsViewModel = (): GroupDetailsViewModel => {
@@ -22,11 +26,23 @@ export const useGroupDetailsViewModel = (): GroupDetailsViewModel => {
   // Fetch group by ID
   const [fetchState, doFetchGroup] = useAsyncFn(
     async (groupId: string) => {
-      const group = await groupStore.get(groupId);
+      const group = await groupStore.getGroup(groupId);
       return group;
     },
     [groupStore],
     { loading: true },
+  );
+
+  // Update group
+  const [updateState, doUpdateGroup] = useAsyncFn(
+    async (data: GroupUpdate) => {
+      if (!id) {
+        throw new Error("Group ID is required");
+      }
+      await groupStore.updateGroup(id, data);
+      await doFetchGroup(id);
+    },
+    [groupStore, id, doFetchGroup],
   );
 
   // Initial fetch
@@ -39,7 +55,8 @@ export const useGroupDetailsViewModel = (): GroupDetailsViewModel => {
   return {
     id,
     group: fetchState.value,
-    isLoading: fetchState.loading,
-    error: fetchState.error,
+    isLoading: fetchState.loading || updateState.loading,
+    error: fetchState.error || updateState.error,
+    updateGroup: doUpdateGroup,
   };
 };

@@ -1,27 +1,26 @@
 import { css } from "@emotion/css";
+import type { Group } from "@openshift-migration-advisor/planner-sdk";
 import {
+  Alert,
   Button,
   Content,
   EmptyState,
+  EmptyStateActions,
+  EmptyStateBody,
+  EmptyStateFooter,
   PageSection,
   Title,
-  Truncate,
 } from "@patternfly/react-core";
 import { SearchIcon } from "@patternfly/react-icons";
-import {
-  Table,
-  TableText,
-  Tbody,
-  Td,
-  Th,
-  Thead,
-  Tr,
-} from "@patternfly/react-table";
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { routes } from "../../../../routing/Routes";
+import { ConfirmationModal } from "../../../core/components/ConfirmationModal";
 import { LoadingSpinner } from "../../../core/components/LoadingSpinner";
+import { CreateGroupModal } from "../components/CreateGroupModal";
+import type { CreateGroupFormValues } from "../components/GroupForm";
+import { GroupsTable } from "../components/GroupsTable";
 import { useGroupsViewModel } from "../view-models/useGroupsViewModel";
 
 const introStyle = css`
@@ -31,66 +30,90 @@ const introStyle = css`
 export const GroupsScreen: React.FC = () => {
   const vm = useGroupsViewModel();
   const navigate = useNavigate();
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<Group | null>(null);
+
+  const handleCreateGroup = async (values: CreateGroupFormValues) => {
+    await vm.createGroup(values);
+    setIsCreateModalOpen(false);
+  };
+
+  const handleDelete = async (group: Group) => {
+    await vm.deleteGroup(group.id);
+    setDeleteTarget(null);
+  };
 
   return (
     <PageSection>
       <Content className={introStyle}>
         <Title headingLevel="h1">Groups administration</Title>
       </Content>
+
       {vm.isLoading && <LoadingSpinner />}
-      {vm.error && <div>Error loading groups: {vm.error.message}</div>}
-      {!vm.isLoading && !vm.error && vm.groups.length === 0 && (
+
+      {vm.error && (
+        <div className={introStyle}>
+          <Alert isInline variant="danger" title="Group API error">
+            {vm.error.message}
+          </Alert>
+        </div>
+      )}
+
+      {!vm.isLoading && vm.groups.length === 0 && (
         <EmptyState
           headingLevel="h4"
           icon={SearchIcon}
           titleText="No groups available"
           variant="sm"
+        >
+          <EmptyStateBody>
+            Begin by creating a partner or admin group.
+          </EmptyStateBody>
+          <EmptyStateFooter>
+            <EmptyStateActions>
+              <Button
+                variant="primary"
+                onClick={() => setIsCreateModalOpen(true)}
+              >
+                Create group
+              </Button>
+            </EmptyStateActions>
+          </EmptyStateFooter>
+        </EmptyState>
+      )}
+
+      {!vm.isLoading && vm.groups.length > 0 && (
+        <GroupsTable
+          groups={vm.groups}
+          onCreateGroupClick={() => setIsCreateModalOpen(true)}
+          onGroupClick={(groupId) => navigate(routes.adminGroupById(groupId))}
+          onDeleteGroup={setDeleteTarget}
         />
       )}
-      {!vm.isLoading && !vm.error && vm.groups.length > 0 && (
-        <Table aria-label="Groups table" variant="compact">
-          <Thead>
-            <Tr>
-              <Th>Icon</Th>
-              <Th width={10}>ID</Th>
-              <Th>Name</Th>
-              <Th>Kind</Th>
-              <Th>Description</Th>
-            </Tr>
-          </Thead>
-          <Tbody>
-            {vm.groups.map((group) => (
-              <Tr key={group.id}>
-                <Td dataLabel="Group icon" textCenter>
-                  <img
-                    src={group.icon}
-                    alt={`${group.name} icon`}
-                    style={{
-                      height: "60px",
-                    }}
-                  />
-                </Td>
-                <Td dataLabel="ID">
-                  <TableText>
-                    <Truncate content={group.id} />
-                  </TableText>
-                </Td>
-                <Td dataLabel="Name">
-                  <Button
-                    variant="link"
-                    onClick={(): void =>
-                      navigate(routes.adminGroupById(group.id))
-                    }
-                  >
-                    {group.name}
-                  </Button>
-                </Td>
-                <Td dataLabel="Kind">{group.kind}</Td>
-                <Td dataLabel="Description">{group.description}</Td>
-              </Tr>
-            ))}
-          </Tbody>
-        </Table>
+
+      <CreateGroupModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        onSubmit={(values) => {
+          void handleCreateGroup(values);
+        }}
+      />
+
+      {deleteTarget && (
+        <ConfirmationModal
+          title="Delete Group"
+          titleIconVariant="warning"
+          isOpen={Boolean(deleteTarget)}
+          onCancel={() => setDeleteTarget(null)}
+          onConfirm={() => {
+            if (deleteTarget) {
+              void handleDelete(deleteTarget);
+            }
+          }}
+          onClose={() => setDeleteTarget(null)}
+        >
+          Are you sure you want to delete <b>{deleteTarget.name}</b>?
+        </ConfirmationModal>
       )}
     </PageSection>
   );

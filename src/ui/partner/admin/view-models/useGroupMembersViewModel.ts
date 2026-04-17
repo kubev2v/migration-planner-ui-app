@@ -26,6 +26,7 @@ export const useGroupMembersViewModel = (): GroupUsersViewModel => {
       return members;
     },
     [groupsStore],
+    { loading: true },
   );
 
   // Initial fetch
