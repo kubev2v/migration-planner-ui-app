@@ -217,7 +217,7 @@ export const DEFAULT_FORM_VALUES: SizingFormValues = {
   customMemoryGb: 32,
   haReplicas: 3,
   cpuOvercommitRatio: 4,
-  memoryOvercommitRatio: 2,
+  memoryOvercommitRatio: 4,
   scheduleOnControlPlane: false,
   smtEnabled: false,
   smtThreads: 32,
