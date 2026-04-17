@@ -2,12 +2,12 @@
 
 ## Issue Summary
 
-**Problem**: URLs in production were intermittently missing the `/openshift/migration-assessment` prefix after certain navigation flows (especially after RVTool uploads).
+**Problem**: URLs in production were intermittently missing the `/openshift/migration-advisor` prefix after certain navigation flows (especially after RVTool uploads).
 
 **Example**:
 
 - ❌ Incorrect: `https://console.redhat.com/assessments/d8d38f15-d3f6-49a6-9a8b-2f7efc21aae9/report`
-- ✅ Correct: `https://console.redhat.com/openshift/migration-assessment/assessments/d8d38f15-d3f6-49a6-9a8b-2f7efc21aae9/report`
+- ✅ Correct: `https://console.redhat.com/openshift/migration-advisor/assessments/d8d38f15-d3f6-49a6-9a8b-2f7efc21aae9/report`
 
 ## Root Cause
 
@@ -34,8 +34,8 @@ export const routes = {
 // After (dynamic, computed on each access)
 function getAppBasename(): string {
   const pathname = window.location.pathname.replace(/^\/(preview|beta)/, "");
-  return pathname.startsWith("/openshift/migration-assessment")
-    ? "/openshift/migration-assessment"
+  return pathname.startsWith("/openshift/migration-advisor")
+    ? "/openshift/migration-advisor"
     : "";
 }
 
@@ -98,8 +98,8 @@ After deployment, monitor the browser console for basename detection logs:
 ```javascript
 [Routes] Basename detected: {
   mode: "microfrontend",
-  basename: "/openshift/migration-assessment",
-  currentPathname: "/openshift/migration-assessment/assessments",
+  basename: "/openshift/migration-advisor",
+  currentPathname: "/openshift/migration-advisor/assessments",
   timestamp: "2026-03-06T12:34:56.789Z"
 }
 ```
@@ -108,7 +108,7 @@ After deployment, monitor the browser console for basename detection logs:
 
 - Log appears once when the app initializes
 - Mode should be `"microfrontend"` in production
-- Basename should be `"/openshift/migration-assessment"`
+- Basename should be `"/openshift/migration-advisor"`
 
 **Red flags**:
 

@@ -77,7 +77,7 @@ describe("Routes", () => {
   // ---------------------------------------------------------------------------
 
   describe("Microfrontend mode (stage/prod)", () => {
-    const BASE = "/openshift/migration-assessment";
+    const BASE = "/openshift/migration-advisor";
 
     beforeEach(() => {
       Object.defineProperty(window, "location", {
@@ -138,13 +138,13 @@ describe("Routes", () => {
       Object.defineProperty(window, "location", {
         value: {
           ...window.location,
-          pathname: "/openshift/migration-assessment/assessments",
+          pathname: "/openshift/migration-advisor/assessments",
         },
         writable: true,
         configurable: true,
       });
       expect(routes.assessments).toBe(
-        "/openshift/migration-assessment/assessments",
+        "/openshift/migration-advisor/assessments",
       );
     });
 
@@ -153,13 +153,13 @@ describe("Routes", () => {
       Object.defineProperty(window, "location", {
         value: {
           ...window.location,
-          pathname: "/openshift/migration-assessment/assessments",
+          pathname: "/openshift/migration-advisor/assessments",
         },
         writable: true,
         configurable: true,
       });
       expect(routes.assessments).toBe(
-        "/openshift/migration-assessment/assessments",
+        "/openshift/migration-advisor/assessments",
       );
 
       // Simulate navigation to standalone mode
@@ -175,13 +175,13 @@ describe("Routes", () => {
       Object.defineProperty(window, "location", {
         value: {
           ...window.location,
-          pathname: "/preview/openshift/migration-assessment/assessments",
+          pathname: "/preview/openshift/migration-advisor/assessments",
         },
         writable: true,
         configurable: true,
       });
       expect(routes.assessments).toBe(
-        "/openshift/migration-assessment/assessments",
+        "/openshift/migration-advisor/assessments",
       );
     });
 
@@ -189,13 +189,13 @@ describe("Routes", () => {
       Object.defineProperty(window, "location", {
         value: {
           ...window.location,
-          pathname: "/beta/openshift/migration-assessment/assessments",
+          pathname: "/beta/openshift/migration-advisor/assessments",
         },
         writable: true,
         configurable: true,
       });
       expect(routes.assessments).toBe(
-        "/openshift/migration-assessment/assessments",
+        "/openshift/migration-advisor/assessments",
       );
     });
 
@@ -246,7 +246,7 @@ describe("Routes", () => {
       Object.defineProperty(window, "location", {
         value: {
           ...window.location,
-          pathname: "/openshift/migration-assessment/assessments",
+          pathname: "/openshift/migration-advisor/assessments",
         },
         writable: true,
         configurable: true,
@@ -257,11 +257,11 @@ describe("Routes", () => {
 
       // EXPECTED: Should return correct URL with basename
       expect(exampleReportUrl).toBe(
-        "/openshift/migration-assessment/assessments/example-report",
+        "/openshift/migration-advisor/assessments/example-report",
       );
 
       // BEFORE FIX: Would return "/assessments/example-report"
-      // AFTER FIX: Returns "/openshift/migration-assessment/assessments/example-report"
+      // AFTER FIX: Returns "/openshift/migration-advisor/assessments/example-report"
     });
 
     it("reproduces the RVTools upload navigation bug where basename is missing", () => {
@@ -279,7 +279,7 @@ describe("Routes", () => {
       Object.defineProperty(window, "location", {
         value: {
           ...window.location,
-          pathname: "/openshift/migration-assessment/assessments",
+          pathname: "/openshift/migration-advisor/assessments",
         },
         writable: true,
         configurable: true,
@@ -291,11 +291,11 @@ describe("Routes", () => {
 
       // EXPECTED: Should return correct URL with basename
       expect(reportUrl).toBe(
-        `/openshift/migration-assessment/assessments/${assessmentId}/report`,
+        `/openshift/migration-advisor/assessments/${assessmentId}/report`,
       );
 
       // BEFORE FIX: Would return "/assessments/d8d38f15-.../report"
-      // AFTER FIX: Returns "/openshift/migration-assessment/assessments/d8d38f15-.../report"
+      // AFTER FIX: Returns "/openshift/migration-advisor/assessments/d8d38f15-.../report"
     });
 
     it("verifies all route getters adapt to pathname changes during the session", () => {
@@ -314,34 +314,34 @@ describe("Routes", () => {
       Object.defineProperty(window, "location", {
         value: {
           ...window.location,
-          pathname: "/openshift/migration-assessment/assessments",
+          pathname: "/openshift/migration-advisor/assessments",
         },
         writable: true,
         configurable: true,
       });
 
       // ALL routes should now include the basename
-      expect(routes.root).toBe("/openshift/migration-assessment");
+      expect(routes.root).toBe("/openshift/migration-advisor");
       expect(routes.assessments).toBe(
-        "/openshift/migration-assessment/assessments",
+        "/openshift/migration-advisor/assessments",
       );
       expect(routes.assessmentCreate).toBe(
-        "/openshift/migration-assessment/assessments/create",
+        "/openshift/migration-advisor/assessments/create",
       );
       expect(routes.exampleReport).toBe(
-        "/openshift/migration-assessment/assessments/example-report",
+        "/openshift/migration-advisor/assessments/example-report",
       );
       expect(routes.environments).toBe(
-        "/openshift/migration-assessment/environments",
+        "/openshift/migration-advisor/environments",
       );
 
       // And they should work correctly for navigation
       const testId = "test-123";
       expect(routes.assessmentById(testId)).toBe(
-        `/openshift/migration-assessment/assessments/${testId}`,
+        `/openshift/migration-advisor/assessments/${testId}`,
       );
       expect(routes.assessmentReport(testId)).toBe(
-        `/openshift/migration-assessment/assessments/${testId}/report`,
+        `/openshift/migration-advisor/assessments/${testId}/report`,
       );
     });
   });

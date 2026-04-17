@@ -4,10 +4,10 @@
 
 ### Symptom
 
-URLs in production are missing the `/openshift/migration-assessment` prefix:
+URLs in production are missing the `/openshift/migration-advisor` prefix:
 
 - ❌ `https://console.redhat.com/assessments/xxx/report`
-- ✅ `https://console.redhat.com/openshift/migration-assessment/assessments/xxx/report`
+- ✅ `https://console.redhat.com/openshift/migration-advisor/assessments/xxx/report`
 
 This typically occurs after specific navigation flows like:
 
@@ -61,8 +61,8 @@ The routes module logs basename detection events to help diagnose issues:
 // Check the console for:
 [Routes] Basename detected: {
   mode: "microfrontend",  // or "standalone"
-  basename: "/openshift/migration-assessment",  // or "(root)"
-  currentPathname: "/openshift/migration-assessment/assessments",
+  basename: "/openshift/migration-advisor",  // or "(root)"
+  currentPathname: "/openshift/migration-advisor/assessments",
   timestamp: "2026-03-06T12:34:56.789Z"
 }
 ```
@@ -83,7 +83,7 @@ To prevent similar issues in the future:
 
    ```typescript
    // ❌ BAD
-   navigate("/openshift/migration-assessment/assessments");
+   navigate("/openshift/migration-advisor/assessments");
 
    // ✅ GOOD
    navigate(routes.assessments);

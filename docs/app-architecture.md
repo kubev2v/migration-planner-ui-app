@@ -329,10 +329,10 @@ breadcrumbs) with an `<Outlet />` for child routes (`AssessmentsScreen`,
 
 The app runs in two modes with different routing contexts:
 
-| Mode                      | Who provides `<BrowserRouter>` | Router `basename` | App mount path                      |
-| ------------------------- | ------------------------------ | ----------------- | ----------------------------------- |
-| **Standalone (dev)**      | `dev/src/AppShell.tsx`         | `"/"`             | `/` (root)                          |
-| **Microfrontend (stage)** | Host chrome                    | `"/"`             | `/openshift/migration-assessment/*` |
+| Mode                      | Who provides `<BrowserRouter>` | Router `basename` | App mount path                   |
+| ------------------------- | ------------------------------ | ----------------- | -------------------------------- |
+| **Standalone (dev)**      | `dev/src/AppShell.tsx`         | `"/"`             | `/` (root)                       |
+| **Microfrontend (stage)** | Host chrome                    | `"/"`             | `/openshift/migration-advisor/*` |
 
 In **standalone mode**, the BrowserRouter's `basename` is `"/"` and the app
 occupies the root. Basename-free absolute paths like `/assessments/123` work
@@ -340,17 +340,17 @@ because they resolve from `"/"`.
 
 In **microfrontend (stage) mode**, the Chrome's `BrowserRouter` also has
 `basename="/"`, but the app is mounted inside a nested `<Route>` at
-`/openshift/migration-assessment/*`. An absolute `navigate("/assessments/123")`
+`/openshift/migration-advisor/*`. An absolute `navigate("/assessments/123")`
 resolves from the router root (`"/"`), producing the URL `/assessments/123` —
 which is _outside_ the app's mount point. Navigation paths must therefore
 include the full mount prefix.
 
 `src/routing/Routes.ts` handles this transparently through **dynamic runtime
 detection**. Each time a route is accessed, it checks `window.location.pathname`
-to determine whether the app slug (`/openshift/migration-assessment`) is present:
+to determine whether the app slug (`/openshift/migration-advisor`) is present:
 
 - Dev mode → basename = `""`
-- Stage mode → basename = `"/openshift/migration-assessment"`
+- Stage mode → basename = `"/openshift/migration-advisor"`
 
 Every entry in the `routes` object uses getters that compute the basename
 dynamically, ensuring correctness even during hot-module reloading or federated
@@ -360,8 +360,8 @@ module initialization timing edge cases:
 // src/routing/Routes.ts (simplified)
 function getAppBasename(): string {
   const pathname = window.location.pathname.replace(/^\/(preview|beta)/, "");
-  return pathname.startsWith("/openshift/migration-assessment")
-    ? "/openshift/migration-assessment"
+  return pathname.startsWith("/openshift/migration-advisor")
+    ? "/openshift/migration-advisor"
     : "";
 }
 
@@ -396,7 +396,7 @@ export const routes = {
 } as const;
 ```
 
-**Do NOT hardcode `/openshift/migration-assessment`** — `APP_BASENAME` handles
+**Do NOT hardcode `/openshift/migration-advisor`** — `APP_BASENAME` handles
 mode detection at runtime.
 
 #### 2. Create the view and view model
@@ -467,7 +467,7 @@ expect(mockNavigate).toHaveBeenCalledWith(routes.migrationPlanById("p-1"));
 #### Common mistakes to avoid
 
 - **Hardcoding the basename** in `navigate()` / `<Link>` — e.g.
-  `navigate("/openshift/migration-assessment/foo")`. This breaks standalone
+  `navigate("/openshift/migration-advisor/foo")`. This breaks standalone
   mode and bypasses the runtime detection.
 - **Using string literals** instead of `routes.*` — this bypasses the
   centralised route map and makes future path changes error-prone.
@@ -480,7 +480,7 @@ expect(mockNavigate).toHaveBeenCalledWith(routes.migrationPlanById("p-1"));
 #### Debugging production routing issues
 
 If you see incorrect URLs in production (e.g. missing the
-`/openshift/migration-assessment` prefix), check the browser console for
+`/openshift/migration-advisor` prefix), check the browser console for
 `[Routes] Basename detected:` log entries. This will show:
 
 - Which mode was detected (`microfrontend` or `standalone`)
