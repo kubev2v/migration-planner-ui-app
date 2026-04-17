@@ -227,15 +227,16 @@ export const ComplexityResult: React.FC<ComplexityResultProps> = ({
                   labelComponent={
                     <ChartTooltip
                       style={{
-                        fontSize: 8,
+                        fontSize: 9,
                         fill: "var(--pf-t--global--text--color--inverse)",
                       }}
                       flyoutStyle={{
                         stroke:
-                          "var(--pf-t--global--background--color--inverse)",
+                          "var(--pf-t--global--background--color--inverse--default)",
                         strokeWidth: 1,
-                        fill: "var(--pf-t--global--background--color--inverse)",
+                        fill: "var(--pf-t--global--background--color--inverse--default)",
                       }}
+                      flyoutPadding={{ top: 6, bottom: 6, left: 10, right: 10 }}
                     />
                   }
                   constrainToVisibleArea
@@ -380,9 +381,10 @@ export const ComplexityResult: React.FC<ComplexityResultProps> = ({
                       fill: "var(--pf-t--global--text--color--inverse)",
                     }}
                     flyoutStyle={{
-                      stroke: "var(--pf-t--global--background--color--inverse)",
+                      stroke:
+                        "var(--pf-t--global--background--color--inverse--default)",
                       strokeWidth: 1,
-                      fill: "var(--pf-t--global--background--color--inverse)",
+                      fill: "var(--pf-t--global--background--color--inverse--default)",
                     }}
                   />
                 }

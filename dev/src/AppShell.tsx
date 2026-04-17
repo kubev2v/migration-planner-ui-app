@@ -1,7 +1,9 @@
 import {
   Brand,
+  Button,
   Masthead,
   MastheadBrand,
+  MastheadContent,
   MastheadLogo,
   MastheadMain,
   MastheadToggle,
@@ -10,16 +12,29 @@ import {
   PageSidebar,
   PageSidebarBody,
   PageToggleButton,
+  Toolbar,
+  ToolbarContent,
+  ToolbarItem,
 } from "@patternfly/react-core";
-import { useState } from "react";
+import MoonIcon from "@patternfly/react-icons/dist/esm/icons/moon-icon";
+import SunIcon from "@patternfly/react-icons/dist/esm/icons/sun-icon";
+import { useEffect, useState } from "react";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 
 import MainApp from "../../src/MainApp";
 
+const DARK_CLASS = "pf-v6-theme-dark";
 const logoUrl = new URL("/oma-logo.svg", import.meta.url);
 
 export const AppShell: React.FC = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isDark, setIsDark] = useState(() =>
+    document.documentElement.classList.contains(DARK_CLASS),
+  );
+
+  useEffect(() => {
+    document.documentElement.classList.toggle(DARK_CLASS, isDark);
+  }, [isDark]);
 
   const onSidebarToggle = () => {
     setIsSidebarOpen(!isSidebarOpen);
@@ -47,6 +62,22 @@ export const AppShell: React.FC = () => {
           </MastheadLogo>
         </MastheadBrand>
       </MastheadMain>
+      <MastheadContent>
+        <Toolbar>
+          <ToolbarContent>
+            <ToolbarItem align={{ default: "alignEnd" }}>
+              <Button
+                variant="plain"
+                aria-label={
+                  isDark ? "Switch to light mode" : "Switch to dark mode"
+                }
+                onClick={() => setIsDark((d) => !d)}
+                icon={isDark ? <SunIcon /> : <MoonIcon />}
+              />
+            </ToolbarItem>
+          </ToolbarContent>
+        </Toolbar>
+      </MastheadContent>
     </Masthead>
   );
 

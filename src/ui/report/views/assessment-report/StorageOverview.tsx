@@ -270,13 +270,22 @@ export const StorageOverview: React.FC<StorageOverviewProps> = ({
   const smallFontTheme = getCustomTheme(ChartThemeColor.multiUnordered, {
     axis: {
       style: {
-        tickLabels: { fontSize: 8 },
-        axisLabel: { fontSize: 8 },
+        tickLabels: {
+          fontSize: 8,
+          fill: "var(--pf-t--global--text--color--regular)",
+        },
+        axisLabel: {
+          fontSize: 8,
+          fill: "var(--pf-t--global--text--color--regular)",
+        },
       },
     },
     legend: {
       style: {
-        labels: { fontSize: 8 },
+        labels: {
+          fontSize: 8,
+          fill: "var(--pf-t--global--text--color--regular)",
+        },
       },
     },
   });
@@ -381,7 +390,10 @@ export const StorageOverview: React.FC<StorageOverviewProps> = ({
                         tickFormat={(x: string) => String(x)}
                         style={{
                           axis: { stroke: "none" },
-                          tickLabels: { fontSize: 8 },
+                          tickLabels: {
+                            fontSize: 8,
+                            fill: "var(--pf-t--global--text--color--regular)",
+                          },
                         }}
                       />
                       <ChartBar
@@ -499,7 +511,10 @@ export const StorageOverview: React.FC<StorageOverviewProps> = ({
                       }}
                       style={{
                         axis: { stroke: "none" },
-                        tickLabels: { fontSize: 8 },
+                        tickLabels: {
+                          fontSize: 8,
+                          fill: "var(--pf-t--global--text--color--regular)",
+                        },
                       }}
                     />
                     <ChartBar
