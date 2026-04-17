@@ -62,10 +62,22 @@ const TIER_CONFIG: Record<
   string,
   { order: number; label: string; legendCategory: string }
 > = {
-  Easy: { order: 0, label: "0-10 TB", legendCategory: "Easy" },
-  Medium: { order: 1, label: "11-20 TB", legendCategory: "Medium" },
-  Hard: { order: 2, label: "21-50 TB", legendCategory: "Hard" },
-  White: { order: 3, label: "> 50 TB", legendCategory: "White glove" },
+  "0-100GiB": { order: 0, label: "0-100GiB", legendCategory: "0-100GiB" },
+  "100-500GiB": {
+    order: 1,
+    label: "100-500GiB",
+    legendCategory: "100-500GiB",
+  },
+  "500GiB-1TiB": {
+    order: 2,
+    label: "500GiB-1TiB",
+    legendCategory: "500GiB-1TiB",
+  },
+  "1-2TiB": { order: 3, label: "1-2TiB", legendCategory: "1-2TiB" },
+  "2-5TiB": { order: 4, label: "2-5TiB", legendCategory: "2-5TiB" },
+  "5-10TiB": { order: 5, label: "5-10TiB", legendCategory: "5-10TiB" },
+  "10-20TiB": { order: 6, label: "10-20TiB", legendCategory: "10-20TiB" },
+  "20+TiB": { order: 7, label: "20+TiB", legendCategory: "20+TiB" },
 };
 
 type TierChartDatum = {
@@ -447,9 +459,9 @@ export const StorageOverview: React.FC<StorageOverviewProps> = ({
                   : `${totals.totalSize.toFixed(2)} TB`
               }
               subTitleColor="var(--pf-t--global--text--color--subtle)"
-              itemsPerRow={Math.ceil(chartData.length / 2)}
-              labelFontSize={18}
-              marginLeft={viewMode === "totalSize" ? "42%" : "52%"}
+              itemsPerRow={Math.min(Math.ceil(chartData.length / 2), 2)}
+              legendWidth={420}
+              labelFontSize={14}
               tooltipLabelFormatter={({ datum, percent }) =>
                 `${datum.countDisplay}\n${percent.toFixed(1)}%`
               }
@@ -536,9 +548,12 @@ export const StorageOverview: React.FC<StorageOverviewProps> = ({
                 title={`${totals.totalVMs} VMs`}
                 subTitle={`${totals.totalSize.toFixed(2)} TB`}
                 subTitleColor="var(--pf-t--global--text--color--subtle)"
-                itemsPerRow={Math.ceil(chartDataForVmCount.length / 2)}
-                labelFontSize={18}
-                marginLeft="52%"
+                itemsPerRow={Math.min(
+                  Math.ceil(chartDataForVmCount.length / 2),
+                  2,
+                )}
+                legendWidth={420}
+                labelFontSize={14}
                 tooltipLabelFormatter={({ datum, percent }) =>
                   `${datum.countDisplay}\n${percent.toFixed(1)}%`
                 }
@@ -557,9 +572,12 @@ export const StorageOverview: React.FC<StorageOverviewProps> = ({
                 title={`${totals.totalSize.toFixed(2)} TB`}
                 subTitle={`${totals.totalVMs} VMs`}
                 subTitleColor="var(--pf-t--global--text--color--subtle)"
-                itemsPerRow={Math.ceil(chartDataForTotalSize.length / 2)}
-                labelFontSize={18}
-                marginLeft="42%"
+                itemsPerRow={Math.min(
+                  Math.ceil(chartDataForTotalSize.length / 2),
+                  2,
+                )}
+                legendWidth={420}
+                labelFontSize={14}
                 tooltipLabelFormatter={({ datum, percent }) =>
                   `${datum.countDisplay}\n${percent.toFixed(1)}%`
                 }
