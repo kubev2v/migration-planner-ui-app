@@ -1,18 +1,21 @@
+import type { PartnerRequest } from "@openshift-migration-advisor/planner-sdk";
 import { Label } from "@patternfly/react-core";
 import React from "react";
 
-import type { PartnerRequest } from "../../../../models/PartnerRequestModel";
-
 interface RequestStatusProps {
-  status: PartnerRequest["status"];
+  status: PartnerRequest["requestStatus"];
 }
 
 export const RequestStatus: React.FC<RequestStatusProps> = ({ status }) => {
   switch (status) {
+    case "accepted":
+      return <Label color="green">Accepted</Label>;
     case "pending":
       return <Label color="yellow">Waiting for approval</Label>;
     case "rejected":
       return <Label color="red">Rejected</Label>;
+    case "cancelled":
+      return <Label color="orange">Cancelled</Label>;
     default:
       return <Label>{status}</Label>;
   }

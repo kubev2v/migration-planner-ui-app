@@ -1,5 +1,7 @@
 import { css } from "@emotion/css";
+import type { PartnerRequestCreate } from "@openshift-migration-advisor/planner-sdk";
 import {
+  Alert,
   Button,
   Card,
   CardBody,
@@ -16,7 +18,6 @@ import { SearchIcon } from "@patternfly/react-icons";
 import React, { useState } from "react";
 
 import type { Partner } from "../../../../models/PartnerModel";
-import type { PartnerRequestValues } from "../../../../models/PartnerRequestModel";
 import { LoadingSpinner } from "../../../core/components/LoadingSpinner";
 import { ContactFormModal } from "../components/ContactFormModal";
 import { usePartnersViewModel } from "../view-models/usePartnersViewModel";
@@ -29,14 +30,12 @@ export const PartnersListSection: React.FC = () => {
   const vm = usePartnersViewModel();
   const [selectedPartner, setSelectedPartner] = useState<Partner | null>(null);
 
-  const handleSubmitRequest = async (values: PartnerRequestValues) => {
-    try {
-      await vm.createPartnerRequest(values);
-      console.log("[PartnersListSection] Contact request submitted:", values);
-      setSelectedPartner(null);
-    } catch (error) {
-      console.error("[PartnersListSection] Failed to submit request:", error);
+  const handleSubmitRequest = async (values: PartnerRequestCreate) => {
+    if (!selectedPartner) {
+      return;
     }
+    await vm.createPartnerRequest(selectedPartner.id, values);
+    setSelectedPartner(null);
   };
 
   return (
@@ -55,7 +54,15 @@ export const PartnersListSection: React.FC = () => {
       </Content>
 
       {vm.isLoading && <LoadingSpinner />}
-      {vm.error && <div>Error loading partners: {vm.error.message}</div>}
+
+      {vm.error && (
+        <div className={introStyle}>
+          <Alert isInline variant="danger" title="Partners API error">
+            {vm.error.message}
+          </Alert>
+        </div>
+      )}
+
       {!vm.isLoading && !vm.error && vm.partners.length === 0 && (
         <EmptyState
           headingLevel="h4"

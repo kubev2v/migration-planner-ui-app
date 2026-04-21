@@ -1,13 +1,10 @@
+import type {
+  PartnerApiInterface,
+  PartnerRequest,
+  PartnerRequestCreate,
+} from "@openshift-migration-advisor/planner-sdk";
+
 import { ExternalStoreBase } from "../../lib/mvvm/ExternalStore";
-import {
-  type PartnerRequest,
-  type PartnerRequestCreate,
-} from "../../models/PartnerRequestModel";
-import { getFakeGroups } from "../stubs/stubGroups";
-import {
-  createFakePartnerRequest,
-  getFakePartnerRequests,
-} from "../stubs/stubPartnerRequests";
 import type { IPartnerRequestsStore } from "./interfaces/IPartnerRequestsStore";
 
 export class PartnerRequestsStore
@@ -15,42 +12,35 @@ export class PartnerRequestsStore
   implements IPartnerRequestsStore
 {
   private partnerRequests: PartnerRequest[] = [];
+  private api: PartnerApiInterface;
 
-  // eslint-disable-next-line @typescript-eslint/require-await
+  constructor(api: PartnerApiInterface) {
+    super();
+    this.api = api;
+  }
+
   async list(): Promise<PartnerRequest[]> {
-    this.partnerRequests = getFakePartnerRequests();
-    console.log(
-      "[PartnerRequestsStore] GET /api/partners/requests",
-      this.partnerRequests,
-    );
+    this.partnerRequests = await this.api.listPartnerRequests({});
     this.notify();
     return this.partnerRequests;
   }
 
-  // eslint-disable-next-line @typescript-eslint/require-await
-  async create(data: PartnerRequestCreate): Promise<PartnerRequest> {
-    console.log("[PartnerRequestsStore] POST /api/partners/requests", data);
-    const group = getFakeGroups().find(
-      (group) => group.id === data.request.partnerId,
-    );
-    if (!group) {
-      throw new Error(`Group ${data.request.partnerId} not found`);
-    }
-    const newRequest = createFakePartnerRequest(data, group);
-    this.partnerRequests = [...this.partnerRequests, newRequest];
+  async create(
+    groupId: string,
+    data: PartnerRequestCreate,
+  ): Promise<PartnerRequest> {
+    const newPartnerRequest = await this.api.createPartnerRequest({
+      id: groupId,
+      partnerRequestCreate: data,
+    });
+    this.partnerRequests = [...this.partnerRequests, newPartnerRequest];
     this.notify();
-    return newRequest;
+    return newPartnerRequest;
   }
 
-  // eslint-disable-next-line @typescript-eslint/require-await
-  async delete(request: PartnerRequest): Promise<void> {
-    this.partnerRequests = this.partnerRequests.filter(
-      (r) => r.id !== request.id,
-    );
-    console.log(
-      `[PartnerRequestsStore] DELETE /api/partners/requests/${request.id}`,
-    );
-    this.notify();
+  async cancel(partnerRequestId: string): Promise<void> {
+    await this.api.cancelPartnerRequest({ id: partnerRequestId });
+    await this.list();
   }
 
   override getSnapshot(): PartnerRequest[] {

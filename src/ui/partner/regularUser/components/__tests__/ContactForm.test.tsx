@@ -5,29 +5,13 @@ import { render, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 
-import type { Partner } from "../../../../../models/PartnerModel";
 import { ContactForm } from "../ContactForm";
-
-const mockPartner: Partner = {
-  id: "partner-1",
-  name: "Tech Solutions Inc",
-  company: "",
-  description: "Test partner description",
-  icon: "data:image/svg+xml;base64,test",
-  kind: "partner",
-  createdAt: new Date(),
-  updatedAt: new Date(),
-};
 
 describe("ContactForm", () => {
   it("renders all form fields", () => {
     const mockOnSubmit = vi.fn();
     const { getByRole } = render(
-      <ContactForm
-        id="contact-form"
-        partner={mockPartner}
-        onSubmit={mockOnSubmit}
-      />,
+      <ContactForm id="contact-form" onSubmit={mockOnSubmit} />,
     );
 
     expect(
@@ -45,25 +29,21 @@ describe("ContactForm", () => {
     ).toBeInTheDocument();
   });
 
-  it("submits the form with correct values including partner", async () => {
+  it("submits the form with correct values", async () => {
     const mockOnSubmit = vi.fn();
     const user = userEvent.setup();
     const { getByRole } = render(
       <>
-        <ContactForm
-          id="contact-form"
-          partner={mockPartner}
-          onSubmit={mockOnSubmit}
-        />
+        <ContactForm id="contact-form" onSubmit={mockOnSubmit} />
         <Button variant="primary" type="submit" form="contact-form">
           Contact
         </Button>
       </>,
     );
 
-    const customerName = getByRole("textbox", { name: /Customer name/i });
-    await user.clear(customerName);
-    await user.type(customerName, "Acme Corporation");
+    const name = getByRole("textbox", { name: /Customer name/i });
+    await user.clear(name);
+    await user.type(name, "Acme Corporation");
 
     const contactName = getByRole("textbox", {
       name: /Customer point of contact name/i,
@@ -87,12 +67,11 @@ describe("ContactForm", () => {
     await waitFor(() => {
       expect(mockOnSubmit.mock.calls.length).toBe(1);
       expect(mockOnSubmit.mock.calls[0][0]).toEqual({
-        partnerId: "partner-1",
-        customerName: "Acme Corporation",
-        customerPointOfContactName: "John Doe",
+        name: "Acme Corporation",
+        contactName: "John Doe",
         contactPhone: "+1-555-0123",
         email: "john.doe@acme.com",
-        vcenterGeoLocation: "us-east-2",
+        location: "us-east-2",
       });
     });
   });
@@ -102,11 +81,7 @@ describe("ContactForm", () => {
     const user = userEvent.setup();
     const { getByRole, getByText } = render(
       <>
-        <ContactForm
-          id="contact-form"
-          partner={mockPartner}
-          onSubmit={mockOnSubmit}
-        />
+        <ContactForm id="contact-form" onSubmit={mockOnSubmit} />
         <Button variant="primary" type="submit" form="contact-form">
           Contact
         </Button>
@@ -132,11 +107,7 @@ describe("ContactForm", () => {
     const user = userEvent.setup();
     const { getByRole, getByText } = render(
       <>
-        <ContactForm
-          id="contact-form"
-          partner={mockPartner}
-          onSubmit={mockOnSubmit}
-        />
+        <ContactForm id="contact-form" onSubmit={mockOnSubmit} />
         <Button variant="primary" type="submit" form="contact-form">
           Contact
         </Button>
@@ -158,11 +129,7 @@ describe("ContactForm", () => {
     const user = userEvent.setup();
     const { getByRole, getByText, queryByText } = render(
       <>
-        <ContactForm
-          id="contact-form"
-          partner={mockPartner}
-          onSubmit={mockOnSubmit}
-        />
+        <ContactForm id="contact-form" onSubmit={mockOnSubmit} />
         <Button variant="primary" type="submit" form="contact-form">
           Contact
         </Button>
@@ -176,8 +143,8 @@ describe("ContactForm", () => {
     expect(getByText("Customer name is required")).toBeInTheDocument();
 
     // Type in the field
-    const customerName = getByRole("textbox", { name: /Customer name/i });
-    await user.type(customerName, "A");
+    const name = getByRole("textbox", { name: /Customer name/i });
+    await user.type(name, "A");
 
     // Error should disappear
     await waitFor(() => {
@@ -189,34 +156,26 @@ describe("ContactForm", () => {
     const mockOnSubmit = vi.fn();
     const user = userEvent.setup();
     const { getByRole } = render(
-      <ContactForm
-        id="contact-form"
-        partner={mockPartner}
-        onSubmit={mockOnSubmit}
-      />,
+      <ContactForm id="contact-form" onSubmit={mockOnSubmit} />,
     );
 
-    const customerName = getByRole("textbox", { name: /Customer name/i });
-    await user.type(customerName, "Test Company");
+    const name = getByRole("textbox", { name: /Customer name/i });
+    await user.type(name, "Test Company");
 
-    expect(customerName).toHaveValue("Test Company");
+    expect(name).toHaveValue("Test Company");
   });
 
   it("displays error on blur for empty required field", async () => {
     const mockOnSubmit = vi.fn();
     const user = userEvent.setup();
     const { getByRole, getByText } = render(
-      <ContactForm
-        id="contact-form"
-        partner={mockPartner}
-        onSubmit={mockOnSubmit}
-      />,
+      <ContactForm id="contact-form" onSubmit={mockOnSubmit} />,
     );
 
-    const customerName = getByRole("textbox", { name: /Customer name/i });
+    const name = getByRole("textbox", { name: /Customer name/i });
 
     // Focus and then blur without entering anything
-    await user.click(customerName);
+    await user.click(name);
     await user.tab();
 
     await waitFor(() => {
@@ -227,11 +186,7 @@ describe("ContactForm", () => {
   it("displays all region options in the dropdown", () => {
     const mockOnSubmit = vi.fn();
     const { getByRole } = render(
-      <ContactForm
-        id="contact-form"
-        onSubmit={mockOnSubmit}
-        partner={mockPartner}
-      />,
+      <ContactForm id="contact-form" onSubmit={mockOnSubmit} />,
     );
 
     const select = getByRole("combobox", { name: /vCenter geo location/i });

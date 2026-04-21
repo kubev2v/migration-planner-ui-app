@@ -15,6 +15,7 @@ vi.mock("@openshift-migration-advisor/planner-sdk", () => ({
   JobApi: vi.fn(),
   SourceApi: vi.fn(),
   Configuration: vi.fn(),
+  PartnerApi: vi.fn(),
 }));
 
 vi.mock("../../data/stores/AccountStore", () => ({
@@ -176,5 +177,19 @@ describe("createContainer", () => {
     const store = container.get(Symbols.GroupsStore);
     expect(store).toBeDefined();
     expect((store as Record<string, string>)._type).toBe("GroupsStore");
+  });
+
+  it("registers PartnersStore", () => {
+    const store = container.get(Symbols.PartnersStore);
+    expect(store).toBeDefined();
+    expect((store as Record<string, string>)._type).toBe("PartnersStore");
+  });
+
+  it("registers PartnerRequestsStore", () => {
+    const store = container.get(Symbols.PartnerRequestsStore);
+    expect(store).toBeDefined();
+    expect((store as Record<string, string>)._type).toBe(
+      "PartnerRequestsStore",
+    );
   });
 });

@@ -1,11 +1,12 @@
-import type { ExternalStore } from "../../../lib/mvvm/ExternalStore";
 import type {
   PartnerRequest,
   PartnerRequestCreate,
-} from "../../../models/PartnerRequestModel";
+} from "@openshift-migration-advisor/planner-sdk";
+
+import type { ExternalStore } from "../../../lib/mvvm/ExternalStore";
 
 export interface IPartnerRequestsStore extends ExternalStore<PartnerRequest[]> {
   list(): Promise<PartnerRequest[]>;
-  create(data: PartnerRequestCreate): Promise<PartnerRequest>;
-  delete(request: PartnerRequest): Promise<void>;
+  create(groupId: string, data: PartnerRequestCreate): Promise<PartnerRequest>;
+  cancel(partnerRequestId: string): Promise<void>;
 }

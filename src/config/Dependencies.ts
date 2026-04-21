@@ -4,6 +4,7 @@ import {
   ImageApi,
   InfoApi,
   JobApi,
+  PartnerApi,
   SourceApi,
 } from "@openshift-migration-advisor/planner-sdk";
 import { Configuration } from "@openshift-migration-advisor/planner-sdk";
@@ -51,6 +52,7 @@ export const createContainer = (auth: ChromeAPI["auth"]): Container => {
   const infoApi = new InfoApi(plannerApiConfig);
   const jobApi = new JobApi(plannerApiConfig);
   const accountApi = new AccountApi(plannerApiConfig);
+  const partnerApi = new PartnerApi(plannerApiConfig);
 
   const c = new Container();
 
@@ -62,8 +64,11 @@ export const createContainer = (auth: ChromeAPI["auth"]): Container => {
   c.register(Symbols.SourcesStore, new SourcesStore(sourceApi));
   c.register(Symbols.JobsStore, new JobsStore(jobApi));
   c.register(Symbols.GroupsStore, new GroupsStore(accountApi));
-  c.register(Symbols.PartnersStore, new PartnersStore());
-  c.register(Symbols.PartnerRequestsStore, new PartnerRequestsStore());
+  c.register(Symbols.PartnersStore, new PartnersStore(partnerApi));
+  c.register(
+    Symbols.PartnerRequestsStore,
+    new PartnerRequestsStore(partnerApi),
+  );
 
   // Report export
   c.register(

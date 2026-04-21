@@ -1,17 +1,17 @@
+import type { PartnerRequest } from "@openshift-migration-advisor/planner-sdk";
 import { useInjection } from "@y0n1/react-ioc";
 import { useSyncExternalStore } from "react";
-import { useAsync } from "react-use";
+import { useAsync, useAsyncFn } from "react-use";
 
 import { Symbols } from "../../../../config/Dependencies";
 import type { IPartnerRequestsStore } from "../../../../data/stores/interfaces/IPartnerRequestsStore";
-import type { PartnerRequest } from "../../../../models/PartnerRequestModel";
 
 export interface PartnerRequestsViewModel {
   requests: PartnerRequest[];
   hasPendingRequest: boolean;
   isLoading: boolean;
   error?: Error;
-  cancelRequest: (request: PartnerRequest) => Promise<void>;
+  cancelPartnerRequest: (partnerRequestId: string) => Promise<void>;
 }
 
 export const usePartnerRequestsViewModel = (): PartnerRequestsViewModel => {
@@ -23,18 +23,22 @@ export const usePartnerRequestsViewModel = (): PartnerRequestsViewModel => {
     partnerRequestsStore.getSnapshot.bind(partnerRequestsStore),
   );
 
-  // Load partner requests on mount
   const { loading, error } = useAsync(() => partnerRequestsStore.list(), []);
 
-  const cancelRequest = async (request: PartnerRequest) => {
-    await partnerRequestsStore.delete(request);
-  };
+  const [cancelState, doCancelPartnerRequest] = useAsyncFn(
+    async (partnerRequestId: string): Promise<void> => {
+      return await partnerRequestsStore.cancel(partnerRequestId);
+    },
+    [partnerRequestsStore],
+  );
 
   return {
     requests,
-    hasPendingRequest: requests.some((request) => request.status === "pending"),
-    isLoading: loading,
-    error,
-    cancelRequest,
+    hasPendingRequest: requests.some(
+      (request) => request.requestStatus === "pending",
+    ),
+    isLoading: loading || cancelState.loading,
+    error: error || cancelState.error,
+    cancelPartnerRequest: doCancelPartnerRequest,
   };
 };

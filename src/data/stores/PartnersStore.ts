@@ -1,6 +1,7 @@
+import type { PartnerApiInterface } from "@openshift-migration-advisor/planner-sdk";
+
 import { ExternalStoreBase } from "../../lib/mvvm/ExternalStore";
-import { type Partner } from "../../models/PartnerModel";
-import { getFakePartners } from "../stubs/stubPartners";
+import type { Partner } from "../../models/PartnerModel";
 import type { IPartnersStore } from "./interfaces/IPartnersStore";
 
 export class PartnersStore
@@ -8,11 +9,16 @@ export class PartnersStore
   implements IPartnersStore
 {
   private partners: Partner[] = [];
+  private api: PartnerApiInterface;
 
-  // eslint-disable-next-line @typescript-eslint/require-await
+  constructor(api: PartnerApiInterface) {
+    super();
+    this.api = api;
+  }
+
   async list(): Promise<Partner[]> {
-    this.partners = getFakePartners();
-    console.log("[PartnersStore] GET /api/partners", this.partners);
+    const groups = await this.api.listPartners({});
+    this.partners = groups.filter((g) => g.kind === "partner") as Partner[];
     this.notify();
     return this.partners;
   }

@@ -1,8 +1,7 @@
+import type { PartnerRequestCreate } from "@openshift-migration-advisor/planner-sdk";
 import { act, renderHook } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { getFakeIdentity } from "../../../../../data/stubs/stubIdentity";
-import type { PartnerRequestValues } from "../../../../../models/PartnerRequestModel";
 import { usePartnersViewModel } from "../usePartnersViewModel";
 
 // ---------------------------------------------------------------------------
@@ -19,16 +18,11 @@ let mockPartnerRequestsStore: {
   create: ReturnType<typeof vi.fn>;
 };
 
-let mockAccountStore: {
-  getSnapshot: ReturnType<typeof vi.fn>;
-};
-
 vi.mock("@y0n1/react-ioc", () => ({
   useInjection: (symbol: symbol) => {
     const key = symbol.description;
     if (key === "PartnersStore") return mockPartnersStore;
     if (key === "PartnerRequestsStore") return mockPartnerRequestsStore;
-    if (key === "AccountStore") return mockAccountStore;
     throw new Error(`Unexpected symbol: ${String(symbol)}`);
   },
 }));
@@ -42,15 +36,14 @@ describe("usePartnersViewModel - createPartnerRequest", () => {
     vi.clearAllMocks();
   });
 
-  it("should create a partner request when identity exists", async () => {
-    const mockIdentity = getFakeIdentity("regular");
-    const mockPartnerRequestValues: PartnerRequestValues = {
-      partnerId: "partner-1",
-      customerName: "Test Customer",
-      customerPointOfContactName: "John Doe",
+  it("should create a partner request with partnerId and data", async () => {
+    const partnerId = "partner-123";
+    const mockPartnerRequestCreate: PartnerRequestCreate = {
+      name: "Test Customer",
+      contactName: "John Doe",
       contactPhone: "+1234567890",
       email: "john.doe@example.com",
-      vcenterGeoLocation: "US-East",
+      location: "US-East",
     };
 
     const unsubscribe = vi.fn();
@@ -65,10 +58,6 @@ describe("usePartnersViewModel - createPartnerRequest", () => {
       create: vi.fn().mockResolvedValue(undefined),
     };
 
-    mockAccountStore = {
-      getSnapshot: vi.fn(() => mockIdentity),
-    };
-
     const { result } = renderHook(() => usePartnersViewModel());
 
     // Wait for initial useAsync to complete
@@ -77,54 +66,15 @@ describe("usePartnersViewModel - createPartnerRequest", () => {
     });
 
     await act(async () => {
-      await result.current.createPartnerRequest(mockPartnerRequestValues);
+      await result.current.createPartnerRequest(
+        partnerId,
+        mockPartnerRequestCreate,
+      );
     });
 
-    expect(mockPartnerRequestsStore.create).toHaveBeenCalledWith({
-      username: mockIdentity.username,
-      request: mockPartnerRequestValues,
-    });
-  });
-
-  it("should throw an error when no identity is found", async () => {
-    const mockPartnerRequestValues: PartnerRequestValues = {
-      partnerId: "partner-1",
-      customerName: "Test Customer",
-      customerPointOfContactName: "John Doe",
-      contactPhone: "+1234567890",
-      email: "john.doe@example.com",
-      vcenterGeoLocation: "US-East",
-    };
-
-    const unsubscribe = vi.fn();
-    const cachedPartners: unknown[] = [];
-    mockPartnersStore = {
-      subscribe: vi.fn(() => unsubscribe),
-      getSnapshot: vi.fn(() => cachedPartners),
-      list: vi.fn().mockResolvedValue(undefined),
-    };
-
-    mockPartnerRequestsStore = {
-      create: vi.fn().mockResolvedValue(undefined),
-    };
-
-    mockAccountStore = {
-      getSnapshot: vi.fn(() => null),
-    };
-
-    const { result } = renderHook(() => usePartnersViewModel());
-
-    // Wait for initial useAsync to complete
-    await act(async () => {
-      await Promise.resolve();
-    });
-
-    await act(async () => {
-      await expect(
-        result.current.createPartnerRequest(mockPartnerRequestValues),
-      ).rejects.toThrow("No identity found");
-    });
-
-    expect(mockPartnerRequestsStore.create).not.toHaveBeenCalled();
+    expect(mockPartnerRequestsStore.create).toHaveBeenCalledWith(
+      partnerId,
+      mockPartnerRequestCreate,
+    );
   });
 });

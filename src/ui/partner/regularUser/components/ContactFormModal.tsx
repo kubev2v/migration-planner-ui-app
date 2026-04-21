@@ -1,3 +1,4 @@
+import type { PartnerRequestCreate } from "@openshift-migration-advisor/planner-sdk";
 import {
   Button,
   Modal,
@@ -9,14 +10,13 @@ import {
 import React from "react";
 
 import type { Partner } from "../../../../models/PartnerModel";
-import type { PartnerRequestValues } from "../../../../models/PartnerRequestModel";
 import { ContactForm } from "./ContactForm";
 
 interface ContactFormModalProps {
   isOpen: boolean;
   partner: Partner;
   onClose: () => void;
-  onSubmit: (values: PartnerRequestValues) => void;
+  onSubmit: (values: PartnerRequestCreate) => void;
 }
 
 export const ContactFormModal: React.FC<ContactFormModalProps> = ({
@@ -25,7 +25,7 @@ export const ContactFormModal: React.FC<ContactFormModalProps> = ({
   onClose,
   onSubmit,
 }) => {
-  const handleSubmit = (values: PartnerRequestValues) => {
+  const handleSubmit = (values: PartnerRequestCreate) => {
     onSubmit(values);
     onClose();
   };
@@ -39,11 +39,7 @@ export const ContactFormModal: React.FC<ContactFormModalProps> = ({
     >
       <ModalHeader title={`Request assignment - ${partner.name}`} />
       <ModalBody>
-        <ContactForm
-          id="contact-partner-form"
-          partner={partner}
-          onSubmit={handleSubmit}
-        />
+        <ContactForm id="contact-partner-form" onSubmit={handleSubmit} />
       </ModalBody>
       <ModalFooter>
         <Button variant="primary" type="submit" form="contact-partner-form">

@@ -1,69 +1,50 @@
 import { yupResolver } from "@hookform/resolvers/yup";
+import type { PartnerRequestCreate } from "@openshift-migration-advisor/planner-sdk";
 import { Form } from "@patternfly/react-core";
 import React from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import * as yup from "yup";
 
-import type { Partner } from "../../../../models/PartnerModel";
-import type { PartnerRequestValues } from "../../../../models/PartnerRequestModel";
 import {
   SelectFormGroup,
   TextInputFormGroup,
 } from "../../../core/components/form";
 import { REGIONS } from "../constants/regions";
 
-interface FormFieldValues {
-  customerName: string;
-  customerPointOfContactName: string;
-  contactPhone: string;
-  email: string;
-  vcenterGeoLocation: string;
-}
-
 interface ContactFormProps {
   id: string;
-  partner: Partner;
-  onSubmit: (values: PartnerRequestValues) => void;
+  onSubmit: (values: PartnerRequestCreate) => void;
 }
 
-const validationSchema: yup.ObjectSchema<FormFieldValues> = yup.object().shape({
-  customerName: yup.string().trim().required("Customer name is required"),
-  customerPointOfContactName: yup
-    .string()
-    .trim()
-    .required("Customer point of contact name is required"),
-  contactPhone: yup.string().trim().default(""),
-  email: yup
-    .string()
-    .trim()
-    .required("Email is required")
-    .email("Please enter a valid email address"),
-  vcenterGeoLocation: yup.string().trim().default(""),
-});
+const validationSchema: yup.ObjectSchema<PartnerRequestCreate> = yup
+  .object()
+  .shape({
+    name: yup.string().trim().required("Customer name is required"),
+    contactName: yup
+      .string()
+      .trim()
+      .required("Customer point of contact name is required"),
+    contactPhone: yup.string().trim().default(""),
+    email: yup
+      .string()
+      .trim()
+      .required("Email is required")
+      .email("Please enter a valid email address"),
+    location: yup.string().trim().default(""),
+  });
 
-export const ContactForm: React.FC<ContactFormProps> = ({
-  id,
-  partner,
-  onSubmit,
-}) => {
-  const methods = useForm<FormFieldValues>({
+export const ContactForm: React.FC<ContactFormProps> = ({ id, onSubmit }) => {
+  const methods = useForm<PartnerRequestCreate>({
     resolver: yupResolver(validationSchema),
     mode: "onTouched",
     defaultValues: {
-      customerName: "",
-      customerPointOfContactName: "",
+      name: "",
+      contactName: "",
       contactPhone: "",
       email: "",
-      vcenterGeoLocation: "",
+      location: "",
     },
   });
-
-  const handleFormSubmit = (data: FormFieldValues) => {
-    onSubmit({
-      ...data,
-      partnerId: partner.id,
-    });
-  };
 
   return (
     <FormProvider {...methods}>
@@ -71,20 +52,20 @@ export const ContactForm: React.FC<ContactFormProps> = ({
         noValidate
         id={id}
         onSubmit={(e) => {
-          void methods.handleSubmit(handleFormSubmit)(e);
+          void methods.handleSubmit(onSubmit)(e);
         }}
       >
         <TextInputFormGroup
           label="Customer name"
-          id="customer-name"
-          name="customerName"
+          id="name"
+          name="name"
           isRequired
         />
 
         <TextInputFormGroup
           label="Customer point of contact name"
-          id="customer-point-of-contact-name"
-          name="customerPointOfContactName"
+          id="contact-name"
+          name="contactName"
           isRequired
         />
 
@@ -105,8 +86,8 @@ export const ContactForm: React.FC<ContactFormProps> = ({
 
         <SelectFormGroup
           label="vCenter geo location"
-          id="vcenter-geo-location"
-          name="vcenterGeoLocation"
+          id="location"
+          name="location"
           options={[
             { label: "Select a region", value: "" },
             ...REGIONS.map((region) => ({
