@@ -1,8 +1,14 @@
 /**
- * The app slug used by the Insights Chrome to mount this microfrontend.
+ * The current app slug used by the Insights Chrome to mount this microfrontend.
  * Matches `appUrl` in `fec.config.js`.
  */
 const APP_SLUG = "/openshift/migration-advisor";
+
+/**
+ * The legacy app slug kept alive for backward compatibility.
+ * Both slugs serve the same RootApp module (see deploy/frontend.yaml).
+ */
+const LEGACY_APP_SLUG = "/openshift/migration-assessment";
 
 let lastLoggedBasename: string | null = null;
 
@@ -26,7 +32,11 @@ function resolveAppBasename(): string {
   try {
     // Strip known Chrome preview/beta prefixes before matching
     const pathname = window.location.pathname.replace(/^\/(preview|beta)/, "");
-    const basename = pathname.startsWith(APP_SLUG) ? APP_SLUG : "";
+    const basename = pathname.startsWith(APP_SLUG)
+      ? APP_SLUG
+      : pathname.startsWith(LEGACY_APP_SLUG)
+        ? LEGACY_APP_SLUG
+        : "";
 
     // Log only when basename changes or on first detection (to track production issues)
     if (process.env.NODE_ENV !== "test" && lastLoggedBasename !== basename) {
@@ -48,7 +58,8 @@ function resolveAppBasename(): string {
 /**
  * Get the app's mount-path prefix dynamically.
  * - `""` in standalone (dev) mode
- * - `"/openshift/migration-advisor"` in stage mode
+ * - `"/openshift/migration-advisor"` in stage mode (current slug)
+ * - `"/openshift/migration-assessment"` in stage mode (legacy slug)
  *
  * This is computed on each access to avoid caching stale values during
  * module hot-reloading or federated module initialization.
@@ -60,7 +71,8 @@ function getAppBasename(): string {
 /**
  * The app's mount-path prefix.
  * - `""` in standalone (dev) mode
- * - `"/openshift/migration-advisor"` in stage mode
+ * - `"/openshift/migration-advisor"` in stage mode (current slug)
+ * - `"/openshift/migration-assessment"` in stage mode (legacy slug)
  *
  * @deprecated This is a snapshot at module-load time and may be stale.
  * Prefer using the `routes` object which dynamically resolves the basename.

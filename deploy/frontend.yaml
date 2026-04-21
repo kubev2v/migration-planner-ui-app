@@ -22,10 +22,14 @@ objects:
       module:
         manifestLocation: "/apps/migration-advisor/fed-mods.json"
         modules:
-          - id: "migration-assessment"
+          - id: "migration-advisor"
             module: "./RootApp"
             routes:
               - pathname: /openshift/migration-advisor
+          - id: "migration-assessment"
+            module: "./RootApp"
+            routes:
+              - pathname: /openshift/migration-assessment
       feoConfigEnabled: true
 
 parameters:
