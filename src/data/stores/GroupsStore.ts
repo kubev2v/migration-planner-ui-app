@@ -3,7 +3,6 @@ import type {
   Group,
   GroupCreate,
   GroupUpdate,
-  Member,
 } from "@openshift-migration-advisor/planner-sdk";
 
 import { ExternalStoreBase } from "../../lib/mvvm/ExternalStore";
@@ -27,18 +26,18 @@ export class GroupsStore
     return this.groups;
   }
 
-  async createGroup(data: GroupCreate): Promise<Group> {
+  async create(data: GroupCreate): Promise<Group> {
     const newGroup = await this.api.createGroup({ groupCreate: data });
     this.groups = [...this.groups, newGroup];
     this.notify();
     return newGroup;
   }
 
-  async getGroup(id: string): Promise<Group> {
+  async get(id: string): Promise<Group> {
     return this.api.getGroup({ id });
   }
 
-  async updateGroup(id: string, data: GroupUpdate): Promise<Group> {
+  async update(id: string, data: GroupUpdate): Promise<Group> {
     const updatedGroup = await this.api.updateGroup({
       id,
       groupUpdate: data,
@@ -50,14 +49,10 @@ export class GroupsStore
     return updatedGroup;
   }
 
-  async deleteGroup(id: string): Promise<void> {
+  async delete(id: string): Promise<void> {
     await this.api.deleteGroup({ id });
     this.groups = this.groups.filter((group) => group.id !== id);
     this.notify();
-  }
-
-  async getMembers(groupId: string): Promise<Member[]> {
-    return this.api.listGroupMembers({ id: groupId });
   }
 
   override getSnapshot(): Group[] {

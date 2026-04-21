@@ -16,7 +16,7 @@ interface ContactFormModalProps {
   isOpen: boolean;
   partner: Partner;
   onClose: () => void;
-  onSubmit: (values: PartnerRequestCreate) => void;
+  onSubmit: (values: PartnerRequestCreate) => void | Promise<void>;
 }
 
 export const ContactFormModal: React.FC<ContactFormModalProps> = ({
@@ -25,8 +25,8 @@ export const ContactFormModal: React.FC<ContactFormModalProps> = ({
   onClose,
   onSubmit,
 }) => {
-  const handleSubmit = (values: PartnerRequestCreate) => {
-    onSubmit(values);
+  const handleSubmit = async (values: PartnerRequestCreate) => {
+    await onSubmit(values);
     onClose();
   };
 
@@ -39,7 +39,12 @@ export const ContactFormModal: React.FC<ContactFormModalProps> = ({
     >
       <ModalHeader title={`Request assignment - ${partner.name}`} />
       <ModalBody>
-        <ContactForm id="contact-partner-form" onSubmit={handleSubmit} />
+        <ContactForm
+          id="contact-partner-form"
+          onSubmit={(values) => {
+            void handleSubmit(values);
+          }}
+        />
       </ModalBody>
       <ModalFooter>
         <Button variant="primary" type="submit" form="contact-partner-form">

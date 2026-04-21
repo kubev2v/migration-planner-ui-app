@@ -26,8 +26,7 @@ export const useGroupDetailsViewModel = (): GroupDetailsViewModel => {
   // Fetch group by ID
   const [fetchState, doFetchGroup] = useAsyncFn(
     async (groupId: string) => {
-      const group = await groupStore.getGroup(groupId);
-      return group;
+      return await groupStore.get(groupId);
     },
     [groupStore],
     { loading: true },
@@ -39,7 +38,7 @@ export const useGroupDetailsViewModel = (): GroupDetailsViewModel => {
       if (!id) {
         throw new Error("Group ID is required");
       }
-      await groupStore.updateGroup(id, data);
+      await groupStore.update(id, data);
       await doFetchGroup(id);
     },
     [groupStore, id, doFetchGroup],

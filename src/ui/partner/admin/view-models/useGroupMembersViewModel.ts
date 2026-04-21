@@ -1,45 +1,76 @@
-import type { Member } from "@openshift-migration-advisor/planner-sdk";
+import type {
+  Member,
+  MemberCreate,
+} from "@openshift-migration-advisor/planner-sdk";
 import { useInjection } from "@y0n1/react-ioc";
-import { useEffect } from "react";
+import { useEffect, useMemo, useSyncExternalStore } from "react";
 import { useParams } from "react-router-dom";
 import { useAsyncFn } from "react-use";
 
 import { Symbols } from "../../../../config/Dependencies";
-import type { IGroupsStore } from "../../../../data/stores/interfaces/IGroupsStore";
+import type { IGroupMembersStore } from "../../../../data/stores/interfaces/IGroupMembersStore";
 
-export interface GroupUsersViewModel {
+export interface GroupMembersViewModel {
   id?: string;
   members?: Member[];
   isLoading: boolean;
   error?: Error;
+  addMember: (groupId: string, data: MemberCreate) => Promise<Member>;
+  deleteMember: (groupId: string, username: string) => Promise<void>;
 }
 
-export const useGroupMembersViewModel = (): GroupUsersViewModel => {
+export const useGroupMembersViewModel = (): GroupMembersViewModel => {
   const { id } = useParams<{ id: string }>();
 
-  const groupsStore = useInjection<IGroupsStore>(Symbols.GroupsStore);
+  const groupMembersStore = useInjection<IGroupMembersStore>(
+    Symbols.GroupMembersStore,
+  );
+
+  const snapshot = useSyncExternalStore(
+    groupMembersStore.subscribe.bind(groupMembersStore),
+    groupMembersStore.getSnapshot.bind(groupMembersStore),
+  );
+
+  const members = useMemo(() => {
+    return snapshot.groupId === id ? snapshot.members : [];
+  }, [snapshot, id]);
 
   // Fetch group by ID
-  const [fetchState, doFetchGroupUsers] = useAsyncFn(
+  const [fetchState, doFetchGroupMembers] = useAsyncFn(
     async (groupId: string) => {
-      const members = await groupsStore.getMembers(groupId);
-      return members;
+      return await groupMembersStore.list(groupId);
     },
-    [groupsStore],
+    [groupMembersStore],
     { loading: true },
+  );
+
+  const [addState, doAddMember] = useAsyncFn(
+    async (groupId: string, data: MemberCreate): Promise<Member> => {
+      return await groupMembersStore.create(groupId, data);
+    },
+    [groupMembersStore],
+  );
+
+  const [deleteState, doDeleteMember] = useAsyncFn(
+    async (groupId: string, username: string): Promise<void> => {
+      await groupMembersStore.delete(groupId, username);
+    },
+    [groupMembersStore],
   );
 
   // Initial fetch
   useEffect(() => {
     if (id) {
-      void doFetchGroupUsers(id);
+      void doFetchGroupMembers(id);
     }
-  }, [id, doFetchGroupUsers]);
+  }, [id, doFetchGroupMembers]);
 
   return {
     id,
-    members: fetchState.value,
-    isLoading: fetchState.loading,
-    error: fetchState.error,
+    members,
+    isLoading: fetchState.loading || addState.loading || deleteState.loading,
+    error: fetchState.error || addState.error || deleteState.error,
+    addMember: doAddMember,
+    deleteMember: doDeleteMember,
   };
 };

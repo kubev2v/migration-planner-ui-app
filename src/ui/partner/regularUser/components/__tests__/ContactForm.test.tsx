@@ -59,7 +59,10 @@ describe("ContactForm", () => {
     await user.clear(email);
     await user.type(email, "john.doe@acme.com");
 
-    await user.selectOptions(getByRole("combobox"), "US East (Ohio)");
+    await user.selectOptions(
+      getByRole("combobox", { name: /vCenter geo location/i }),
+      "us-east-2",
+    );
 
     const contactButton = getByRole("button", { name: /Contact/i });
     await user.click(contactButton);

@@ -17,7 +17,7 @@ let mockAccountStore: {
 let mockGroupsStore: {
   subscribe: ReturnType<typeof vi.fn>;
   getSnapshot: ReturnType<typeof vi.fn>;
-  getGroup: ReturnType<typeof vi.fn>;
+  get: ReturnType<typeof vi.fn>;
 };
 
 vi.mock("@y0n1/react-ioc", () => ({
@@ -62,7 +62,7 @@ describe("useMyPartnerViewModel", () => {
     mockGroupsStore = {
       subscribe: vi.fn(() => unsubscribe),
       getSnapshot: vi.fn(() => cachedGroups),
-      getGroup: vi.fn().mockResolvedValue(mockPartnerGroup),
+      get: vi.fn().mockResolvedValue(mockPartnerGroup),
     };
 
     const { result } = renderHook(() => useMyPartnerViewModel());
@@ -72,9 +72,7 @@ describe("useMyPartnerViewModel", () => {
       expect(result.current.isLoading).toBe(false);
     });
 
-    expect(mockGroupsStore.getGroup).toHaveBeenCalledWith(
-      mockIdentity.partnerId,
-    );
+    expect(mockGroupsStore.get).toHaveBeenCalledWith(mockIdentity.partnerId);
     expect(result.current.partnerGroup).toEqual(mockPartnerGroup);
     expect(result.current.error).toBeUndefined();
   });
@@ -93,7 +91,7 @@ describe("useMyPartnerViewModel", () => {
     mockGroupsStore = {
       subscribe: vi.fn(() => unsubscribe),
       getSnapshot: vi.fn(() => cachedGroups),
-      getGroup: vi.fn().mockResolvedValue(null),
+      get: vi.fn().mockResolvedValue(null),
     };
 
     const { result } = renderHook(() => useMyPartnerViewModel());
@@ -102,7 +100,7 @@ describe("useMyPartnerViewModel", () => {
       await Promise.resolve();
     });
 
-    expect(mockGroupsStore.getGroup).not.toHaveBeenCalled();
+    expect(mockGroupsStore.get).not.toHaveBeenCalled();
     expect(result.current.partnerGroup).toBeUndefined();
     expect(result.current.isLoading).toBe(false);
   });
@@ -119,7 +117,7 @@ describe("useMyPartnerViewModel", () => {
     mockGroupsStore = {
       subscribe: vi.fn(() => unsubscribe),
       getSnapshot: vi.fn(() => cachedGroups),
-      getGroup: vi.fn().mockResolvedValue(null),
+      get: vi.fn().mockResolvedValue(null),
     };
 
     const { result } = renderHook(() => useMyPartnerViewModel());
@@ -128,7 +126,7 @@ describe("useMyPartnerViewModel", () => {
       await Promise.resolve();
     });
 
-    expect(mockGroupsStore.getGroup).not.toHaveBeenCalled();
+    expect(mockGroupsStore.get).not.toHaveBeenCalled();
     expect(result.current.partnerGroup).toBeUndefined();
     expect(result.current.isLoading).toBe(false);
   });
@@ -148,7 +146,7 @@ describe("useMyPartnerViewModel", () => {
     mockGroupsStore = {
       subscribe: vi.fn(() => unsubscribe),
       getSnapshot: vi.fn(() => cachedGroups),
-      getGroup: vi.fn().mockRejectedValue(mockError),
+      get: vi.fn().mockRejectedValue(mockError),
     };
 
     const { result } = renderHook(() => useMyPartnerViewModel());
@@ -157,9 +155,7 @@ describe("useMyPartnerViewModel", () => {
       expect(result.current.isLoading).toBe(false);
     });
 
-    expect(mockGroupsStore.getGroup).toHaveBeenCalledWith(
-      mockIdentity.partnerId,
-    );
+    expect(mockGroupsStore.get).toHaveBeenCalledWith(mockIdentity.partnerId);
     expect(result.current.partnerGroup).toBeUndefined();
     expect(result.current.error).toEqual(mockError);
   });
@@ -188,7 +184,7 @@ describe("useMyPartnerViewModel", () => {
     mockGroupsStore = {
       subscribe: vi.fn(() => unsubscribe),
       getSnapshot: vi.fn(() => cachedGroups),
-      getGroup: vi.fn().mockImplementation(
+      get: vi.fn().mockImplementation(
         () =>
           new Promise((resolve) => {
             setTimeout(() => resolve(mockPartnerGroup), 100);

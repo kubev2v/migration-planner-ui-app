@@ -22,7 +22,7 @@ import { LoadingSpinner } from "../../../core/components/LoadingSpinner";
 import { EditGroupModal } from "../components/EditGroupModal";
 import type { EditGroupFormValues } from "../components/GroupForm";
 import { useGroupDetailsViewModel } from "../view-models/useGroupDetailsViewModel";
-import { AuthorizedMembersSection } from "./AuthorizedMembersSection";
+import { GroupMembersSection } from "./GroupMembersSection";
 
 const introStyle = css`
   padding-bottom: 1em;
@@ -128,7 +128,7 @@ export const GroupDetailScreen: React.FC = () => {
           </>
         )}
       </PageSection>
-      {vm.group && <AuthorizedMembersSection />}
+      {vm.group && <GroupMembersSection group={vm.group} />}
     </>
   );
 };

@@ -28,6 +28,11 @@ vi.mock("../../data/stores/GroupsStore", () => ({
     _type = "GroupsStore";
   },
 }));
+vi.mock("../../data/stores/GroupMembersStore", () => ({
+  GroupMembersStore: class {
+    _type = "GroupMembersStore";
+  },
+}));
 vi.mock("../../data/stores/PartnersStore", () => ({
   PartnersStore: class {
     _type = "PartnersStore";
@@ -104,6 +109,7 @@ describe("Symbols", () => {
       "JobsStore",
       "ReportStore",
       "GroupsStore",
+      "GroupMembersStore",
       "PartnersStore",
       "PartnerRequestsStore",
     ];
@@ -177,6 +183,12 @@ describe("createContainer", () => {
     const store = container.get(Symbols.GroupsStore);
     expect(store).toBeDefined();
     expect((store as Record<string, string>)._type).toBe("GroupsStore");
+  });
+
+  it("registers GroupMembersStore", () => {
+    const store = container.get(Symbols.GroupMembersStore);
+    expect(store).toBeDefined();
+    expect((store as Record<string, string>)._type).toBe("GroupMembersStore");
   });
 
   it("registers PartnersStore", () => {

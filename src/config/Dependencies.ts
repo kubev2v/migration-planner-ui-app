@@ -13,6 +13,7 @@ import { Container } from "@y0n1/react-ioc";
 
 import { AccountStore } from "../data/stores/AccountStore";
 import { AssessmentsStore } from "../data/stores/AssessmentsStore";
+import { GroupMembersStore } from "../data/stores/GroupMembersStore";
 import { GroupsStore } from "../data/stores/GroupsStore";
 import { ImagesStore } from "../data/stores/ImagesStore";
 import { JobsStore } from "../data/stores/JobsStore";
@@ -36,6 +37,7 @@ export const Symbols = Object.freeze({
   JobsStore: Symbol.for("JobsStore"),
   ReportStore: Symbol.for("ReportStore"),
   GroupsStore: Symbol.for("GroupsStore"),
+  GroupMembersStore: Symbol.for("GroupMembersStore"),
   PartnersStore: Symbol.for("PartnersStore"),
   PartnerRequestsStore: Symbol.for("PartnerRequestsStore"),
 });
@@ -64,6 +66,7 @@ export const createContainer = (auth: ChromeAPI["auth"]): Container => {
   c.register(Symbols.SourcesStore, new SourcesStore(sourceApi));
   c.register(Symbols.JobsStore, new JobsStore(jobApi));
   c.register(Symbols.GroupsStore, new GroupsStore(accountApi));
+  c.register(Symbols.GroupMembersStore, new GroupMembersStore(accountApi));
   c.register(Symbols.PartnersStore, new PartnersStore(partnerApi));
   c.register(
     Symbols.PartnerRequestsStore,

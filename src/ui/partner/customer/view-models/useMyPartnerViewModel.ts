@@ -30,8 +30,7 @@ export const useMyPartnerViewModel = (): MyPartnerViewModel => {
   // Fetch group by identity's partnerId
   const [fetchState, doFetchGroup] = useAsyncFn(
     async (partnerId: string) => {
-      const group = await groupsStore.getGroup(partnerId);
-      return group;
+      return await groupsStore.get(partnerId);
     },
     [groupsStore],
   );

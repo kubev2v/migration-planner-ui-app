@@ -31,7 +31,7 @@ export const useGroupsViewModel = (): GroupsViewModel => {
   // Create group
   const [createState, doCreateGroup] = useAsyncFn(
     async (data: GroupCreate): Promise<Group> => {
-      return await groupsStore.createGroup(data);
+      return await groupsStore.create(data);
     },
     [groupsStore],
   );
@@ -39,7 +39,7 @@ export const useGroupsViewModel = (): GroupsViewModel => {
   // Delete group
   const [deleteState, doDeleteGroup] = useAsyncFn(
     async (groupId: string): Promise<void> => {
-      await groupsStore.deleteGroup(groupId);
+      await groupsStore.delete(groupId);
     },
     [groupsStore],
   );
