@@ -1,3 +1,4 @@
+import type { InitOverrideFunction } from "@openshift-migration-advisor/planner-sdk";
 import type { JobApi } from "@openshift-migration-advisor/planner-sdk";
 import type { Job } from "@openshift-migration-advisor/planner-sdk";
 import {
@@ -187,7 +188,15 @@ describe("JobsStore", () => {
     vi.mocked(api.getJob).mockResolvedValue(updatedJob);
 
     await vi.advanceTimersByTimeAsync(1000);
-    expect(api.getJob).toHaveBeenCalledWith({ id: 1 });
+
+    // The poll now forwards an AbortSignal to getJob so stopPolling() can abort it.
+    const [firstArg, secondArg] = vi.mocked(api.getJob).mock.calls[0] as [
+      { id: number },
+      RequestInit | undefined,
+    ];
+    expect(firstArg).toEqual({ id: 1 });
+    expect(secondArg?.signal).toBeInstanceOf(AbortSignal);
+
     expect(store.getSnapshot().currentJob).toEqual(updatedJob);
 
     store.stopPolling();
@@ -258,6 +267,73 @@ describe("JobsStore", () => {
   it("returns null when there is no current job", async () => {
     const result = await store.cancelRVToolsJob();
     expect(result).toBeNull();
+  });
+
+  it("resets store state immediately (before the server getJob/cancelJob round-trips)", async () => {
+    const runningJob = makeJob({ status: JobStatus.Parsing });
+    vi.mocked(api.createRVToolsAssessment).mockResolvedValue(runningJob);
+    await store.createRVToolsJob("t", new File([], "f.xlsx"));
+
+    // Make getJob hang so we can observe intermediate state.
+    let resolveGetJob!: (job: Job) => void;
+    vi.mocked(api.getJob).mockReturnValue(
+      new Promise<Job>((resolve) => {
+        resolveGetJob = resolve;
+      }),
+    );
+
+    const cancelPromise = store.cancelRVToolsJob();
+
+    // State should already be clean even though getJob hasn't resolved yet.
+    expect(store.getSnapshot().currentJob).toBeNull();
+    expect(store.getSnapshot().isCreating).toBe(false);
+
+    // Let getJob resolve so the cancel promise can finish.
+    vi.mocked(api.cancelJob).mockResolvedValue(undefined as never);
+    resolveGetJob(runningJob);
+    await cancelPromise;
+  });
+
+  it("stale in-flight poll response does not repopulate currentJob after cancel", async () => {
+    const runningJob = makeJob({ status: JobStatus.Parsing });
+    vi.mocked(api.createRVToolsAssessment).mockResolvedValue(runningJob);
+    await store.createRVToolsJob("t", new File([], "f.xlsx"));
+
+    // Set up a poll getJob that we will resolve AFTER cancel completes.
+    let resolvePollGetJob!: (job: Job) => void;
+    vi.mocked(api.getJob)
+      // First call: the poll tick (hangs until we release it)
+      .mockImplementationOnce(
+        (_params, initOverrides?: RequestInit | InitOverrideFunction) =>
+          new Promise<Job>((resolve, reject) => {
+            resolvePollGetJob = resolve;
+            // Narrow to RequestInit (not the async function overload) to read signal.
+            const init =
+              typeof initOverrides !== "function" ? initOverrides : undefined;
+            init?.signal?.addEventListener("abort", () =>
+              reject(new DOMException("Aborted", "AbortError")),
+            );
+          }),
+      )
+      // Second call: the cancel's own getJob for status check
+      .mockResolvedValueOnce(runningJob);
+
+    store.startPolling(1000);
+
+    // Advance timer to kick off the poll tick (starts getJob but doesn't resolve it).
+    await vi.advanceTimersByTimeAsync(1000);
+
+    // Now cancel — this calls stopPolling() (aborting the poll signal) and reset().
+    vi.mocked(api.cancelJob).mockResolvedValue(undefined as never);
+    const cancelPromise = store.cancelRVToolsJob();
+
+    // Simulate the stale poll getJob resolving AFTER cancel has reset state.
+    resolvePollGetJob(runningJob);
+
+    await cancelPromise;
+
+    // The stale response must NOT put the job back.
+    expect(store.getSnapshot().currentJob).toBeNull();
   });
 
   // -- clearCreateError ------------------------------------------------------

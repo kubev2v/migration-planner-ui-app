@@ -116,8 +116,14 @@ export class JobsStore
       this.abortController = null;
     }
 
-    let latestJob: Job | null = null;
+    // Capture job reference before resetting so we can still cancel it server-side.
     const currentJob = this.state.currentJob;
+
+    // Reset store state immediately so the UI shows a clean, interactive form
+    // the moment the user cancels — without waiting for the server round-trips below.
+    this.reset();
+
+    let latestJob: Job | null = null;
 
     if (currentJob) {
       try {
@@ -135,7 +141,6 @@ export class JobsStore
       }
     }
 
-    this.reset();
     this.cancelInProgress = false;
     return latestJob;
   }
@@ -177,7 +182,7 @@ export class JobsStore
     });
   }
 
-  protected override async poll(_signal: AbortSignal): Promise<void> {
+  protected override async poll(signal: AbortSignal): Promise<void> {
     if (this.cancelInProgress) {
       return;
     }
@@ -188,7 +193,11 @@ export class JobsStore
     }
 
     try {
-      const updated = await this.api.getJob({ id: currentJob.id });
+      // Forward the poll signal so stopPolling() aborts the in-flight request.
+      // Without this, a stale getJob response can arrive after reset() and
+      // repopulate currentJob — causing the progress bar to reappear and
+      // eventually triggering navigation even after the user cancelled.
+      const updated = await this.api.getJob({ id: currentJob.id }, { signal });
       if (this.cancelInProgress) {
         return;
       }
@@ -197,6 +206,9 @@ export class JobsStore
       // State is kept with the terminal job — the view model reacts to
       // this change (e.g. stopping polling, navigating to the report).
     } catch (err) {
+      if (signal.aborted) {
+        return;
+      }
       console.error("Failed to poll job status:", err);
     }
   }
