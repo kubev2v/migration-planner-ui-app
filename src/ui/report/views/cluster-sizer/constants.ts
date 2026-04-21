@@ -229,10 +229,10 @@ export const DEFAULT_FORM_VALUES: SizingFormValues = {
  * Default migration estimation form values
  */
 export const DEFAULT_ESTIMATION_FORM_VALUES: EstimationFormValues = {
-  transferRateMbps: 5000,
-  workHoursPerDay: 12,
-  troubleshootMinsPerVm: 90,
-  postMigrationEngineers: 25,
+  transferRateMbps: 620,
+  workHoursPerDay: 8,
+  troubleshootMinsPerVm: 60,
+  postMigrationEngineers: 10,
 };
 
 export const ESTIMATION_SLIDER_LIMITS = {

@@ -244,9 +244,9 @@ export const useClusterSizingWizardViewModel = (
             clusterId,
             estimationSchema: ["network-based", "storage-offload"],
             params: {
-              work_hours_per_day: 6,
-              post_migration_engineers: 4,
-              transfer_rate_mbps: 600,
+              work_hours_per_day: 8,
+              post_migration_engineers: 10,
+              transfer_rate_mbps: 620,
             },
           },
         });
