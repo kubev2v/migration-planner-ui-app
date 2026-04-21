@@ -140,6 +140,7 @@ export const RecommendationTemplate: React.FC<RecommendationTemplateProps> = ({
                   ? expandableSectionDisabledStyle
                   : expandableSectionStyle
               }
+              isIndented
             >
               <Stack hasGutter className={preferencesContentStackStyle}>
                 <StackItem>{preferencesContent}</StackItem>
