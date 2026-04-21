@@ -31,17 +31,17 @@ describe("ContactForm", () => {
     );
 
     expect(
-      getByRole("textbox", { name: /Customer Name/i }),
+      getByRole("textbox", { name: /Customer name/i }),
     ).toBeInTheDocument();
     expect(
-      getByRole("textbox", { name: /Customer Point Of Contact Name/i }),
+      getByRole("textbox", { name: /Customer point of contact name/i }),
     ).toBeInTheDocument();
     expect(
       getByRole("textbox", { name: /Contact phone/i }),
     ).toBeInTheDocument();
     expect(getByRole("textbox", { name: /Email/i })).toBeInTheDocument();
     expect(
-      getByRole("combobox", { name: /vCenter Geo Location/i }),
+      getByRole("combobox", { name: /vCenter geo location/i }),
     ).toBeInTheDocument();
   });
 
@@ -61,12 +61,12 @@ describe("ContactForm", () => {
       </>,
     );
 
-    const customerName = getByRole("textbox", { name: /Customer Name/i });
+    const customerName = getByRole("textbox", { name: /Customer name/i });
     await user.clear(customerName);
     await user.type(customerName, "Acme Corporation");
 
     const contactName = getByRole("textbox", {
-      name: /Customer Point Of Contact Name/i,
+      name: /Customer point of contact name/i,
     });
     await user.clear(contactName);
     await user.type(contactName, "John Doe");
@@ -120,9 +120,9 @@ describe("ContactForm", () => {
     expect(mockOnSubmit).not.toHaveBeenCalled();
 
     // Error messages should appear
-    expect(getByText("Customer Name is required")).toBeInTheDocument();
+    expect(getByText("Customer name is required")).toBeInTheDocument();
     expect(
-      getByText("Customer Point Of Contact Name is required"),
+      getByText("Customer point of contact name is required"),
     ).toBeInTheDocument();
     expect(getByText("Email is required")).toBeInTheDocument();
   });
@@ -173,15 +173,15 @@ describe("ContactForm", () => {
     await user.click(contactButton);
 
     // Error should appear
-    expect(getByText("Customer Name is required")).toBeInTheDocument();
+    expect(getByText("Customer name is required")).toBeInTheDocument();
 
     // Type in the field
-    const customerName = getByRole("textbox", { name: /Customer Name/i });
+    const customerName = getByRole("textbox", { name: /Customer name/i });
     await user.type(customerName, "A");
 
     // Error should disappear
     await waitFor(() => {
-      expect(queryByText("Customer Name is required")).not.toBeInTheDocument();
+      expect(queryByText("Customer name is required")).not.toBeInTheDocument();
     });
   });
 
@@ -196,7 +196,7 @@ describe("ContactForm", () => {
       />,
     );
 
-    const customerName = getByRole("textbox", { name: /Customer Name/i });
+    const customerName = getByRole("textbox", { name: /Customer name/i });
     await user.type(customerName, "Test Company");
 
     expect(customerName).toHaveValue("Test Company");
@@ -213,14 +213,14 @@ describe("ContactForm", () => {
       />,
     );
 
-    const customerName = getByRole("textbox", { name: /Customer Name/i });
+    const customerName = getByRole("textbox", { name: /Customer name/i });
 
     // Focus and then blur without entering anything
     await user.click(customerName);
     await user.tab();
 
     await waitFor(() => {
-      expect(getByText("Customer Name is required")).toBeInTheDocument();
+      expect(getByText("Customer name is required")).toBeInTheDocument();
     });
   });
 
@@ -234,7 +234,7 @@ describe("ContactForm", () => {
       />,
     );
 
-    const select = getByRole("combobox", { name: /vCenter Geo Location/i });
+    const select = getByRole("combobox", { name: /vCenter geo location/i });
     const options = select.querySelectorAll("option");
 
     // Should have placeholder + all regions (35 regions + "Other" + 1 placeholder = 37)

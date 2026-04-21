@@ -37,7 +37,7 @@ export const ContactFormModal: React.FC<ContactFormModalProps> = ({
       onClose={onClose}
       aria-label="Contact Partner"
     >
-      <ModalHeader title={`Request Assignment - ${partner.name}`} />
+      <ModalHeader title={`Request assignment - ${partner.name}`} />
       <ModalBody>
         <ContactForm
           id="contact-partner-form"

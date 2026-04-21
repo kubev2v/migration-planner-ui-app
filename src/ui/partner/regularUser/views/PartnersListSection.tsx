@@ -85,7 +85,7 @@ export const PartnersListSection: React.FC = () => {
                   isBlock
                   onClick={() => setSelectedPartner(partner)}
                 >
-                  Request Assignment
+                  Request assignment
                 </Button>
               </CardFooter>
             </Card>

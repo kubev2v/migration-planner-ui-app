@@ -3,13 +3,11 @@ import type { Group } from "@openshift-migration-advisor/planner-sdk";
 import {
   Alert,
   Button,
-  Content,
   EmptyState,
   EmptyStateActions,
   EmptyStateBody,
   EmptyStateFooter,
   PageSection,
-  Title,
 } from "@patternfly/react-core";
 import { SearchIcon } from "@patternfly/react-icons";
 import React, { useState } from "react";
@@ -45,10 +43,6 @@ export const GroupsScreen: React.FC = () => {
 
   return (
     <PageSection>
-      <Content className={introStyle}>
-        <Title headingLevel="h1">Groups administration</Title>
-      </Content>
-
       {vm.isLoading && <LoadingSpinner />}
 
       {vm.error && (
