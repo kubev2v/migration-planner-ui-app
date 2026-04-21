@@ -31,6 +31,40 @@ objects:
             routes:
               - pathname: /openshift/migration-assessment
       feoConfigEnabled: true
+      searchEntries:
+        - id: migration-advisor-assessments
+          title: Migration Advisor - Assessments
+          href: /openshift/migration-advisor/assessments
+          description: View and manage VMware to OpenShift migration assessments.
+          alt_title:
+            - migration assessment
+            - vmware migration
+            - openshift migration
+            - migration planner
+        - id: migration-advisor-create-assessment
+          title: Migration Advisor - Create Assessment
+          href: /openshift/migration-advisor/assessments/create
+          description: Create a new VMware to OpenShift migration assessment.
+          alt_title:
+            - new assessment
+            - start migration
+            - migration wizard
+        - id: migration-advisor-environments
+          title: Migration Advisor - Environments
+          href: /openshift/migration-advisor/environments
+          description: Manage discovery environments and data collection sources for migration planning.
+          alt_title:
+            - migration environment
+            - discovery source
+            - migration data collection
+        - id: migration-advisor-example-report
+          title: Migration Advisor - Example Report
+          href: /openshift/migration-advisor/assessments/example-report
+          description: View a sample migration assessment report to understand what insights the tool provides.
+          alt_title:
+            - sample report
+            - migration report example
+            - assessment results
 
 parameters:
   - name: ENV_NAME
