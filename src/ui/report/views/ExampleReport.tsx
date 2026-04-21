@@ -266,9 +266,33 @@ const inventoryData = {
           totalForNotMigratable: 11000,
         },
         diskSizeTier: {
-          "Easy (0-10TB)": {
-            totalSizeTB: 31.25,
-            vmCount: 280,
+          "0-100GiB": {
+            totalSizeTB: 2.9,
+            vmCount: 80,
+          },
+          "100-500GiB": {
+            totalSizeTB: 9.5,
+            vmCount: 90,
+          },
+          "500GiB-1TiB": {
+            totalSizeTB: 7.8,
+            vmCount: 50,
+          },
+          "1-2TiB": {
+            totalSizeTB: 5.2,
+            vmCount: 35,
+          },
+          "2-5TiB": {
+            totalSizeTB: 4.5,
+            vmCount: 18,
+          },
+          "5-10TiB": {
+            totalSizeTB: 1.1,
+            vmCount: 5,
+          },
+          "10-20TiB": {
+            totalSizeTB: 0.25,
+            vmCount: 2,
           },
         },
         diskTypes: {
@@ -911,9 +935,37 @@ const inventoryData = {
           totalForNotMigratable: 14363,
         },
         diskSizeTier: {
-          "Easy (0-10TB)": {
-            totalSizeTB: 41.46,
-            vmCount: 350,
+          "0-100GiB": {
+            totalSizeTB: 3.6,
+            vmCount: 100,
+          },
+          "100-500GiB": {
+            totalSizeTB: 12.5,
+            vmCount: 120,
+          },
+          "500GiB-1TiB": {
+            totalSizeTB: 9.0,
+            vmCount: 50,
+          },
+          "1-2TiB": {
+            totalSizeTB: 6.8,
+            vmCount: 45,
+          },
+          "2-5TiB": {
+            totalSizeTB: 5.5,
+            vmCount: 22,
+          },
+          "5-10TiB": {
+            totalSizeTB: 3.9,
+            vmCount: 7,
+          },
+          "10-20TiB": {
+            totalSizeTB: 0.1,
+            vmCount: 3,
+          },
+          "20+TiB": {
+            totalSizeTB: 0.06,
+            vmCount: 3,
           },
         },
         diskTypes: {
@@ -1676,9 +1728,37 @@ const inventoryData = {
         totalForNotMigratable: 25363,
       },
       diskSizeTier: {
-        "Easy (0-10TB)": {
-          totalSizeTB: 72.71,
-          vmCount: 630,
+        "0-100GiB": {
+          totalSizeTB: 6.5,
+          vmCount: 180,
+        },
+        "100-500GiB": {
+          totalSizeTB: 22.0,
+          vmCount: 210,
+        },
+        "500GiB-1TiB": {
+          totalSizeTB: 16.8,
+          vmCount: 100,
+        },
+        "1-2TiB": {
+          totalSizeTB: 12.0,
+          vmCount: 80,
+        },
+        "2-5TiB": {
+          totalSizeTB: 10.0,
+          vmCount: 40,
+        },
+        "5-10TiB": {
+          totalSizeTB: 5.0,
+          vmCount: 12,
+        },
+        "10-20TiB": {
+          totalSizeTB: 0.35,
+          vmCount: 5,
+        },
+        "20+TiB": {
+          totalSizeTB: 0.06,
+          vmCount: 3,
         },
       },
       diskTypes: {
