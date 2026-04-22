@@ -1,14 +1,9 @@
-import { PageSection, Title } from "@patternfly/react-core";
 import type React from "react";
 
+import { CustomerRequestsSection } from "./CustomerRequestsSection";
+
 export const CustomersScreen: React.FC = () => {
-  return (
-    <PageSection>
-      <Title headingLevel="h1" size="2xl">
-        Customers
-      </Title>
-    </PageSection>
-  );
+  return <CustomerRequestsSection />;
 };
 
 CustomersScreen.displayName = "CustomersScreen";

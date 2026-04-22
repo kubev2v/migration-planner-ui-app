@@ -2,6 +2,7 @@ import type {
   PartnerApiInterface,
   PartnerRequest,
   PartnerRequestCreate,
+  PartnerRequestUpdate,
 } from "@openshift-migration-advisor/planner-sdk";
 
 import { ExternalStoreBase } from "../../lib/mvvm/ExternalStore";
@@ -41,6 +42,40 @@ export class PartnerRequestsStore
   async cancel(partnerRequestId: string): Promise<void> {
     await this.api.cancelPartnerRequest({ id: partnerRequestId });
     await this.list();
+  }
+
+  async accept(partnerRequestId: string): Promise<PartnerRequest> {
+    const updateData: PartnerRequestUpdate = {
+      status: "accepted",
+    };
+    const updatedRequest = await this.api.updatePartnerRequest({
+      id: partnerRequestId,
+      partnerRequestUpdate: updateData,
+    });
+    this.partnerRequests = this.partnerRequests.map((req) =>
+      req.id === partnerRequestId ? updatedRequest : req,
+    );
+    this.notify();
+    return updatedRequest;
+  }
+
+  async reject(
+    partnerRequestId: string,
+    reason: string,
+  ): Promise<PartnerRequest> {
+    const updateData: PartnerRequestUpdate = {
+      status: "rejected",
+      reason,
+    };
+    const updatedRequest = await this.api.updatePartnerRequest({
+      id: partnerRequestId,
+      partnerRequestUpdate: updateData,
+    });
+    this.partnerRequests = this.partnerRequests.map((req) =>
+      req.id === partnerRequestId ? updatedRequest : req,
+    );
+    this.notify();
+    return updatedRequest;
   }
 
   override getSnapshot(): PartnerRequest[] {
