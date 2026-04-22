@@ -9,20 +9,20 @@ import {
 import React from "react";
 
 import {
-  RejectPartnerRequestForm,
-  type RejectPartnerRequestFormValues,
-} from "./RejectPartnerRequestForm";
+  DenyPartnerRequestForm,
+  type DenyPartnerRequestFormValues,
+} from "./DenyPartnerRequestForm";
 
-interface RejectPartnerRequestModalProps {
+interface DenyPartnerRequestModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (values: RejectPartnerRequestFormValues) => void | Promise<void>;
+  onSubmit: (values: DenyPartnerRequestFormValues) => void | Promise<void>;
 }
 
-export const RejectPartnerRequestModal: React.FC<
-  RejectPartnerRequestModalProps
+export const DenyPartnerRequestModal: React.FC<
+  DenyPartnerRequestModalProps
 > = ({ isOpen, onClose, onSubmit }) => {
-  const handleSubmit = async (values: RejectPartnerRequestFormValues) => {
+  const handleSubmit = async (values: DenyPartnerRequestFormValues) => {
     await onSubmit(values);
     onClose();
   };
@@ -36,19 +36,15 @@ export const RejectPartnerRequestModal: React.FC<
     >
       <ModalHeader title="Reject customer request" />
       <ModalBody>
-        <RejectPartnerRequestForm
-          id="reject-partner-request-form"
+        <DenyPartnerRequestForm
+          id="deny-partner-request-form"
           onSubmit={(values) => {
             void handleSubmit(values);
           }}
         />
       </ModalBody>
       <ModalFooter>
-        <Button
-          variant="danger"
-          type="submit"
-          form="reject-partner-request-form"
-        >
+        <Button variant="danger" type="submit" form="deny-partner-request-form">
           Reject
         </Button>
         <Button variant="link" onClick={onClose}>
@@ -59,4 +55,4 @@ export const RejectPartnerRequestModal: React.FC<
   );
 };
 
-RejectPartnerRequestModal.displayName = "RejectPartnerRequestModal";
+DenyPartnerRequestModal.displayName = "DenyPartnerRequestModal";

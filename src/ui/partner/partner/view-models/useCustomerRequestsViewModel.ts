@@ -11,7 +11,7 @@ export interface CustomerRequestsViewModel {
   isLoading: boolean;
   error?: Error;
   acceptPartnerRequest: (partnerRequestId: string) => Promise<PartnerRequest>;
-  rejectPartnerRequest: (
+  denyPartnerRequest: (
     partnerRequestId: string,
     reason: string,
   ) => Promise<PartnerRequest>;
@@ -36,21 +36,21 @@ export const useCustomerRequestsViewModel = (): CustomerRequestsViewModel => {
     [partnerRequestsStore],
   );
 
-  const [rejectState, doRejectPartnerRequest] = useAsyncFn(
+  const [denyState, doDenyPartnerRequest] = useAsyncFn(
     async (
       partnerRequestId: string,
       reason: string,
     ): Promise<PartnerRequest> => {
-      return await partnerRequestsStore.reject(partnerRequestId, reason);
+      return await partnerRequestsStore.deny(partnerRequestId, reason);
     },
     [partnerRequestsStore],
   );
 
   return {
     requests,
-    isLoading: loading || acceptState.loading || rejectState.loading,
-    error: error || acceptState.error || rejectState.error,
+    isLoading: loading || acceptState.loading || denyState.loading,
+    error: error || acceptState.error || denyState.error,
     acceptPartnerRequest: doAcceptPartnerRequest,
-    rejectPartnerRequest: doRejectPartnerRequest,
+    denyPartnerRequest: doDenyPartnerRequest,
   };
 };

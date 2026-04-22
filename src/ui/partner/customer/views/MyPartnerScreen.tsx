@@ -28,7 +28,7 @@ export const MyPartnerScreen: React.FC = () => {
   return (
     <PageSection>
       <Content className={headerStyle}>
-        <Title headingLevel="h1">My Partner Team</Title>
+        <Title headingLevel="h1">My partner</Title>
       </Content>
       {vm.isLoading && <LoadingSpinner />}
       {vm.error && <div>Error loading partner: {vm.error.message}</div>}

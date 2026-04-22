@@ -41,13 +41,11 @@ export const PartnersListSection: React.FC = () => {
   return (
     <PageSection>
       <Content className={introStyle}>
-        <Title headingLevel="h1">Connect with a Partner</Title>
+        <Title headingLevel="h1">Connect with a partner</Title>
         <Content component="p">
-          You currently don't have a partner assigned.
-          <br />
-          Once connected with a partner, you'll be able to share your migration
-          assessments and collaborate on your infrastructure modernization
-          journey.
+          You currently don't have a partner assigned. Once connected with a
+          partner, you'll be able to share your migration assessments and
+          collaborate on your infrastructure modernization journey.
           <br />
           Choose a partner below to get started:
         </Content>

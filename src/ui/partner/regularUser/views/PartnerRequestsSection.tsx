@@ -11,6 +11,7 @@ import { Table, Tbody, Td, Th, Thead, Tr } from "@patternfly/react-table";
 import React, { useState } from "react";
 
 import { sortByNewestFirst } from "../../../../lib/common/Sort";
+import { humanizeDate } from "../../../../lib/common/Time";
 import { ConfirmationModal } from "../../../core/components/ConfirmationModal";
 import { LoadingSpinner } from "../../../core/components/LoadingSpinner";
 import { RequestStatus } from "../components/RequestStatus";
@@ -68,6 +69,7 @@ export const PartnerRequestsSection: React.FC<PartnerRequestsSectionProps> = ({
               <Th>Partner</Th>
               <Th>Status</Th>
               <Th>Reason</Th>
+              <Th>Created</Th>
             </Tr>
           </Thead>
           <Tbody>
@@ -82,11 +84,14 @@ export const PartnerRequestsSection: React.FC<PartnerRequestsSectionProps> = ({
                       isDanger
                       onClick={() => setRequestToCancel(request)}
                     >
-                      cancel
+                      Cancel
                     </Button>
                   )}
                 </Td>
                 <Td dataLabel="Status reason">{request.reason}</Td>
+                <Td dataLabel="Created at">
+                  {humanizeDate(new Date(request.createdAt))}
+                </Td>
               </Tr>
             ))}
           </Tbody>

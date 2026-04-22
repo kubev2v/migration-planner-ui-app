@@ -20,8 +20,8 @@ export const PartnersScreen: React.FC = () => {
   return (
     <>
       <Flex direction={{ default: "column" }} rowGap={{ default: "rowGapXl" }}>
-        <PartnerRequestsSection vm={vm} />
         <PartnersListSection />
+        <PartnerRequestsSection vm={vm} />
       </Flex>
     </>
   );

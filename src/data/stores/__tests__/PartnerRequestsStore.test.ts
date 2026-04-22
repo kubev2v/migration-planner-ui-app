@@ -175,7 +175,7 @@ describe("PartnerRequestsStore", () => {
     expect(store.getSnapshot()[1].requestStatus).toBe("pending");
   });
 
-  it("reject() updates request status to rejected with reason", async () => {
+  it("deny() updates request status to rejected with reason", async () => {
     const pending = makePartnerRequest({
       id: "req-1",
       requestStatus: "pending",
@@ -190,7 +190,7 @@ describe("PartnerRequestsStore", () => {
     });
     vi.mocked(api.updatePartnerRequest).mockResolvedValue(rejected as never);
 
-    const result = await store.reject("req-1", "Does not meet criteria");
+    const result = await store.deny("req-1", "Does not meet criteria");
 
     expect(api.updatePartnerRequest).toHaveBeenCalledWith({
       id: "req-1",
@@ -203,7 +203,7 @@ describe("PartnerRequestsStore", () => {
     expect(store.getSnapshot()[0].requestStatus).toBe("rejected");
   });
 
-  it("reject() preserves other requests", async () => {
+  it("deny() preserves other requests", async () => {
     const requests = [
       makePartnerRequest({ id: "req-1", requestStatus: "pending" }),
       makePartnerRequest({ id: "req-2", requestStatus: "pending" }),
@@ -218,7 +218,7 @@ describe("PartnerRequestsStore", () => {
     });
     vi.mocked(api.updatePartnerRequest).mockResolvedValue(rejected as never);
 
-    await store.reject("req-1", "Test reason");
+    await store.deny("req-1", "Test reason");
 
     expect(store.getSnapshot()).toHaveLength(2);
     expect(store.getSnapshot()[0].requestStatus).toBe("rejected");
@@ -275,7 +275,7 @@ describe("PartnerRequestsStore", () => {
     expect(listener).toHaveBeenCalled();
   });
 
-  it("subscriber notification on reject()", async () => {
+  it("subscriber notification on deny()", async () => {
     const pending = makePartnerRequest({
       id: "req-1",
       requestStatus: "pending",
@@ -292,7 +292,7 @@ describe("PartnerRequestsStore", () => {
       reason: "Test reason",
     });
     vi.mocked(api.updatePartnerRequest).mockResolvedValue(rejected as never);
-    await store.reject("req-1", "Test reason");
+    await store.deny("req-1", "Test reason");
 
     expect(listener).toHaveBeenCalled();
   });

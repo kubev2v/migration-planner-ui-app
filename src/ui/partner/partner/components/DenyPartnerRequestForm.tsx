@@ -6,26 +6,28 @@ import * as yup from "yup";
 
 import { TextAreaFormGroup } from "../../../core/components/form";
 
-export interface RejectPartnerRequestFormValues {
+export interface DenyPartnerRequestFormValues {
   reason: string;
 }
 
-const validationSchema: yup.ObjectSchema<RejectPartnerRequestFormValues> = yup
+const validationSchema: yup.ObjectSchema<DenyPartnerRequestFormValues> = yup
   .object()
   .shape({
     reason: yup.string().trim().required("Reason is required"),
   });
 
-interface RejectPartnerRequestFormProps {
+interface DenyPartnerRequestFormProps {
   id: string;
-  onSubmit: (values: RejectPartnerRequestFormValues) => void;
+  onSubmit: (values: DenyPartnerRequestFormValues) => void;
   setIsValid?: (isValid: boolean) => void;
 }
 
-export const RejectPartnerRequestForm: React.FC<
-  RejectPartnerRequestFormProps
-> = ({ id, onSubmit, setIsValid }) => {
-  const methods = useForm<RejectPartnerRequestFormValues>({
+export const DenyPartnerRequestForm: React.FC<DenyPartnerRequestFormProps> = ({
+  id,
+  onSubmit,
+  setIsValid,
+}) => {
+  const methods = useForm<DenyPartnerRequestFormValues>({
     resolver: yupResolver(validationSchema),
     mode: "onTouched",
     defaultValues: {
@@ -37,7 +39,7 @@ export const RejectPartnerRequestForm: React.FC<
     setIsValid?.(methods.formState.isValid);
   }, [methods.formState.isValid, setIsValid]);
 
-  const handleFormSubmit = (data: RejectPartnerRequestFormValues) => {
+  const handleFormSubmit = (data: DenyPartnerRequestFormValues) => {
     onSubmit(data);
   };
 
@@ -62,4 +64,4 @@ export const RejectPartnerRequestForm: React.FC<
   );
 };
 
-RejectPartnerRequestForm.displayName = "RejectPartnerRequestForm";
+DenyPartnerRequestForm.displayName = "DenyPartnerRequestForm";

@@ -10,5 +10,5 @@ export interface IPartnerRequestsStore extends ExternalStore<PartnerRequest[]> {
   create(groupId: string, data: PartnerRequestCreate): Promise<PartnerRequest>;
   accept(partnerRequestId: string): Promise<PartnerRequest>;
   cancel(partnerRequestId: string): Promise<void>;
-  reject(partnerRequestId: string, reason: string): Promise<PartnerRequest>;
+  deny(partnerRequestId: string, reason: string): Promise<PartnerRequest>;
 }

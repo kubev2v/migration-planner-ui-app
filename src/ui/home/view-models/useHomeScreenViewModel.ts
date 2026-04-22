@@ -155,7 +155,7 @@ export const useHomeScreenViewModel = (): HomeScreenViewModel => {
         };
       case "customer":
         return {
-          label: "My Partner",
+          label: "My partner",
           path: routes.myPartner,
           key: 2,
         };

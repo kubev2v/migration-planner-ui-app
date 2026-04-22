@@ -15,10 +15,11 @@ import { Table, Tbody, Td, Th, Thead, Tr } from "@patternfly/react-table";
 import React, { useState } from "react";
 
 import { sortByNewestFirst } from "../../../../lib/common/Sort";
+import { humanizeDate } from "../../../../lib/common/Time";
 import { LoadingSpinner } from "../../../core/components/LoadingSpinner";
 import { RequestStatus } from "../../regularUser/components/RequestStatus";
-import { type RejectPartnerRequestFormValues } from "../components/RejectPartnerRequestForm";
-import { RejectPartnerRequestModal } from "../components/RejectPartnerRequestModal";
+import { type DenyPartnerRequestFormValues } from "../components/DenyPartnerRequestForm";
+import { DenyPartnerRequestModal } from "../components/DenyPartnerRequestModal";
 import { useCustomerRequestsViewModel } from "../view-models/useCustomerRequestsViewModel";
 
 const introStyle = css`
@@ -27,7 +28,7 @@ const introStyle = css`
 
 export const CustomerRequestsSection: React.FC = () => {
   const vm = useCustomerRequestsViewModel();
-  const [requestToReject, setRequestToReject] = useState<PartnerRequest | null>(
+  const [requestToDeny, setRequestToDeny] = useState<PartnerRequest | null>(
     null,
   );
 
@@ -35,9 +36,9 @@ export const CustomerRequestsSection: React.FC = () => {
     await vm.acceptPartnerRequest(request.id);
   };
 
-  const handleReject = async (values: RejectPartnerRequestFormValues) => {
-    if (requestToReject) {
-      await vm.rejectPartnerRequest(requestToReject.id, values.reason);
+  const handleDeny = async (values: DenyPartnerRequestFormValues) => {
+    if (requestToDeny) {
+      await vm.denyPartnerRequest(requestToDeny.id, values.reason);
     }
   };
 
@@ -46,8 +47,8 @@ export const CustomerRequestsSection: React.FC = () => {
       <Content className={introStyle}>
         <Title headingLevel="h1">Customer assignment requests</Title>
         <Content component="p">
-          View and manage customer assignment requests. Approve or reject
-          requests from customers who want to work with you.
+          View and manage customer assignment requests. Approve or deny requests
+          from customers who want to work with you.
         </Content>
       </Content>
 
@@ -72,14 +73,19 @@ export const CustomerRequestsSection: React.FC = () => {
           <Thead>
             <Tr>
               <Th>Customer</Th>
+              <Th>Contact name</Th>
+              <Th>Contact phone</Th>
               <Th>Status</Th>
               <Th>Reason</Th>
+              <Th>Created</Th>
             </Tr>
           </Thead>
           <Tbody>
             {sortByNewestFirst(vm.requests).map((request) => (
               <Tr key={request.id}>
                 <Td dataLabel="Customer">{request.partner.name}</Td>
+                <Td dataLabel="Contact name">{request.contactName}</Td>
+                <Td dataLabel="Contact phone">{request.contactPhone}</Td>
                 <Td dataLabel="Status">
                   <Flex>
                     <FlexItem>
@@ -104,9 +110,9 @@ export const CustomerRequestsSection: React.FC = () => {
                               variant="link"
                               size="sm"
                               isDanger
-                              onClick={() => setRequestToReject(request)}
+                              onClick={() => setRequestToDeny(request)}
                             >
-                              Reject
+                              Deny
                             </Button>
                           </InputGroupItem>
                         </InputGroup>
@@ -115,17 +121,20 @@ export const CustomerRequestsSection: React.FC = () => {
                   </Flex>
                 </Td>
                 <Td dataLabel="Status reason">{request.reason}</Td>
+                <Td dataLabel="Created at">
+                  {humanizeDate(new Date(request.createdAt))}
+                </Td>
               </Tr>
             ))}
           </Tbody>
         </Table>
       )}
 
-      <RejectPartnerRequestModal
-        isOpen={requestToReject !== null}
-        onClose={() => setRequestToReject(null)}
+      <DenyPartnerRequestModal
+        isOpen={requestToDeny !== null}
+        onClose={() => setRequestToDeny(null)}
         onSubmit={(values) => {
-          void handleReject(values);
+          void handleDeny(values);
         }}
       />
     </PageSection>

@@ -59,7 +59,7 @@ export class PartnerRequestsStore
     return updatedRequest;
   }
 
-  async reject(
+  async deny(
     partnerRequestId: string,
     reason: string,
   ): Promise<PartnerRequest> {

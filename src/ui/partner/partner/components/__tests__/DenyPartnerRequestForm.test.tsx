@@ -5,13 +5,13 @@ import { render, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 
-import { RejectPartnerRequestForm } from "../RejectPartnerRequestForm";
+import { DenyPartnerRequestForm } from "../DenyPartnerRequestForm";
 
-describe("RejectPartnerRequestForm", () => {
+describe("DenyPartnerRequestForm", () => {
   it("renders the form with a textarea", () => {
     const mockOnSubmit = vi.fn();
     const { getByRole } = render(
-      <RejectPartnerRequestForm
+      <DenyPartnerRequestForm
         id="reject-request-form"
         onSubmit={mockOnSubmit}
       />,
@@ -27,7 +27,7 @@ describe("RejectPartnerRequestForm", () => {
     const user = userEvent.setup();
     const { getByRole } = render(
       <>
-        <RejectPartnerRequestForm
+        <DenyPartnerRequestForm
           id="reject-request-form"
           onSubmit={mockOnSubmit}
         />
@@ -56,7 +56,7 @@ describe("RejectPartnerRequestForm", () => {
     const user = userEvent.setup();
     const { getByRole, getByText } = render(
       <>
-        <RejectPartnerRequestForm
+        <DenyPartnerRequestForm
           id="reject-request-form"
           onSubmit={mockOnSubmit}
         />
@@ -78,7 +78,7 @@ describe("RejectPartnerRequestForm", () => {
     const user = userEvent.setup();
     const { getByRole, getByText, queryByText } = render(
       <>
-        <RejectPartnerRequestForm
+        <DenyPartnerRequestForm
           id="reject-request-form"
           onSubmit={mockOnSubmit}
         />
@@ -105,7 +105,7 @@ describe("RejectPartnerRequestForm", () => {
     const mockOnSubmit = vi.fn();
     const user = userEvent.setup();
     const { getByRole, getByText } = render(
-      <RejectPartnerRequestForm
+      <DenyPartnerRequestForm
         id="reject-request-form"
         onSubmit={mockOnSubmit}
       />,
@@ -124,7 +124,7 @@ describe("RejectPartnerRequestForm", () => {
     const mockOnSubmit = vi.fn();
     const user = userEvent.setup();
     const { getByRole } = render(
-      <RejectPartnerRequestForm
+      <DenyPartnerRequestForm
         id="reject-request-form"
         onSubmit={mockOnSubmit}
       />,

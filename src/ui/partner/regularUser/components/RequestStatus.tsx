@@ -13,7 +13,7 @@ export const RequestStatus: React.FC<RequestStatusProps> = ({ status }) => {
     case "pending":
       return <Label color="yellow">Waiting for approval</Label>;
     case "rejected":
-      return <Label color="red">Rejected</Label>;
+      return <Label color="red">Denied</Label>;
     case "cancelled":
       return <Label color="orange">Cancelled</Label>;
     default:
