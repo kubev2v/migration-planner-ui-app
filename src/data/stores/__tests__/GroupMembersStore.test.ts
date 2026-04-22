@@ -194,4 +194,30 @@ describe("GroupMembersStore", () => {
 
     expect(listener).not.toHaveBeenCalled();
   });
+
+  // Non-regression test for infinite re-render bug
+  it("getSnapshot() returns same reference when state unchanged", () => {
+    const snapshot1 = store.getSnapshot();
+    const snapshot2 = store.getSnapshot();
+    const snapshot3 = store.getSnapshot();
+
+    expect(snapshot1).toBe(snapshot2);
+    expect(snapshot2).toBe(snapshot3);
+  });
+
+  it("getSnapshot() returns new reference after list() updates state", async () => {
+    const snapshotBefore = store.getSnapshot();
+
+    const members = [makeMember({ username: "user1" })];
+    vi.mocked(api.listGroupMembers).mockResolvedValue(members as never);
+    await store.list("g-1");
+
+    const snapshotAfter1 = store.getSnapshot();
+    const snapshotAfter2 = store.getSnapshot();
+
+    // New reference after update
+    expect(snapshotAfter1).not.toBe(snapshotBefore);
+    // Same reference for subsequent calls
+    expect(snapshotAfter1).toBe(snapshotAfter2);
+  });
 });

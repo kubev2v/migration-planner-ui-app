@@ -13,15 +13,17 @@ import {
   GroupMemberForm,
 } from "./GroupMemberForm";
 
-interface CreateAuthorizedMemberModalProps {
+interface CreateGroupMemberModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (values: CreateGroupMemberFormValues) => void | Promise<void>;
 }
 
-export const CreateGroupMemberModal: React.FC<
-  CreateAuthorizedMemberModalProps
-> = ({ isOpen, onClose, onSubmit }) => {
+export const CreateGroupMemberModal: React.FC<CreateGroupMemberModalProps> = ({
+  isOpen,
+  onClose,
+  onSubmit,
+}) => {
   const handleSubmit = async (values: CreateGroupMemberFormValues) => {
     await onSubmit(values);
     onClose();
@@ -32,23 +34,19 @@ export const CreateGroupMemberModal: React.FC<
       variant={ModalVariant.medium}
       isOpen={isOpen}
       onClose={onClose}
-      aria-label="Add authorized member"
+      aria-label="Add group member"
     >
-      <ModalHeader title="Add authorized member" />
+      <ModalHeader title="Add group member" />
       <ModalBody>
         <GroupMemberForm
-          id="create-authorized-member-form"
+          id="create-group-member-form"
           onSubmit={(values) => {
             void handleSubmit(values);
           }}
         />
       </ModalBody>
       <ModalFooter>
-        <Button
-          variant="primary"
-          type="submit"
-          form="create-authorized-member-form"
-        >
+        <Button variant="primary" type="submit" form="create-group-member-form">
           Add
         </Button>
         <Button variant="link" onClick={onClose}>
@@ -59,4 +57,4 @@ export const CreateGroupMemberModal: React.FC<
   );
 };
 
-CreateGroupMemberModal.displayName = "CreateAuthorizedMemberModal";
+CreateGroupMemberModal.displayName = "CreateGroupMemberModal";

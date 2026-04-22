@@ -17,6 +17,10 @@ export class GroupMembersStore
   private members: Member[] = [];
   private api: AccountApiInterface;
   private currentGroupId: string | null = null;
+  private snapshot: GroupMembersSnapshot = {
+    groupId: null,
+    members: [],
+  };
 
   constructor(api: AccountApiInterface) {
     super();
@@ -26,6 +30,10 @@ export class GroupMembersStore
   async list(groupId: string): Promise<Member[]> {
     this.members = await this.api.listGroupMembers({ id: groupId });
     this.currentGroupId = groupId;
+    this.snapshot = {
+      groupId: this.currentGroupId,
+      members: this.members,
+    };
     this.notify();
     return this.members;
   }
@@ -37,6 +45,10 @@ export class GroupMembersStore
     });
     if (this.currentGroupId === groupId) {
       this.members = [...this.members, newMember];
+      this.snapshot = {
+        groupId: this.currentGroupId,
+        members: this.members,
+      };
       this.notify();
     }
     return newMember;
@@ -51,14 +63,15 @@ export class GroupMembersStore
       this.members = this.members.filter(
         (member) => member.username !== username,
       );
+      this.snapshot = {
+        groupId: this.currentGroupId,
+        members: this.members,
+      };
       this.notify();
     }
   }
 
   override getSnapshot(): GroupMembersSnapshot {
-    return {
-      groupId: this.currentGroupId,
-      members: this.members,
-    };
+    return this.snapshot;
   }
 }

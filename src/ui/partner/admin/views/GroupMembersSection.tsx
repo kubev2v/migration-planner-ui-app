@@ -165,4 +165,4 @@ export const GroupMembersSection: React.FC<GroupMembersSectionProps> = ({
   );
 };
 
-GroupMembersSection.displayName = "AuthorizedUsersSection";
+GroupMembersSection.displayName = "GroupMembersSection";
