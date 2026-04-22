@@ -21,14 +21,17 @@ const offScreenContainer = css`
   width: 1600px;
   min-height: 1200px;
   padding: 2rem;
-  background-color: white;
+  /*
+   * Use the theme's own background so the captured PDF matches whatever
+   * theme (light or dark) is active in the app. Previously this was hard-
+   * coded to white which forced light backgrounds while text remained
+   * dark-mode colours, making labels invisible.
+   */
+  background-color: var(--pf-t--global--background--color--primary--default);
   z-index: -1;
 
   .pf-v6-c-card {
-    background-color: white !important;
     box-shadow: none !important;
-    color: black !important;
-    border: 1px solid rgba(3, 3, 3, 0.25);
     max-height: none !important;
     overflow: visible !important;
   }

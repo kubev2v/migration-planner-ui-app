@@ -72,13 +72,23 @@ export class PdfExportService {
     await this.waitForImages(container);
 
     const blockBoundaries = this.collectBlockBoundaries(container);
-    const canvas = await html2canvas(container, { useCORS: true });
+
+    // Read the container's resolved background colour so page-fill in
+    // createSliceCanvas matches the active theme (dark or light).
+    const backgroundColor =
+      window.getComputedStyle(container).backgroundColor || "#ffffff";
+
+    const canvas = await html2canvas(container, {
+      useCORS: true,
+      backgroundColor,
+    });
 
     const pdf = this.buildPdf(
       canvas,
       blockBoundaries,
       container.clientWidth,
       options.documentTitle,
+      backgroundColor,
     );
     this.downloadPdf(pdf, options.documentTitle);
   }
@@ -152,6 +162,7 @@ export class PdfExportService {
     domBlocks: BlockBoundary[],
     containerClientWidth: number,
     documentTitle?: string,
+    backgroundColor = "#ffffff",
   ): jsPDF {
     const pdf = new jsPDF("p", "mm", "a4");
     const pageWidth = pdf.internal.pageSize.getWidth();
@@ -198,6 +209,7 @@ export class PdfExportService {
         contentWidth,
         contentHeight,
         margin,
+        backgroundColor,
       );
     } else {
       const sliceHeights = this.calculateSliceHeights(
@@ -215,6 +227,7 @@ export class PdfExportService {
         contentWidth,
         contentHeight,
         margin,
+        backgroundColor,
       );
     }
 
@@ -408,6 +421,7 @@ export class PdfExportService {
     contentWidth: number,
     contentHeight: number,
     margin: number,
+    backgroundColor = "#ffffff",
   ): void {
     for (let i = 0; i < segments.length; i++) {
       const { top, height } = segments[i];
@@ -418,6 +432,7 @@ export class PdfExportService {
         imgWidth,
         sliceHeightPx,
         top,
+        backgroundColor,
       );
 
       this.addCanvasToPdf(
@@ -445,6 +460,7 @@ export class PdfExportService {
     contentWidth: number,
     contentHeight: number,
     margin: number,
+    backgroundColor = "#ffffff",
   ): void {
     let consumedPx = 0;
 
@@ -456,6 +472,7 @@ export class PdfExportService {
         imgWidth,
         sliceHeightPx,
         consumedPx,
+        backgroundColor,
       );
 
       this.addCanvasToPdf(
@@ -481,6 +498,7 @@ export class PdfExportService {
     width: number,
     height: number,
     offsetY: number,
+    backgroundColor = "#ffffff",
   ): HTMLCanvasElement {
     const pageCanvas = document.createElement("canvas");
     pageCanvas.width = width;
@@ -489,7 +507,9 @@ export class PdfExportService {
     const ctx = pageCanvas.getContext("2d");
     if (!ctx) throw new Error("Canvas 2D context unavailable");
 
-    ctx.fillStyle = "#ffffff";
+    // Fill with the container's actual background colour so the padding area
+    // at the bottom of the last page matches the active theme.
+    ctx.fillStyle = backgroundColor;
     ctx.fillRect(0, 0, width, height);
     ctx.drawImage(sourceCanvas, 0, offsetY, width, height, 0, 0, width, height);
 
