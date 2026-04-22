@@ -80,6 +80,40 @@ const TIER_CONFIG: Record<
   "20+TiB": { order: 7, label: "20+TiB", legendCategory: "20+TiB" },
 };
 
+// Legacy tier keys used by assessments created before the fine-grained
+// GiB/TiB breakdown was introduced.
+const LEGACY_TIER_CONFIG: Record<
+  string,
+  { order: number; label: string; legendCategory: string }
+> = {
+  "Easy (0-10TB)": {
+    order: 0,
+    label: "Easy (0-10TB)",
+    legendCategory: "Easy (0-10TB)",
+  },
+  "Medium (10-20TB)": {
+    order: 1,
+    label: "Medium (10-20TB)",
+    legendCategory: "Medium (10-20TB)",
+  },
+  "Hard (20-50TB)": {
+    order: 2,
+    label: "Hard (20-50TB)",
+    legendCategory: "Hard (20-50TB)",
+  },
+  "White Glove (>50TB)": {
+    order: 3,
+    label: "White Glove (>50TB)",
+    legendCategory: "White Glove (>50TB)",
+  },
+};
+
+function isLegacyTierFormat(summary: {
+  [key: string]: DiskSizeTierSummary;
+}): boolean {
+  return Object.keys(summary).some((key) => key in LEGACY_TIER_CONFIG);
+}
+
 type TierChartDatum = {
   name: string;
   count: number;
@@ -141,6 +175,14 @@ export const StorageOverview: React.FC<StorageOverviewProps> = ({
   const [viewMode, setViewMode] = useState<ViewMode>("vmCount");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
+  const tierConfig = useMemo(
+    () =>
+      DiskSizeTierSummary && isLegacyTierFormat(DiskSizeTierSummary)
+        ? LEGACY_TIER_CONFIG
+        : TIER_CONFIG,
+    [DiskSizeTierSummary],
+  );
+
   const totals = useMemo(() => {
     if (!DiskSizeTierSummary) return { totalSize: 0, totalVMs: 0 };
 
@@ -155,14 +197,14 @@ export const StorageOverview: React.FC<StorageOverviewProps> = ({
 
   const chartData = useMemo(() => {
     if (!DiskSizeTierSummary) return [];
-    return buildTierChartData(DiskSizeTierSummary, TIER_CONFIG, (tier) => {
+    return buildTierChartData(DiskSizeTierSummary, tierConfig, (tier) => {
       const count = viewMode === "totalSize" ? tier.totalSizeTB : tier.vmCount;
       return {
         count,
         countDisplay: viewMode === "totalSize" ? `${count} TB` : `${count} VMs`,
       };
     });
-  }, [DiskSizeTierSummary, viewMode]);
+  }, [DiskSizeTierSummary, tierConfig, viewMode]);
 
   const diskTypeChartData = useMemo(() => {
     if (!diskTypeSummary || Object.keys(diskTypeSummary).length === 0)
@@ -207,19 +249,19 @@ export const StorageOverview: React.FC<StorageOverviewProps> = ({
 
   const chartDataForVmCount = useMemo(() => {
     if (!exportAllViews || !DiskSizeTierSummary) return [];
-    return buildTierChartData(DiskSizeTierSummary, TIER_CONFIG, (tier) => {
+    return buildTierChartData(DiskSizeTierSummary, tierConfig, (tier) => {
       const count = tier.vmCount;
       return { count, countDisplay: `${count} VMs` };
     });
-  }, [exportAllViews, DiskSizeTierSummary]);
+  }, [exportAllViews, DiskSizeTierSummary, tierConfig]);
 
   const chartDataForTotalSize = useMemo(() => {
     if (!exportAllViews || !DiskSizeTierSummary) return [];
-    return buildTierChartData(DiskSizeTierSummary, TIER_CONFIG, (tier) => {
+    return buildTierChartData(DiskSizeTierSummary, tierConfig, (tier) => {
       const count = tier.totalSizeTB;
       return { count, countDisplay: `${count} TB` };
     });
-  }, [exportAllViews, DiskSizeTierSummary]);
+  }, [exportAllViews, DiskSizeTierSummary, tierConfig]);
 
   const onDropdownToggle = (): void => {
     setIsDropdownOpen(!isDropdownOpen);
