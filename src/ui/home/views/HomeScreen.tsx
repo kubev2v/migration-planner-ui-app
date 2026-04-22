@@ -3,6 +3,7 @@ import React from "react";
 import { Outlet } from "react-router-dom";
 
 import { AppPage } from "../../core/components/AppPage";
+import { PartnerTab } from "../components/PartnerTab";
 import { useHomeScreenViewModel } from "../view-models/useHomeScreenViewModel";
 import HowDoesItWork from "./HowDoesItWork";
 
@@ -32,10 +33,12 @@ export const HomeScreen: React.FC = () => {
           aria-label="Environments tab"
         />
         {vm.partnerTab && (
-          <Tab
+          <PartnerTab
             eventKey={vm.partnerTab.key}
-            title={<TabTitleText>{vm.partnerTab.label}</TabTitleText>}
-            aria-label={`${vm.partnerTab.label} tab`}
+            label={vm.partnerTab.label}
+            pendingRequestsCount={vm.pendingRequestsCount}
+            shouldShowBadge={vm.shouldShowBadge}
+            isLoading={vm.isLoadingPartnerRequests}
           />
         )}
       </Tabs>

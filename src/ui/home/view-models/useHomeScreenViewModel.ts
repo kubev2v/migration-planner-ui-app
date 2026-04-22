@@ -1,9 +1,11 @@
 import { useInjection } from "@y0n1/react-ioc";
 import { useState, useSyncExternalStore } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { useAsync } from "react-use";
 
 import { Symbols } from "../../../config/Dependencies";
 import type { IAccountStore } from "../../../data/stores/interfaces/IAccountStore";
+import type { IPartnerRequestsStore } from "../../../data/stores/interfaces/IPartnerRequestsStore";
 import { PARTNER_FEATURE_VISIBLE_KEY } from "../../../data/stubs/stubPartners";
 import useLocalStorage from "../../../hooks/useLocalStorage";
 import { routes } from "../../../routing/Routes";
@@ -30,6 +32,9 @@ export interface HomeScreenViewModel {
     tabIndex: string | number,
   ) => void;
   handleOpenRVToolsModal: () => void;
+  pendingRequestsCount: number;
+  shouldShowBadge: boolean;
+  isLoadingPartnerRequests: boolean;
 }
 
 export const useHomeScreenViewModel = (): HomeScreenViewModel => {
@@ -48,6 +53,30 @@ export const useHomeScreenViewModel = (): HomeScreenViewModel => {
     PARTNER_FEATURE_VISIBLE_KEY,
     false,
   );
+
+  // Partner requests store subscription
+  const partnerRequestsStore = useInjection<IPartnerRequestsStore>(
+    Symbols.PartnerRequestsStore,
+  );
+
+  const requests = useSyncExternalStore(
+    partnerRequestsStore.subscribe.bind(partnerRequestsStore),
+    partnerRequestsStore.getSnapshot.bind(partnerRequestsStore),
+  );
+
+  const shouldShowBadge = identity?.kind === "partner";
+
+  const { loading: isLoadingPartnerRequestsRaw } = useAsync(async () => {
+    if (!shouldShowBadge) return [];
+    return partnerRequestsStore.list();
+  }, [partnerRequestsStore, shouldShowBadge]);
+
+  const isLoadingPartnerRequests =
+    shouldShowBadge && isLoadingPartnerRequestsRaw;
+
+  const pendingRequestsCount = requests.filter(
+    (request) => request.requestStatus === "pending",
+  ).length;
 
   const getActiveTabKey = (): number => {
     if (location.pathname.startsWith(routes.environments)) return 1;
@@ -153,6 +182,9 @@ export const useHomeScreenViewModel = (): HomeScreenViewModel => {
     breadcrumbs,
     rvtoolsOpenToken,
     partnerTab,
+    pendingRequestsCount,
+    shouldShowBadge,
+    isLoadingPartnerRequests,
     handleTabClick,
     handleOpenRVToolsModal,
   };
