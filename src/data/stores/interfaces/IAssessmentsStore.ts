@@ -4,6 +4,8 @@ import type {
   CalculateMigrationEstimationByComplexityRequest,
   CalculateMigrationEstimationRequest,
   ClusterRequirementsResponse,
+  ClusterRequirementsStoredInput,
+  GetAssessmentClusterRequirementsStoredInputRequest,
   InitOverrideFunction,
   MigrationComplexityResponse,
   MigrationEstimationByComplexityResponse,
@@ -45,6 +47,10 @@ export interface IAssessmentsStore extends ExternalStore<AssessmentModel[]> {
     requestParameters: CalculateAssessmentClusterRequirementsRequest,
     initOverrides?: RequestInit | InitOverrideFunction,
   ): Promise<ClusterRequirementsResponse>;
+  getAssessmentClusterRequirementsStoredInput(
+    requestParameters: GetAssessmentClusterRequirementsStoredInputRequest,
+    initOverrides?: RequestInit | InitOverrideFunction,
+  ): Promise<ClusterRequirementsStoredInput>;
   calculateMigrationEstimation(
     requestParameters: CalculateMigrationEstimationRequest,
     initOverrides?: RequestInit | InitOverrideFunction,
