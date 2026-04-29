@@ -1,70 +1,95 @@
 /**
- * Known app slugs used by the Console Chrome to mount this microfrontend.
- * Both serve the same RootApp module (see deploy/frontend.yaml).
+ * The current app slug used by the Insights Chrome to mount this microfrontend.
+ * Matches `appUrl` in `fec.config.js`.
  */
 const APP_SLUG = "/openshift/migration-advisor";
-const LEGACY_APP_SLUG = "/openshift/migration-assessment";
 
 /**
- * Compute the mount-path prefix once and cache it.
- *
- * Resolution order (first defined value wins):
- *
- * 1. **Build-time injection** — Webpack's DefinePlugin (fec.config.js) sets
- *    `process.env.MIGRATION_PLANNER_APP_BASENAME` to `"/openshift/migration-advisor"`.
- *    Vite (dev/vite.config.ts) sets it to `""` for standalone mode.
- *
- * 2. **Lazy runtime detection** — if the build pipeline did not inject the
- *    constant, we read window.location.pathname the first time a routes.*
- *    getter is accessed. This is safe because routes.* is only accessed inside
- *    React renders, and the Chrome shell only renders this federated module
- *    after navigating to its URL — so pathname is already correct at that point.
- *
- * The result is cached permanently after the first call. Subsequent calls
- * return the cached value without touching window.location again, so Chrome's
- * synchronous window.location update during Back/Forward navigation (which
- * occurs before React's render cycle) cannot corrupt the value.
- *
- * This is intentionally NOT computed at module-load time. Webpack Module
- * Federation pre-loads federated modules in the background while the user is
- * still on a different page (e.g. the Console home or search). At pre-load
- * time window.location.pathname is not the app's URL, so a module-level
- * constant would be set to "" and all routes would lose their prefix.
+ * The legacy app slug kept alive for backward compatibility.
+ * Both slugs serve the same RootApp module (see deploy/frontend.yaml).
  */
-let _cachedBasename: string | null = null;
+const LEGACY_APP_SLUG = "/openshift/migration-assessment";
 
-function getAppBasename(): string {
-  if (_cachedBasename !== null) return _cachedBasename;
+let lastLoggedBasename: string | null = null;
 
-  // Build-time injection (primary path)
-  const buildTime = process.env.MIGRATION_PLANNER_APP_BASENAME;
-  if (buildTime !== undefined) {
-    return (_cachedBasename = buildTime);
-  }
-
-  // Runtime detection fallback
+/**
+ * Resolve the app's base path at runtime.
+ *
+ * - **Standalone (dev) mode** — `BrowserRouter` has `basename="/"` and the
+ *   app is mounted at the root. Returns `""` so every route is root-relative.
+ *
+ * - **Microfrontend (stage) mode** — The Chrome's `BrowserRouter` has
+ *   `basename="/"` and mounts the app inside a nested `<Route>` at
+ *   `APP_SLUG`. Absolute `navigate()` / `<Link to>` calls must therefore
+ *   include the full mount path, otherwise React Router resolves them from
+ *   the router root and the URL ends up outside the app.
+ *
+ * Detection: if the current URL contains the app slug, we're in stage mode.
+ * This is called dynamically each time routes are accessed to avoid module-load
+ * timing issues with federated modules.
+ */
+function resolveAppBasename(): string {
   try {
+    // Strip known Chrome preview/beta prefixes before matching
     const pathname = window.location.pathname.replace(/^\/(preview|beta)/, "");
-    if (pathname.startsWith(APP_SLUG)) return (_cachedBasename = APP_SLUG);
-    if (pathname.startsWith(LEGACY_APP_SLUG))
-      return (_cachedBasename = LEGACY_APP_SLUG);
-  } catch {
-    // SSR / test environment without window
-  }
+    const basename = pathname.startsWith(APP_SLUG)
+      ? APP_SLUG
+      : pathname.startsWith(LEGACY_APP_SLUG)
+        ? LEGACY_APP_SLUG
+        : "";
 
-  return (_cachedBasename = "");
+    // Log only when basename changes or on first detection (to track production issues)
+    if (process.env.NODE_ENV !== "test" && lastLoggedBasename !== basename) {
+      console.info("[Routes] Basename detected:", {
+        mode: basename ? "microfrontend" : "standalone",
+        basename: basename || "(root)",
+        currentPathname: window.location.pathname,
+        timestamp: new Date().toISOString(),
+      });
+      lastLoggedBasename = basename;
+    }
+
+    return basename;
+  } catch {
+    return ""; // SSR / test environment without DOM
+  }
 }
 
 /**
- * Centralized route map.
+ * Get the app's mount-path prefix dynamically.
+ * - `""` in standalone (dev) mode
+ * - `"/openshift/migration-advisor"` in stage mode (current slug)
+ * - `"/openshift/migration-assessment"` in stage mode (legacy slug)
  *
- * Every path includes the mount-path prefix so that navigate() and <Link to>
- * calls work correctly in both standalone and microfrontend mode.
- * All getters call getAppBasename() which caches on first access.
+ * This is computed on each access to avoid caching stale values during
+ * module hot-reloading or federated module initialization.
+ */
+function getAppBasename(): string {
+  return resolveAppBasename();
+}
+
+/**
+ * The app's mount-path prefix.
+ * - `""` in standalone (dev) mode
+ * - `"/openshift/migration-advisor"` in stage mode (current slug)
+ * - `"/openshift/migration-assessment"` in stage mode (legacy slug)
+ *
+ * @deprecated This is a snapshot at module-load time and may be stale.
+ * Prefer using the `routes` object which dynamically resolves the basename.
+ */
+export const APP_BASENAME = getAppBasename();
+
+/**
+ * Centralized route map with dynamic basename resolution.
+ *
+ * Each route property is a getter that computes the full path at access time,
+ * ensuring the basename is always current even during HMR or federated module
+ * initialization.
  */
 export const routes = {
   get root() {
-    return getAppBasename() || "/";
+    const base = getAppBasename();
+    return base || "/";
   },
   get assessments() {
     return `${getAppBasename()}/assessments`;
