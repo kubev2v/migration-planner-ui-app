@@ -39,7 +39,7 @@ BUILD_ARGS := $(foreach var,$(BUILD_VAR_NAMES),--build-arg $(var)=$($(var)))
 ESLINT_CMD := npx eslint --cache --cache-location node_modules/.cache/eslintcache --cache-strategy content .
 PRETTIER_CMD := npx prettier --cache --cache-location node_modules/.cache/prettiercache --cache-strategy content .
 
-.PHONY: help oc install ci-install clean build-standalone run-standalone preview-standalone patch-hosts start start-dev-proxy start-federated build lint format type-check test coverage security-scan security-fix security-fix-force validate-all podman-build podman-run podman-stop podman-logs podman-status podman-clean podman-tag-latest podman-deploy podman-dev quay-login podman-push deploy-on-openshift delete-from-openshift version test-watch
+.PHONY: help oc install ci-install clean build-standalone run-standalone preview-standalone patch-hosts start start-dev-proxy start-federated build lint format type-check test coverage security-scan security-fix security-fix-force validate-all validate-quick podman-build podman-run podman-stop podman-logs podman-status podman-clean podman-tag-latest podman-deploy podman-dev quay-login podman-push deploy-on-openshift delete-from-openshift version test-watch
 
 # Default target
 .DEFAULT_GOAL := help
@@ -72,6 +72,7 @@ help:
 	@echo "  security-fix        Fix security vulnerabilities"
 	@echo "  security-fix-force  Fix security vulnerabilities (including breaking changes)"
 	@echo "  validate-all        Run all validation checks (lint + format + type-check + test + security-scan)"
+	@echo "  validate-quick      Run validation checks without installing (assumes deps installed)"
 	@echo ""
 	@echo "Container Management:"
 	@echo "  podman-build        Build the container image"
@@ -258,6 +259,15 @@ security-fix-force: install
 
 # Combined format validation - runs both linting and format checks
 validate-all: lint format type-check test security-scan
+	@echo "✅ All validation checks passed!"
+
+# Run validation checks without installing dependencies (assumes deps already installed)
+validate-quick:
+	@echo "🔍 Running validation checks (no install)..."
+	@$(ESLINT_CMD) --fix
+	@$(PRETTIER_CMD) --write
+	@npx tsc --noEmit
+	@npx vitest run
 	@echo "✅ All validation checks passed!"
 
 # Build the container image
