@@ -40,7 +40,6 @@ vi.mock("../WarningsTable", () => ({
 vi.mock("../ErrorTable", () => ({
   ErrorTable: (): JSX.Element => <div data-testid="errors" />,
 }));
-
 const emptyBreakdown: VMResourceBreakdown = {
   total: 0,
   totalForMigratable: 0,

@@ -2,6 +2,8 @@ import { css } from "@emotion/css";
 import {
   Button,
   Content,
+  Flex,
+  FlexItem,
   Icon,
   MenuToggle,
   type MenuToggleElement,
@@ -21,6 +23,7 @@ import { routes } from "../../../routing/Routes";
 import { AppPage } from "../../core/components/AppPage";
 import { useExampleReportViewModel } from "../view-models/useExampleReportViewModel";
 import type { ClusterOption } from "./assessment-report/ClusterView";
+import { ClusterDrsConfiguration } from "./assessment-report/ClusterDrsConfiguration";
 import { Dashboard } from "./assessment-report/Dashboard";
 import { ClusterSizingWizard } from "./cluster-sizer/ClusterSizingWizard";
 import { EXAMPLE_FORM_VALUES } from "./example-data/clusterSizingFixture";
@@ -68,50 +71,80 @@ const ExampleReport: React.FC = () => {
       caption={
         <Stack hasGutter>
           <StackItem>
-            Discovery VM status :{" "}
-            <Icon size="md" isInline>
-              <CheckCircleIcon color={globalSuccessColor100.var} />
-            </Icon>{" "}
-            Ready
-            <br />
-            This is an example report showcasing the migration advisor dashboard
-            for RVTools file upload.
+            <Content component="p">
+              Discovery VM status:{" "}
+              <Icon size="sm" isInline>
+                <CheckCircleIcon color={globalSuccessColor100.var} />
+              </Icon>{" "}
+              Ready
+            </Content>
+            <Content component="small">
+              This is an example report showcasing the migration advisor
+              dashboard for RVTools file upload.
+            </Content>
           </StackItem>
-          <StackItem>{vm.detectedSummaryText}</StackItem>
           <StackItem>
-            <Select
-              isScrollable
-              isOpen={vm.isClusterSelectOpen}
-              selected={vm.clusterView.selectionId}
-              onSelect={vm.handleClusterSelect}
-              onOpenChange={(isOpen: boolean) => {
-                if (!vm.clusterSelectDisabled)
-                  vm.setIsClusterSelectOpen(isOpen);
-              }}
-              toggle={(toggleRef: React.Ref<MenuToggleElement>) => (
-                <MenuToggle
-                  ref={toggleRef}
-                  isExpanded={vm.isClusterSelectOpen}
-                  onClick={() => {
-                    if (!vm.clusterSelectDisabled) {
-                      vm.setIsClusterSelectOpen(!vm.isClusterSelectOpen);
-                    }
-                  }}
-                  isDisabled={vm.clusterSelectDisabled}
-                  className={clusterToggleStyle}
-                >
-                  {vm.clusterView.selectionLabel}
-                </MenuToggle>
-              )}
+            <Content component="p">{vm.detectedSummaryText}</Content>
+          </StackItem>
+          {vm.vcenterVersion && (
+            <StackItem>
+              <Content component="p">
+                vCenter version: <strong>{vm.vcenterVersion}</strong>
+              </Content>
+            </StackItem>
+          )}
+          <StackItem>
+            <Flex
+              gap={{ default: "gapLg" }}
+              alignItems={{ default: "alignItemsFlexStart" }}
+              flexWrap={{ default: "wrap" }}
             >
-              <SelectList>
-                {vm.clusterView.clusterOptions.map((option: ClusterOption) => (
-                  <SelectOption key={option.id} value={option.id}>
-                    {option.label}
-                  </SelectOption>
-                ))}
-              </SelectList>
-            </Select>
+              <FlexItem>
+                <Select
+                  isScrollable
+                  isOpen={vm.isClusterSelectOpen}
+                  selected={vm.clusterView.selectionId}
+                  onSelect={vm.handleClusterSelect}
+                  onOpenChange={(isOpen: boolean) => {
+                    if (!vm.clusterSelectDisabled)
+                      vm.setIsClusterSelectOpen(isOpen);
+                  }}
+                  toggle={(toggleRef: React.Ref<MenuToggleElement>) => (
+                    <MenuToggle
+                      ref={toggleRef}
+                      isExpanded={vm.isClusterSelectOpen}
+                      onClick={() => {
+                        if (!vm.clusterSelectDisabled) {
+                          vm.setIsClusterSelectOpen(!vm.isClusterSelectOpen);
+                        }
+                      }}
+                      isDisabled={vm.clusterSelectDisabled}
+                      className={clusterToggleStyle}
+                    >
+                      {vm.clusterView.selectionLabel}
+                    </MenuToggle>
+                  )}
+                >
+                  <SelectList>
+                    {vm.clusterView.clusterOptions.map(
+                      (option: ClusterOption) => (
+                        <SelectOption key={option.id} value={option.id}>
+                          {option.label}
+                        </SelectOption>
+                      ),
+                    )}
+                  </SelectList>
+                </Select>
+              </FlexItem>
+              {vm.selectedClusterId !== "all" ? (
+                <FlexItem flex={{ default: "flex_1" }}>
+                  <ClusterDrsConfiguration
+                    clusters={vm.clusters}
+                    selectedClusterId={vm.selectedClusterId}
+                  />
+                </FlexItem>
+              ) : null}
+            </Flex>
           </StackItem>
         </Stack>
       }

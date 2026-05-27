@@ -59,6 +59,8 @@ export class HtmlTemplateBuilder {
     title: string = DEFAULT_DOCUMENT_TITLE,
   ): string {
     const { infra, vms } = this.chartTransformer.normalizeInventory(inventory);
+    const vcenterVersion = this.extractVcenterVersion(inventory);
+    const clusterFeaturesRows = this.extractClusterFeaturesRows(inventory);
     const {
       powerStateData,
       resourceData,
@@ -83,7 +85,8 @@ export class HtmlTemplateBuilder {
 </head>
 <body>
     <div class="container">
-        ${this.buildHeader(generatedAt, title)}
+        ${this.buildHeader(generatedAt, title, vcenterVersion)}
+        ${this.buildClusterFeaturesSection(clusterFeaturesRows)}
         ${this.buildSummaryGrid(infra, vms)}
         ${this.buildChartGrid(vms, infra, powerStateData, resourceData, osData, warningsData, storageLabels, storageUsedData, storageTotalData)}
         ${this.buildDetailedTables(infra, vms)}
@@ -94,6 +97,123 @@ export class HtmlTemplateBuilder {
     </script>
 </body>
 </html>`;
+  }
+
+  private extractVcenterVersion(
+    inventory: InventoryData | SnapshotLike,
+  ): string | undefined {
+    const snapshot = inventory as SnapshotLike;
+    const raw = snapshot.inventory?.vcenter_version as unknown;
+    return typeof raw === "string" && raw.trim().length > 0 ? raw : undefined;
+  }
+
+  private extractClusterFeaturesRows(
+    inventory: InventoryData | SnapshotLike,
+  ): Array<{
+    cluster: string;
+    drsEnabled: boolean | undefined;
+    drsMode: string | undefined;
+    storageDrsEnabled: boolean | undefined;
+  }> {
+    const snapshot = inventory as SnapshotLike;
+    const clustersRaw = snapshot.inventory?.clusters as unknown;
+    if (!clustersRaw || typeof clustersRaw !== "object") return [];
+
+    const entries = Object.entries(clustersRaw as Record<string, unknown>);
+
+    const rows = entries
+      .map(([clusterName, data]) => {
+        const cf = (data as { clusterFeatures?: unknown })?.clusterFeatures as
+          | {
+              drsEnabled?: unknown;
+              drsMode?: unknown;
+              storageDrsEnabled?: unknown;
+            }
+          | undefined;
+
+        const drsEnabled =
+          typeof cf?.drsEnabled === "boolean" ? cf.drsEnabled : undefined;
+        const storageDrsEnabled =
+          typeof cf?.storageDrsEnabled === "boolean"
+            ? cf.storageDrsEnabled
+            : undefined;
+        const drsMode =
+          typeof cf?.drsMode === "string" && cf.drsMode.trim().length > 0
+            ? cf.drsMode
+            : undefined;
+
+        return {
+          cluster: clusterName,
+          drsEnabled,
+          drsMode,
+          storageDrsEnabled,
+        };
+      })
+      .sort((a, b) => a.cluster.localeCompare(b.cluster));
+
+    return rows;
+  }
+
+  private buildClusterFeaturesSection(
+    rows: Array<{
+      cluster: string;
+      drsEnabled: boolean | undefined;
+      drsMode: string | undefined;
+      storageDrsEnabled: boolean | undefined;
+    }>,
+  ): string {
+    const hasAnyClusterFeatures = rows.some(
+      (r) =>
+        typeof r.drsEnabled === "boolean" ||
+        typeof r.storageDrsEnabled === "boolean" ||
+        (typeof r.drsMode === "string" && r.drsMode.trim().length > 0),
+    );
+
+    if (!hasAnyClusterFeatures) {
+      return "";
+    }
+
+    const formatStatus = (enabled: boolean | undefined): string =>
+      enabled === true ? "Enabled" : enabled === false ? "Disabled" : "-";
+
+    const formatMode = (mode: string | undefined): string => {
+      if (!mode) return "-";
+      const labels: Record<string, string> = {
+        fullyAutomated: "Fully Automated",
+        partiallyAutomated: "Partially Automated",
+        manual: "Manual",
+        none: "None",
+      };
+      return labels[mode] ?? mode;
+    };
+
+    const blocks = rows
+      .map(
+        (r) => `
+        <div class="cluster-drs-block" style="margin-bottom: 24px;">
+            <h3>Cluster DRS Configuration${rows.length > 1 ? ` — ${escapeHtml(r.cluster)}` : ""}</h3>
+            <div style="display: flex; flex-wrap: wrap; gap: 48px; margin-top: 16px;">
+                <div>
+                    <div style="font-weight: 400; margin-bottom: 4px;">DRS Status</div>
+                    <div>${formatStatus(r.drsEnabled)}</div>
+                </div>
+                <div>
+                    <div style="font-weight: 400; margin-bottom: 4px;">DRS Mode</div>
+                    <div>${escapeHtml(formatMode(r.drsMode))}</div>
+                </div>
+                <div>
+                    <div style="font-weight: 400; margin-bottom: 4px;">Storage DRS Status</div>
+                    <div>${formatStatus(r.storageDrsEnabled)}</div>
+                </div>
+            </div>
+        </div>`,
+      )
+      .join("");
+
+    return `
+        <div class="section">
+            ${blocks}
+        </div>`;
   }
 
   private generateStyles(): string {
@@ -135,11 +255,20 @@ export class HtmlTemplateBuilder {
     }`;
   }
 
-  private buildHeader(generatedAt: Date, title: string): string {
+  private buildHeader(
+    generatedAt: Date,
+    title: string,
+    vcenterVersion?: string,
+  ): string {
     return `
         <div class="header">
             <h1>${escapeHtml(title)}</h1>
             <p>Generated: ${generatedAt.toLocaleDateString()} at ${generatedAt.toLocaleTimeString()}</p>
+            ${
+              vcenterVersion
+                ? `<p><strong>vCenter version:</strong> ${escapeHtml(vcenterVersion)}</p>`
+                : ""
+            }
         </div>`;
   }
 

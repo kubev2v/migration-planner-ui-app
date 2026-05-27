@@ -183,6 +183,7 @@ function makeBaseVm(
     infra,
     vms,
     clusters,
+    vcenterVersion: undefined,
     latestSnapshot: {},
     lastUpdatedText: "-",
     clusterCount: 0,

@@ -192,6 +192,7 @@ export interface ReportPageViewModel {
   infra: Infra | undefined;
   vms: VMs | undefined;
   clusters: { [key: string]: InventoryData } | undefined;
+  vcenterVersion: string | undefined;
   latestSnapshot: SnapshotLike;
   lastUpdatedText: string;
   clusterCount: number;
@@ -409,6 +410,14 @@ export const useReportPageViewModel = (): ReportPageViewModel => {
         | undefined,
     [latestSnapshot],
   );
+
+  const vcenterVersion = useMemo((): string | undefined => {
+    const inv = latestSnapshot.inventory as
+      | { vcenter_version?: unknown; vcenterVersion?: unknown }
+      | undefined;
+    const raw = inv?.vcenter_version ?? inv?.vcenterVersion;
+    return typeof raw === "string" && raw.trim().length > 0 ? raw : undefined;
+  }, [latestSnapshot]);
 
   // ---- Cluster selection ---------------------------------------------------
   const assessmentClusters = assessment?.snapshots?.length
@@ -721,6 +730,7 @@ export const useReportPageViewModel = (): ReportPageViewModel => {
     infra,
     vms,
     clusters,
+    vcenterVersion,
     latestSnapshot,
     lastUpdatedText,
     clusterCount,

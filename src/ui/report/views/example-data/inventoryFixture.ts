@@ -4,8 +4,14 @@ import {
 } from "@openshift-migration-advisor/planner-sdk";
 
 const inventoryData = {
+  vcenter_version: "8.0.3.0",
   clusters: {
     "domain-c146658": {
+      clusterFeatures: {
+        drsEnabled: true,
+        drsMode: "fullyAutomated",
+        storageDrsEnabled: false,
+      },
       infra: {
         clustersPerDatacenter: [1],
         cpuOverCommitment: 1.42,
@@ -540,6 +546,11 @@ const inventoryData = {
       },
     },
     "domain-c34": {
+      clusterFeatures: {
+        drsEnabled: true,
+        drsMode: "fullyAutomated",
+        storageDrsEnabled: true,
+      },
       infra: {
         clustersPerDatacenter: [1],
         cpuOverCommitment: 1.58,
@@ -2016,6 +2027,37 @@ const inventoryData = {
   vcenter_id: "502d878c-af91-4a6f-93e9-61c4a1986172",
 };
 
+type ExampleClusterFeatures = {
+  drsEnabled?: boolean;
+  drsMode?: string;
+  storageDrsEnabled?: boolean;
+};
+
+/**
+ * InventoryFromJSON drops fields not yet in the generated SDK model (e.g.
+ * clusterFeatures). Re-attach them from the raw fixture so example reports
+ * can render cluster feature data before the SDK is regenerated.
+ */
+function attachClusterFeaturesFromRaw(
+  inventory: Inventory,
+  rawClusters: Record<string, { clusterFeatures?: ExampleClusterFeatures }>,
+): Inventory {
+  for (const [clusterId, clusterData] of Object.entries(inventory.clusters)) {
+    const features = rawClusters[clusterId]?.clusterFeatures;
+    if (features) {
+      Object.assign(clusterData as object, { clusterFeatures: features });
+    }
+  }
+  return inventory;
+}
+
 export function getExampleInventory(): Inventory {
-  return InventoryFromJSON(inventoryData);
+  const inventory = InventoryFromJSON(inventoryData);
+  return attachClusterFeaturesFromRaw(
+    inventory,
+    inventoryData.clusters as Record<
+      string,
+      { clusterFeatures?: ExampleClusterFeatures }
+    >,
+  );
 }

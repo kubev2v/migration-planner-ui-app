@@ -27,6 +27,7 @@ import { routes } from "../../../routing/Routes";
 import { AppPage } from "../../core/components/AppPage";
 import { useDiscoveryOvaExampleReportViewModel } from "../view-models/useDiscoveryOvaExampleReportViewModel";
 import type { ClusterOption } from "./assessment-report/ClusterView";
+import { ClusterDrsConfiguration } from "./assessment-report/ClusterDrsConfiguration";
 import { Dashboard } from "./assessment-report/Dashboard";
 import { ExampleStorageOffloadTab } from "./discovery-ova-example/ExampleStorageOffloadTab";
 import { ExampleVMTable } from "./discovery-ova-example/ExampleVMTable";
@@ -115,40 +116,66 @@ const DiscoveryOvaExampleReport: React.FC = () => {
             </Flex>
           </StackItem>
 
+          {vm.vcenterVersion && (
+            <StackItem>
+              <Content component="p">
+                vCenter version: <strong>{vm.vcenterVersion}</strong>
+              </Content>
+            </StackItem>
+          )}
+
           <StackItem>
-            <Select
-              isScrollable
-              isOpen={vm.isClusterSelectOpen}
-              selected={vm.clusterView.selectionId}
-              onSelect={vm.handleClusterSelect}
-              onOpenChange={(isOpen: boolean) => {
-                if (!vm.clusterSelectDisabled)
-                  vm.setIsClusterSelectOpen(isOpen);
-              }}
-              toggle={(toggleRef: React.Ref<MenuToggleElement>) => (
-                <MenuToggle
-                  ref={toggleRef}
-                  isExpanded={vm.isClusterSelectOpen}
-                  onClick={() => {
-                    if (!vm.clusterSelectDisabled) {
-                      vm.setIsClusterSelectOpen(!vm.isClusterSelectOpen);
-                    }
-                  }}
-                  isDisabled={vm.clusterSelectDisabled}
-                  className={clusterToggleStyle}
-                >
-                  {vm.clusterView.selectionLabel}
-                </MenuToggle>
-              )}
+            <Flex
+              gap={{ default: "gapLg" }}
+              alignItems={{ default: "alignItemsFlexStart" }}
+              flexWrap={{ default: "wrap" }}
             >
-              <SelectList>
-                {vm.clusterView.clusterOptions.map((option: ClusterOption) => (
-                  <SelectOption key={option.id} value={option.id}>
-                    {option.label}
-                  </SelectOption>
-                ))}
-              </SelectList>
-            </Select>
+              <FlexItem>
+                <Select
+                  isScrollable
+                  isOpen={vm.isClusterSelectOpen}
+                  selected={vm.clusterView.selectionId}
+                  onSelect={vm.handleClusterSelect}
+                  onOpenChange={(isOpen: boolean) => {
+                    if (!vm.clusterSelectDisabled)
+                      vm.setIsClusterSelectOpen(isOpen);
+                  }}
+                  toggle={(toggleRef: React.Ref<MenuToggleElement>) => (
+                    <MenuToggle
+                      ref={toggleRef}
+                      isExpanded={vm.isClusterSelectOpen}
+                      onClick={() => {
+                        if (!vm.clusterSelectDisabled) {
+                          vm.setIsClusterSelectOpen(!vm.isClusterSelectOpen);
+                        }
+                      }}
+                      isDisabled={vm.clusterSelectDisabled}
+                      className={clusterToggleStyle}
+                    >
+                      {vm.clusterView.selectionLabel}
+                    </MenuToggle>
+                  )}
+                >
+                  <SelectList>
+                    {vm.clusterView.clusterOptions.map(
+                      (option: ClusterOption) => (
+                        <SelectOption key={option.id} value={option.id}>
+                          {option.label}
+                        </SelectOption>
+                      ),
+                    )}
+                  </SelectList>
+                </Select>
+              </FlexItem>
+              {vm.selectedClusterId !== "all" ? (
+                <FlexItem flex={{ default: "flex_1" }}>
+                  <ClusterDrsConfiguration
+                    clusters={vm.clusters}
+                    selectedClusterId={vm.selectedClusterId}
+                  />
+                </FlexItem>
+              ) : null}
+            </Flex>
           </StackItem>
         </Stack>
       }

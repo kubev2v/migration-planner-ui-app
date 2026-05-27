@@ -4,7 +4,7 @@ import {
   DEFAULT_DOCUMENT_TITLE,
   HtmlTemplateBuilder,
 } from "../HtmlTemplateBuilder";
-import type { ChartData, InventoryData } from "../types";
+import type { ChartData, InventoryData, SnapshotLike } from "../types";
 
 describe("HtmlTemplateBuilder", () => {
   let builder: HtmlTemplateBuilder;
@@ -139,6 +139,41 @@ describe("HtmlTemplateBuilder", () => {
 
         expect(html).toContain("cdnjs.cloudflare.com/ajax/libs/Chart.js");
       });
+    });
+
+    it("includes vCenter version and cluster features when present (SnapshotLike)", () => {
+      const snapshot: SnapshotLike = {
+        inventory: {
+          vcenter_version: "8.0.3.0",
+          infra: mockInventory.infra,
+          vms: mockInventory.vms,
+          clusters: {
+            "cluster-a": {
+              clusterFeatures: {
+                drsEnabled: true,
+                drsMode: "Fully Automated",
+                storageDrsEnabled: false,
+              },
+            },
+            "cluster-b": {
+              clusterFeatures: {
+                drsEnabled: false,
+                drsMode: "Manual",
+                storageDrsEnabled: true,
+              },
+            },
+          },
+        },
+      };
+
+      const html = builder.build(mockChartData, snapshot);
+
+      expect(html).toContain("<strong>vCenter version:</strong> 8.0.3.0");
+      expect(html).toContain("Cluster DRS Configuration");
+      expect(html).toContain("cluster-a");
+      expect(html).toContain("cluster-b");
+      expect(html).toContain("Fully Automated");
+      expect(html).toContain("Manual");
     });
   });
 });

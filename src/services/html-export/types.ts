@@ -108,6 +108,8 @@ export interface SnapshotLike {
   infra?: InfraData | Infra;
   vms?: VMsData | VMs;
   inventory?: {
+    /** vCenter API version (from backend Inventory.vcenter_version). */
+    vcenter_version?: string;
     infra?: InfraData | Infra;
     vms?: VMsData | VMs;
     vcenter?: {

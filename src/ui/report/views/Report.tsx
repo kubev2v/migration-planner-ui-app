@@ -5,6 +5,8 @@ import {
   Bullseye,
   Button,
   Content,
+  Flex,
+  FlexItem,
   List,
   ListItem,
   MenuToggle,
@@ -29,6 +31,7 @@ import CreateAssessmentDropdown from "../../core/components/CreateAssessmentDrop
 import { OffScreenRenderer } from "../../core/components/OffScreenRenderer";
 import { AgentStatusView } from "../../environment/views/AgentStatusView";
 import { useReportPageViewModel } from "../view-models/useReportPageViewModel";
+import { ClusterDrsConfiguration } from "./assessment-report/ClusterDrsConfiguration";
 import type { ClusterOption } from "./assessment-report/ClusterView";
 import { Dashboard } from "./assessment-report/Dashboard";
 import { ClusterSizingWizard } from "./cluster-sizer/ClusterSizingWizard";
@@ -159,6 +162,13 @@ const ReportContent: React.FC = () => {
               ? `Last updated: ${vm.lastUpdatedText}`
               : "[Last updated time stamp]"}
           </StackItem>
+          {vm.vcenterVersion && (
+            <StackItem>
+              <>
+                vCenter version: <strong>{vm.vcenterVersion}</strong>
+              </>
+            </StackItem>
+          )}
           <StackItem>
             {vm.clusterCount > 0 ? (
               typeof vm.vms?.total === "number" ? (
@@ -186,39 +196,59 @@ const ReportContent: React.FC = () => {
               "No vSphere clusters detected"
             )}
           </StackItem>
+
           <StackItem>
-            <Select
-              isScrollable
-              isOpen={vm.isClusterSelectOpen}
-              selected={vm.clusterView.selectionId}
-              onSelect={handleClusterSelect}
-              onOpenChange={(isOpen: boolean) => {
-                if (!vm.clusterSelectDisabled) vm.setClusterSelectOpen(isOpen);
-              }}
-              toggle={(toggleRef: React.Ref<MenuToggleElement>) => (
-                <MenuToggle
-                  ref={toggleRef}
-                  isExpanded={vm.isClusterSelectOpen}
-                  onClick={() => {
-                    if (!vm.clusterSelectDisabled) {
-                      vm.setClusterSelectOpen(!vm.isClusterSelectOpen);
-                    }
-                  }}
-                  isDisabled={vm.clusterSelectDisabled}
-                  style={{ minWidth: "422px" }}
-                >
-                  {vm.clusterView.selectionLabel}
-                </MenuToggle>
-              )}
+            <Flex
+              gap={{ default: "gapLg" }}
+              alignItems={{ default: "alignItemsFlexStart" }}
+              flexWrap={{ default: "wrap" }}
             >
-              <SelectList>
-                {vm.clusterView.clusterOptions.map((option: ClusterOption) => (
-                  <SelectOption key={option.id} value={option.id}>
-                    {option.label}
-                  </SelectOption>
-                ))}
-              </SelectList>
-            </Select>
+              <FlexItem>
+                <Select
+                  isScrollable
+                  isOpen={vm.isClusterSelectOpen}
+                  selected={vm.clusterView.selectionId}
+                  onSelect={handleClusterSelect}
+                  onOpenChange={(isOpen: boolean) => {
+                    if (!vm.clusterSelectDisabled)
+                      vm.setClusterSelectOpen(isOpen);
+                  }}
+                  toggle={(toggleRef: React.Ref<MenuToggleElement>) => (
+                    <MenuToggle
+                      ref={toggleRef}
+                      isExpanded={vm.isClusterSelectOpen}
+                      onClick={() => {
+                        if (!vm.clusterSelectDisabled) {
+                          vm.setClusterSelectOpen(!vm.isClusterSelectOpen);
+                        }
+                      }}
+                      isDisabled={vm.clusterSelectDisabled}
+                      style={{ minWidth: "422px" }}
+                    >
+                      {vm.clusterView.selectionLabel}
+                    </MenuToggle>
+                  )}
+                >
+                  <SelectList>
+                    {vm.clusterView.clusterOptions.map(
+                      (option: ClusterOption) => (
+                        <SelectOption key={option.id} value={option.id}>
+                          {option.label}
+                        </SelectOption>
+                      ),
+                    )}
+                  </SelectList>
+                </Select>
+              </FlexItem>
+              {vm.selectedClusterId !== "all" ? (
+                <FlexItem flex={{ default: "flex_1" }}>
+                  <ClusterDrsConfiguration
+                    clusters={vm.clusters}
+                    selectedClusterId={vm.selectedClusterId}
+                  />
+                </FlexItem>
+              ) : null}
+            </Flex>
           </StackItem>
         </Stack>
       }
@@ -373,6 +403,15 @@ const ReportContent: React.FC = () => {
           PdfExportService only captures the already-painted DOM element. */}
       {vm.scopedClusterView ? (
         <OffScreenRenderer ref={offScreenRef} enabled={vm.canExportReport}>
+          {vm.vcenterVersion ? (
+            <p style={{ margin: "0 0 16px 0" }}>
+              <strong>vCenter version:</strong> {vm.vcenterVersion}
+            </p>
+          ) : null}
+          <ClusterDrsConfiguration
+            clusters={vm.scopedClusterView.viewClusters}
+            selectedClusterId={vm.selectedClusterId}
+          />
           <Dashboard
             infra={vm.scopedClusterView.viewInfra}
             vms={vm.scopedClusterView.viewVms}

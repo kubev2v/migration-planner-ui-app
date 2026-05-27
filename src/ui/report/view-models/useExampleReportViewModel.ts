@@ -18,6 +18,7 @@ export interface ExampleReportVM {
   infra: Infra | undefined;
   vms: VMs | undefined;
   clusters: { [key: string]: InventoryData } | undefined;
+  vcenterVersion: string | undefined;
   clusterCount: number;
   clusterSelectDisabled: boolean;
   detectedSummaryText: string;
@@ -43,6 +44,17 @@ export function useExampleReportViewModel(): ExampleReportVM {
   const infra = inventory.vcenter?.infra;
   const vms = inventory.vcenter?.vms;
   const clusters = inventory.clusters;
+  const vcenterVersion = (inventory as unknown as { vcenterVersion?: unknown })
+    .vcenterVersion;
+  const vcenterVersionText =
+    typeof vcenterVersion === "string" && vcenterVersion.trim().length > 0
+      ? vcenterVersion
+      : (inventory as unknown as { vcenter_version?: unknown }).vcenter_version;
+  const normalizedVcenterVersion =
+    typeof vcenterVersionText === "string" &&
+    vcenterVersionText.trim().length > 0
+      ? vcenterVersionText
+      : undefined;
 
   const [userSelectedClusterId, setUserSelectedClusterId] = useState<
     string | null
@@ -92,6 +104,7 @@ export function useExampleReportViewModel(): ExampleReportVM {
     infra,
     vms,
     clusters,
+    vcenterVersion: normalizedVcenterVersion,
     clusterCount,
     clusterSelectDisabled,
     detectedSummaryText,
