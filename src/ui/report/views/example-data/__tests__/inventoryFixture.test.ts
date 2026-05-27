@@ -19,5 +19,7 @@ describe("getExampleInventory", () => {
       drsMode: "fullyAutomated",
       storageDrsEnabled: true,
     });
+
+    expect(inventory.vcenterVersion).toBe("8.0.3.0");
   });
 });

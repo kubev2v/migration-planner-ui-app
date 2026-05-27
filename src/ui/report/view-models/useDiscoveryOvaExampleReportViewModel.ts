@@ -56,7 +56,7 @@ export function useDiscoveryOvaExampleReportViewModel(): DiscoveryOvaExampleRepo
   const normalizedVcenterVersion =
     typeof vcenterVersionText === "string" &&
     vcenterVersionText.trim().length > 0
-      ? vcenterVersionText
+      ? vcenterVersionText.trim()
       : undefined;
 
   const [userSelectedClusterId, setUserSelectedClusterId] = useState<

@@ -26,6 +26,15 @@ const itemLabel = css`
   margin-bottom: var(--pf-t--global--spacer--xs);
 `;
 
+const clusterNameLabel = css`
+  display: block;
+  margin-bottom: 4px;
+`;
+
+const drsColumns = css`
+  margin-top: var(--pf-t--global--spacer--sm);
+`;
+
 const DRS_MODE_LABELS: Record<string, string> = {
   fullyAutomated: "Fully Automated",
   partiallyAutomated: "Partially Automated",
@@ -72,20 +81,42 @@ interface Props {
   showClusterName?: boolean;
 }
 
-const EnabledStatus: React.FC<{ enabled?: boolean }> = ({ enabled }) => (
-  <Flex gap={{ default: "gapSm" }} alignItems={{ default: "alignItemsCenter" }}>
-    {enabled ? (
-      <Icon status="success" isInline size="sm">
-        <CheckCircleIcon />
-      </Icon>
-    ) : (
-      <Icon status="danger" isInline size="sm">
-        <TimesCircleIcon />
-      </Icon>
-    )}
-    <span>{enabled ? "Enabled" : "Disabled"}</span>
-  </Flex>
-);
+const EnabledStatus: React.FC<{ enabled?: boolean }> = ({ enabled }) => {
+  if (enabled === true) {
+    return (
+      <Flex
+        gap={{ default: "gapSm" }}
+        alignItems={{ default: "alignItemsCenter" }}
+      >
+        <Icon status="success" isInline size="sm">
+          <CheckCircleIcon />
+        </Icon>
+        <span>Enabled</span>
+      </Flex>
+    );
+  }
+  if (enabled === false) {
+    return (
+      <Flex
+        gap={{ default: "gapSm" }}
+        alignItems={{ default: "alignItemsCenter" }}
+      >
+        <Icon status="danger" isInline size="sm">
+          <TimesCircleIcon />
+        </Icon>
+        <span>Disabled</span>
+      </Flex>
+    );
+  }
+  return (
+    <Flex
+      gap={{ default: "gapSm" }}
+      alignItems={{ default: "alignItemsCenter" }}
+    >
+      <span>–</span>
+    </Flex>
+  );
+};
 
 const ClusterDrsBlock: React.FC<{
   features: ClusterFeaturesLike;
@@ -93,16 +124,10 @@ const ClusterDrsBlock: React.FC<{
 }> = ({ features, clusterName }) => (
   <Content component="p" className={clusterBlockSpacing}>
     {clusterName ? (
-      <strong style={{ display: "block", marginBottom: 4 }}>
-        {clusterName}
-      </strong>
+      <strong className={clusterNameLabel}>{clusterName}</strong>
     ) : null}
     <strong>Cluster DRS Configuration</strong>
-    <Flex
-      gap={{ default: "gapLg" }}
-      wrap="wrap"
-      style={{ marginTop: "var(--pf-t--global--spacer--sm)" }}
-    >
+    <Flex gap={{ default: "gapLg" }} wrap="wrap" className={drsColumns}>
       <FlexItem>
         <div className={itemLabel}>DRS Status</div>
         <EnabledStatus enabled={features.drsEnabled} />

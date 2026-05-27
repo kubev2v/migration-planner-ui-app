@@ -416,7 +416,9 @@ export const useReportPageViewModel = (): ReportPageViewModel => {
       | { vcenter_version?: unknown; vcenterVersion?: unknown }
       | undefined;
     const raw = inv?.vcenter_version ?? inv?.vcenterVersion;
-    return typeof raw === "string" && raw.trim().length > 0 ? raw : undefined;
+    return typeof raw === "string" && raw.trim().length > 0
+      ? raw.trim()
+      : undefined;
   }, [latestSnapshot]);
 
   // ---- Cluster selection ---------------------------------------------------

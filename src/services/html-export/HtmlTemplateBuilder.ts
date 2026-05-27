@@ -104,7 +104,9 @@ export class HtmlTemplateBuilder {
   ): string | undefined {
     const snapshot = inventory as SnapshotLike;
     const raw = snapshot.inventory?.vcenter_version as unknown;
-    return typeof raw === "string" && raw.trim().length > 0 ? raw : undefined;
+    return typeof raw === "string" && raw.trim().length > 0
+      ? raw.trim()
+      : undefined;
   }
 
   private extractClusterFeaturesRows(
@@ -139,7 +141,7 @@ export class HtmlTemplateBuilder {
             : undefined;
         const drsMode =
           typeof cf?.drsMode === "string" && cf.drsMode.trim().length > 0
-            ? cf.drsMode
+            ? cf.drsMode.trim()
             : undefined;
 
         return {

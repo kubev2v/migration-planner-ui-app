@@ -26,8 +26,8 @@ const clusterToggleStyle = css`
 import { routes } from "../../../routing/Routes";
 import { AppPage } from "../../core/components/AppPage";
 import { useDiscoveryOvaExampleReportViewModel } from "../view-models/useDiscoveryOvaExampleReportViewModel";
-import type { ClusterOption } from "./assessment-report/ClusterView";
 import { ClusterDrsConfiguration } from "./assessment-report/ClusterDrsConfiguration";
+import type { ClusterOption } from "./assessment-report/ClusterView";
 import { Dashboard } from "./assessment-report/Dashboard";
 import { ExampleStorageOffloadTab } from "./discovery-ova-example/ExampleStorageOffloadTab";
 import { ExampleVMTable } from "./discovery-ova-example/ExampleVMTable";

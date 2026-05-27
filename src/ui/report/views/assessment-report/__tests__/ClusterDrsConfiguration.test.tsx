@@ -45,6 +45,26 @@ describe("ClusterDrsConfiguration", () => {
     expect(container).toBeEmptyDOMElement();
   });
 
+  it("shows neutral status when enabled flag is missing", () => {
+    render(
+      <ClusterDrsConfiguration
+        clusters={{
+          "domain-c34": {
+            clusterFeatures: {
+              drsMode: "manual",
+            },
+            infra: {} as never,
+            vms: {} as never,
+          } as never,
+        }}
+        selectedClusterId="domain-c34"
+      />,
+    );
+
+    expect(screen.getAllByText("–")).toHaveLength(2);
+    expect(screen.queryByText("Disabled")).not.toBeInTheDocument();
+  });
+
   it("formatDrsMode maps API enum values to labels", () => {
     expect(formatDrsMode("fullyAutomated")).toBe("Fully Automated");
     expect(formatDrsMode("manual")).toBe("Manual");

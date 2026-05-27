@@ -2053,11 +2053,5 @@ function attachClusterFeaturesFromRaw(
 
 export function getExampleInventory(): Inventory {
   const inventory = InventoryFromJSON(inventoryData);
-  return attachClusterFeaturesFromRaw(
-    inventory,
-    inventoryData.clusters as Record<
-      string,
-      { clusterFeatures?: ExampleClusterFeatures }
-    >,
-  );
+  return attachClusterFeaturesFromRaw(inventory, inventoryData.clusters);
 }

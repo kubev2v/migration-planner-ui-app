@@ -42,6 +42,14 @@ const alertSpacing = css`
   margin-top: var(--pf-t--global--spacer--md);
 `;
 
+const clusterToggleMinWidth = css`
+  min-width: 422px;
+`;
+
+const pdfVcenterCaption = css`
+  margin: 0 0 16px 0;
+`;
+
 const ReportContent: React.FC = () => {
   const vm = useReportPageViewModel();
   const offScreenRef = useRef<HTMLDivElement>(null);
@@ -223,7 +231,7 @@ const ReportContent: React.FC = () => {
                         }
                       }}
                       isDisabled={vm.clusterSelectDisabled}
-                      style={{ minWidth: "422px" }}
+                      className={clusterToggleMinWidth}
                     >
                       {vm.clusterView.selectionLabel}
                     </MenuToggle>
@@ -404,7 +412,7 @@ const ReportContent: React.FC = () => {
       {vm.scopedClusterView ? (
         <OffScreenRenderer ref={offScreenRef} enabled={vm.canExportReport}>
           {vm.vcenterVersion ? (
-            <p style={{ margin: "0 0 16px 0" }}>
+            <p className={pdfVcenterCaption}>
               <strong>vCenter version:</strong> {vm.vcenterVersion}
             </p>
           ) : null}
