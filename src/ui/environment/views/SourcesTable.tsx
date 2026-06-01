@@ -98,6 +98,7 @@ type SourceTableProps = {
   uploadOnly?: boolean;
   onEditEnvironment?: (sourceId: string) => void;
   onAddEnvironment?: () => void;
+  onDownloadOva?: (sourceId: string) => void;
 };
 
 export const SourcesTable: React.FC<SourceTableProps> = ({
@@ -105,6 +106,7 @@ export const SourcesTable: React.FC<SourceTableProps> = ({
   uploadOnly = false,
   onEditEnvironment,
   onAddEnvironment,
+  onDownloadOva,
 }) => {
   const formatRelativeTime = (updatedAt?: string | number | Date): string => {
     if (!updatedAt) return "-";
@@ -653,6 +655,19 @@ export const SourcesTable: React.FC<SourceTableProps> = ({
                             Upload file
                           </DropdownItem>
                           <DropdownItem
+                            isDisabled={!onDownloadOva}
+                            onClick={() => {
+                              setOpenDropdowns((prev) => ({
+                                ...prev,
+                                [source.id]: false,
+                              }));
+                              onDownloadOva?.(source.id);
+                            }}
+                          >
+                            Download OVA
+                          </DropdownItem>
+                          <DropdownItem
+                            isDisabled={!onEditEnvironment}
                             onClick={() => {
                               setOpenDropdowns((prev) => ({
                                 ...prev,

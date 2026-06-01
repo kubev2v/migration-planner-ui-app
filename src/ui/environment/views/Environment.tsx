@@ -5,13 +5,16 @@ import {
   Content,
   StackItem,
 } from "@patternfly/react-core";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 
 import { LoadingSpinner } from "../../core/components/LoadingSpinner";
 import { safeExternalUrl } from "../../core/utils/urlValidation";
 import { useEnvironmentPage } from "../view-models/EnvironmentPageContext";
 import type { EnvironmentPageViewModel } from "../view-models/useEnvironmentPageViewModel";
-import { DiscoverySourceSetupModal } from "./DiscoverySourceSetupModal";
+import {
+  DownloadEnvironmentModal,
+  EnvironmentModal,
+} from "./environment-modals";
 import { SourcesTable } from "./SourcesTable";
 
 type EnvironmentContentProps = {
@@ -19,16 +22,13 @@ type EnvironmentContentProps = {
 };
 
 const EnvironmentContent: React.FC<EnvironmentContentProps> = ({ vm }) => {
-  const [
-    shouldShowDiscoverySourceSetupModal,
-    setShouldShowDiscoverySetupModal,
-  ] = useState(false);
-
+  const [shouldShowCreateModal, setShouldShowCreateModal] = useState(false);
+  const [shouldShowEditModal, setShouldShowEditModal] = useState(false);
+  const [shouldShowDownloadModal, setShouldShowDownloadModal] = useState(false);
   const [editSourceId, setEditSourceId] = useState<string | null>(null);
-
-  const toggleDiscoverySourceSetupModal = useCallback((): void => {
-    setShouldShowDiscoverySetupModal((lastState) => !lastState);
-  }, []);
+  const [downloadSourceId, setDownloadSourceId] = useState<string | null>(null);
+  const [downloadUrlForModal, setDownloadUrlForModal] = useState<string>("");
+  const [sourceNameForModal, setSourceNameForModal] = useState<string>("");
   const [firstSource, ..._otherSources] = vm.sources ?? [];
   const sourceSelected =
     (vm.sourceSelected &&
@@ -103,11 +103,14 @@ const EnvironmentContent: React.FC<EnvironmentContentProps> = ({ vm }) => {
         onEditEnvironment={(sourceId) => {
           setEditSourceId(sourceId);
           vm.selectSourceById?.(sourceId);
-          setShouldShowDiscoverySetupModal(true);
+          setShouldShowEditModal(true);
         }}
         onAddEnvironment={() => {
-          setEditSourceId(null);
-          toggleDiscoverySourceSetupModal();
+          setShouldShowCreateModal(true);
+        }}
+        onDownloadOva={(sourceId) => {
+          setDownloadSourceId(sourceId);
+          setShouldShowDownloadModal(true);
         }}
       />
 
@@ -157,20 +160,58 @@ const EnvironmentContent: React.FC<EnvironmentContentProps> = ({ vm }) => {
         </StackItem>
       )}
 
-      {shouldShowDiscoverySourceSetupModal && (
-        <DiscoverySourceSetupModal
-          isOpen={shouldShowDiscoverySourceSetupModal}
+      {shouldShowCreateModal && (
+        <EnvironmentModal
+          isOpen={shouldShowCreateModal}
           onClose={() => {
-            setEditSourceId(null);
-            toggleDiscoverySourceSetupModal();
+            setShouldShowCreateModal(false);
             void vm.listSources();
           }}
-          isDisabled={vm.isDownloadingSource}
+          onSuccess={(url, name) => {
+            setShouldShowCreateModal(false);
+            setDownloadUrlForModal(url);
+            setSourceNameForModal(name);
+            setShouldShowDownloadModal(true);
+          }}
+        />
+      )}
+
+      {shouldShowEditModal && editSourceId && (
+        <EnvironmentModal
+          isOpen={shouldShowEditModal}
+          onClose={() => {
+            setEditSourceId(null);
+            setShouldShowEditModal(false);
+          }}
+          sourceId={editSourceId}
+          onSuccess={() => {
+            void vm.listSources();
+          }}
+        />
+      )}
+
+      {shouldShowDownloadModal && (
+        <DownloadEnvironmentModal
+          isOpen={shouldShowDownloadModal}
+          onClose={() => {
+            setDownloadSourceId(null);
+            setShouldShowDownloadModal(false);
+            setDownloadUrlForModal("");
+            setSourceNameForModal("");
+            vm.setDownloadUrl?.("");
+          }}
+          downloadUrl={downloadUrlForModal || undefined}
+          sourceName={
+            sourceNameForModal ||
+            (downloadSourceId
+              ? vm.getSourceById?.(downloadSourceId)?.name || ""
+              : "")
+          }
+          sourceId={downloadSourceId || undefined}
           onStartDownload={() => setIsOvaDownloading(true)}
           onAfterDownload={async () => {
             await vm.listSources();
           }}
-          editSourceId={editSourceId || undefined}
         />
       )}
     </>

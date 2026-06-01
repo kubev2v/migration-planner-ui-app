@@ -237,6 +237,7 @@ function makeBaseVm(
     clearInventoryUploadResult: vi.fn(),
 
     getDownloadUrlForSource: vi.fn(),
+    fetchDownloadUrlForSource: vi.fn().mockResolvedValue(""),
 
     listAssessments: vi.fn().mockResolvedValue([]),
     isLoadingAssessments: false,
