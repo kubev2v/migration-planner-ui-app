@@ -3,6 +3,10 @@
  */
 
 import { ChartDataTransformer } from "./ChartDataTransformer";
+import {
+  coerceFiniteNumber,
+  stringifyScriptNumbers,
+} from "./scriptSafeNumbers";
 import type {
   ChartData,
   Datastore,
@@ -15,14 +19,15 @@ import type {
 
 export const DEFAULT_DOCUMENT_TITLE = "VMware Infrastructure Assessment Report";
 
-const formatNumber = (num: number): string => {
-  if (num >= 1_000_000) {
-    return `${(num / 1_000_000).toFixed(1)}M`;
+const formatNumber = (num: unknown): string => {
+  const n = coerceFiniteNumber(num);
+  if (n >= 1_000_000) {
+    return `${(n / 1_000_000).toFixed(1)}M`;
   }
-  if (num >= 1_000) {
-    return `${(num / 1_000).toFixed(1)}K`;
+  if (n >= 1_000) {
+    return `${(n / 1_000).toFixed(1)}K`;
   }
-  return num.toString();
+  return n.toString();
 };
 
 const escapeHtml = (str: string): string => {
@@ -418,11 +423,12 @@ export class HtmlTemplateBuilder {
 
     return infra.datastores
       .map((ds: Datastore) => {
+        const totalCapacityGB = coerceFiniteNumber(ds.totalCapacityGB);
+        const freeCapacityGB = coerceFiniteNumber(ds.freeCapacityGB);
         const utilization =
-          ds.totalCapacityGB > 0
+          totalCapacityGB > 0
             ? (
-                ((ds.totalCapacityGB - ds.freeCapacityGB) /
-                  ds.totalCapacityGB) *
+                ((totalCapacityGB - freeCapacityGB) / totalCapacityGB) *
                 100
               ).toFixed(1)
             : "0.0";
@@ -433,8 +439,8 @@ export class HtmlTemplateBuilder {
         <td><strong>${escapeHtml(ds.vendor)}</strong></td>
         <td>${escapeHtml(ds.type)}</td>
         <td>${escapeHtml(ds.protocolType)}</td>
-        <td>${formatNumber(ds.totalCapacityGB)}</td>
-        <td>${formatNumber(ds.freeCapacityGB)}</td>
+        <td>${formatNumber(totalCapacityGB)}</td>
+        <td>${formatNumber(freeCapacityGB)}</td>
         <td>${utilization}%</td>
         <td>${hwAccel}</td>
       </tr>`;
@@ -463,7 +469,7 @@ export class HtmlTemplateBuilder {
                     data: {
                         labels: ${JSON.stringify(powerStateData.map((d) => d[0])).replace(/<\//g, "<\\/")},
                         datasets: [{
-                            data: ${JSON.stringify(powerStateData.map((d) => d[1]))},
+                            data: ${stringifyScriptNumbers(powerStateData.map((d) => d[1]))},
                             backgroundColor: ['${CHART_COLORS.SUCCESS}', '${CHART_COLORS.DANGER}', '${CHART_COLORS.WARNING}']
                         }]
                     },
@@ -484,11 +490,11 @@ export class HtmlTemplateBuilder {
                         labels: ${JSON.stringify(resourceData.map((d) => d[0])).replace(/<\//g, "<\\/")},
                         datasets: [{
                             label: 'Current',
-                            data: ${JSON.stringify(resourceData.map((d) => d[1]))},
+                            data: ${stringifyScriptNumbers(resourceData.map((d) => d[1]))},
                             backgroundColor: '${CHART_COLORS.PRIMARY}'
                         }, {
                             label: 'Recommended',
-                            data: ${JSON.stringify(resourceData.map((d) => d[2]))},
+                            data: ${stringifyScriptNumbers(resourceData.map((d) => d[2]))},
                             backgroundColor: '${CHART_COLORS.SUCCESS}'
                         }]
                     },
@@ -509,7 +515,7 @@ export class HtmlTemplateBuilder {
                     data: {
                         labels: ${JSON.stringify(osData.map((d) => d[0])).replace(/<\//g, "<\\/")},
                         datasets: [{
-                            data: ${JSON.stringify(osData.map((d) => d[1]))},
+                            data: ${stringifyScriptNumbers(osData.map((d) => d[1]))},
                             backgroundColor: ${JSON.stringify([
                               CHART_COLORS.PRIMARY,
                               CHART_COLORS.DANGER,
@@ -543,10 +549,10 @@ export class HtmlTemplateBuilder {
                     data: {
                         labels: ${JSON.stringify(warningsData.map((d) => d[0])).replace(/<\//g, "<\\/")},
                         datasets: [{
-                            data: ${JSON.stringify(warningsData.map((d) => d[1]))},
+                            data: ${stringifyScriptNumbers(warningsData.map((d) => d[1]))},
                             backgroundColor: ${JSON.stringify(
                               warningsData.map((d) => {
-                                const count = Number(d[1]);
+                                const count = coerceFiniteNumber(d[1]);
                                 return count > 50
                                   ? CHART_COLORS.DANGER
                                   : count > 20
@@ -581,11 +587,11 @@ export class HtmlTemplateBuilder {
                         labels: ${JSON.stringify(storageLabels).replace(/<\//g, "<\\/")},
                         datasets: [{
                             label: 'Used (GB)',
-                            data: ${JSON.stringify(storageUsedData)},
+                            data: ${stringifyScriptNumbers(storageUsedData)},
                             backgroundColor: '${CHART_COLORS.DANGER}'
                         }, {
                             label: 'Total (GB)',
-                            data: ${JSON.stringify(storageTotalData)},
+                            data: ${stringifyScriptNumbers(storageTotalData)},
                             backgroundColor: '${CHART_COLORS.PRIMARY}'
                         }]
                     },

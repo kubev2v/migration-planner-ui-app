@@ -227,6 +227,23 @@ describe("ChartDataTransformer", () => {
       expect(result.storageTotalData).toEqual([1000, 500]);
     });
 
+    it("coerces string values in numeric inventory fields", () => {
+      const inventory = makeInventory();
+      inventory.infra.datastores[0].totalCapacityGB =
+        "</script><img src=x onerror=alert(1)>" as unknown as number;
+      inventory.infra.datastores[0].freeCapacityGB = "400" as unknown as number;
+      inventory.vms.powerStates.poweredOn = "7" as unknown as number;
+      inventory.vms.migrationWarnings[0].count =
+        '"></script><script>alert(1)</script>' as unknown as number;
+
+      const result = transformer.transform(inventory);
+
+      expect(result.storageTotalData[0]).toBe(0);
+      expect(result.storageUsedData[0]).toBe(-400);
+      expect(result.powerStateData[0][1]).toBe(7);
+      expect(result.warningsData[0][1]).toBe(0);
+    });
+
     it("sorts OS data by count descending and limits to 8", () => {
       const osInfo: Record<string, { count: number; supported: boolean }> = {};
       for (let i = 0; i < 12; i++) {

@@ -140,5 +140,32 @@ describe("HtmlTemplateBuilder", () => {
         expect(html).toContain("cdnjs.cloudflare.com/ajax/libs/Chart.js");
       });
     });
+
+    describe("inline chart script safety", () => {
+      const scriptBreaker = "</script><img src=x onerror=alert(1)>";
+
+      it("does not embed malicious strings in chart data arrays", () => {
+        const chartData: ChartData = {
+          ...mockChartData,
+          storageTotalData: [scriptBreaker as unknown as number],
+          storageUsedData: [scriptBreaker as unknown as number],
+          powerStateData: [["Powered On", scriptBreaker as unknown as number]],
+          resourceData: [
+            [
+              "CPU",
+              scriptBreaker as unknown as number,
+              scriptBreaker as unknown as number,
+            ],
+          ],
+          osData: [["Linux", scriptBreaker as unknown as number]],
+          warningsData: [["Warn", scriptBreaker as unknown as number]],
+        };
+
+        const html = builder.build(chartData, mockInventory);
+
+        expect(html).not.toContain(scriptBreaker);
+        expect(html).not.toContain("onerror=alert");
+      });
+    });
   });
 });

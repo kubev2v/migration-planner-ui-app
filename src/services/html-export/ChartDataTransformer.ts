@@ -20,6 +20,7 @@ const MEMORY_OVERHEAD_FACTOR = 1.25;
  */
 const STORAGE_SAFETY_MULTIPLIER = 1.15;
 
+import { coerceFiniteNumber } from "./scriptSafeNumbers";
 import type {
   ChartData,
   Datastore,
@@ -38,12 +39,18 @@ export class ChartDataTransformer {
     // Check if osInfo exists (new format)
     if (vms.osInfo && Object.keys(vms.osInfo).length > 0) {
       return Object.entries(vms.osInfo).map(
-        ([osName, osInfo]: [string, OSInfo]) => [osName, osInfo.count],
+        ([osName, osInfo]: [string, OSInfo]) => [
+          osName,
+          coerceFiniteNumber(osInfo.count),
+        ],
       );
     }
     // Fallback to os (old format)
     if (vms.os && Object.keys(vms.os).length > 0) {
-      return Object.entries(vms.os);
+      return Object.entries(vms.os).map(([osName, count]) => [
+        osName,
+        coerceFiniteNumber(count),
+      ]);
     }
     return [];
   }
@@ -103,28 +110,24 @@ export class ChartDataTransformer {
   private buildPowerStateData(vms: VMsData): Array<[string, number]> {
     const ps = vms.powerStates ?? {};
     return [
-      ["Powered On", ps.poweredOn ?? 0],
-      ["Powered Off", ps.poweredOff ?? 0],
-      ["Suspended", ps.suspended ?? 0],
+      ["Powered On", coerceFiniteNumber(ps.poweredOn)],
+      ["Powered Off", coerceFiniteNumber(ps.poweredOff)],
+      ["Suspended", coerceFiniteNumber(ps.suspended)],
     ];
   }
 
   private buildResourceData(vms: VMsData): Array<[string, number, number]> {
+    const cpuTotal = coerceFiniteNumber(vms.cpuCores.total);
+    const ramTotal = coerceFiniteNumber(vms.ramGB.total);
+    const diskTotal = coerceFiniteNumber(vms.diskGB.total);
+
     return [
-      [
-        "CPU Cores",
-        vms.cpuCores.total,
-        Math.round(vms.cpuCores.total * CPU_CAPACITY_MARGIN),
-      ],
-      [
-        "Memory GB",
-        vms.ramGB.total,
-        Math.round(vms.ramGB.total * MEMORY_OVERHEAD_FACTOR),
-      ],
+      ["CPU Cores", cpuTotal, Math.round(cpuTotal * CPU_CAPACITY_MARGIN)],
+      ["Memory GB", ramTotal, Math.round(ramTotal * MEMORY_OVERHEAD_FACTOR)],
       [
         "Storage GB",
-        vms.diskGB.total,
-        Math.round(vms.diskGB.total * STORAGE_SAFETY_MULTIPLIER),
+        diskTotal,
+        Math.round(diskTotal * STORAGE_SAFETY_MULTIPLIER),
       ],
     ];
   }
@@ -136,7 +139,10 @@ export class ChartDataTransformer {
   }
 
   private buildWarningsData(vms: VMsData): Array<[string, number]> {
-    return vms.migrationWarnings.map((w) => [w.label, w.count]);
+    return vms.migrationWarnings.map((w) => [
+      w.label,
+      coerceFiniteNumber(w.count),
+    ]);
   }
 
   private buildStorageData(infra: InfraData): {
@@ -147,11 +153,13 @@ export class ChartDataTransformer {
     const storageLabels = infra.datastores.map(
       (ds: Datastore) => `${ds.vendor} ${ds.type}`,
     );
-    const storageUsedData = infra.datastores.map(
-      (ds: Datastore) => ds.totalCapacityGB - ds.freeCapacityGB,
-    );
-    const storageTotalData = infra.datastores.map(
-      (ds: Datastore) => ds.totalCapacityGB,
+    const storageUsedData = infra.datastores.map((ds: Datastore) => {
+      const total = coerceFiniteNumber(ds.totalCapacityGB);
+      const free = coerceFiniteNumber(ds.freeCapacityGB);
+      return total - free;
+    });
+    const storageTotalData = infra.datastores.map((ds: Datastore) =>
+      coerceFiniteNumber(ds.totalCapacityGB),
     );
 
     return { storageLabels, storageUsedData, storageTotalData };
