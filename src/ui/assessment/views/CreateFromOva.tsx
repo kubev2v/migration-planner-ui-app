@@ -22,7 +22,7 @@ import React from "react";
 import { routes } from "../../../routing/Routes";
 import { AppPage } from "../../core/components/AppPage";
 import { EnvironmentPageProvider } from "../../environment/view-models/EnvironmentPageContext";
-import { DiscoverySourceSetupModal } from "../../environment/views/DiscoverySourceSetupModal";
+import { EnvironmentModal } from "../../environment/views/environment-modals";
 import { SourcesTable } from "../../environment/views/SourcesTable";
 import { useCreateFromOvaViewModel } from "../view-models/useCreateFromOvaViewModel";
 import { MigrationAssessmentStepsModal } from "./MigrationAssessmentStepsModal";
@@ -233,15 +233,14 @@ const CreateFromOvaContent: React.FC = () => {
           </ActionGroup>
         </Form>
 
-        {vm.isSetupModalOpen && (
-          <DiscoverySourceSetupModal
-            isOpen={vm.isSetupModalOpen}
-            onClose={vm.handleSetupModalClose}
-            isDisabled={vm.isDownloadingSource}
-            onStartDownload={() => vm.envVm.setDownloadUrl("")}
-            onAfterDownload={vm.handleSetupModalAfterDownload}
-          />
-        )}
+        <EnvironmentModal
+          isOpen={vm.isSetupModalOpen}
+          onClose={vm.handleSetupModalClose}
+          onSuccess={() => {
+            vm.envVm.setDownloadUrl("");
+            void vm.handleSetupModalAfterDownload();
+          }}
+        />
 
         <MigrationAssessmentStepsModal
           isOpen={vm.isStepsModalOpen}
@@ -254,7 +253,7 @@ const CreateFromOvaContent: React.FC = () => {
 
 // ---------------------------------------------------------------------------
 // Outer component wraps content in EnvironmentPageProvider so that
-// SourcesTable and DiscoverySourceSetupModal have access to the
+// SourcesTable and EnvironmentModals have access to the
 // environment view model via useEnvironmentPage().
 // ---------------------------------------------------------------------------
 
