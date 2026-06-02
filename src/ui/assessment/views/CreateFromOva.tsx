@@ -21,6 +21,7 @@ import React from "react";
 
 import { routes } from "../../../routing/Routes";
 import { AppPage } from "../../core/components/AppPage";
+import { safeExternalUrl } from "../../core/utils/urlValidation";
 import { EnvironmentPageProvider } from "../../environment/view-models/EnvironmentPageContext";
 import { DiscoverySourceSetupModal } from "../../environment/views/DiscoverySourceSetupModal";
 import { SourcesTable } from "../../environment/views/SourcesTable";
@@ -190,10 +191,12 @@ const CreateFromOvaContent: React.FC = () => {
                 variant="custom"
                 title="Discovery VM"
                 actionLinks={
-                  vm.createdSource?.agent?.credentialUrl ? (
+                  safeExternalUrl(vm.createdSource?.agent?.credentialUrl) ? (
                     <AlertActionLink
                       component="a"
-                      href={vm.createdSource.agent.credentialUrl}
+                      href={safeExternalUrl(
+                        vm.createdSource.agent.credentialUrl,
+                      )}
                       target="_blank"
                       rel="noopener noreferrer"
                     >

@@ -22,6 +22,7 @@ import React, { useMemo } from "react";
 import { Link } from "react-router-dom";
 
 import { VCenterSetupInstructions } from "../../core/components/VCenterSetupInstructions";
+import { safeExternalUrl } from "../../core/utils/urlValidation";
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace AgentStatusView {
@@ -38,6 +39,8 @@ export namespace AgentStatusView {
 const StatusInfoWaitingForCredentials: React.FC<{
   credentialUrl?: Agent["credentialUrl"];
 }> = ({ credentialUrl }) => {
+  const safeUrl = safeExternalUrl(credentialUrl);
+
   return (
     <>
       <Content>
@@ -46,9 +49,9 @@ const StatusInfoWaitingForCredentials: React.FC<{
           VMware environment.
         </Content>
       </Content>
-      {credentialUrl && (
-        <Link to={credentialUrl} target="_blank">
-          {credentialUrl}
+      {safeUrl && (
+        <Link to={safeUrl} target="_blank">
+          {safeUrl}
         </Link>
       )}
     </>
