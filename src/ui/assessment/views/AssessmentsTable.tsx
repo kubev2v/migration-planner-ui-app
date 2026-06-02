@@ -521,7 +521,9 @@ export const AssessmentsTable: React.FC<AssessmentsTableProps> = ({
             {isColumnVisible("Name") && (
               <Td dataLabel={Columns.Name} modifier="truncate">
                 {row.hasData ? (
-                  <Link to={routes.assessmentById(row.id)}>{row.name}</Link>
+                  <Tooltip content={row.name}>
+                    <Link to={routes.assessmentById(row.id)}>{row.name}</Link>
+                  </Tooltip>
                 ) : (
                   <span>
                     <Tooltip
