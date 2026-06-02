@@ -30,14 +30,48 @@ import { routes } from "../../../routing/Routes";
 import { ConfirmationModal } from "../../core/components/ConfirmationModal";
 import { EmptySearchResults } from "../../core/components/EmptySearchResults";
 import FilterPill from "../../core/components/FilterPill";
+import {
+  DISCOVERY_VM_STATUS_FILTER_OPTIONS,
+  getSourceDiscoveryVmStatusLabel,
+  isInventoryUploadedManually,
+  isSourceUploadedManually,
+  sourceMatchesDiscoveryVmStatusFilter,
+  type DiscoveryVmStatusFilterKey,
+} from "../helpers/discoveryVmStatus";
 import { useEnvironmentPage } from "../view-models/EnvironmentPageContext";
 import { AgentStatusView } from "./AgentStatusView";
-import { Columns } from "./Columns";
+import { Columns, SORTABLE_COLUMNS, type SortableColumnKey } from "./Columns";
 import { EnvironmentEmptyState } from "./EnvironmentEmptyState";
 import { UploadInventoryAction } from "./UploadInventoryAction";
-import { VersionStatus } from "./VersionStatus";
+import { getAgentVersionDisplayLabel, VersionStatus } from "./VersionStatus";
 
 const VALUE_NOT_AVAILABLE = "-";
+
+const getHostsCount = (source: SourceModel): number =>
+  source.inventory?.vcenter?.infra.totalHosts ?? 0;
+
+const getVmsCount = (source: SourceModel): number =>
+  source.inventory?.vcenter?.vms.total ?? 0;
+
+const getNetworksCount = (source: SourceModel): number =>
+  source.inventory?.vcenter?.infra.networks?.length ?? 0;
+
+const getDatastoresCount = (source: SourceModel): number =>
+  source.inventory?.vcenter?.infra.datastores?.length ?? 0;
+
+const getUpdatedAtMs = (source: SourceModel): number => {
+  if (!source.updatedAt) return 0;
+  const ms = new Date(source.updatedAt).getTime();
+  return Number.isNaN(ms) ? 0 : ms;
+};
+
+const getSourceAgentVersionLabel = (source: SourceModel): string =>
+  getAgentVersionDisplayLabel({
+    displayStatus: source.displayStatus,
+    isUploadedManually: isSourceUploadedManually(source),
+    agentVersion: source.agentVersion,
+    agentVersionWarning: source.agentVersionWarning,
+  });
 
 const tableContainerStyle = css`
   margin-top: 1em;
@@ -163,9 +197,18 @@ export const SourcesTable: React.FC<SourceTableProps> = ({
   const [deleteTarget, setDeleteTarget] = useState<SourceModel | null>(null);
   const [search, setSearch] = useState("");
   const [isFilterDropdownOpen, setIsFilterDropdownOpen] = useState(false);
-  const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]);
+  const [selectedStatuses, setSelectedStatuses] = useState<
+    DiscoveryVmStatusFilterKey[]
+  >([]);
+  const [sortBy, setSortBy] = useState<{
+    columnKey: SortableColumnKey;
+    direction: "asc" | "desc";
+  }>({
+    columnKey: "Name",
+    direction: "asc",
+  });
 
-  const toggleStatus = (statusKey: string): void => {
+  const toggleStatus = (statusKey: DiscoveryVmStatusFilterKey): void => {
     setSelectedStatuses((prev) =>
       prev.includes(statusKey)
         ? prev.filter((s) => s !== statusKey)
@@ -175,32 +218,18 @@ export const SourcesTable: React.FC<SourceTableProps> = ({
 
   const clearStatuses = (): void => setSelectedStatuses([]);
 
-  const statusOptions: { key: string; label: string }[] = [
-    { key: "not-connected-uploaded", label: "Uploaded manually" },
-    { key: "not-connected", label: "Not connected" },
-    { key: "waiting-for-credentials", label: "Waiting for credentials" },
-    { key: "gathering-initial-inventory", label: "Gathering inventory" },
-    { key: "error", label: "Error" },
-    { key: "up-to-date", label: "Ready" },
-  ];
+  const statusOptions = DISCOVERY_VM_STATUS_FILTER_OPTIONS;
 
-  // Memorize ordered sources without mutating context sources
-  const memoizedSources = useMemo(() => {
-    const sourcesToUse: SourceModel[] = vm.sources
-      ? [...vm.sources].sort((a: SourceModel, b: SourceModel) =>
-          a.id.localeCompare(b.id),
-        )
-      : [];
+  const sourcesList = useMemo(
+    () => (vm.sources ? [...vm.sources] : []),
+    [vm.sources],
+  );
 
-    return sourcesToUse;
-  }, [vm.sources]);
-
-  const [firstSource, ..._otherSources] = memoizedSources ?? [];
-  const hasSources = memoizedSources && memoizedSources.length > 0;
+  const hasSources = sourcesList.length > 0;
 
   const filteredSources = useMemo(() => {
-    if (!memoizedSources) return [];
-    let filtered = memoizedSources;
+    if (sourcesList.length === 0) return [];
+    let filtered = sourcesList;
 
     // Filter by specific source id if provided
     if (onlySourceId) {
@@ -217,37 +246,98 @@ export const SourcesTable: React.FC<SourceTableProps> = ({
 
     // Multi-select statuses with label mapping
     if (selectedStatuses && selectedStatuses.length > 0) {
-      filtered = filtered.filter((source) => {
-        const status = source.displayStatus;
-        const uploadedManually =
-          Boolean(source.onPremises) && source.inventory !== undefined;
-
-        // Map keys to conditions
-        const matches = selectedStatuses.some((key) => {
-          switch (key) {
-            case "not-connected-uploaded":
-              return status === "not-connected" && uploadedManually;
-            case "not-connected":
-              return status === "not-connected" && !uploadedManually;
-            case "waiting-for-credentials":
-              return status === "waiting-for-credentials";
-            case "gathering-initial-inventory":
-              return status === "gathering-initial-inventory";
-            case "error":
-              return status === "error";
-            case "up-to-date":
-              return status === "up-to-date";
-            default:
-              return false;
-          }
-        });
-
-        return matches;
-      });
+      filtered = filtered.filter((source) =>
+        selectedStatuses.some((key) =>
+          sourceMatchesDiscoveryVmStatusFilter(source, key),
+        ),
+      );
     }
 
-    return filtered;
-  }, [memoizedSources, search, selectedStatuses, onlySourceId]);
+    const copy = [...filtered];
+    switch (sortBy.columnKey) {
+      case "Name":
+        copy.sort((a, b) =>
+          sortBy.direction === "asc"
+            ? (a.name || "").localeCompare(b.name || "")
+            : (b.name || "").localeCompare(a.name || ""),
+        );
+        break;
+      case "Status":
+        copy.sort((a, b) => {
+          const aLabel = getSourceDiscoveryVmStatusLabel(a);
+          const bLabel = getSourceDiscoveryVmStatusLabel(b);
+          return sortBy.direction === "asc"
+            ? aLabel.localeCompare(bLabel)
+            : bLabel.localeCompare(aLabel);
+        });
+        break;
+      case "VersionStatus":
+        copy.sort((a, b) => {
+          const aLabel = getSourceAgentVersionLabel(a);
+          const bLabel = getSourceAgentVersionLabel(b);
+          return sortBy.direction === "asc"
+            ? aLabel.localeCompare(bLabel)
+            : bLabel.localeCompare(aLabel);
+        });
+        break;
+      case "Hosts":
+        copy.sort((a, b) => {
+          const aHosts = getHostsCount(a);
+          const bHosts = getHostsCount(b);
+          return sortBy.direction === "asc" ? aHosts - bHosts : bHosts - aHosts;
+        });
+        break;
+      case "VMs":
+        copy.sort((a, b) => {
+          const aVms = getVmsCount(a);
+          const bVms = getVmsCount(b);
+          return sortBy.direction === "asc" ? aVms - bVms : bVms - aVms;
+        });
+        break;
+      case "Networks":
+        copy.sort((a, b) => {
+          const aNetworks = getNetworksCount(a);
+          const bNetworks = getNetworksCount(b);
+          return sortBy.direction === "asc"
+            ? aNetworks - bNetworks
+            : bNetworks - aNetworks;
+        });
+        break;
+      case "Datastores":
+        copy.sort((a, b) => {
+          const aDatastores = getDatastoresCount(a);
+          const bDatastores = getDatastoresCount(b);
+          return sortBy.direction === "asc"
+            ? aDatastores - bDatastores
+            : bDatastores - aDatastores;
+        });
+        break;
+      case "LastSeen":
+        copy.sort((a, b) => {
+          const aMs = getUpdatedAtMs(a);
+          const bMs = getUpdatedAtMs(b);
+          return sortBy.direction === "asc" ? aMs - bMs : bMs - aMs;
+        });
+        break;
+    }
+
+    return copy;
+  }, [sourcesList, search, selectedStatuses, onlySourceId, sortBy]);
+
+  const getSortParams = (columnKey: SortableColumnKey) => {
+    const columnIndex = SORTABLE_COLUMNS.indexOf(columnKey);
+    const activeSortColumnIndex = SORTABLE_COLUMNS.indexOf(sortBy.columnKey);
+    return {
+      sortBy: {
+        index: activeSortColumnIndex,
+        direction: sortBy.direction,
+      },
+      onSort: (_event: unknown, _index: number, direction: "asc" | "desc") => {
+        setSortBy({ columnKey, direction });
+      },
+      columnIndex,
+    };
+  };
 
   // Polling lifecycle is handled by the EnvironmentPageViewModel.
   // We only need to refresh on tab/window focus.
@@ -276,12 +366,13 @@ export const SourcesTable: React.FC<SourceTableProps> = ({
 
   useEffect(
     () => {
-      if (!vm.sourceSelected && firstSource) {
-        vm.selectSource(firstSource);
+      const firstVisibleSource = filteredSources[0];
+      if (!vm.sourceSelected && firstVisibleSource) {
+        vm.selectSource(firstVisibleSource);
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [firstSource, vm.sources],
+    [filteredSources, vm.sources],
   );
 
   // Build map of sourceId -> assessmentId to enable report action
@@ -504,14 +595,62 @@ export const SourcesTable: React.FC<SourceTableProps> = ({
         >
           <Thead>
             <Tr>
-              <Th className={tableHeaderNormal}>{Columns.Name}</Th>
-              <Th className={tableHeaderNormal}>{Columns.Status}</Th>
-              <Th className={tableHeaderNormal}>{Columns.VersionStatus}</Th>
-              <Th className={tableHeaderNormal}>{Columns.Hosts}</Th>
-              <Th className={tableHeaderNormal}>{Columns.VMs}</Th>
-              <Th className={tableHeaderWide}>{Columns.Networks}</Th>
-              <Th className={tableHeaderWide}>{Columns.Datastores}</Th>
-              <Th className={tableHeaderNormal}>{Columns.LastSeen}</Th>
+              <Th
+                className={tableHeaderNormal}
+                sort={getSortParams("Name")}
+                modifier="nowrap"
+              >
+                {Columns.Name}
+              </Th>
+              <Th
+                className={tableHeaderNormal}
+                sort={getSortParams("Status")}
+                modifier="nowrap"
+              >
+                {Columns.Status}
+              </Th>
+              <Th
+                className={tableHeaderNormal}
+                sort={getSortParams("VersionStatus")}
+                modifier="nowrap"
+              >
+                {Columns.VersionStatus}
+              </Th>
+              <Th
+                className={tableHeaderNormal}
+                sort={getSortParams("Hosts")}
+                modifier="nowrap"
+              >
+                {Columns.Hosts}
+              </Th>
+              <Th
+                className={tableHeaderNormal}
+                sort={getSortParams("VMs")}
+                modifier="nowrap"
+              >
+                {Columns.VMs}
+              </Th>
+              <Th
+                className={tableHeaderWide}
+                sort={getSortParams("Networks")}
+                modifier="nowrap"
+              >
+                {Columns.Networks}
+              </Th>
+              <Th
+                className={tableHeaderWide}
+                sort={getSortParams("Datastores")}
+                modifier="nowrap"
+              >
+                {Columns.Datastores}
+              </Th>
+              <Th
+                className={tableHeaderNormal}
+                sort={getSortParams("LastSeen")}
+                modifier="nowrap"
+              >
+                {Columns.LastSeen}
+              </Th>
               <Th modifier="fitContent" screenReaderText="Actions">
                 {Columns.Actions}
               </Th>
@@ -548,11 +687,7 @@ export const SourcesTable: React.FC<SourceTableProps> = ({
                             : "Not connected"
                       }
                       credentialUrl={agent ? agent.credentialUrl : ""}
-                      uploadedManually={
-                        Boolean(source.onPremises) &&
-                        source.inventory !== undefined &&
-                        source.displayStatus === "not-connected"
-                      }
+                      uploadedManually={isInventoryUploadedManually(source)}
                       updatedAt={source?.updatedAt}
                     />
                   </Td>
@@ -562,10 +697,7 @@ export const SourcesTable: React.FC<SourceTableProps> = ({
                   >
                     <VersionStatus
                       displayStatus={source.displayStatus}
-                      isUploadedManually={
-                        Boolean(source.onPremises) &&
-                        source.inventory !== undefined
-                      }
+                      isUploadedManually={isSourceUploadedManually(source)}
                       agentVersion={source.agentVersion}
                       agentVersionWarning={source.agentVersionWarning}
                     />

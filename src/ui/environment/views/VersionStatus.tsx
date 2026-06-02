@@ -18,7 +18,14 @@ import React from "react";
 
 import { VCenterSetupInstructions } from "../../core/components/VCenterSetupInstructions";
 
-const VALUE_NOT_AVAILABLE = "N/A";
+export const AGENT_VERSION_NOT_AVAILABLE = "N/A";
+
+export const AGENT_LABEL_DOWNLOAD_PENDING = "Download pending";
+export const AGENT_LABEL_OVA_DOWNLOADED = "OVA downloaded";
+export const AGENT_LABEL_OUTDATED = "Outdated";
+export const AGENT_LABEL_UP_TO_DATE = "Up to date";
+
+const VALUE_NOT_AVAILABLE = AGENT_VERSION_NOT_AVAILABLE;
 
 const splitGap = css`
   gap: 0.5rem;
@@ -48,7 +55,9 @@ const ovaDownloadingStyle = css`
 const OvaDownloading: React.FC = () => (
   <Split hasGutter className={splitGap}>
     <SplitItem>
-      <span className={ovaDownloadingStyle}>Download pending</span>
+      <span className={ovaDownloadingStyle}>
+        {AGENT_LABEL_DOWNLOAD_PENDING}
+      </span>
     </SplitItem>
     <SplitItem>
       <Popover
@@ -75,7 +84,7 @@ const OvaDownloading: React.FC = () => (
 const OvaDownloaded: React.FC = () => (
   <Split hasGutter className={splitGap}>
     <SplitItem>
-      <span className={ovaDownloadingStyle}>OVA downloaded</span>
+      <span className={ovaDownloadingStyle}>{AGENT_LABEL_OVA_DOWNLOADED}</span>
     </SplitItem>
     <SplitItem>
       <Popover
@@ -130,7 +139,7 @@ const NotAvailable: React.FC<{ warning?: string | null }> = ({ warning }) => (
 const VersionWarning: React.FC<{ warning: string }> = ({ warning }) => (
   <Split hasGutter className={splitGap}>
     <SplitItem>
-      <span className={outdatedStyle}>Outdated</span>
+      <span className={outdatedStyle}>{AGENT_LABEL_OUTDATED}</span>
     </SplitItem>
     <SplitItem>
       <Popover
@@ -190,23 +199,45 @@ type VersionStatusProps = {
   agentVersionWarning?: string | null;
 };
 
-export const VersionStatus: React.FC<VersionStatusProps> = ({
+/** User-visible agent version label (matches {@link VersionStatus}). */
+export const getAgentVersionDisplayLabel = ({
   displayStatus,
   isUploadedManually,
   agentVersion,
   agentVersionWarning,
-}) => {
+}: VersionStatusProps): string => {
   if (displayStatus === "not-connected" && !isUploadedManually) {
-    return agentVersion ? <OvaDownloaded /> : <OvaDownloading />;
+    return agentVersion
+      ? AGENT_LABEL_OVA_DOWNLOADED
+      : AGENT_LABEL_DOWNLOAD_PENDING;
   }
 
   if (displayStatus === "not-connected") {
-    return <NotAvailable warning={agentVersionWarning} />;
+    return AGENT_VERSION_NOT_AVAILABLE;
   }
 
   if (agentVersionWarning) {
-    return <VersionWarning warning={agentVersionWarning} />;
+    return AGENT_LABEL_OUTDATED;
   }
 
-  return <span className={latestStyle}>Up to date</span>;
+  return AGENT_LABEL_UP_TO_DATE;
+};
+
+export const VersionStatus: React.FC<VersionStatusProps> = (props) => {
+  const label = getAgentVersionDisplayLabel(props);
+
+  switch (label) {
+    case AGENT_LABEL_DOWNLOAD_PENDING:
+      return <OvaDownloading />;
+    case AGENT_LABEL_OVA_DOWNLOADED:
+      return <OvaDownloaded />;
+    case AGENT_VERSION_NOT_AVAILABLE:
+      return <NotAvailable warning={props.agentVersionWarning} />;
+    case AGENT_LABEL_OUTDATED:
+      return <VersionWarning warning={props.agentVersionWarning!} />;
+    case AGENT_LABEL_UP_TO_DATE:
+      return <span className={latestStyle}>{AGENT_LABEL_UP_TO_DATE}</span>;
+    default:
+      return <span>{label}</span>;
+  }
 };
