@@ -16,7 +16,7 @@ import {
   Spinner,
   TextInput,
 } from "@patternfly/react-core";
-import { OutlinedQuestionCircleIcon } from "@patternfly/react-icons";
+import { RhUiQuestionMarkCircleIcon } from "@patternfly/react-icons";
 import React from "react";
 
 import { routes } from "../../../routing/Routes";
@@ -86,7 +86,7 @@ const CreateFromOvaContent: React.FC = () => {
           <div style={{ marginTop: "16px" }}>
             <Button
               variant="link"
-              icon={<OutlinedQuestionCircleIcon />}
+              icon={<RhUiQuestionMarkCircleIcon />}
               onClick={() => vm.setIsStepsModalOpen(true)}
               style={{ paddingLeft: 0 }}
             >

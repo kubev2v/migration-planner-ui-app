@@ -17,7 +17,10 @@ import {
   PageSection,
   Title,
 } from "@patternfly/react-core";
-import { EllipsisVIcon, SearchIcon } from "@patternfly/react-icons";
+import {
+  RhUiEllipsisVerticalIcon,
+  RhUiSearchIcon,
+} from "@patternfly/react-icons";
 import { Table, Tbody, Td, Th, Thead, Tr } from "@patternfly/react-table";
 import React, { useState } from "react";
 
@@ -76,7 +79,7 @@ export const GroupMembersSection: React.FC<GroupMembersSectionProps> = ({
       {vm.members && vm.members.length === 0 && (
         <EmptyState
           headingLevel="h4"
-          icon={SearchIcon}
+          icon={RhUiSearchIcon}
           titleText={`No members in this group`}
           variant="sm"
         />
@@ -116,7 +119,7 @@ export const GroupMembersSection: React.FC<GroupMembersSectionProps> = ({
                           )
                         }
                       >
-                        <EllipsisVIcon />
+                        <RhUiEllipsisVerticalIcon />
                       </MenuToggle>
                     )}
                   >

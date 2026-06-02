@@ -8,9 +8,9 @@ import {
   ToolbarItem,
 } from "@patternfly/react-core";
 import {
-  CheckCircleIcon,
-  ExclamationCircleIcon,
-  ExclamationTriangleIcon,
+  RhUiCheckCircleIcon,
+  RhUiErrorFillIcon,
+  RhUiWarningFillIcon,
 } from "@patternfly/react-icons";
 import { Table, Tbody, Td, Th, Thead, Tr } from "@patternfly/react-table";
 import React from "react";
@@ -57,20 +57,20 @@ const MigrationReadinessCell: React.FC<{
 }> = ({ vm }) => {
   if (vm.issueCount > 0) {
     return (
-      <Label color="orange" icon={<ExclamationTriangleIcon />} isCompact>
+      <Label color="orange" icon={<RhUiWarningFillIcon />} isCompact>
         With warnings
       </Label>
     );
   }
   if (vm.migratable) {
     return (
-      <Label color="green" icon={<CheckCircleIcon />} isCompact>
+      <Label color="green" icon={<RhUiCheckCircleIcon />} isCompact>
         Ready
       </Label>
     );
   }
   return (
-    <Label color="red" icon={<ExclamationCircleIcon />} isCompact>
+    <Label color="red" icon={<RhUiErrorFillIcon />} isCompact>
       Not ready
     </Label>
   );

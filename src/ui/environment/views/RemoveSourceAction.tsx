@@ -1,5 +1,5 @@
 import { Button, Content, Icon, Tooltip } from "@patternfly/react-core";
-import { TrashIcon } from "@patternfly/react-icons";
+import { RhUiTrashIcon } from "@patternfly/react-icons";
 import React, { useCallback, useState } from "react";
 
 import { ConfirmationModal } from "../../core/components/ConfirmationModal";
@@ -50,7 +50,7 @@ export const RemoveSourceAction: React.FC<RemoveSourceAction.Props> = (
         <Button
           icon={
             <Icon size="md" isInline>
-              <TrashIcon />
+              <RhUiTrashIcon />
             </Icon>
           }
           data-source-id={sourceId}

@@ -7,7 +7,7 @@ import {
   Stack,
   StackItem,
 } from "@patternfly/react-core";
-import { MonitoringIcon } from "@patternfly/react-icons";
+import { RhUiMonitoringIcon } from "@patternfly/react-icons";
 import { Table, Tbody, Td, Th, Thead, Tr } from "@patternfly/react-table";
 import React from "react";
 import { Link } from "react-router-dom";
@@ -239,7 +239,7 @@ const AssessmentDetails: React.FC = () => {
                       <Button
                         icon={
                           <Icon isInline>
-                            <MonitoringIcon
+                            <RhUiMonitoringIcon
                               style={{
                                 color:
                                   "var(--pf-t--global--text--color--link--default)",

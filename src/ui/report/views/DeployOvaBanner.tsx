@@ -9,8 +9,8 @@ import {
   Popover,
 } from "@patternfly/react-core";
 import {
-  ExternalLinkAltIcon,
-  OutlinedQuestionCircleIcon,
+  RhUiExternalLinkIcon,
+  RhUiQuestionMarkCircleIcon,
 } from "@patternfly/react-icons";
 import React from "react";
 import { useNavigate } from "react-router-dom";
@@ -88,7 +88,7 @@ export const DeployOvaBanner: React.FC = () => {
                 href={SETUP_GUIDE_URL}
                 target="_blank"
                 rel="noopener noreferrer"
-                icon={<ExternalLinkAltIcon />}
+                icon={<RhUiExternalLinkIcon />}
                 iconPosition="end"
               >
                 Read Setup Guide
@@ -100,7 +100,7 @@ export const DeployOvaBanner: React.FC = () => {
       >
         <Button variant="link" isInline>
           <Icon isInline>
-            <OutlinedQuestionCircleIcon />
+            <RhUiQuestionMarkCircleIcon />
           </Icon>{" "}
           Looking for more VM specific insights? Deploy the Migration Advisor
           Open Virtual Appliance (OVA)

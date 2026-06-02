@@ -8,7 +8,7 @@ import {
   type MenuToggleElement,
   Spinner,
 } from "@patternfly/react-core";
-import { DownloadIcon } from "@patternfly/react-icons";
+import { RhUiDownloadIcon } from "@patternfly/react-icons";
 import React, { useState } from "react";
 
 // ---------------------------------------------------------------------------
@@ -97,7 +97,7 @@ export const ExportReportButton: React.FC<ExportReportButtonProps> = ({
           </>
         ) : (
           <>
-            <DownloadIcon aria-hidden="true" /> Export to PDF
+            <RhUiDownloadIcon aria-hidden="true" /> Export to PDF
           </>
         )}
       </Button>
@@ -125,7 +125,7 @@ export const ExportReportButton: React.FC<ExportReportButtonProps> = ({
             </>
           ) : (
             <>
-              <DownloadIcon aria-hidden="true" /> Export Report
+              <RhUiDownloadIcon aria-hidden="true" /> Export Report
             </>
           )}
         </MenuToggle>

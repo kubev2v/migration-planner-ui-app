@@ -1,5 +1,5 @@
 import { Button, Icon, Tooltip } from "@patternfly/react-core";
-import { UploadIcon } from "@patternfly/react-icons";
+import { RhUiUploadIcon } from "@patternfly/react-icons";
 import React, { useCallback } from "react";
 
 import { useEnvironmentPage } from "../view-models/EnvironmentPageContext";
@@ -32,7 +32,7 @@ export const UploadInventoryAction: React.FC<UploadInventoryProps> = ({
       <Button
         icon={
           <Icon size="md" isInline>
-            <UploadIcon />
+            <RhUiUploadIcon />
           </Icon>
         }
         variant="plain"

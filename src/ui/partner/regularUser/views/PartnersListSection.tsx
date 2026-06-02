@@ -14,7 +14,7 @@ import {
   PageSection,
   Title,
 } from "@patternfly/react-core";
-import { SearchIcon } from "@patternfly/react-icons";
+import { RhUiSearchIcon } from "@patternfly/react-icons";
 import React from "react";
 
 import { LoadingSpinner } from "../../../core/components/LoadingSpinner";
@@ -52,7 +52,7 @@ export const PartnersListSection: React.FC = () => {
       {!vm.isLoading && !vm.error && vm.partners.length === 0 && (
         <EmptyState
           headingLevel="h4"
-          icon={SearchIcon}
+          icon={RhUiSearchIcon}
           titleText="No partners available"
           variant="sm"
         />

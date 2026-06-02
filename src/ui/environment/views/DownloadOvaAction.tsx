@@ -1,5 +1,5 @@
 import { Button, Icon, Tooltip } from "@patternfly/react-core";
-import { DownloadIcon } from "@patternfly/react-icons";
+import { RhUiDownloadIcon } from "@patternfly/react-icons";
 import React, { useCallback, useState } from "react";
 
 import { useEnvironmentPage } from "../view-models/EnvironmentPageContext";
@@ -44,7 +44,7 @@ export const DownloadOvaAction: React.FC<DownloadOvaAction.Props> = (props) => {
       <Button
         icon={
           <Icon size="md" isInline>
-            <DownloadIcon />
+            <RhUiDownloadIcon />
           </Icon>
         }
         data-source-id={sourceId}

@@ -17,7 +17,11 @@ import {
   ToolbarGroup,
   ToolbarItem,
 } from "@patternfly/react-core";
-import { ColumnsIcon, FilterIcon, TimesIcon } from "@patternfly/react-icons";
+import {
+  RhUiCloseIcon,
+  RhUiColumnsIcon,
+  RhUiFilterIcon,
+} from "@patternfly/react-icons";
 import React, { useCallback, useState } from "react";
 
 import type { AssessmentModel } from "../../../models/AssessmentModel";
@@ -314,7 +318,7 @@ export const AssessmentsPage: React.FC<AssessmentsPageProps> = ({
                             setIsFilterDropdownOpen(!isFilterDropdownOpen)
                           }
                           isExpanded={isFilterDropdownOpen}
-                          icon={<FilterIcon />}
+                          icon={<RhUiFilterIcon />}
                         >
                           Filters
                         </MenuToggle>
@@ -428,7 +432,7 @@ export const AssessmentsPage: React.FC<AssessmentsPageProps> = ({
               <ToolbarItem>
                 <Button
                   variant="control"
-                  icon={<ColumnsIcon />}
+                  icon={<RhUiColumnsIcon />}
                   onClick={() => setIsColumnModalOpen(true)}
                 >
                   Manage Columns
@@ -478,7 +482,7 @@ export const AssessmentsPage: React.FC<AssessmentsPageProps> = ({
               ))}
 
             <Button
-              icon={<TimesIcon />}
+              icon={<RhUiCloseIcon />}
               variant="plain"
               aria-label="Clear all filters"
               onClick={() => {

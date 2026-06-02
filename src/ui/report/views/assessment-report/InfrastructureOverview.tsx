@@ -9,7 +9,7 @@ import {
   Gallery,
   GalleryItem,
 } from "@patternfly/react-core";
-import ClusterIcon from "@patternfly/react-icons/dist/esm/icons/cluster-icon";
+import RhUiClusterIcon from "@patternfly/react-icons/dist/esm/icons/cluster-icon";
 import Humanize from "humanize-plus";
 import React from "react";
 
@@ -30,7 +30,7 @@ export const InfrastructureOverview: React.FC<Props> = ({
     <GalleryItem>
       <Card className={dashboardCardBorder} id="hosts">
         <CardTitle>
-          <ClusterIcon /> Hosts
+          <RhUiClusterIcon /> Hosts
         </CardTitle>
         <CardBody>{infra.totalHosts}</CardBody>
       </Card>

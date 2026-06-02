@@ -7,7 +7,10 @@ import {
   Split,
   SplitItem,
 } from "@patternfly/react-core";
-import { InfoCircleIcon, QuestionCircleIcon } from "@patternfly/react-icons";
+import {
+  RhUiInformationFillIcon,
+  RhUiQuestionMarkCircleIcon,
+} from "@patternfly/react-icons";
 import { t_global_color_status_success_default as globalSuccessColor } from "@patternfly/react-tokens/dist/js/t_global_color_status_success_default";
 import { t_global_icon_color_status_info_default as globalInfoColor } from "@patternfly/react-tokens/dist/js/t_global_icon_color_status_info_default";
 import { t_global_text_color_status_warning_default as globalTextWarningColor } from "@patternfly/react-tokens/dist/js/t_global_text_color_status_warning_default";
@@ -61,7 +64,7 @@ const OvaDownloading: React.FC = () => (
           className={popoverButton}
         >
           <Icon isInline>
-            <QuestionCircleIcon color={globalInfoColor.var} />
+            <RhUiQuestionMarkCircleIcon color={globalInfoColor.var} />
           </Icon>
         </Button>
       </Popover>
@@ -88,7 +91,7 @@ const OvaDownloaded: React.FC = () => (
           className={popoverButton}
         >
           <Icon isInline>
-            <QuestionCircleIcon color={globalInfoColor.value} />
+            <RhUiQuestionMarkCircleIcon color={globalInfoColor.value} />
           </Icon>
         </Button>
       </Popover>
@@ -115,7 +118,7 @@ const NotAvailable: React.FC<{ warning?: string | null }> = ({ warning }) => (
             className={popoverButton}
           >
             <Icon isInline>
-              <InfoCircleIcon color={globalInfoColor.value} />
+              <RhUiInformationFillIcon color={globalInfoColor.value} />
             </Icon>
           </Button>
         </Popover>
@@ -142,7 +145,7 @@ const VersionWarning: React.FC<{ warning: string }> = ({ warning }) => (
           className={popoverButton}
         >
           <Icon isInline>
-            <QuestionCircleIcon color={globalTextWarningColor.var} />
+            <RhUiQuestionMarkCircleIcon color={globalTextWarningColor.var} />
           </Icon>
         </Button>
       </Popover>

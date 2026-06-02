@@ -16,7 +16,7 @@ import {
   StackItem,
   Title,
 } from "@patternfly/react-core";
-import { ArrowLeftIcon, SearchIcon } from "@patternfly/react-icons";
+import { RhUiArrowLeftIcon, RhUiSearchIcon } from "@patternfly/react-icons";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -46,7 +46,7 @@ export const GroupDetailScreen: React.FC = () => {
             <Button
               variant="link"
               onClick={() => navigate(routes.adminGroups)}
-              icon={<ArrowLeftIcon />}
+              icon={<RhUiArrowLeftIcon />}
             >
               Back to groups
             </Button>
@@ -88,7 +88,7 @@ export const GroupDetailScreen: React.FC = () => {
             <StackItem>
               <EmptyState
                 headingLevel="h4"
-                icon={SearchIcon}
+                icon={RhUiSearchIcon}
                 titleText={`No partner with id ${vm.id} available`}
                 variant="sm"
               />

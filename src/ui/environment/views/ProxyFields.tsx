@@ -9,7 +9,7 @@ import {
   Popover,
   TextInput,
 } from "@patternfly/react-core";
-import { HelpIcon } from "@patternfly/react-icons";
+import { RhUiQuestionMarkCircleIcon } from "@patternfly/react-icons";
 import React, { useState } from "react";
 
 const ProxyInputFields = ({
@@ -36,7 +36,7 @@ const ProxyInputFields = ({
                 onClick={(e) => e.preventDefault()}
                 className="pf-v6-c-form__group-label-help"
               >
-                <HelpIcon />
+                <RhUiQuestionMarkCircleIcon />
               </button>
             </Popover>
           }
@@ -67,7 +67,7 @@ const ProxyInputFields = ({
                 onClick={(e) => e.preventDefault()}
                 className="pf-v6-c-form__group-label-help"
               >
-                <HelpIcon />
+                <RhUiQuestionMarkCircleIcon />
               </button>
             </Popover>
           }
@@ -98,7 +98,7 @@ const ProxyInputFields = ({
                 onClick={(e) => e.preventDefault()}
                 className="pf-v6-c-form__group-label-help"
               >
-                <HelpIcon />
+                <RhUiQuestionMarkCircleIcon />
               </button>
             </Popover>
           }

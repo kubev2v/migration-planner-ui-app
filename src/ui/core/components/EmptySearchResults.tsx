@@ -1,5 +1,5 @@
 import { EmptyState, EmptyStateBody } from "@patternfly/react-core";
-import { SearchIcon } from "@patternfly/react-icons";
+import { RhUiSearchIcon } from "@patternfly/react-icons";
 import React from "react";
 
 export interface EmptySearchResultsProps {
@@ -14,7 +14,7 @@ export const EmptySearchResults: React.FC<EmptySearchResultsProps> = ({
   return (
     <EmptyState
       headingLevel="h4"
-      icon={SearchIcon}
+      icon={RhUiSearchIcon}
       titleText={title}
       variant="sm"
     >

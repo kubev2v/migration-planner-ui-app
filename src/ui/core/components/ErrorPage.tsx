@@ -12,8 +12,8 @@ import {
   EmptyStateFooter,
 } from "@patternfly/react-core";
 import {
-  ExclamationCircleIcon,
-  ExclamationTriangleIcon,
+  RhUiErrorFillIcon,
+  RhUiWarningFillIcon,
 } from "@patternfly/react-icons";
 import React from "react";
 import { useLocation, useParams } from "react-router-dom";
@@ -52,9 +52,7 @@ const ErrorPage: React.FC<Props> = (props) => {
             headingLevel="h1"
             titleText={code}
             icon={
-              parseInt(code) < 500
-                ? ExclamationTriangleIcon
-                : ExclamationCircleIcon
+              parseInt(code) < 500 ? RhUiWarningFillIcon : RhUiErrorFillIcon
             }
           >
             <EmptyStateBody>

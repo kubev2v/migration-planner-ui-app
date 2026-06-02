@@ -1,5 +1,5 @@
 import { Card, CardBody, CardTitle } from "@patternfly/react-core";
-import VirtualMachineIcon from "@patternfly/react-icons/dist/esm/icons/virtual-machine-icon";
+import RhUiVirtualMachineIcon from "@patternfly/react-icons/dist/esm/icons/virtual-machine-icon";
 import React from "react";
 
 import MigrationDonutChart from "../../../core/components/MigrationDonutChart";
@@ -48,7 +48,7 @@ export const VMMigrationStatus: React.FC<VmMigrationStatusProps> = ({
       }}
     >
       <CardTitle>
-        <VirtualMachineIcon /> VM Migration Status
+        <RhUiVirtualMachineIcon /> VM Migration Status
       </CardTitle>
       <CardBody>
         <MigrationDonutChart

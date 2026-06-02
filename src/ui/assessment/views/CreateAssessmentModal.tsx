@@ -17,7 +17,7 @@ import {
   ModalHeader,
   TextInput,
 } from "@patternfly/react-core";
-import { ExternalLinkAltIcon } from "@patternfly/react-icons";
+import { RhUiExternalLinkIcon } from "@patternfly/react-icons";
 import React, { useState } from "react";
 
 import { isNameError } from "../../../lib/common/ErrorParser";
@@ -438,7 +438,7 @@ export const CreateAssessmentModal: React.FC<CreateAssessmentModalProps> = ({
                           target="_blank"
                           rel="noopener noreferrer"
                         >
-                          Learn more <ExternalLinkAltIcon />
+                          Learn more <RhUiExternalLinkIcon />
                         </a>
                       </>
                     }

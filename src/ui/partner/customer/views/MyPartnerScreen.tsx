@@ -12,7 +12,7 @@ import {
   PageSection,
   Title,
 } from "@patternfly/react-core";
-import { WarningTriangleIcon } from "@patternfly/react-icons";
+import { RhUiWarningFillIcon } from "@patternfly/react-icons";
 import type React from "react";
 
 import { LoadingSpinner } from "../../../core/components/LoadingSpinner";
@@ -35,7 +35,7 @@ export const MyPartnerScreen: React.FC = () => {
       {!vm.isLoading && !vm.error && !vm.partnerGroup && (
         <EmptyState
           headingLevel="h4"
-          icon={WarningTriangleIcon}
+          icon={RhUiWarningFillIcon}
           titleText="No partner available"
           variant="sm"
         >

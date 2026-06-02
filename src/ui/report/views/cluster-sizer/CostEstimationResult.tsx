@@ -12,10 +12,10 @@ import {
   StackItem,
   Title,
 } from "@patternfly/react-core";
-import CpuIcon from "@patternfly/react-icons/dist/esm/icons/cpu-icon";
-import ServerGroupIcon from "@patternfly/react-icons/dist/esm/icons/server-group-icon";
-import ServerIcon from "@patternfly/react-icons/dist/esm/icons/server-icon";
-import VirtualMachineIcon from "@patternfly/react-icons/dist/esm/icons/virtual-machine-icon";
+import RhUiCpuIcon from "@patternfly/react-icons/dist/esm/icons/cpu-icon";
+import RhUiServerGroupIcon from "@patternfly/react-icons/dist/esm/icons/server-group-icon";
+import RhUiServerIcon from "@patternfly/react-icons/dist/esm/icons/server-icon";
+import RhUiVirtualMachineIcon from "@patternfly/react-icons/dist/esm/icons/virtual-machine-icon";
 import React from "react";
 
 import type { CostEstimationResponse } from "../../../../models/AssessmentModel";
@@ -165,28 +165,28 @@ export const CostEstimationResult: React.FC<CostEstimationResultProps> = ({
         <Grid hasGutter md={6} lg={3}>
           <GridItem>
             <MetricCard
-              icon={<ServerIcon />}
+              icon={<RhUiServerIcon />}
               label="Total ESXi hosts"
               value={customerEnvironment.totalEsxiHosts}
             />
           </GridItem>
           <GridItem>
             <MetricCard
-              icon={<ServerGroupIcon />}
+              icon={<RhUiServerGroupIcon />}
               label="Sockets per host"
               value={customerEnvironment.socketsPerHost}
             />
           </GridItem>
           <GridItem>
             <MetricCard
-              icon={<CpuIcon />}
+              icon={<RhUiCpuIcon />}
               label="Cores per socket"
               value={customerEnvironment.coresPerSocket}
             />
           </GridItem>
           <GridItem>
             <MetricCard
-              icon={<VirtualMachineIcon />}
+              icon={<RhUiVirtualMachineIcon />}
               label="Total virtual machines"
               value={customerEnvironment.totalVirtualMachines}
             />
@@ -318,17 +318,20 @@ export const CostEstimationResultSkeleton: React.FC = () => {
         </Title>
         <Grid hasGutter md={6} lg={3}>
           <GridItem>
-            <MetricCard icon={<ServerIcon />} label="Total ESXi hosts" />
-          </GridItem>
-          <GridItem>
-            <MetricCard icon={<ServerGroupIcon />} label="Sockets per host" />
-          </GridItem>
-          <GridItem>
-            <MetricCard icon={<CpuIcon />} label="Cores per socket" />
+            <MetricCard icon={<RhUiServerIcon />} label="Total ESXi hosts" />
           </GridItem>
           <GridItem>
             <MetricCard
-              icon={<VirtualMachineIcon />}
+              icon={<RhUiServerGroupIcon />}
+              label="Sockets per host"
+            />
+          </GridItem>
+          <GridItem>
+            <MetricCard icon={<RhUiCpuIcon />} label="Cores per socket" />
+          </GridItem>
+          <GridItem>
+            <MetricCard
+              icon={<RhUiVirtualMachineIcon />}
               label="Total virtual machines"
             />
           </GridItem>

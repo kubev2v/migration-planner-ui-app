@@ -1,6 +1,6 @@
 import type { Customer } from "@openshift-migration-advisor/planner-sdk";
 import { EmptyState, EmptyStateBody } from "@patternfly/react-core";
-import { UserIcon } from "@patternfly/react-icons";
+import { RhUiProfileIcon } from "@patternfly/react-icons";
 import { Table, Tbody, Td, Th, Thead, Tr } from "@patternfly/react-table";
 import React, { useMemo } from "react";
 
@@ -19,7 +19,7 @@ export const CustomersTable: React.FC<CustomersTableProps> = ({
     return (
       <EmptyState
         headingLevel="h4"
-        icon={UserIcon}
+        icon={RhUiProfileIcon}
         titleText="No customers yet"
         variant="sm"
       >
