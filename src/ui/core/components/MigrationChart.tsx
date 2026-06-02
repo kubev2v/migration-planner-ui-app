@@ -7,7 +7,7 @@ import {
   FlexItem,
   Popover,
 } from "@patternfly/react-core";
-import { InfoCircleIcon } from "@patternfly/react-icons";
+import { RhUiInformationFillIcon } from "@patternfly/react-icons";
 import { Table, Tbody, Td, Tr } from "@patternfly/react-table";
 import { chart_color_blue_300 } from "@patternfly/react-tokens/dist/esm/chart_color_blue_300";
 import { chart_color_red_orange_400 } from "@patternfly/react-tokens/dist/esm/chart_color_red_orange_400";
@@ -192,7 +192,7 @@ const MigrationChart: React.FC<MigrationChartProps> = ({
                                   verticalAlign: "middle",
                                 }}
                               >
-                                <InfoCircleIcon color="var(--pf-t--global--icon--color--status--info--default)" />
+                                <RhUiInformationFillIcon color="var(--pf-t--global--icon--color--status--info--default)" />
                               </Button>
                             </Popover>
                           </FlexItem>

@@ -3,7 +3,7 @@ import {
   HelperText,
   HelperTextItem,
 } from "@patternfly/react-core";
-import { ExclamationCircleIcon } from "@patternfly/react-icons";
+import { RhUiErrorFillIcon } from "@patternfly/react-icons";
 
 interface FormFieldHelperTextProps {
   helpText?: string;
@@ -21,7 +21,7 @@ export default function FormFieldHelperText({
       <HelperText>
         {helpText && <HelperTextItem>{helpText}</HelperTextItem>}
         {errorMessage && (
-          <HelperTextItem icon={<ExclamationCircleIcon />} variant="error">
+          <HelperTextItem icon={<RhUiErrorFillIcon />} variant="error">
             {errorMessage}
           </HelperTextItem>
         )}

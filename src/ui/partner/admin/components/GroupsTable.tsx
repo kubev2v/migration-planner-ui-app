@@ -11,7 +11,10 @@ import {
   ToolbarItem,
   Truncate,
 } from "@patternfly/react-core";
-import { EllipsisVIcon, PlusIcon } from "@patternfly/react-icons";
+import {
+  RhUiAddCircleIcon,
+  RhUiEllipsisVerticalIcon,
+} from "@patternfly/react-icons";
 import {
   Table,
   TableText,
@@ -50,7 +53,7 @@ export const GroupsTable: React.FC<GroupsTableProps> = ({
             <Button
               variant="primary"
               onClick={onCreateGroupClick}
-              icon={<PlusIcon />}
+              icon={<RhUiAddCircleIcon />}
             >
               Create group
             </Button>
@@ -119,7 +122,7 @@ export const GroupsTable: React.FC<GroupsTableProps> = ({
                         )
                       }
                     >
-                      <EllipsisVIcon />
+                      <RhUiEllipsisVerticalIcon />
                     </MenuToggle>
                   )}
                 >

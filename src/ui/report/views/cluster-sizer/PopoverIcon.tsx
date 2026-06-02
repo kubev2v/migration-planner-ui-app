@@ -5,8 +5,8 @@ import {
   Popover,
 } from "@patternfly/react-core";
 import type { PopoverProps } from "@patternfly/react-core/dist/js/components/Popover/Popover";
+import { RhUiQuestionMarkCircleIcon } from "@patternfly/react-icons";
 import type { SVGIconProps } from "@patternfly/react-icons/dist/js/createIcon";
-import { OutlinedQuestionCircleIcon } from "@patternfly/react-icons/dist/js/icons/outlined-question-circle-icon";
 import classNames from "classnames";
 import React from "react";
 
@@ -23,7 +23,7 @@ type PopoverIconProps = PopoverProps & {
 const PopoverIcon: React.FC<PopoverIconProps> = ({
   component,
   variant = "plain",
-  IconComponent = OutlinedQuestionCircleIcon,
+  IconComponent = RhUiQuestionMarkCircleIcon,
   noVerticalAlign = false,
   buttonClassName,
   buttonOuiaId,

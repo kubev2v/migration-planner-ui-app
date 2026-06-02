@@ -16,7 +16,7 @@ import {
   TabTitleText,
   Title,
 } from "@patternfly/react-core";
-import { CheckCircleIcon } from "@patternfly/react-icons";
+import { RhUiCheckCircleIcon } from "@patternfly/react-icons";
 import React from "react";
 
 const clusterToggleStyle = css`
@@ -79,7 +79,7 @@ const DiscoveryOvaExampleReport: React.FC = () => {
                       alignItems={{ default: "alignItemsCenter" }}
                     >
                       <Icon status="success">
-                        <CheckCircleIcon />
+                        <RhUiCheckCircleIcon />
                       </Icon>
                       <Content component="small">Connected</Content>
                     </Flex>

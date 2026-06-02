@@ -1,5 +1,5 @@
 import { Button } from "@patternfly/react-core";
-import { TimesIcon } from "@patternfly/react-icons";
+import { RhUiCloseIcon } from "@patternfly/react-icons";
 import React from "react";
 
 type Props = {
@@ -23,7 +23,7 @@ const FilterPill: React.FC<Props> = ({ label, onClear, ariaLabel }) => {
     >
       <span>{label}</span>
       <Button
-        icon={<TimesIcon />}
+        icon={<RhUiCloseIcon />}
         variant="plain"
         aria-label={ariaLabel || `Remove ${label}`}
         onClick={(e) => {

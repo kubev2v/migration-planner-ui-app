@@ -10,11 +10,11 @@ import {
   Truncate,
 } from "@patternfly/react-core";
 import {
-  ConnectedIcon,
-  EllipsisVIcon,
-  ExclamationTriangleIcon,
-  FileIcon,
-  MonitoringIcon,
+  RhUiConnectedIcon,
+  RhUiDocumentIcon,
+  RhUiEllipsisVerticalIcon,
+  RhUiMonitoringIcon,
+  RhUiWarningFillIcon,
 } from "@patternfly/react-icons";
 import {
   Table,
@@ -534,7 +534,7 @@ export const AssessmentsTable: React.FC<AssessmentsTableProps> = ({
                       }
                     >
                       <Icon status="warning">
-                        <ExclamationTriangleIcon />
+                        <RhUiWarningFillIcon />
                       </Icon>
                     </Tooltip>{" "}
                     <Tooltip content={row.name}>
@@ -554,9 +554,9 @@ export const AssessmentsTable: React.FC<AssessmentsTableProps> = ({
                   }}
                 >
                   {row.sourceType.toLowerCase() === "rvtools" ? (
-                    <FileIcon />
+                    <RhUiDocumentIcon />
                   ) : (
-                    <ConnectedIcon />
+                    <RhUiConnectedIcon />
                   )}
                   {row.sourceType.toLowerCase() === "rvtools" ? (
                     <Truncate content="RVTools (XLS/X)" />
@@ -611,7 +611,7 @@ export const AssessmentsTable: React.FC<AssessmentsTableProps> = ({
                               navigate(routes.assessmentReport(row.id))
                           : undefined
                       }
-                      icon={<MonitoringIcon />}
+                      icon={<RhUiMonitoringIcon />}
                       aria-label="View assessment report"
                       style={{ padding: 0 }}
                     >
@@ -652,7 +652,7 @@ export const AssessmentsTable: React.FC<AssessmentsTableProps> = ({
                       aria-label="Actions"
                       variant="plain"
                       onClick={() => toggleDropdown(row.id)}
-                      icon={<EllipsisVIcon />}
+                      icon={<RhUiEllipsisVerticalIcon />}
                       style={{ padding: 0, width: "fit-content" }}
                     ></MenuToggle>
                   )}

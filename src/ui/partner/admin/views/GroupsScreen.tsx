@@ -9,7 +9,7 @@ import {
   EmptyStateFooter,
   PageSection,
 } from "@patternfly/react-core";
-import { SearchIcon } from "@patternfly/react-icons";
+import { RhUiSearchIcon } from "@patternfly/react-icons";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -56,7 +56,7 @@ export const GroupsScreen: React.FC = () => {
       {!vm.isLoading && vm.groups.length === 0 && (
         <EmptyState
           headingLevel="h4"
-          icon={SearchIcon}
+          icon={RhUiSearchIcon}
           titleText="No groups available"
           variant="sm"
         >

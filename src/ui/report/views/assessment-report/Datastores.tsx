@@ -7,8 +7,8 @@ import {
   Progress,
 } from "@patternfly/react-core";
 import {
-  CheckCircleIcon,
-  ExclamationCircleIcon,
+  RhUiCheckCircleIcon,
+  RhUiErrorFillIcon,
 } from "@patternfly/react-icons";
 import { t_global_color_status_success_default as globalSuccessColor100 } from "@patternfly/react-tokens/dist/js/t_global_color_status_success_default";
 import { t_global_icon_color_status_danger_default as globalDangerColor100 } from "@patternfly/react-tokens/dist/js/t_global_icon_color_status_danger_default";
@@ -61,11 +61,11 @@ export const Datastores: React.FC<DatastoresProps> = ({
               ),
               hardwareAcceleratedMoveDisplay: ds.hardwareAcceleratedMove ? (
                 <Icon size="md" isInline>
-                  <CheckCircleIcon color={globalSuccessColor100.var} />
+                  <RhUiCheckCircleIcon color={globalSuccessColor100.var} />
                 </Icon>
               ) : (
                 <Icon size="md" isInline>
-                  <ExclamationCircleIcon color={globalDangerColor100.var} />
+                  <RhUiErrorFillIcon color={globalDangerColor100.var} />
                 </Icon>
               ),
             }))}

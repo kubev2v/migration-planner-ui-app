@@ -9,11 +9,11 @@ import {
   SplitItem,
 } from "@patternfly/react-core";
 import {
-  CheckCircleIcon,
-  DisconnectedIcon,
-  ExclamationCircleIcon,
-  InfoCircleIcon,
-  QuestionCircleIcon,
+  RhUiCheckCircleIcon,
+  RhUiDisconnectedIcon,
+  RhUiErrorFillIcon,
+  RhUiInformationFillIcon,
+  RhUiQuestionMarkCircleIcon,
 } from "@patternfly/react-icons";
 import { t_global_color_status_success_default as globalSuccessColor100 } from "@patternfly/react-tokens/dist/js/t_global_color_status_success_default";
 import { t_global_icon_color_status_danger_default as globalDangerColor200 } from "@patternfly/react-tokens/dist/js/t_global_icon_color_status_danger_default";
@@ -80,11 +80,11 @@ export const AgentStatusView: React.FC<AgentStatusView.Props> = (props) => {
         return {
           icon: uploadedManually ? (
             <Icon size="md" isInline>
-              <CheckCircleIcon color={globalSuccessColor100.var} />
+              <RhUiCheckCircleIcon color={globalSuccessColor100.var} />
             </Icon>
           ) : (
             <Icon isInline>
-              <DisconnectedIcon />
+              <RhUiDisconnectedIcon />
             </Icon>
           ),
           text: uploadedManually ? "Uploaded manually" : "Not connected",
@@ -93,7 +93,7 @@ export const AgentStatusView: React.FC<AgentStatusView.Props> = (props) => {
         return {
           icon: (
             <Icon size="md" isInline>
-              <InfoCircleIcon color={globalInfoColor100.var} />
+              <RhUiInformationFillIcon color={globalInfoColor100.var} />
             </Icon>
           ),
           text: "Waiting for credentials",
@@ -111,7 +111,7 @@ export const AgentStatusView: React.FC<AgentStatusView.Props> = (props) => {
         return {
           icon: (
             <Icon size="md" isInline>
-              <ExclamationCircleIcon color={globalDangerColor200.var} />
+              <RhUiErrorFillIcon color={globalDangerColor200.var} />
             </Icon>
           ),
           text: "Error",
@@ -120,7 +120,7 @@ export const AgentStatusView: React.FC<AgentStatusView.Props> = (props) => {
         return {
           icon: (
             <Icon size="md" isInline>
-              <CheckCircleIcon color={globalSuccessColor100.var} />
+              <RhUiCheckCircleIcon color={globalSuccessColor100.var} />
             </Icon>
           ),
           text: "Ready",
@@ -193,7 +193,7 @@ export const AgentStatusView: React.FC<AgentStatusView.Props> = (props) => {
               style={{ padding: 0, minWidth: "auto" }}
             >
               <Icon isInline>
-                <QuestionCircleIcon color={globalInfoColor100.var} />
+                <RhUiQuestionMarkCircleIcon color={globalInfoColor100.var} />
               </Icon>
             </Button>
           </Popover>

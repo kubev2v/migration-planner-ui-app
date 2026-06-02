@@ -10,7 +10,7 @@ import {
   PageSection,
   Title,
 } from "@patternfly/react-core";
-import { SearchIcon } from "@patternfly/react-icons";
+import { RhUiSearchIcon } from "@patternfly/react-icons";
 import { Table, Tbody, Td, Th, Thead, Tr } from "@patternfly/react-table";
 import React, { useState } from "react";
 
@@ -65,7 +65,7 @@ export const CustomerRequestsSection: React.FC = () => {
       {!vm.isLoading && !vm.error && vm.requests.length === 0 && (
         <EmptyState
           headingLevel="h4"
-          icon={SearchIcon}
+          icon={RhUiSearchIcon}
           titleText="No customer requests yet"
           variant="sm"
         />

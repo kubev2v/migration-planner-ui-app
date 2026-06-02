@@ -13,10 +13,10 @@ import {
   Tooltip,
 } from "@patternfly/react-core";
 import {
-  ClusterIcon,
-  InfoCircleIcon,
-  MigrationIcon,
-  OutlinedQuestionCircleIcon,
+  RhUiClusterIcon,
+  RhUiInformationFillIcon,
+  RhUiMigrateIcon,
+  RhUiQuestionMarkCircleIcon,
 } from "@patternfly/react-icons";
 import { t_global_color_nonstatus_gray_300 as globalNonStatusGrayColor } from "@patternfly/react-tokens/dist/js/t_global_color_nonstatus_gray_300";
 import { t_global_text_color_link_default as globalActiveColor300 } from "@patternfly/react-tokens/dist/js/t_global_text_color_link_default";
@@ -73,7 +73,9 @@ export const HowDoesItWork: React.FC = () => {
       <CardHeader onExpand={() => setIsExpanded(!isExpanded)}>
         <CardTitle>
           <Icon size="md" style={{ marginRight: "0.5rem" }}>
-            <InfoCircleIcon color={globalTextColorStatusInfoDefault.var} />
+            <RhUiInformationFillIcon
+              color={globalTextColorStatusInfoDefault.var}
+            />
           </Icon>
           How does this work?
         </CardTitle>
@@ -96,7 +98,7 @@ export const HowDoesItWork: React.FC = () => {
                 Assess VMware
                 <Tooltip content="As part of the discovery process, we're collecting aggregated data about your VMware environment. This includes information such as the number of clusters, hosts, and VMs; VM counts per operating system type; total CPU cores and memory; network types and VLANs; and a list of datastores.">
                   <Icon size="lg" className={questionIconStyle}>
-                    <OutlinedQuestionCircleIcon
+                    <RhUiQuestionMarkCircleIcon
                       color={globalActiveColor300.var}
                     />
                   </Icon>
@@ -126,7 +128,7 @@ export const HowDoesItWork: React.FC = () => {
             </FlexItem>
             <FlexItem flex={{ default: "flex_1" }} className={flexItemStyle}>
               <Icon size="xl">
-                <ClusterIcon color={globalNonStatusGrayColor.var} />
+                <RhUiClusterIcon color={globalNonStatusGrayColor.var} />
               </Icon>
               <Content component="h3" className={headingStyle}>
                 Select Target Cluster
@@ -137,7 +139,7 @@ export const HowDoesItWork: React.FC = () => {
             </FlexItem>
             <FlexItem flex={{ default: "flex_1" }} className={flexItemStyle}>
               <Icon size="xl">
-                <MigrationIcon color={globalNonStatusGrayColor.var} />
+                <RhUiMigrateIcon color={globalNonStatusGrayColor.var} />
               </Icon>
               <Content component="h3" className={headingStyle}>
                 Plan Migration

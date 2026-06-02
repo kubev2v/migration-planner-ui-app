@@ -8,7 +8,7 @@ import {
   FlexItem,
   Icon,
 } from "@patternfly/react-core";
-import { InfoCircleIcon } from "@patternfly/react-icons";
+import { RhUiInformationFillIcon } from "@patternfly/react-icons";
 import React from "react";
 
 import MigrationChart from "../../../core/components/MigrationChart";
@@ -47,7 +47,7 @@ export const OSDistribution: React.FC<OSDistributionProps> = ({
           >
             <FlexItem>
               <Icon>
-                <InfoCircleIcon color="var(--pf-t--global--icon--color--status--info--default)" />
+                <RhUiInformationFillIcon color="var(--pf-t--global--icon--color--status--info--default)" />
               </Icon>
             </FlexItem>
             <FlexItem>

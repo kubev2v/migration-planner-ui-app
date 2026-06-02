@@ -15,11 +15,11 @@ import {
   Tooltip,
 } from "@patternfly/react-core";
 import {
-  ArrowLeftIcon,
-  EllipsisVIcon,
-  FilterIcon,
-  PlusCircleIcon,
-  TimesIcon,
+  RhUiAddCircleIcon,
+  RhUiArrowLeftIcon,
+  RhUiCloseIcon,
+  RhUiEllipsisVerticalIcon,
+  RhUiFilterIcon,
 } from "@patternfly/react-icons";
 import { Table, Tbody, Td, Th, Thead, Tr } from "@patternfly/react-table";
 import React, { useEffect, useMemo, useState } from "react";
@@ -349,7 +349,7 @@ export const SourcesTable: React.FC<SourceTableProps> = ({
         <div className={backButtonWrapper}>
           <Button
             variant="link"
-            icon={<ArrowLeftIcon />}
+            icon={<RhUiArrowLeftIcon />}
             onClick={() => {
               vm.setAssessmentFromAgent?.(false);
               navigate(routes.assessments);
@@ -376,7 +376,7 @@ export const SourcesTable: React.FC<SourceTableProps> = ({
                         setIsFilterDropdownOpen(!isFilterDropdownOpen)
                       }
                       isExpanded={isFilterDropdownOpen}
-                      icon={<FilterIcon />}
+                      icon={<RhUiFilterIcon />}
                     >
                       Filters
                     </MenuToggle>
@@ -439,7 +439,7 @@ export const SourcesTable: React.FC<SourceTableProps> = ({
               <Button
                 variant="primary"
                 onClick={onAddEnvironment}
-                icon={<PlusCircleIcon />}
+                icon={<RhUiAddCircleIcon />}
               >
                 Add environment
               </Button>
@@ -486,7 +486,7 @@ export const SourcesTable: React.FC<SourceTableProps> = ({
             })()}
 
             <Button
-              icon={<TimesIcon />}
+              icon={<RhUiCloseIcon />}
               variant="plain"
               aria-label="Clear all filters"
               onClick={() => clearStatuses()}
@@ -628,7 +628,7 @@ export const SourcesTable: React.FC<SourceTableProps> = ({
                                 [source.id]: !prev[source.id],
                               }))
                             }
-                            icon={<EllipsisVIcon />}
+                            icon={<RhUiEllipsisVerticalIcon />}
                             style={{ padding: 0, width: "fit-content" }}
                           ></MenuToggle>
                         )}

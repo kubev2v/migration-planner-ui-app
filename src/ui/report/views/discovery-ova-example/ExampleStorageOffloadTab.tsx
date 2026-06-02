@@ -21,9 +21,9 @@ import {
   StackItem,
 } from "@patternfly/react-core";
 import {
-  CheckCircleIcon,
-  ExternalLinkAltIcon,
-  InfoCircleIcon,
+  RhUiCheckCircleIcon,
+  RhUiExternalLinkIcon,
+  RhUiInformationFillIcon,
 } from "@patternfly/react-icons";
 import React from "react";
 
@@ -57,7 +57,7 @@ const ExampleStorageOffloadTab: React.FC = () => (
                     target="_blank"
                     rel="noopener noreferrer"
                   >
-                    Learn more <ExternalLinkAltIcon />
+                    Learn more <RhUiExternalLinkIcon />
                   </a>
                 </>
               }
@@ -66,7 +66,7 @@ const ExampleStorageOffloadTab: React.FC = () => (
               <Label
                 style={{ cursor: "pointer" }}
                 color="orange"
-                icon={<InfoCircleIcon />}
+                icon={<RhUiInformationFillIcon />}
               >
                 TP
               </Label>
@@ -127,7 +127,7 @@ const ExampleStorageOffloadTab: React.FC = () => (
                   <StackItem>
                     <Content component="small">
                       <Icon status="success" isInline>
-                        <CheckCircleIcon />
+                        <RhUiCheckCircleIcon />
                       </Icon>{" "}
                       Completed — example estimation
                     </Content>

@@ -13,7 +13,7 @@ import {
   Stack,
   StackItem,
 } from "@patternfly/react-core";
-import { CheckCircleIcon } from "@patternfly/react-icons";
+import { RhUiCheckCircleIcon } from "@patternfly/react-icons";
 import { t_global_color_status_success_default as globalSuccessColor100 } from "@patternfly/react-tokens/dist/js/t_global_color_status_success_default";
 import React from "react";
 
@@ -70,7 +70,7 @@ const ExampleReport: React.FC = () => {
           <StackItem>
             Discovery VM status :{" "}
             <Icon size="md" isInline>
-              <CheckCircleIcon color={globalSuccessColor100.var} />
+              <RhUiCheckCircleIcon color={globalSuccessColor100.var} />
             </Icon>{" "}
             Ready
             <br />

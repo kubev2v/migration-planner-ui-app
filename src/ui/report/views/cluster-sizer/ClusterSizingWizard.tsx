@@ -9,7 +9,7 @@ import {
   Tabs,
   TabTitleText,
 } from "@patternfly/react-core";
-import { CopyIcon } from "@patternfly/react-icons";
+import { RhUiCopyIcon } from "@patternfly/react-icons";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 
 import { generatePlainTextRecommendation } from "../../view-models/ClusterSizingHelpers";
@@ -240,7 +240,7 @@ export const ClusterSizingWizard: React.FC<ClusterSizingWizardProps> = ({
               vm.sizerOutput ? (
                 <Button
                   variant="link"
-                  icon={<CopyIcon />}
+                  icon={<RhUiCopyIcon />}
                   iconPosition="end"
                   onClick={handleCopyRecommendations}
                 >

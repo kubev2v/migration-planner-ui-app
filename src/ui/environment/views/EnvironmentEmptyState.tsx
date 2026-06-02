@@ -7,7 +7,7 @@ import {
   EmptyStateFooter,
   StackItem,
 } from "@patternfly/react-core";
-import { ExclamationCircleIcon, SearchIcon } from "@patternfly/react-icons";
+import { RhUiErrorFillIcon, RhUiSearchIcon } from "@patternfly/react-icons";
 import React, { useCallback } from "react";
 
 import { useEnvironmentPage } from "../view-models/EnvironmentPageContext";
@@ -32,7 +32,7 @@ export const EnvironmentEmptyState: React.FC<EnvironmentEmptyStateProps> = ({
   let emptyStateNode: React.ReactNode = (
     <EmptyState
       headingLevel="h4"
-      icon={SearchIcon}
+      icon={RhUiSearchIcon}
       titleText="No environments found"
       variant="sm"
     >
@@ -62,7 +62,7 @@ export const EnvironmentEmptyState: React.FC<EnvironmentEmptyStateProps> = ({
     emptyStateNode = (
       <EmptyState
         headingLevel="h4"
-        icon={ExclamationCircleIcon}
+        icon={RhUiErrorFillIcon}
         titleText="Something went wrong..."
         variant="sm"
       >

@@ -18,7 +18,7 @@ import {
   StackItem,
   Title,
 } from "@patternfly/react-core";
-import { CopyIcon } from "@patternfly/react-icons";
+import { RhUiCopyIcon } from "@patternfly/react-icons";
 import { Table, Tbody, Td, Th, Thead, Tr } from "@patternfly/react-table";
 import React, { useCallback, useMemo } from "react";
 
@@ -293,7 +293,7 @@ export const TimeEstimationResult: React.FC<TimeEstimationResultProps> = ({
         <FlexItem>
           <Button
             variant="link"
-            icon={<CopyIcon />}
+            icon={<RhUiCopyIcon />}
             iconPosition="end"
             onClick={handleCopy}
             isDisabled={!canCopy}

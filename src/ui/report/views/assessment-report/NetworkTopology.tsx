@@ -1,6 +1,6 @@
 import type { Network } from "@openshift-migration-advisor/planner-sdk";
 import { Card, CardBody, CardTitle } from "@patternfly/react-core";
-import NetworkIcon from "@patternfly/react-icons/dist/esm/icons/network-icon";
+import RhUiNetworkIcon from "@patternfly/react-icons/dist/esm/icons/network-icon";
 import React from "react";
 
 import { ReportTable } from "../ReportTable";
@@ -19,7 +19,7 @@ export const NetworkTopology: React.FC<NetworkTopologyProps> = ({
   return (
     <Card className={dashboardCard}>
       <CardTitle>
-        <NetworkIcon /> Network Topology
+        <RhUiNetworkIcon /> Network Topology
       </CardTitle>
       <CardBody style={{ padding: 0 }}>
         <div
