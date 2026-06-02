@@ -8,6 +8,7 @@ import {
 import React, { useCallback, useEffect, useState } from "react";
 
 import { LoadingSpinner } from "../../core/components/LoadingSpinner";
+import { safeExternalUrl } from "../../core/utils/urlValidation";
 import { useEnvironmentPage } from "../view-models/EnvironmentPageContext";
 import type { EnvironmentPageViewModel } from "../view-models/useEnvironmentPageViewModel";
 import { DiscoverySourceSetupModal } from "./DiscoverySourceSetupModal";
@@ -126,14 +127,16 @@ const EnvironmentContent: React.FC<EnvironmentContentProps> = ({ vm }) => {
               variant="custom"
               title="Discovery VM"
               actionLinks={
-                <AlertActionLink
-                  component="a"
-                  href={sourceSelected?.agent.credentialUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  {sourceSelected?.agent.credentialUrl}
-                </AlertActionLink>
+                safeExternalUrl(sourceSelected?.agent.credentialUrl) ? (
+                  <AlertActionLink
+                    component="a"
+                    href={safeExternalUrl(sourceSelected.agent.credentialUrl)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {sourceSelected.agent.credentialUrl}
+                  </AlertActionLink>
+                ) : undefined
               }
             >
               <Content>
