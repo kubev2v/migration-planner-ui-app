@@ -6,6 +6,7 @@ import type {
   Source,
 } from "@openshift-migration-advisor/planner-sdk";
 import { cleanup, render, screen, within } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import React from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -409,7 +410,7 @@ describe("SourcesTable — all status states", () => {
     const table = screen.getByRole("grid", { name: "Sources table" });
     const rows = within(table).getAllByRole("row");
 
-    // Sources are sorted by id. Find the row for "Production vCenter"
+    // Find the row for "Production vCenter"
     const readyRow = rows.find((row) =>
       within(row).queryByText("Production vCenter (up to date)"),
     );
@@ -449,6 +450,94 @@ describe("SourcesTable — all status states", () => {
     expect(
       screen.queryByRole("grid", { name: "Sources table" }),
     ).not.toBeInTheDocument();
+  });
+
+  // --- Sorting ------------------------------------------------------------
+
+  it("sorts sources by name ascending by default", () => {
+    render(<SourcesTable onAddEnvironment={vi.fn()} />);
+    const table = screen.getByRole("grid", { name: "Sources table" });
+    const rows = within(table).getAllByRole("row");
+    const firstDataRow = rows[1];
+    expect(
+      within(firstDataRow).getByText("Dev vCenter (error)"),
+    ).toBeInTheDocument();
+  });
+
+  it("sorts agent version by the displayed label, not the raw agentVersion field", async () => {
+    const user = userEvent.setup();
+    mockVm = makeBaseVm({
+      sources: [
+        makeSource({
+          id: "src-up-to-date",
+          name: "Alpha Up to date",
+          agent: makeAgent({ status: "up-to-date" }),
+        }),
+        makeSource({
+          id: "src-ova-downloaded",
+          name: "Zulu OVA downloaded",
+          agentVersion: "1.4.0",
+        }),
+        makeSource({
+          id: "src-download-pending",
+          name: "Mike Download pending",
+        }),
+      ],
+    });
+
+    render(<SourcesTable onAddEnvironment={vi.fn()} />);
+    const table = screen.getByRole("grid", { name: "Sources table" });
+    const rowsBeforeSort = within(table).getAllByRole("row");
+    expect(
+      within(rowsBeforeSort[1]).getByText("Alpha Up to date"),
+    ).toBeInTheDocument();
+
+    const versionHeader = screen.getByRole("columnheader", {
+      name: /Agent version/i,
+    });
+    await user.click(within(versionHeader).getByRole("button"));
+
+    const rows = within(table).getAllByRole("row");
+
+    expect(within(rows[1]).getByText("Download pending")).toBeInTheDocument();
+    expect(within(rows[2]).getByText("OVA downloaded")).toBeInTheDocument();
+    expect(within(rows[3]).getByText("Up to date")).toBeInTheDocument();
+  });
+
+  it("sorts Discovery VM status by the displayed label, not the API status key", async () => {
+    const user = userEvent.setup();
+    mockVm = makeBaseVm({
+      sources: [
+        makeSource({
+          id: "src-ready",
+          name: "Zulu Ready",
+          agent: makeAgent({ status: "up-to-date" }),
+        }),
+        makeSource({
+          id: "src-manual",
+          name: "Alpha Manual",
+          onPremises: true,
+          inventory: SAMPLE_INVENTORY,
+        }),
+        makeSource({
+          id: "src-not-connected",
+          name: "Beta Not connected",
+        }),
+      ],
+    });
+
+    render(<SourcesTable onAddEnvironment={vi.fn()} />);
+    const statusHeader = screen.getByRole("columnheader", {
+      name: /Discovery VM Status/i,
+    });
+    await user.click(within(statusHeader).getByRole("button"));
+
+    const table = screen.getByRole("grid", { name: "Sources table" });
+    const rows = within(table).getAllByRole("row");
+
+    expect(within(rows[1]).getByText("Not connected")).toBeInTheDocument();
+    expect(within(rows[2]).getByText("Ready")).toBeInTheDocument();
+    expect(within(rows[3]).getByText("Uploaded manually")).toBeInTheDocument();
   });
 
   // --- Source names -------------------------------------------------------

@@ -23,6 +23,7 @@ import { Link } from "react-router-dom";
 
 import { VCenterSetupInstructions } from "../../core/components/VCenterSetupInstructions";
 import { safeExternalUrl } from "../../core/utils/urlValidation";
+import { getDiscoveryVmStatusLabel } from "../helpers/discoveryVmStatus";
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace AgentStatusView {
@@ -68,14 +69,9 @@ export const AgentStatusView: React.FC<AgentStatusView.Props> = (props) => {
     disableInteractions,
   } = props;
   const statusView = useMemo(() => {
-    // eslint-disable-next-line prefer-const
-    let fake: Agent["status"] | null = null;
-    // fake = "not-connected";
-    // fake = "waiting-for-credentials";
-    // fake = "gathering-initial-inventory";
-    // fake = "up-to-date";
-    // fake = "error";
-    switch (fake ?? status) {
+    const text = getDiscoveryVmStatusLabel(status, uploadedManually);
+
+    switch (status) {
       case "not-connected":
         return {
           icon: uploadedManually ? (
@@ -87,7 +83,7 @@ export const AgentStatusView: React.FC<AgentStatusView.Props> = (props) => {
               <RhUiDisconnectedIcon />
             </Icon>
           ),
-          text: uploadedManually ? "Uploaded manually" : "Not connected",
+          text,
         };
       case "waiting-for-credentials":
         return {
@@ -96,7 +92,7 @@ export const AgentStatusView: React.FC<AgentStatusView.Props> = (props) => {
               <RhUiInformationFillIcon color={globalInfoColor100.var} />
             </Icon>
           ),
-          text: "Waiting for credentials",
+          text,
         };
       case "gathering-initial-inventory":
         return {
@@ -105,7 +101,7 @@ export const AgentStatusView: React.FC<AgentStatusView.Props> = (props) => {
               <Spinner />
             </Icon>
           ),
-          text: "Gathering inventory",
+          text,
         };
       case "error":
         return {
@@ -114,7 +110,7 @@ export const AgentStatusView: React.FC<AgentStatusView.Props> = (props) => {
               <RhUiErrorFillIcon color={globalDangerColor200.var} />
             </Icon>
           ),
-          text: "Error",
+          text,
         };
       case "up-to-date":
         return {
@@ -123,7 +119,16 @@ export const AgentStatusView: React.FC<AgentStatusView.Props> = (props) => {
               <RhUiCheckCircleIcon color={globalSuccessColor100.var} />
             </Icon>
           ),
-          text: "Ready",
+          text,
+        };
+      case "source-gone":
+        return {
+          icon: (
+            <Icon isInline>
+              <RhUiDisconnectedIcon />
+            </Icon>
+          ),
+          text,
         };
     }
   }, [status, uploadedManually]);

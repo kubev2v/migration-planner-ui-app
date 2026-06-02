@@ -11,4 +11,22 @@ export const Columns = {
   LastSeen: "Last updated",
 } as const;
 
+export type ColumnKey = keyof typeof Columns;
+
+export type SortableColumnKey = Exclude<
+  ColumnKey,
+  "Actions" | "CredentialsUrl"
+>;
+
+export const SORTABLE_COLUMNS: SortableColumnKey[] = [
+  "Name",
+  "Status",
+  "VersionStatus",
+  "Hosts",
+  "VMs",
+  "Networks",
+  "Datastores",
+  "LastSeen",
+];
+
 export type Columns = (typeof Columns)[keyof typeof Columns];
