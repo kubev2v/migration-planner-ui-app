@@ -35,6 +35,12 @@ export interface CreateFromOvaViewModel {
   setIsSetupModalOpen: (val: boolean) => void;
   isStepsModalOpen: boolean;
   setIsStepsModalOpen: (val: boolean) => void;
+  isDownloadModalOpen: boolean;
+  setIsDownloadModalOpen: (val: boolean) => void;
+  downloadModalUrl: string;
+  setDownloadModalUrl: (url: string) => void;
+  downloadModalSourceName: string;
+  setDownloadModalSourceName: (name: string) => void;
 
   // Submission
   isCreatingAssessment: boolean;
@@ -94,6 +100,10 @@ export const useCreateFromOvaViewModel = (): CreateFromOvaViewModel => {
   // Modal state
   const [isSetupModalOpen, setIsSetupModalOpen] = React.useState(false);
   const [isStepsModalOpen, setIsStepsModalOpen] = React.useState(false);
+  const [isDownloadModalOpen, setIsDownloadModalOpen] = React.useState(false);
+  const [downloadModalUrl, setDownloadModalUrl] = React.useState("");
+  const [downloadModalSourceName, setDownloadModalSourceName] =
+    React.useState("");
 
   // Error dismiss flag (cleared on next submission, set when user edits name)
   const [dismissSubmitError, setDismissSubmitError] = React.useState(false);
@@ -235,6 +245,12 @@ export const useCreateFromOvaViewModel = (): CreateFromOvaViewModel => {
     setIsSetupModalOpen,
     isStepsModalOpen,
     setIsStepsModalOpen,
+    isDownloadModalOpen,
+    setIsDownloadModalOpen,
+    downloadModalUrl,
+    setDownloadModalUrl,
+    downloadModalSourceName,
+    setDownloadModalSourceName,
 
     isCreatingAssessment: submitState.loading,
     isCreatingSource: refreshAfterCloseState.loading,

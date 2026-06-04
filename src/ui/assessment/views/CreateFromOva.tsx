@@ -23,7 +23,10 @@ import { routes } from "../../../routing/Routes";
 import { AppPage } from "../../core/components/AppPage";
 import { safeExternalUrl } from "../../core/utils/urlValidation";
 import { EnvironmentPageProvider } from "../../environment/view-models/EnvironmentPageContext";
-import { EnvironmentModal } from "../../environment/views/environment-modals";
+import {
+  DownloadEnvironmentModal,
+  EnvironmentModal,
+} from "../../environment/views/environment-modals";
 import { SourcesTable } from "../../environment/views/SourcesTable";
 import { useCreateFromOvaViewModel } from "../view-models/useCreateFromOvaViewModel";
 import { MigrationAssessmentStepsModal } from "./MigrationAssessmentStepsModal";
@@ -239,9 +242,24 @@ const CreateFromOvaContent: React.FC = () => {
         <EnvironmentModal
           isOpen={vm.isSetupModalOpen}
           onClose={vm.handleSetupModalClose}
-          onSuccess={() => {
+          onSuccess={(url, name) => {
+            vm.setIsSetupModalOpen(false);
+            vm.setDownloadModalUrl(url);
+            vm.setDownloadModalSourceName(name);
+            vm.setIsDownloadModalOpen(true);
+          }}
+        />
+
+        <DownloadEnvironmentModal
+          isOpen={vm.isDownloadModalOpen}
+          onClose={() => {
+            vm.setIsDownloadModalOpen(false);
+          }}
+          downloadUrl={vm.downloadModalUrl}
+          sourceName={vm.downloadModalSourceName}
+          onAfterDownload={async () => {
+            await vm.handleSetupModalAfterDownload();
             vm.envVm.setDownloadUrl("");
-            void vm.handleSetupModalAfterDownload();
           }}
         />
 
