@@ -244,6 +244,7 @@ const CreateFromOvaContent: React.FC = () => {
           onClose={vm.handleSetupModalClose}
           onSuccess={(url, name) => {
             vm.setIsSetupModalOpen(false);
+            void vm.handleSetupModalAfterDownload();
             vm.setDownloadModalUrl(url);
             vm.setDownloadModalSourceName(name);
             vm.setIsDownloadModalOpen(true);
@@ -254,13 +255,10 @@ const CreateFromOvaContent: React.FC = () => {
           isOpen={vm.isDownloadModalOpen}
           onClose={() => {
             vm.setIsDownloadModalOpen(false);
+            vm.envVm.setDownloadUrl?.("");
           }}
           downloadUrl={vm.downloadModalUrl}
           sourceName={vm.downloadModalSourceName}
-          onAfterDownload={async () => {
-            await vm.handleSetupModalAfterDownload();
-            vm.envVm.setDownloadUrl("");
-          }}
         />
 
         <MigrationAssessmentStepsModal

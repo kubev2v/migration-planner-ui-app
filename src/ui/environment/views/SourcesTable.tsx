@@ -32,11 +32,11 @@ import { EmptySearchResults } from "../../core/components/EmptySearchResults";
 import FilterPill from "../../core/components/FilterPill";
 import {
   DISCOVERY_VM_STATUS_FILTER_OPTIONS,
+  type DiscoveryVmStatusFilterKey,
   getSourceDiscoveryVmStatusLabel,
   isInventoryUploadedManually,
   isSourceUploadedManually,
   sourceMatchesDiscoveryVmStatusFilter,
-  type DiscoveryVmStatusFilterKey,
 } from "../helpers/discoveryVmStatus";
 import { useEnvironmentPage } from "../view-models/EnvironmentPageContext";
 import { AgentStatusView } from "./AgentStatusView";
