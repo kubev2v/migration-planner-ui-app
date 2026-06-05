@@ -6,6 +6,7 @@ import type {
   OvercommitRatio,
   SizingFormValues,
   WorkerNodePreset,
+  WorkloadFormValues,
 } from "./types";
 
 export const SMT_THREADS_MIN = 2;
@@ -205,6 +206,15 @@ export const CONTROL_PLANE_OPTIONS = {
     description:
       "Higher stability. Keeps cluster management isolated from your app workloads.",
   },
+};
+
+/**
+ * Default workload totals for the standalone cluster sizing tool
+ */
+export const DEFAULT_WORKLOAD_FORM_VALUES: WorkloadFormValues = {
+  totalVMs: 100,
+  totalCPU: 400,
+  totalMemory: 1024,
 };
 
 /**

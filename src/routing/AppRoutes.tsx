@@ -10,6 +10,7 @@ import { MyPartnerScreen } from "../ui/partner/customer/views/MyPartnerScreen";
 import { CustomersScreen } from "../ui/partner/partner/views/CustomersScreen";
 import { PartnersScreen } from "../ui/partner/regularUser/views/PartnersScreen";
 import { PartnerViewRequireRole } from "../ui/partner/views/PartnerViewRequireRole";
+import { ToolsScreen } from "../ui/tools/views/ToolsScreen";
 import { IdentityWrapper } from "./IdentityWrapper";
 import { routes } from "./Routes";
 
@@ -62,6 +63,7 @@ export const AppRoutes: React.FC = () => (
       <Route element={<HomeScreen />} errorElement={<InvalidObject />}>
         <Route path="assessments" element={<AssessmentsScreen />} />
         <Route path="environments" element={<EnvironmentsScreen />} />
+        <Route path="tools" element={<ToolsScreen />} />
 
         {/* Partner feature */}
         <Route

@@ -33,6 +33,7 @@ import type {
   MemoryOvercommitRatio,
   OvercommitRatio,
   SizingFormValues,
+  WorkloadFormValues,
 } from "./types";
 
 interface SizingInputFormProps {
@@ -42,6 +43,11 @@ interface SizingInputFormProps {
   showControlPlane: boolean;
   showControlPlaneScheduling: boolean;
   showSmt: boolean;
+  showWorkloadInputs?: boolean;
+  workloadValues?: WorkloadFormValues;
+  onWorkloadChange?: (values: WorkloadFormValues) => void;
+  /** Vertical single-column layout for the standalone Tools page */
+  useStackedLayout?: boolean;
 }
 
 const sectionHeaderStyle = css`
@@ -62,6 +68,14 @@ const sectionDividerStyle = css`
   margin: var(--pf-t--global--spacer--100) 0;
 `;
 
+/** Matches Tools page mockup: labels above inputs, moderate left-aligned width */
+const stackedFormStyle = css`
+  .pf-v6-c-form-control:not(#smt-threads),
+  .pf-v6-c-form-select {
+    max-width: 480px;
+  }
+`;
+
 export const SizingInputForm: React.FC<SizingInputFormProps> = ({
   values,
   onChange,
@@ -69,7 +83,14 @@ export const SizingInputForm: React.FC<SizingInputFormProps> = ({
   showControlPlane,
   showControlPlaneScheduling,
   showSmt,
+  showWorkloadInputs = false,
+  workloadValues,
+  onWorkloadChange,
+  useStackedLayout = false,
 }) => {
+  const fieldColumnSpan = useStackedLayout ? 12 : 4;
+  const controlPlaneColumnSpan = useStackedLayout ? 12 : 6;
+  const clusterModeInWorkloadSection = showWorkloadInputs && useStackedLayout;
   const handleClusterModeChange = (
     _event: React.FormEvent<HTMLSelectElement>,
     mode: string,
@@ -163,34 +184,134 @@ export const SizingInputForm: React.FC<SizingInputFormProps> = ({
     onChange({ ...values, controlPlaneMemoryGb: parseInt(memory, 10) });
   };
 
+  const handleWorkloadNumberChange = (
+    field: keyof WorkloadFormValues,
+  ): ((_event: React.FormEvent<HTMLInputElement>, value: string) => void) => {
+    return (_event, value) => {
+      if (!workloadValues || !onWorkloadChange) return;
+      const parsed = parseInt(value, 10);
+      if (!isNaN(parsed)) {
+        onWorkloadChange({ ...workloadValues, [field]: parsed });
+      }
+    };
+  };
+
   const smtThreadsValidated: "success" | "error" | "default" =
     values.smtEnabled &&
     (values.smtThreads < SMT_THREADS_MIN || values.smtThreads > SMT_THREADS_MAX)
       ? "error"
       : "default";
 
+  const clusterModeField = (
+    <GridItem span={useStackedLayout ? 12 : 6}>
+      <FormGroup label="Cluster mode" isRequired fieldId="cluster-mode">
+        <FormSelect
+          id="cluster-mode"
+          value={values.clusterMode}
+          onChange={handleClusterModeChange}
+          aria-label="Cluster mode"
+        >
+          {CLUSTER_MODE_OPTIONS.map((option) => (
+            <FormSelectOption
+              key={option.value}
+              value={option.value}
+              label={option.label}
+            />
+          ))}
+        </FormSelect>
+      </FormGroup>
+    </GridItem>
+  );
+
   return (
-    <Form>
+    <Form className={useStackedLayout ? stackedFormStyle : undefined}>
       <Grid hasGutter>
-        {/* Cluster mode dropdown */}
-        <GridItem span={6}>
-          <FormGroup label="Cluster mode" isRequired fieldId="cluster-mode">
-            <FormSelect
-              id="cluster-mode"
-              value={values.clusterMode}
-              onChange={handleClusterModeChange}
-              aria-label="Cluster mode"
-            >
-              {CLUSTER_MODE_OPTIONS.map((option) => (
-                <FormSelectOption
-                  key={option.value}
-                  value={option.value}
-                  label={option.label}
+        {showWorkloadInputs && workloadValues && onWorkloadChange && (
+          <>
+            <GridItem span={12}>
+              <div className={sectionHeaderStyle}>Workload & cluster mode</div>
+            </GridItem>
+
+            <GridItem span={fieldColumnSpan}>
+              <FormGroup
+                label="Total VM"
+                isRequired
+                fieldId="total-vms"
+                labelHelp={
+                  <PopoverIcon
+                    noVerticalAlign
+                    headerContent="Total VMs"
+                    bodyContent="The total number of virtual machines you plan to migrate to the OpenShift cluster."
+                  />
+                }
+              >
+                <TextInput
+                  id="total-vms"
+                  value={workloadValues.totalVMs}
+                  onChange={handleWorkloadNumberChange("totalVMs")}
+                  name="total-vms"
+                  aria-label="Total VMs"
+                  type="number"
+                  min={1}
                 />
-              ))}
-            </FormSelect>
-          </FormGroup>
-        </GridItem>
+              </FormGroup>
+            </GridItem>
+
+            <GridItem span={fieldColumnSpan}>
+              <FormGroup
+                label="Total CPU"
+                isRequired
+                fieldId="total-cpu"
+                labelHelp={
+                  <PopoverIcon
+                    noVerticalAlign
+                    headerContent="Total CPU"
+                    bodyContent="The total number of CPU cores allocated across all VMs in your source environment."
+                  />
+                }
+              >
+                <TextInput
+                  id="total-cpu"
+                  value={workloadValues.totalCPU}
+                  onChange={handleWorkloadNumberChange("totalCPU")}
+                  name="total-cpu"
+                  aria-label="Total CPU"
+                  type="number"
+                  min={1}
+                />
+              </FormGroup>
+            </GridItem>
+
+            <GridItem span={fieldColumnSpan}>
+              <FormGroup
+                label="Total memory"
+                isRequired
+                fieldId="total-memory"
+                labelHelp={
+                  <PopoverIcon
+                    noVerticalAlign
+                    headerContent="Total memory"
+                    bodyContent="The total memory in GB allocated across all VMs in your source environment."
+                  />
+                }
+              >
+                <TextInput
+                  id="total-memory"
+                  value={workloadValues.totalMemory}
+                  onChange={handleWorkloadNumberChange("totalMemory")}
+                  name="total-memory"
+                  aria-label="Total memory"
+                  type="number"
+                  min={1}
+                />
+              </FormGroup>
+            </GridItem>
+
+            {clusterModeInWorkloadSection && clusterModeField}
+          </>
+        )}
+
+        {!clusterModeInWorkloadSection && clusterModeField}
 
         {showControlPlaneScheduling && (
           <GridItem span={12}>
@@ -206,11 +327,8 @@ export const SizingInputForm: React.FC<SizingInputFormProps> = ({
 
         {showSmt && (
           <GridItem span={12}>
-            <Flex
-              alignItems={{ default: "alignItemsCenter" }}
-              spaceItems={{ default: "spaceItemsSm" }}
-            >
-              <FlexItem>
+            {useStackedLayout ? (
+              <>
                 <Checkbox
                   isLabelWrapped
                   id="smt-enabled"
@@ -218,8 +336,6 @@ export const SizingInputForm: React.FC<SizingInputFormProps> = ({
                   isChecked={values.smtEnabled}
                   onChange={handleSmtEnabledChange}
                 />
-              </FlexItem>
-              <FlexItem>
                 <TextInput
                   id="smt-threads"
                   value={values.smtThreads}
@@ -232,6 +348,9 @@ export const SizingInputForm: React.FC<SizingInputFormProps> = ({
                   min={SMT_THREADS_MIN}
                   max={SMT_THREADS_MAX}
                   validated={smtThreadsValidated}
+                  style={{
+                    marginTop: "var(--pf-t--global--spacer--100)",
+                  }}
                 />
                 {smtThreadsValidated === "error" && (
                   <FormHelperText>
@@ -243,8 +362,48 @@ export const SizingInputForm: React.FC<SizingInputFormProps> = ({
                     </HelperText>
                   </FormHelperText>
                 )}
-              </FlexItem>
-            </Flex>
+              </>
+            ) : (
+              <Flex
+                alignItems={{ default: "alignItemsCenter" }}
+                spaceItems={{ default: "spaceItemsSm" }}
+              >
+                <FlexItem>
+                  <Checkbox
+                    isLabelWrapped
+                    id="smt-enabled"
+                    label="Enable SMT/Hyperthreading"
+                    isChecked={values.smtEnabled}
+                    onChange={handleSmtEnabledChange}
+                  />
+                </FlexItem>
+                <FlexItem>
+                  <TextInput
+                    id="smt-threads"
+                    value={values.smtThreads}
+                    onChange={handleSmtThreadsChange}
+                    name="smt-threads"
+                    aria-label="SMT threads"
+                    isDisabled={!values.smtEnabled}
+                    type="number"
+                    className={smtInputStyle}
+                    min={SMT_THREADS_MIN}
+                    max={SMT_THREADS_MAX}
+                    validated={smtThreadsValidated}
+                  />
+                  {smtThreadsValidated === "error" && (
+                    <FormHelperText>
+                      <HelperText>
+                        <HelperTextItem variant="error">
+                          Value must be between {SMT_THREADS_MIN} and{" "}
+                          {SMT_THREADS_MAX}
+                        </HelperTextItem>
+                      </HelperText>
+                    </FormHelperText>
+                  )}
+                </FlexItem>
+              </Flex>
+            )}
           </GridItem>
         )}
 
@@ -259,7 +418,7 @@ export const SizingInputForm: React.FC<SizingInputFormProps> = ({
               <div className={sectionHeaderStyle}>Worker node</div>
             </GridItem>
 
-            <GridItem span={4}>
+            <GridItem span={fieldColumnSpan}>
               <FormGroup
                 label="Worker node CPU core"
                 isRequired
@@ -289,7 +448,7 @@ export const SizingInputForm: React.FC<SizingInputFormProps> = ({
               </FormGroup>
             </GridItem>
 
-            <GridItem span={4}>
+            <GridItem span={fieldColumnSpan}>
               <FormGroup
                 label="Worker node memory (GB)"
                 isRequired
@@ -319,7 +478,7 @@ export const SizingInputForm: React.FC<SizingInputFormProps> = ({
               </FormGroup>
             </GridItem>
 
-            <GridItem span={4}>
+            <GridItem span={fieldColumnSpan}>
               <FormGroup
                 label="CPU overcommitment"
                 isRequired
@@ -349,7 +508,7 @@ export const SizingInputForm: React.FC<SizingInputFormProps> = ({
               </FormGroup>
             </GridItem>
 
-            <GridItem span={4}>
+            <GridItem span={fieldColumnSpan}>
               <FormGroup
                 label="Memory overcommitment"
                 isRequired
@@ -392,7 +551,7 @@ export const SizingInputForm: React.FC<SizingInputFormProps> = ({
               <div className={sectionHeaderStyle}>Control plane</div>
             </GridItem>
 
-            <GridItem span={6}>
+            <GridItem span={controlPlaneColumnSpan}>
               <FormGroup
                 label="Control plane CPU core"
                 isRequired
@@ -422,7 +581,7 @@ export const SizingInputForm: React.FC<SizingInputFormProps> = ({
               </FormGroup>
             </GridItem>
 
-            <GridItem span={6}>
+            <GridItem span={controlPlaneColumnSpan}>
               <FormGroup
                 label="Control plane memory (GB)"
                 isRequired

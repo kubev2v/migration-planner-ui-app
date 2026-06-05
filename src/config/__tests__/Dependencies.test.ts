@@ -16,6 +16,7 @@ vi.mock("@openshift-migration-advisor/planner-sdk", () => ({
   SourceApi: vi.fn(),
   Configuration: vi.fn(),
   PartnerApi: vi.fn(),
+  SizingApi: vi.fn(),
 }));
 
 vi.mock("../../data/stores/AccountStore", () => ({
@@ -78,6 +79,11 @@ vi.mock("../../data/stores/VersionsStore", () => ({
     _type = "VersionsStore";
   },
 }));
+vi.mock("../../data/stores/SizingStore", () => ({
+  SizingStore: class {
+    _type = "SizingStore";
+  },
+}));
 vi.mock("../../services/html-export/HtmlExportService", () => ({
   HtmlExportService: class {},
 }));
@@ -118,6 +124,7 @@ describe("Symbols", () => {
       "PartnersStore",
       "PartnerRequestsStore",
       "CustomersStore",
+      "SizingStore",
     ];
 
     for (const key of expected) {
@@ -215,5 +222,11 @@ describe("createContainer", () => {
     const store = container.get(Symbols.CustomersStore);
     expect(store).toBeDefined();
     expect((store as Record<string, string>)._type).toBe("CustomersStore");
+  });
+
+  it("registers SizingStore", () => {
+    const store = container.get(Symbols.SizingStore);
+    expect(store).toBeDefined();
+    expect((store as Record<string, string>)._type).toBe("SizingStore");
   });
 });

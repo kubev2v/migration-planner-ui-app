@@ -72,13 +72,14 @@ export const useHomeScreenViewModel = (): HomeScreenViewModel => {
 
   const getActiveTabKey = (): number => {
     if (location.pathname.startsWith(routes.environments)) return 1;
+    if (location.pathname.startsWith(routes.tools)) return 2;
     if (
       location.pathname.startsWith(routes.partners) ||
       location.pathname.startsWith(routes.myPartner) ||
       location.pathname.startsWith(routes.customers) ||
       location.pathname.startsWith(routes.adminGroups)
     ) {
-      return 2;
+      return 3;
     }
     return 0; // assessments
   };
@@ -94,6 +95,8 @@ export const useHomeScreenViewModel = (): HomeScreenViewModel => {
       case 1:
         return "environments";
       case 2:
+        return "tools";
+      case 3:
         return "partners";
       default:
         return "assessments";
@@ -123,6 +126,9 @@ export const useHomeScreenViewModel = (): HomeScreenViewModel => {
         navigate(routes.environments);
         break;
       case 2:
+        navigate(routes.tools);
+        break;
+      case 3:
         navigate(partnerTab?.path ?? routes.partners);
         break;
       default:
@@ -143,25 +149,25 @@ export const useHomeScreenViewModel = (): HomeScreenViewModel => {
         return {
           label: "Partners",
           path: routes.partners,
-          key: 2,
+          key: 3,
         };
       case "customer":
         return {
           label: "My partner",
           path: routes.myPartner,
-          key: 2,
+          key: 3,
         };
       case "partner":
         return {
           label: "Customers",
           path: routes.customers,
-          key: 2,
+          key: 3,
         };
       case "admin":
         return {
           label: "Partners administration",
           path: routes.adminGroups,
-          key: 2,
+          key: 3,
         };
       default:
         return null;
