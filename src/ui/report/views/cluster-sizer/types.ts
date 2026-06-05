@@ -11,8 +11,12 @@
 import {
   type ClusterRequirementsRequest,
   ClusterRequirementsRequestControlPlaneNodeCountEnum,
-  ClusterRequirementsRequestCpuOverCommitRatioEnum,
-  ClusterRequirementsRequestMemoryOverCommitRatioEnum,
+  type ClusterRequirementsResponse,
+  CpuOverCommitRatio,
+  MemoryOverCommitRatio,
+  type StandaloneClusterRequirementsRequest,
+  StandaloneClusterRequirementsRequestControlPlaneNodeCountEnum,
+  type StandaloneClusterRequirementsResponse,
 } from "@openshift-migration-advisor/planner-sdk";
 
 // Re-export API types from api-client
@@ -33,6 +37,8 @@ export type {
   SizingOverCommitRatio,
   SizingResourceConsumption,
   SizingResourceLimits,
+  StandaloneClusterRequirementsRequest,
+  StandaloneClusterRequirementsResponse,
 } from "@openshift-migration-advisor/planner-sdk";
 
 /**
@@ -59,6 +65,15 @@ export type HAReplicaCount = 1 | 2 | 3;
  * Cluster mode types
  */
 export type ClusterMode = "full-ha" | "single-node" | "hosted-control-plane";
+
+/**
+ * User input for standalone cluster sizing workload totals (form state)
+ */
+export interface WorkloadFormValues {
+  totalVMs: number;
+  totalCPU: number;
+  totalMemory: number;
+}
 
 /**
  * User input for cluster sizing configuration (form state)
@@ -128,10 +143,10 @@ const CPU_OVERCOMMIT_RATIO_MAP: Record<
   OvercommitRatio,
   ClusterRequirementsRequest["cpuOverCommitRatio"]
 > = {
-  1: ClusterRequirementsRequestCpuOverCommitRatioEnum.CpuOneToOne,
-  2: ClusterRequirementsRequestCpuOverCommitRatioEnum.CpuOneToTwo,
-  4: ClusterRequirementsRequestCpuOverCommitRatioEnum.CpuOneToFour,
-  6: ClusterRequirementsRequestCpuOverCommitRatioEnum.CpuOneToSix,
+  1: CpuOverCommitRatio.CpuOneToOne,
+  2: CpuOverCommitRatio.CpuOneToTwo,
+  4: CpuOverCommitRatio.CpuOneToFour,
+  6: CpuOverCommitRatio.CpuOneToSix,
 };
 
 /**
@@ -141,9 +156,9 @@ const MEMORY_OVERCOMMIT_RATIO_MAP: Record<
   MemoryOvercommitRatio,
   ClusterRequirementsRequest["memoryOverCommitRatio"]
 > = {
-  1: ClusterRequirementsRequestMemoryOverCommitRatioEnum.MemoryOneToOne,
-  2: ClusterRequirementsRequestMemoryOverCommitRatioEnum.MemoryOneToTwo,
-  4: ClusterRequirementsRequestMemoryOverCommitRatioEnum.MemoryOneToFour,
+  1: MemoryOverCommitRatio.MemoryOneToOne,
+  2: MemoryOverCommitRatio.MemoryOneToTwo,
+  4: MemoryOverCommitRatio.MemoryOneToFour,
 };
 
 /**
@@ -174,6 +189,17 @@ const CLUSTER_MODE_TO_NODE_COUNT: Record<
 > = {
   "full-ha": ClusterRequirementsRequestControlPlaneNodeCountEnum.NUMBER_3,
   "single-node": ClusterRequirementsRequestControlPlaneNodeCountEnum.NUMBER_1,
+  "hosted-control-plane": undefined,
+};
+
+const STANDALONE_CLUSTER_MODE_TO_NODE_COUNT: Record<
+  ClusterMode,
+  StandaloneClusterRequirementsRequest["controlPlaneNodeCount"] | undefined
+> = {
+  "full-ha":
+    StandaloneClusterRequirementsRequestControlPlaneNodeCountEnum.NUMBER_3,
+  "single-node":
+    StandaloneClusterRequirementsRequestControlPlaneNodeCountEnum.NUMBER_1,
   "hosted-control-plane": undefined,
 };
 
@@ -233,3 +259,81 @@ export const formValuesToRequest = (
       : CLUSTER_MODE_TO_NODE_COUNT[values.clusterMode],
   };
 };
+
+/**
+ * Convert workload totals and sizing form values to the standalone API payload.
+ *
+ * POST /api/v1/cluster-requirements
+ */
+export const workloadAndFormValuesToStandaloneRequest = (
+  workload: WorkloadFormValues,
+  values: SizingFormValues,
+  workerCpu: number,
+  workerMemory: number,
+): StandaloneClusterRequirementsRequest => {
+  const isHCP = values.clusterMode === "hosted-control-plane";
+  const isSNO = values.clusterMode === "single-node";
+  const isFullHA = values.clusterMode === "full-ha";
+
+  const workloadFields = {
+    totalVMs: workload.totalVMs,
+    totalCPU: workload.totalCPU,
+    totalMemory: workload.totalMemory,
+  };
+
+  if (isSNO) {
+    return {
+      ...workloadFields,
+      cpuOverCommitRatio: cpuOvercommitRatioToApiEnum(
+        values.cpuOvercommitRatio,
+      ),
+      memoryOverCommitRatio: memoryOvercommitRatioToApiEnum(
+        values.memoryOvercommitRatio,
+      ),
+      workerNodeCPU: SNO_DEFAULT_WORKER_CPU,
+      workerNodeMemory: SNO_DEFAULT_WORKER_MEMORY,
+      controlPlaneSchedulable: true,
+      controlPlaneNodeCount:
+        StandaloneClusterRequirementsRequestControlPlaneNodeCountEnum.NUMBER_1,
+      controlPlaneCPU: values.controlPlaneCpu,
+      controlPlaneMemory: values.controlPlaneMemoryGb,
+    };
+  }
+
+  return {
+    ...workloadFields,
+    cpuOverCommitRatio: cpuOvercommitRatioToApiEnum(values.cpuOvercommitRatio),
+    memoryOverCommitRatio: memoryOvercommitRatioToApiEnum(
+      values.memoryOvercommitRatio,
+    ),
+    workerNodeCPU: workerCpu,
+    workerNodeMemory: workerMemory,
+    workerNodeThreads:
+      (isFullHA || isHCP) && values.smtEnabled ? values.smtThreads : undefined,
+    hostedControlPlane: isHCP || undefined,
+    controlPlaneSchedulable: isFullHA
+      ? values.scheduleOnControlPlane
+      : undefined,
+    controlPlaneCPU: isFullHA ? values.controlPlaneCpu : undefined,
+    controlPlaneMemory: isFullHA ? values.controlPlaneMemoryGb : undefined,
+    controlPlaneNodeCount: isHCP
+      ? undefined
+      : STANDALONE_CLUSTER_MODE_TO_NODE_COUNT[values.clusterMode],
+  };
+};
+
+/**
+ * Map standalone sizing response to ClusterRequirementsResponse for SizingResult.
+ */
+export const standaloneResponseToClusterRequirementsResponse = (
+  response: StandaloneClusterRequirementsResponse,
+  workload: WorkloadFormValues,
+): ClusterRequirementsResponse => ({
+  clusterSizing: response.clusterSizing,
+  resourceConsumption: response.resourceConsumption,
+  inventoryTotals: {
+    totalVMs: workload.totalVMs,
+    totalCPU: workload.totalCPU,
+    totalMemory: workload.totalMemory,
+  },
+});

@@ -67,6 +67,10 @@ describe("Standalone mode (dev) — APP_BASENAME is empty", () => {
     expect(routes.environments).toBe("/environments");
   });
 
+  it("routes.tools returns /tools", () => {
+    expect(routes.tools).toBe("/tools");
+  });
+
   it("routes.partners returns /partners", () => {
     expect(routes.partners).toBe("/partners");
   });
@@ -115,6 +119,10 @@ describe("Microfrontend mode (stage/prod) — APP_BASENAME is /openshift/migrati
 
   it("routes.environments includes basename", () => {
     expect(routes.environments).toBe(`${BASE}/environments`);
+  });
+
+  it("routes.tools includes basename", () => {
+    expect(routes.tools).toBe(`${BASE}/tools`);
   });
 
   it("routes.partners includes basename", () => {

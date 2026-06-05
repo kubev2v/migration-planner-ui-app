@@ -5,6 +5,7 @@ import {
   InfoApi,
   JobApi,
   PartnerApi,
+  SizingApi,
   SourceApi,
 } from "@openshift-migration-advisor/planner-sdk";
 import { Configuration } from "@openshift-migration-advisor/planner-sdk";
@@ -21,6 +22,7 @@ import { JobsStore } from "../data/stores/JobsStore";
 import { PartnerRequestsStore } from "../data/stores/PartnerRequestsStore";
 import { PartnersStore } from "../data/stores/PartnersStore";
 import { ReportStore } from "../data/stores/ReportStore";
+import { SizingStore } from "../data/stores/SizingStore";
 import { SourcesStore } from "../data/stores/SourcesStore";
 import { VersionsStore } from "../data/stores/VersionsStore";
 import { createAuthMiddleware } from "../lib/middleware/Auth";
@@ -42,6 +44,7 @@ export const Symbols = Object.freeze({
   PartnersStore: Symbol.for("PartnersStore"),
   PartnerRequestsStore: Symbol.for("PartnerRequestsStore"),
   CustomersStore: Symbol.for("CustomersStore"),
+  SizingStore: Symbol.for("SizingStore"),
 });
 
 export const createContainer = (auth: ChromeAPI["auth"]): Container => {
@@ -57,6 +60,7 @@ export const createContainer = (auth: ChromeAPI["auth"]): Container => {
   const jobApi = new JobApi(plannerApiConfig);
   const accountApi = new AccountApi(plannerApiConfig);
   const partnerApi = new PartnerApi(plannerApiConfig);
+  const sizingApi = new SizingApi(plannerApiConfig);
 
   const c = new Container();
 
@@ -75,6 +79,7 @@ export const createContainer = (auth: ChromeAPI["auth"]): Container => {
     new PartnerRequestsStore(partnerApi),
   );
   c.register(Symbols.CustomersStore, new CustomersStore(partnerApi));
+  c.register(Symbols.SizingStore, new SizingStore(sizingApi));
 
   // Report export
   c.register(

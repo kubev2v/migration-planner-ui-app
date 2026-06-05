@@ -84,6 +84,9 @@ export const routes = {
   get environments() {
     return `${getAppBasename()}/environments`;
   },
+  get tools() {
+    return `${getAppBasename()}/tools`;
+  },
   get partners() {
     return `${getAppBasename()}/partners`;
   },

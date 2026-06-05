@@ -101,6 +101,12 @@ describe("useHomeScreenViewModel", () => {
     expect(result.current.activeTabKey).toBe(1);
   });
 
+  it("activeTabKey is 2 when location.pathname starts with /tools", () => {
+    mockPathname = "/tools";
+    const { result } = renderHook(() => useHomeScreenViewModel());
+    expect(result.current.activeTabKey).toBe(2);
+  });
+
   it("breadcrumbs shows assessments when activeTabKey is 0", () => {
     mockPathname = "/assessments";
     const { result } = renderHook(() => useHomeScreenViewModel());
@@ -113,6 +119,13 @@ describe("useHomeScreenViewModel", () => {
     const { result } = renderHook(() => useHomeScreenViewModel());
     const activeCrumb = result.current.breadcrumbs.find((b) => b.isActive);
     expect(activeCrumb?.children).toBe("environments");
+  });
+
+  it("breadcrumbs shows tools when activeTabKey is 2", () => {
+    mockPathname = "/tools";
+    const { result } = renderHook(() => useHomeScreenViewModel());
+    const activeCrumb = result.current.breadcrumbs.find((b) => b.isActive);
+    expect(activeCrumb?.children).toBe("tools");
   });
 
   it("handleTabClick navigates to environments route when tabIndex is 1", () => {
@@ -129,6 +142,14 @@ describe("useHomeScreenViewModel", () => {
       result.current.handleTabClick({} as React.MouseEvent<HTMLElement>, 0);
     });
     expect(mockNavigate).toHaveBeenCalledWith(routes.assessments);
+  });
+
+  it("handleTabClick navigates to tools route when tabIndex is 2", () => {
+    const { result } = renderHook(() => useHomeScreenViewModel());
+    act(() => {
+      result.current.handleTabClick({} as React.MouseEvent<HTMLElement>, 2);
+    });
+    expect(mockNavigate).toHaveBeenCalledWith(routes.tools);
   });
 
   it("handleTabClick handles string tabIndex", () => {
