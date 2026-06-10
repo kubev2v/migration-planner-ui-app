@@ -86,21 +86,27 @@ export const ChatBotHistory: React.FC<ChatBotHistoryProps> = ({
     if (!isOpen) return;
 
     const abortController = new AbortController();
-    setIsLoading(true);
-    setError(undefined);
+    let cancelled = false;
 
     void (async () => {
+      setIsLoading(true);
+      setError(undefined);
       try {
         await fetchConversations(abortController.signal);
       } catch (e) {
-        if (abortController.signal.aborted) return;
+        if (abortController.signal.aborted || cancelled) return;
         setError(getErrorMessage(e));
       } finally {
-        setIsLoading(false);
+        if (!cancelled) {
+          setIsLoading(false);
+        }
       }
     })();
 
-    return () => abortController.abort();
+    return () => {
+      cancelled = true;
+      abortController.abort();
+    };
   }, [isOpen, fetchConversations]);
 
   const handleDeleteConversation = useCallback(async () => {
