@@ -22,6 +22,7 @@ import { Brand } from "@patternfly/react-core";
 import React, { useCallback, useEffect, useRef } from "react";
 
 import LightSpeedLogo from "../assets/lightspeed-logo.svg";
+import UserAvatar from "../assets/user-avatar.svg";
 import { useChatWidgetViewModel } from "../view-models/useChatWidgetViewModel";
 import { ChatBotButton } from "./ChatBotButton";
 import { ChatBotHistory } from "./ChatBotHistory";
@@ -107,7 +108,9 @@ export const ChatWidget: React.FC = () => {
                       name={message.role === "user" ? "You" : "AI Assistant"}
                       content={message.content}
                       avatar={
-                        message.role === "assistant" ? LightSpeedLogo : ""
+                        message.role === "assistant"
+                          ? LightSpeedLogo
+                          : UserAvatar
                       }
                       isLoading={showLoading}
                       className={pfChatbotMessageAndActions}

@@ -1,3 +1,13 @@
+export const getChatBaseUrl = (): string => {
+  if (process.env.OMA_LIGHTSPEED_URL) {
+    return process.env.OMA_LIGHTSPEED_URL;
+  }
+  if (process.env.CHAT_API_URL) {
+    return process.env.CHAT_API_URL.replace("/v1/query", "");
+  }
+  return "/api/chat";
+};
+
 export const getErrorMessage = (error: unknown): string => {
   if (error instanceof Error) {
     return error.message;

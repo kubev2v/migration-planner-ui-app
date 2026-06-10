@@ -1,5 +1,4 @@
-import useChrome from "@redhat-cloud-services/frontend-components/useChrome";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 
 import { generateId, getErrorMessage } from "../helpers";
 import type {
@@ -7,16 +6,7 @@ import type {
   ConversationHistoryResponse,
   StreamEvent,
 } from "../types";
-
-const getChatBaseUrl = (): string => {
-  if (process.env.OMA_LIGHTSPEED_URL) {
-    return process.env.OMA_LIGHTSPEED_URL;
-  }
-  if (process.env.CHAT_API_URL) {
-    return process.env.CHAT_API_URL.replace("/v1/query", "");
-  }
-  return "/api/chat";
-};
+import { useChatAuth } from "./useChatAuth";
 
 interface UseMessagesResult {
   messages: ChatMessage[];
@@ -31,7 +21,7 @@ interface UseMessagesResult {
 }
 
 export const useMessages = (): UseMessagesResult => {
-  const chrome = useChrome();
+  const { authFetch, chatBaseUrl } = useChatAuth();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [conversationId, setConversationId] = useState<string | undefined>();
   const [isStreaming, setIsStreaming] = useState(false);
@@ -40,22 +30,6 @@ export const useMessages = (): UseMessagesResult => {
 
   const requestVersionRef = useRef(0);
   const activeControllerRef = useRef<AbortController | null>(null);
-
-  const chatBaseUrl = useMemo(() => getChatBaseUrl(), []);
-
-  const authFetch = useCallback(
-    async (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
-      const token = await chrome.auth.getToken();
-      return fetch(input, {
-        ...init,
-        headers: {
-          ...init?.headers,
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-      });
-    },
-    [chrome.auth],
-  );
 
   const loadConversation = useCallback(
     async (convId: string) => {
