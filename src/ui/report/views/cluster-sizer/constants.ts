@@ -271,6 +271,24 @@ export const WORKER_NODE_CONSTRAINTS = {
 /**
  * Form field labels and help text
  */
+/** Complexity tier colors keyed by score (0 = Unknown, 1 = Easiest, …, 4 = Hardest). */
+export const COMPLEXITY_COLORS: Record<number, string> = {
+  0: "#8A8D90", // Unknown - gray
+  1: "#5BA352", // Easiest - green
+  2: "#009596", // Easy - cyan
+  3: "#F0AB00", // Moderate - orange/yellow
+  4: "#C9190B", // Hardest - red
+};
+
+/** Complexity tier labels keyed by score. */
+export const COMPLEXITY_LABELS: Record<number, string> = {
+  0: "Unknown",
+  1: "Easiest",
+  2: "Easy",
+  3: "Moderate",
+  4: "Hardest",
+};
+
 export const FORM_LABELS = {
   workerNodeSize: {
     label: "Worker Node Size",

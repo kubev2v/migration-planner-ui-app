@@ -39,7 +39,10 @@ const PopoverIcon: React.FC<PopoverIconProps> = ({
       }
       component={component}
       variant={variant}
-      onClick={(e) => e.preventDefault()}
+      onClick={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+      }}
       className={classNames(
         "pf-v6-c-form__group-label-help",
         "pf-v6-u-p-0",
