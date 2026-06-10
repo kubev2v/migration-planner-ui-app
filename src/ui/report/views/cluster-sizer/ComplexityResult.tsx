@@ -31,6 +31,8 @@ import {
 import { Table, Tbody, Td, Th, Thead, Tr } from "@patternfly/react-table";
 import React, { useState } from "react";
 
+import { COMPLEXITY_COLORS, COMPLEXITY_LABELS } from "./constants";
+import MigrationComplexityHelpPopover from "./MigrationComplexityHelpPopover";
 import { durationToHours } from "./timeUtils";
 
 interface ComplexityResultProps {
@@ -56,6 +58,12 @@ interface ChartDatum {
 
 const headerStyle = css`
   margin-bottom: var(--pf-t--global--spacer--200);
+`;
+
+const titleWithHelpStyle = css`
+  display: flex;
+  align-items: center;
+  gap: var(--pf-t--global--spacer--100);
 `;
 
 const legendContainerStyle = css`
@@ -94,23 +102,6 @@ const formatPercentage = (value: number): string =>
     minimumFractionDigits: 1,
     maximumFractionDigits: 1,
   });
-
-// Complexity colors based on score
-const COMPLEXITY_COLORS: Record<number, string> = {
-  0: "#8A8D90", // Unknown - gray
-  1: "#5BA352", // Easiest - green
-  2: "#009596", // Easy - cyan
-  3: "#F0AB00", // Moderate - orange/yellow
-  4: "#C9190B", // Hardest - red
-};
-
-const COMPLEXITY_LABELS: Record<number, string> = {
-  0: "Unknown",
-  1: "Easiest",
-  2: "Easy",
-  3: "Moderate",
-  4: "Hardest",
-};
 
 // Disk size tier labels based on score
 const DISK_SIZE_LABELS: Record<number, string> = {
@@ -564,7 +555,10 @@ export const ComplexityResult: React.FC<ComplexityResultProps> = ({
         >
           <FlexItem>
             <div className={headerStyle}>
-              <Title headingLevel="h2">Migration complexity</Title>
+              <div className={titleWithHelpStyle}>
+                <Title headingLevel="h2">Migration complexity</Title>
+                <MigrationComplexityHelpPopover />
+              </div>
             </div>
           </FlexItem>
           <FlexItem>
