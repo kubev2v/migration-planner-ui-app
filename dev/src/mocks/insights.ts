@@ -73,6 +73,12 @@ const chromeApiMock: Partial<ChromeAPI> = {
   init: (): void => {
     console.log("[Standalone Mock] insights.chrome.init() called.");
   },
+  visibilityFunctions: {
+    isProd: () => false,
+    isBeta: () => false,
+    featureFlag: (flagName: string, expectedValue: boolean) =>
+      flagName === "oma-chatbot" && expectedValue === true,
+  },
   getUserPermissions: () =>
     Promise.resolve([
       {
