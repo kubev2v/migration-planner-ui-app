@@ -2,6 +2,8 @@ import { ChartDonut, ChartLabel, ChartLegend } from "@patternfly/react-charts";
 import { Flex, FlexItem } from "@patternfly/react-core";
 import React, { useCallback, useMemo } from "react";
 
+import { CardEmptyState } from "./CardEmptyState";
+
 interface OSData {
   name: string;
   count: number;
@@ -45,6 +47,8 @@ interface MigrationDonutChartProps {
     percent: number;
     total: number;
   }) => string;
+  emptyStateTitle?: string;
+  emptyStateDescription?: string;
 }
 
 const legendColors = [
@@ -76,6 +80,8 @@ const MigrationDonutChart: React.FC<MigrationDonutChartProps> = ({
   donutThickness = 45,
   padAngle = 1,
   tooltipLabelFormatter,
+  emptyStateTitle = "Data not collected",
+  emptyStateDescription,
 }: MigrationDonutChartProps) => {
   const dynamicLegend = useMemo<Record<string, string>>(() => {
     const legendMap: Record<string, string> = {};
@@ -152,9 +158,10 @@ const MigrationDonutChart: React.FC<MigrationDonutChartProps> = ({
 
   if (!data || data.length === 0) {
     return (
-      <div style={{ padding: "20px", textAlign: "center" }}>
-        No data available
-      </div>
+      <CardEmptyState
+        title={emptyStateTitle}
+        description={emptyStateDescription}
+      />
     );
   }
 

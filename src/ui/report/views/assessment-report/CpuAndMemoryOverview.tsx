@@ -13,6 +13,7 @@ import {
 import React, { useMemo, useState } from "react";
 
 import MigrationDonutChart from "../../../core/components/MigrationDonutChart";
+import { REPORT_CARD_EMPTY_STATE_TITLES } from "./constants";
 import { dashboardCard } from "./styles";
 
 interface CpuAndMemoryOverviewProps {
@@ -240,6 +241,7 @@ export const CpuAndMemoryOverview: React.FC<CpuAndMemoryOverviewProps> = ({
                 itemsPerRow={Math.ceil(memorySlices.length / 2)}
                 labelFontSize={18}
                 marginLeft="0%"
+                emptyStateTitle={REPORT_CARD_EMPTY_STATE_TITLES.memory}
                 tooltipLabelFormatter={({ datum, percent }) =>
                   `${datum.countDisplay}\n${percent.toFixed(1)}%`
                 }
@@ -269,6 +271,7 @@ export const CpuAndMemoryOverview: React.FC<CpuAndMemoryOverviewProps> = ({
                 itemsPerRow={Math.ceil(vcpuSlices.length / 2)}
                 labelFontSize={18}
                 marginLeft="52%"
+                emptyStateTitle={REPORT_CARD_EMPTY_STATE_TITLES.cpu}
                 tooltipLabelFormatter={({ datum, percent }) =>
                   `${datum.countDisplay}\n${percent.toFixed(1)}%`
                 }
@@ -297,6 +300,11 @@ export const CpuAndMemoryOverview: React.FC<CpuAndMemoryOverviewProps> = ({
             itemsPerRow={Math.ceil(activeSlices.length / 2)}
             labelFontSize={18}
             marginLeft="52%"
+            emptyStateTitle={
+              viewMode === "memoryTiers"
+                ? REPORT_CARD_EMPTY_STATE_TITLES.memory
+                : REPORT_CARD_EMPTY_STATE_TITLES.cpu
+            }
             tooltipLabelFormatter={({ datum, percent }) =>
               `${datum.countDisplay}\n${percent.toFixed(1)}%`
             }

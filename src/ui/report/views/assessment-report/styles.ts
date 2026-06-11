@@ -84,11 +84,6 @@ export const storageMenuToggleMinWidth = css`
   min-width: 250px;
 `;
 
-export const storageNoDataContainer = css`
-  padding: 20px;
-  text-align: center;
-`;
-
 export const storageChartWrapper = css`
   display: flex;
   justify-content: center;

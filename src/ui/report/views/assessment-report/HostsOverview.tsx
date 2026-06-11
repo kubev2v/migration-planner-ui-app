@@ -9,6 +9,7 @@ import {
 import React, { useMemo } from "react";
 
 import MigrationDonutChart from "../../../core/components/MigrationDonutChart";
+import { REPORT_CARD_EMPTY_STATE_TITLES } from "./constants";
 import { dashboardCard } from "./styles";
 
 type HostLike = {
@@ -138,6 +139,7 @@ export const HostsOverview: React.FC<HostsOverviewProps> = ({
           itemsPerRow={2}
           labelFontSize={16}
           marginLeft="0%"
+          emptyStateTitle={REPORT_CARD_EMPTY_STATE_TITLES.hosts}
           tooltipLabelFormatter={({ datum, percent }) =>
             `${datum.countDisplay}\n${percent.toFixed(1)}%`
           }
