@@ -10,6 +10,11 @@ import type { SVGIconProps } from "@patternfly/react-icons/dist/js/createIcon";
 import classNames from "classnames";
 import React from "react";
 
+import {
+  getFlyoutAppendTo,
+  themeAwarePopoverClassName,
+} from "../../../../lib/patternfly/flyoutAppendTo";
+
 type PopoverIconProps = PopoverProps & {
   variant?: ButtonProps["variant"];
   component?: ButtonProps["component"];
@@ -28,9 +33,15 @@ const PopoverIcon: React.FC<PopoverIconProps> = ({
   buttonClassName,
   buttonOuiaId,
   buttonStyle,
+  className,
+  appendTo = getFlyoutAppendTo,
   ...props
 }) => (
-  <Popover {...props}>
+  <Popover
+    appendTo={appendTo}
+    className={classNames(themeAwarePopoverClassName, className)}
+    {...props}
+  >
     <Button
       icon={
         <Icon isInline={noVerticalAlign}>

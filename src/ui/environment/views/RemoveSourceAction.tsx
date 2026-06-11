@@ -2,6 +2,7 @@ import { Button, Content, Icon, Tooltip } from "@patternfly/react-core";
 import { RhUiTrashIcon } from "@patternfly/react-icons";
 import React, { useCallback, useState } from "react";
 
+import { themeTooltipFlyoutProps } from "../../../lib/patternfly/flyoutAppendTo";
 import { ConfirmationModal } from "../../core/components/ConfirmationModal";
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
@@ -46,7 +47,7 @@ export const RemoveSourceAction: React.FC<RemoveSourceAction.Props> = (
 
   return (
     <>
-      <Tooltip content="Remove">
+      <Tooltip {...themeTooltipFlyoutProps} content="Remove">
         <Button
           icon={
             <Icon size="md" isInline>

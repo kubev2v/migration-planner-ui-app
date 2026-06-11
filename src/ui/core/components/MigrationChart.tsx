@@ -13,6 +13,11 @@ import { chart_color_blue_300 } from "@patternfly/react-tokens/dist/esm/chart_co
 import { chart_color_red_orange_400 } from "@patternfly/react-tokens/dist/esm/chart_color_red_orange_400";
 import React, { useMemo } from "react";
 
+import {
+  getFlyoutAppendTo,
+  themeAwarePopoverClassName,
+} from "../../../lib/patternfly/flyoutAppendTo";
+
 interface OSData {
   name: string;
   count: number;
@@ -48,11 +53,9 @@ type DLength =
 // Styles
 // ---------------------------------------------------------------------------
 
-const upgradeRecommendationPopover = css`
-  .popover-override .pf-v5-c-popover__close .pf-v5-c-button.pf-m-plain {
-    color: var(--pf-t--global--text--color--regular);
-  }
-  .popover-override .pf-v5-c-popover__close .pf-v5-c-button.pf-m-plain:hover {
+const upgradeRecommendationPopoverCloseButton = css`
+  .pf-v6-c-popover__close .pf-v6-c-button.pf-m-plain,
+  .pf-v6-c-popover__close .pf-v6-c-button.pf-m-plain:hover {
     color: var(--pf-t--global--text--color--regular);
   }
 `;
@@ -178,7 +181,8 @@ const MigrationChart: React.FC<MigrationChartProps> = ({
                         {item.infoText ? (
                           <FlexItem shrink={{ default: "shrink" }}>
                             <Popover
-                              className={upgradeRecommendationPopover}
+                              appendTo={getFlyoutAppendTo}
+                              className={`${themeAwarePopoverClassName} ${upgradeRecommendationPopoverCloseButton}`}
                               position="bottom"
                               headerContent="Upgrade to get support"
                               bodyContent={<div>{item.infoText}</div>}

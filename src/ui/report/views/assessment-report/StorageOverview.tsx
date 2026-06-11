@@ -26,6 +26,11 @@ import {
 } from "@patternfly/react-core";
 import React, { useMemo, useState } from "react";
 
+import {
+  themedChartTooltipFlyoutPadding,
+  themedChartTooltipFlyoutStyle,
+  themedChartTooltipStyle,
+} from "../../../../lib/patternfly/flyoutAppendTo";
 import MigrationDonutChart from "../../../core/components/MigrationDonutChart";
 import {
   dashboardCard,
@@ -426,7 +431,14 @@ export const StorageOverview: React.FC<StorageOverviewProps> = ({
                           }}
                           constrainToVisibleArea
                           labelComponent={
-                            <ChartTooltip style={{ fontSize: 8 }} />
+                            <ChartTooltip
+                              style={{
+                                ...themedChartTooltipStyle,
+                                fontSize: 8,
+                              }}
+                              flyoutStyle={themedChartTooltipFlyoutStyle}
+                              flyoutPadding={themedChartTooltipFlyoutPadding}
+                            />
                           }
                         />
                       }
@@ -542,7 +554,11 @@ export const StorageOverview: React.FC<StorageOverviewProps> = ({
                         }}
                         constrainToVisibleArea
                         labelComponent={
-                          <ChartTooltip style={{ fontSize: 8 }} />
+                          <ChartTooltip
+                            style={{ ...themedChartTooltipStyle, fontSize: 8 }}
+                            flyoutStyle={themedChartTooltipFlyoutStyle}
+                            flyoutPadding={themedChartTooltipFlyoutPadding}
+                          />
                         }
                       />
                     }

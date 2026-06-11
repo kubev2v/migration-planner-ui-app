@@ -2,6 +2,7 @@ import { Button, Icon, Tooltip } from "@patternfly/react-core";
 import { RhUiDownloadIcon } from "@patternfly/react-icons";
 import React, { useCallback, useState } from "react";
 
+import { themeTooltipFlyoutProps } from "../../../lib/patternfly/flyoutAppendTo";
 import { useEnvironmentPage } from "../view-models/EnvironmentPageContext";
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
@@ -40,7 +41,7 @@ export const DownloadOvaAction: React.FC<DownloadOvaAction.Props> = (props) => {
   }, [sourceId, sourceName, url]);
 
   return (
-    <Tooltip content="Download OVA File">
+    <Tooltip {...themeTooltipFlyoutProps} content="Download OVA File">
       <Button
         icon={
           <Icon size="md" isInline>

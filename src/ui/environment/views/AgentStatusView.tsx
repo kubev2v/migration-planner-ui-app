@@ -21,6 +21,7 @@ import { t_global_icon_color_status_info_default as globalInfoColor100 } from "@
 import React, { useMemo } from "react";
 import { Link } from "react-router-dom";
 
+import { themePopoverFlyoutProps } from "../../../lib/patternfly/flyoutAppendTo";
 import { VCenterSetupInstructions } from "../../core/components/VCenterSetupInstructions";
 import { safeExternalUrl } from "../../core/utils/urlValidation";
 import { getDiscoveryVmStatusLabel } from "../helpers/discoveryVmStatus";
@@ -156,6 +157,7 @@ export const AgentStatusView: React.FC<AgentStatusView.Props> = (props) => {
           status !== "not-connected" &&
           status !== "up-to-date") ? (
           <Popover
+            {...themePopoverFlyoutProps}
             aria-label={statusView && statusView.text}
             headerContent={statusView && statusView.text}
             headerComponent="h1"
@@ -186,6 +188,7 @@ export const AgentStatusView: React.FC<AgentStatusView.Props> = (props) => {
       {isNotConnected && (
         <SplitItem>
           <Popover
+            {...themePopoverFlyoutProps}
             aria-label="Setup instructions"
             headerContent="Setup instructions"
             headerComponent="h2"

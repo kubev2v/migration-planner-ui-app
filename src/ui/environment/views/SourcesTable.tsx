@@ -26,6 +26,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import type { SourceModel } from "../../../models/SourceModel";
+import { themeTooltipFlyoutProps } from "../../../lib/patternfly/flyoutAppendTo";
 import { routes } from "../../../routing/Routes";
 import { ConfirmationModal } from "../../core/components/ConfirmationModal";
 import { EmptySearchResults } from "../../core/components/EmptySearchResults";
@@ -721,6 +722,7 @@ export const SourcesTable: React.FC<SourceTableProps> = ({
                   <Td dataLabel={Columns.LastSeen} className={tableCellTop}>
                     {source?.updatedAt ? (
                       <Tooltip
+                        {...themeTooltipFlyoutProps}
                         content={new Date(source.updatedAt).toLocaleString()}
                       >
                         <span>{formatRelativeTime(source.updatedAt)}</span>
