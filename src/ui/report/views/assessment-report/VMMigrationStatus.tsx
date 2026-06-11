@@ -3,7 +3,11 @@ import RhUiVirtualMachineIcon from "@patternfly/react-icons/dist/esm/icons/virtu
 import React from "react";
 
 import MigrationDonutChart from "../../../core/components/MigrationDonutChart";
-import { chartColorFailure, chartColorSuccess } from "./constants";
+import {
+  chartColorFailure,
+  chartColorSuccess,
+  REPORT_CARD_EMPTY_STATE_TITLES,
+} from "./constants";
 import { dashboardCard } from "./styles";
 
 interface VmMigrationStatusProps {
@@ -65,6 +69,7 @@ export const VMMigrationStatus: React.FC<VmMigrationStatusProps> = ({
           labelFontSize={18}
           itemsPerRow={2}
           marginLeft="40%"
+          emptyStateTitle={REPORT_CARD_EMPTY_STATE_TITLES.migrationStatus}
         />
       </CardBody>
     </Card>

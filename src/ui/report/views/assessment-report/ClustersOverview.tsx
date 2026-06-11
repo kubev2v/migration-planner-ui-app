@@ -14,7 +14,9 @@ import {
 } from "@patternfly/react-core";
 import React, { useMemo, useState } from "react";
 
+import { CardEmptyState } from "../../../core/components/CardEmptyState";
 import MigrationDonutChart from "../../../core/components/MigrationDonutChart";
+import { REPORT_CARD_EMPTY_STATE_TITLES } from "./constants";
 import { dashboardCard } from "./styles";
 
 // ---------------------------------------------------------------------------
@@ -539,6 +541,7 @@ export const ClustersOverview: React.FC<ClustersOverviewProps> = ({
                   itemsPerRow={Math.ceil(vmByClusterData.chartData.length / 2)}
                   labelFontSize={18}
                   marginLeft="12%"
+                  emptyStateTitle={REPORT_CARD_EMPTY_STATE_TITLES.clusters}
                   tooltipLabelFormatter={({ datum, percent }) =>
                     `${datum.countDisplay}\n${percent.toFixed(1)}%`
                   }
@@ -565,6 +568,7 @@ export const ClustersOverview: React.FC<ClustersOverviewProps> = ({
                   )}
                   labelFontSize={17}
                   marginLeft="0%"
+                  emptyStateTitle={REPORT_CARD_EMPTY_STATE_TITLES.clusters}
                   tooltipLabelFormatter={({ datum, percent }) =>
                     `${datum.countDisplay}\n${percent.toFixed(1)}%`
                   }
@@ -577,14 +581,9 @@ export const ClustersOverview: React.FC<ClustersOverviewProps> = ({
                   {VIEW_MODE_LABELS["cpuOverCommitment"]}
                 </div>
                 {cpuOverCommitmentData.chartData.length === 0 ? (
-                  <div
-                    style={{
-                      color: "var(--pf-t--global--text--color--subtle)",
-                      textAlign: "center",
-                    }}
-                  >
-                    This inventory has no cpuOverCommitment information.
-                  </div>
+                  <CardEmptyState
+                    title={REPORT_CARD_EMPTY_STATE_TITLES.cpuOvercommitment}
+                  />
                 ) : (
                   <>
                     <div className={cpuOvercommitBoxes}>
@@ -630,14 +629,9 @@ export const ClustersOverview: React.FC<ClustersOverviewProps> = ({
         ) : viewMode === "cpuOverCommitment" ? (
           <>
             {chartData.length === 0 ? (
-              <div
-                style={{
-                  color: "var(--pf-t--global--text--color--subtle)",
-                  textAlign: "center",
-                }}
-              >
-                This inventory has no cpuOverCommitment information.
-              </div>
+              <CardEmptyState
+                title={REPORT_CARD_EMPTY_STATE_TITLES.cpuOvercommitment}
+              />
             ) : (
               <>
                 <div className={cpuOvercommitBoxes}>
@@ -684,6 +678,7 @@ export const ClustersOverview: React.FC<ClustersOverviewProps> = ({
             itemsPerRow={Math.ceil(chartData.length / 2)}
             labelFontSize={viewMode === "vmByCluster" ? 18 : 17}
             marginLeft={viewMode === "vmByCluster" ? "12%" : "0%"}
+            emptyStateTitle={REPORT_CARD_EMPTY_STATE_TITLES.clusters}
             tooltipLabelFormatter={({ datum, percent }) =>
               `${datum.countDisplay}\n${percent.toFixed(1)}%`
             }
