@@ -184,6 +184,13 @@ export const SizingInputForm: React.FC<SizingInputFormProps> = ({
     onChange({ ...values, controlPlaneMemoryGb: parseInt(memory, 10) });
   };
 
+  /** Prevent mouse wheel from incrementing/decrementing focused number inputs */
+  const handleNumberInputWheel = (
+    event: React.WheelEvent<HTMLInputElement>,
+  ): void => {
+    event.currentTarget.blur();
+  };
+
   const handleWorkloadNumberChange = (
     field: keyof WorkloadFormValues,
   ): ((_event: React.FormEvent<HTMLInputElement>, value: string) => void) => {
@@ -249,6 +256,7 @@ export const SizingInputForm: React.FC<SizingInputFormProps> = ({
                   id="total-vms"
                   value={workloadValues.totalVMs}
                   onChange={handleWorkloadNumberChange("totalVMs")}
+                  onWheel={handleNumberInputWheel}
                   name="total-vms"
                   aria-label="Total VMs"
                   type="number"
@@ -274,6 +282,7 @@ export const SizingInputForm: React.FC<SizingInputFormProps> = ({
                   id="total-cpu"
                   value={workloadValues.totalCPU}
                   onChange={handleWorkloadNumberChange("totalCPU")}
+                  onWheel={handleNumberInputWheel}
                   name="total-cpu"
                   aria-label="Total CPU"
                   type="number"
@@ -299,6 +308,7 @@ export const SizingInputForm: React.FC<SizingInputFormProps> = ({
                   id="total-memory"
                   value={workloadValues.totalMemory}
                   onChange={handleWorkloadNumberChange("totalMemory")}
+                  onWheel={handleNumberInputWheel}
                   name="total-memory"
                   aria-label="Total memory"
                   type="number"
@@ -340,6 +350,7 @@ export const SizingInputForm: React.FC<SizingInputFormProps> = ({
                   id="smt-threads"
                   value={values.smtThreads}
                   onChange={handleSmtThreadsChange}
+                  onWheel={handleNumberInputWheel}
                   name="smt-threads"
                   aria-label="SMT threads"
                   isDisabled={!values.smtEnabled}
@@ -382,6 +393,7 @@ export const SizingInputForm: React.FC<SizingInputFormProps> = ({
                     id="smt-threads"
                     value={values.smtThreads}
                     onChange={handleSmtThreadsChange}
+                    onWheel={handleNumberInputWheel}
                     name="smt-threads"
                     aria-label="SMT threads"
                     isDisabled={!values.smtEnabled}
