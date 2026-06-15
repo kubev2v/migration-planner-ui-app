@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 
 import { DEFAULT_FORM_VALUES } from "../constants";
 import { SizingResult } from "../SizingResult";
+import { mockUtilizationComparisonResponse } from "./mocks/ClusterRequirementsResponse.mock";
 
 describe("SizingResult", () => {
   const baseProps = {
@@ -11,6 +12,28 @@ describe("SizingResult", () => {
     sizerOutput: null,
     isLoading: false,
   };
+
+  it("shows utilization comparison cards when optimization succeeded", () => {
+    render(
+      <SizingResult
+        {...baseProps}
+        sizerOutput={mockUtilizationComparisonResponse}
+      />,
+    );
+
+    expect(screen.getByText("100% allocation baseline")).toBeDefined();
+    expect(
+      screen.getByText("Recommended: based on actual usage"),
+    ).toBeDefined();
+    expect(screen.getByText("28")).toBeDefined();
+    expect(screen.getByText("15")).toBeDefined();
+    expect(
+      screen.getByText("Potential infrastructure savings: 13 nodes (46%)"),
+    ).toBeDefined();
+    expect(screen.getByText("Cluster name")).toBeDefined();
+    expect(screen.getByText("test-cluster")).toBeDefined();
+    expect(screen.getByText("Workload details")).toBeDefined();
+  });
 
   it("shows backend message parsed from error cause JSON", () => {
     // Backend now returns just the message without the "failed to calculate cluster requirements: " prefix

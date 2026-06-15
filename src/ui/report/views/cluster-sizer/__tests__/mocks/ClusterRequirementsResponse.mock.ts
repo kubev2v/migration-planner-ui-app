@@ -251,4 +251,58 @@ export const createMockClusterRequirementsResponse = (
   inventoryTotals: overrides.inventoryTotals ?? createMockInventoryTotals(),
   resourceConsumption:
     overrides.resourceConsumption ?? createMockResourceConsumption(),
+  optimizedSizing: overrides.optimizedSizing,
+  savings: overrides.savings,
+  optimizationStatus: overrides.optimizationStatus,
 });
+
+/**
+ * Mock response with utilization-based optimization (side-by-side comparison)
+ */
+export const mockUtilizationComparisonResponse: ClusterRequirementsResponse = {
+  clusterSizing: {
+    totalNodes: 28,
+    workerNodes: 25,
+    controlPlaneNodes: 3,
+    failoverNodes: 0,
+    totalCPU: 885,
+    totalMemory: 2003,
+  },
+  optimizedSizing: {
+    totalNodes: 15,
+    workerNodes: 12,
+    controlPlaneNodes: 3,
+    failoverNodes: 0,
+    totalCPU: 480,
+    totalMemory: 1248,
+    cpuUtilizationMax: 45.2,
+    memoryUtilizationMax: 62.3,
+    confidence: 87.5,
+  },
+  savings: {
+    nodesSaved: 13,
+    percentageReduction: 46.4,
+    description: "vSphere metrics",
+  },
+  optimizationStatus: {
+    attempted: true,
+    reason: "success",
+  },
+  resourceConsumption: {
+    cpu: 885,
+    memory: 2003,
+    limits: {
+      cpu: 1100,
+      memory: 2500,
+    },
+    overCommitRatio: {
+      cpu: 4.0,
+      memory: 2.0,
+    },
+  },
+  inventoryTotals: {
+    totalVMs: 120,
+    totalCPU: 885,
+    totalMemory: 2003,
+  },
+};

@@ -29,6 +29,7 @@ import { SizingResult } from "./SizingResult";
 import { TimeEstimationForm } from "./TimeEstimationForm";
 import { TimeEstimationResult } from "./TimeEstimationResult";
 import type { ClusterRequirementsResponse, SizingFormValues } from "./types";
+import { hasUtilizationComparison } from "./UtilizationSizing";
 
 interface ClusterSizingWizardProps {
   isOpen: boolean;
@@ -231,6 +232,7 @@ export const ClusterSizingWizard: React.FC<ClusterSizingWizardProps> = ({
             )}
             generateButtonText="Generate recommendation"
             hasError={Boolean(vm.calculateError)}
+            showAlert={!hasUtilizationComparison(vm.sizerOutput)}
             isPreferencesExpanded={getPreferencesExpanded("architecture")}
             onPreferencesExpandedChange={setPreferencesExpandedForTab(
               "architecture",

@@ -22,6 +22,11 @@ import {
   getMemoryOvercommitLabel,
 } from "../../view-models/ClusterSizingHelpers";
 import type { ClusterRequirementsResponse, SizingFormValues } from "./types";
+import { UtilizationComparisonCards } from "./UtilizationComparisonCards";
+import {
+  getOptimizationStatusMessage,
+  hasUtilizationComparison,
+} from "./UtilizationSizing";
 
 const descriptionListStyles = css`
   .pf-v6-c-description-list__term {
@@ -99,7 +104,13 @@ export const SizingResult: React.FC<SizingResultProps> = ({
   }
 
   const isSNO = formValues.clusterMode === "single-node";
-  const hasControlPlane = sizerOutput.clusterSizing.controlPlaneNodes > 0;
+  const showUtilizationComparison = hasUtilizationComparison(sizerOutput);
+  const displaySizing =
+    showUtilizationComparison && sizerOutput.optimizedSizing
+      ? sizerOutput.optimizedSizing
+      : sizerOutput.clusterSizing;
+  const hasControlPlane = displaySizing.controlPlaneNodes > 0;
+  const optimizationStatusMessage = getOptimizationStatusMessage(sizerOutput);
 
   // Extract optional fields with defaults (only needed for non-SNO modes)
   const cpuOverCommitRatio =
@@ -111,6 +122,21 @@ export const SizingResult: React.FC<SizingResultProps> = ({
 
   return (
     <Stack hasGutter>
+      {hasUtilizationComparison(sizerOutput) && (
+        <StackItem>
+          <UtilizationComparisonCards
+            sizerOutput={sizerOutput}
+            formValues={formValues}
+          />
+        </StackItem>
+      )}
+      {optimizationStatusMessage && (
+        <StackItem>
+          <Alert isInline variant="info" title="100% allocation sizing">
+            {optimizationStatusMessage}
+          </Alert>
+        </StackItem>
+      )}
       <StackItem>
         <DescriptionList
           isHorizontal
@@ -133,12 +159,11 @@ export const SizingResult: React.FC<SizingResultProps> = ({
             <DescriptionListTerm>Total nodes</DescriptionListTerm>
             <DescriptionListDescription>
               {isSNO ? (
-                sizerOutput.clusterSizing.totalNodes
+                displaySizing.totalNodes
               ) : (
                 <>
-                  {sizerOutput.clusterSizing.totalNodes} (
-                  {sizerOutput.clusterSizing.workerNodes} workers +{" "}
-                  {sizerOutput.clusterSizing.controlPlaneNodes} control plane)
+                  {displaySizing.totalNodes} ({displaySizing.workerNodes}{" "}
+                  workers + {displaySizing.controlPlaneNodes} control plane)
                 </>
               )}
             </DescriptionListDescription>
@@ -148,7 +173,7 @@ export const SizingResult: React.FC<SizingResultProps> = ({
             <DescriptionListGroup>
               <DescriptionListTerm>Failover Capacity</DescriptionListTerm>
               <DescriptionListDescription>
-                {sizerOutput.clusterSizing.failoverNodes} failover nodes
+                {displaySizing.failoverNodes} failover nodes
               </DescriptionListDescription>
             </DescriptionListGroup>
           )}
@@ -235,10 +260,8 @@ export const SizingResult: React.FC<SizingResultProps> = ({
                     {formatNumber(memoryLimits)} GB memory
                   </ListItem>
                   <ListItem>
-                    Physical capacity:{" "}
-                    {formatNumber(sizerOutput.clusterSizing.totalCPU)} CPU,{" "}
-                    {formatNumber(sizerOutput.clusterSizing.totalMemory)} GB
-                    memory
+                    Physical capacity: {formatNumber(displaySizing.totalCPU)}{" "}
+                    CPU, {formatNumber(displaySizing.totalMemory)} GB memory
                   </ListItem>
                 </List>
               )}
