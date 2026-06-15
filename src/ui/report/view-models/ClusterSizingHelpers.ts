@@ -6,6 +6,12 @@ import type {
   ClusterRequirementsResponse,
   SizingFormValues,
 } from "../views/cluster-sizer/types";
+import {
+  computeEffectiveCpu,
+  computeEffectiveMemory,
+  formatUtilizationPercent,
+  hasUtilizationComparison,
+} from "../views/cluster-sizer/UtilizationSizing";
 
 const DISCLAIMER_TEXT =
   "Note: Resource requirements are estimates based on current workloads. Please verify this architecture with your SME team to ensure optimal performance.";
@@ -29,6 +35,42 @@ export const generatePlainTextRecommendation = (
   formValues: SizingFormValues,
   output: ClusterRequirementsResponse,
 ): string => {
+  if (hasUtilizationComparison(output)) {
+    const { clusterSizing, optimizedSizing, savings, inventoryTotals } = output;
+    const cpuUtil = optimizedSizing.cpuUtilizationMax;
+    const memUtil = optimizedSizing.memoryUtilizationMax;
+    const effectiveCpu = computeEffectiveCpu(inventoryTotals.totalCPU, cpuUtil);
+    const effectiveMemory = computeEffectiveMemory(
+      inventoryTotals.totalMemory,
+      memUtil,
+    );
+    const savingsPercent = Math.round(savings.percentageReduction);
+
+    return `
+Cluster: ${clusterName}
+Target Platform: Bare Metal
+
+100% allocation baseline: ${formatNumber(clusterSizing.totalNodes)} total nodes
+- Worker nodes: ${formatNumber(clusterSizing.workerNodes)}
+- Total CPU: ${formatNumber(clusterSizing.totalCPU)} cores
+- Total memory: ${formatNumber(clusterSizing.totalMemory)} GB
+- Utilization assumed: 100%
+- Data source: Static estimate
+
+Recommended (based on actual usage): ${formatNumber(optimizedSizing.totalNodes)} total nodes
+- Worker nodes: ${formatNumber(optimizedSizing.workerNodes)}
+- Effective CPU: ${formatNumber(effectiveCpu)} cores (${formatUtilizationPercent(cpuUtil)})
+- Effective memory: ${formatNumber(effectiveMemory)} GB (${formatUtilizationPercent(memUtil)})
+- Utilization (p95): CPU ${formatUtilizationPercent(cpuUtil)}, Mem ${formatUtilizationPercent(memUtil)}
+- Confidence: ${formatUtilizationPercent(optimizedSizing.confidence)}
+- Data source: ${savings.description || "Rightsizing metrics"}
+
+Potential infrastructure savings: ${formatNumber(savings.nodesSaved)} nodes (${savingsPercent}%)
+
+${DISCLAIMER_TEXT}
+`.trim();
+  }
+
   const isSNO = formValues.clusterMode === "single-node";
 
   if (isSNO) {
