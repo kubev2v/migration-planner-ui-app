@@ -39,7 +39,7 @@ BUILD_ARGS := $(foreach var,$(BUILD_VAR_NAMES),--build-arg $(var)=$($(var)))
 ESLINT_CMD := npx eslint --cache --cache-location node_modules/.cache/eslintcache --cache-strategy content .
 PRETTIER_CMD := npx prettier --cache --cache-location node_modules/.cache/prettiercache --cache-strategy content .
 
-.PHONY: help oc install ci-install clean build-standalone run-standalone preview-standalone patch-hosts start start-dev-proxy start-federated build lint format type-check test coverage security-scan security-fix security-fix-force validate-all podman-build podman-run podman-stop podman-logs podman-status podman-clean podman-tag-latest podman-deploy podman-dev quay-login podman-push deploy-on-openshift delete-from-openshift version test-watch
+.PHONY: help oc install ci-install clean build-standalone run-standalone preview-standalone patch-hosts start start-polling start-dev-proxy start-federated build lint format type-check test coverage security-scan security-fix security-fix-force validate-all podman-build podman-run podman-stop podman-logs podman-status podman-clean podman-tag-latest podman-deploy podman-dev quay-login podman-push deploy-on-openshift delete-from-openshift version test-watch
 
 # Default target
 .DEFAULT_GOAL := help
@@ -57,6 +57,7 @@ help:
 	@echo "  run-standalone      Run the standalone application locally"
 	@echo "  preview-standalone  Preview standalone build"
 	@echo "  start               Start federated dev server (HOT mode)"
+	@echo "  start-polling       Start federated dev server (polling; ENOSPC workaround)"
 	@echo "  start-dev-proxy     Start dev proxy server"
 	@echo "  start-federated     Start federated static server"
 	@echo "  patch-hosts         Patch /etc/hosts for local development"
@@ -175,6 +176,12 @@ patch-hosts: install
 start: install
 	@echo "🚀 Starting federated dev server..."
 	@$(BUILD_ENV) HOT=true npx fec dev --clouddotEnv=stage --uiEnv=stable
+	@echo "✅ Federated dev server started!"
+
+# Polling mode avoids inotify limits (ENOSPC) on systems with many open watchers
+start-polling: install
+	@echo "🚀 Starting federated dev server (polling mode)..."
+	@$(BUILD_ENV) HOT=true WATCHPACK_POLLING=1000 npx fec dev --clouddotEnv=stage --uiEnv=stable
 	@echo "✅ Federated dev server started!"
 
 # Start dev proxy server
