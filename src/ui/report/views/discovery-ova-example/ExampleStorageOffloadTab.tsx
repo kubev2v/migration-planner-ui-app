@@ -27,6 +27,8 @@ import {
 } from "@patternfly/react-icons";
 import React from "react";
 
+import { themePopoverFlyoutProps } from "../../../../lib/patternfly/flyoutAppendTo";
+
 const sectionSpacing = css`
   margin-top: var(--pf-t--global--spacer--lg);
 `;
@@ -47,6 +49,7 @@ const ExampleStorageOffloadTab: React.FC = () => (
           </FlexItem>
           <FlexItem>
             <Popover
+              {...themePopoverFlyoutProps}
               bodyContent={
                 <>
                   Technology preview features provide early access to upcoming

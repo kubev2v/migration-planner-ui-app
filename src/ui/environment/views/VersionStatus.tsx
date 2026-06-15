@@ -16,6 +16,7 @@ import { t_global_icon_color_status_info_default as globalInfoColor } from "@pat
 import { t_global_text_color_status_warning_default as globalTextWarningColor } from "@patternfly/react-tokens/dist/js/t_global_text_color_status_warning_default";
 import React from "react";
 
+import { themePopoverFlyoutProps } from "../../../lib/patternfly/flyoutAppendTo";
 import { VCenterSetupInstructions } from "../../core/components/VCenterSetupInstructions";
 
 export const AGENT_VERSION_NOT_AVAILABLE = "N/A";
@@ -61,6 +62,7 @@ const OvaDownloading: React.FC = () => (
     </SplitItem>
     <SplitItem>
       <Popover
+        {...themePopoverFlyoutProps}
         aria-label="OVA installation instructions"
         headerContent="Install the OVA in your vCenter"
         headerComponent="h2"
@@ -88,6 +90,7 @@ const OvaDownloaded: React.FC = () => (
     </SplitItem>
     <SplitItem>
       <Popover
+        {...themePopoverFlyoutProps}
         aria-label="OVA installation instructions"
         headerContent="Install the OVA in your vCenter"
         headerComponent="h2"
@@ -116,6 +119,7 @@ const NotAvailable: React.FC<{ warning?: string | null }> = ({ warning }) => (
     {warning && (
       <SplitItem>
         <Popover
+          {...themePopoverFlyoutProps}
           aria-label="Version information"
           headerContent="Version Information"
           headerComponent="h2"
@@ -143,6 +147,7 @@ const VersionWarning: React.FC<{ warning: string }> = ({ warning }) => (
     </SplitItem>
     <SplitItem>
       <Popover
+        {...themePopoverFlyoutProps}
         aria-label="Version warning"
         headerContent="Version Warning"
         headerComponent="h2"

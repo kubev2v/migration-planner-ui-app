@@ -31,6 +31,11 @@ import {
 import { Table, Tbody, Td, Th, Thead, Tr } from "@patternfly/react-table";
 import React, { useState } from "react";
 
+import {
+  themedChartTooltipFlyoutPadding,
+  themedChartTooltipFlyoutStyle,
+  themedChartTooltipStyle,
+} from "../../../../lib/patternfly/flyoutAppendTo";
 import { COMPLEXITY_COLORS, COMPLEXITY_LABELS } from "./constants";
 import MigrationComplexityHelpPopover from "./MigrationComplexityHelpPopover";
 import { durationToHours } from "./timeUtils";
@@ -217,17 +222,9 @@ export const ComplexityResult: React.FC<ComplexityResultProps> = ({
                   }}
                   labelComponent={
                     <ChartTooltip
-                      style={{
-                        fontSize: 9,
-                        fill: "var(--pf-t--global--text--color--inverse)",
-                      }}
-                      flyoutStyle={{
-                        stroke:
-                          "var(--pf-t--global--background--color--inverse--default)",
-                        strokeWidth: 1,
-                        fill: "var(--pf-t--global--background--color--inverse--default)",
-                      }}
-                      flyoutPadding={{ top: 6, bottom: 6, left: 10, right: 10 }}
+                      style={themedChartTooltipStyle}
+                      flyoutStyle={themedChartTooltipFlyoutStyle}
+                      flyoutPadding={themedChartTooltipFlyoutPadding}
                     />
                   }
                   constrainToVisibleArea
@@ -367,16 +364,9 @@ export const ComplexityResult: React.FC<ComplexityResultProps> = ({
                 }}
                 labelComponent={
                   <ChartTooltip
-                    style={{
-                      fontSize: 14,
-                      fill: "var(--pf-t--global--text--color--inverse)",
-                    }}
-                    flyoutStyle={{
-                      stroke:
-                        "var(--pf-t--global--background--color--inverse--default)",
-                      strokeWidth: 1,
-                      fill: "var(--pf-t--global--background--color--inverse--default)",
-                    }}
+                    style={{ ...themedChartTooltipStyle, fontSize: 14 }}
+                    flyoutStyle={themedChartTooltipFlyoutStyle}
+                    flyoutPadding={themedChartTooltipFlyoutPadding}
                   />
                 }
                 padding={{ bottom: 20, left: 20, right: 20, top: 20 }}

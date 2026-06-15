@@ -12,6 +12,8 @@ import {
 import { RhUiQuestionMarkCircleIcon } from "@patternfly/react-icons";
 import React, { useState } from "react";
 
+import { themePopoverFlyoutProps } from "../../../lib/patternfly/flyoutAppendTo";
+
 const ProxyInputFields = ({
   httpProxy,
   httpsProxy,
@@ -29,7 +31,10 @@ const ProxyInputFields = ({
         <FormGroup
           label="HTTP proxy URL"
           labelHelp={
-            <Popover bodyContent="The HTTP proxy URL that agents should use to access the discovery service.">
+            <Popover
+              {...themePopoverFlyoutProps}
+              bodyContent="The HTTP proxy URL that agents should use to access the discovery service."
+            >
               <button
                 type="button"
                 aria-label="More info about HTTP proxy URL"
@@ -60,7 +65,10 @@ const ProxyInputFields = ({
         <FormGroup
           label="HTTPS proxy URL"
           labelHelp={
-            <Popover bodyContent="Specify the HTTPS proxy that agents should use to access the discovery service. If you don't provide a value, your HTTP proxy URL will be used by default for both HTTP and HTTPS connections.">
+            <Popover
+              {...themePopoverFlyoutProps}
+              bodyContent="Specify the HTTPS proxy that agents should use to access the discovery service. If you don't provide a value, your HTTP proxy URL will be used by default for both HTTP and HTTPS connections."
+            >
               <button
                 type="button"
                 aria-label="More info about HTTPS proxy URL"
@@ -91,7 +99,10 @@ const ProxyInputFields = ({
         <FormGroup
           label="No proxy domains"
           labelHelp={
-            <Popover bodyContent="Exclude destination domain names, IP addresses, or other network CIDRs from proxying by adding them to this comma-separated list.">
+            <Popover
+              {...themePopoverFlyoutProps}
+              bodyContent="Exclude destination domain names, IP addresses, or other network CIDRs from proxying by adding them to this comma-separated list."
+            >
               <button
                 type="button"
                 aria-label="More info about no proxy domains"

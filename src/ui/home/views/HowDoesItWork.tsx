@@ -25,6 +25,7 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 
 import useLocalStorage from "../../../hooks/useLocalStorage";
+import { themeTooltipFlyoutProps } from "../../../lib/patternfly/flyoutAppendTo";
 import { routes } from "../../../routing/Routes";
 import { CustomEnterpriseIcon } from "../../core/components/CustomEnterpriseIcon";
 
@@ -96,7 +97,10 @@ export const HowDoesItWork: React.FC = () => {
               </Icon>
               <Content component="h3" className={headingStyle}>
                 Assess VMware
-                <Tooltip content="As part of the discovery process, we're collecting aggregated data about your VMware environment. This includes information such as the number of clusters, hosts, and VMs; VM counts per operating system type; total CPU cores and memory; network types and VLANs; and a list of datastores.">
+                <Tooltip
+                  {...themeTooltipFlyoutProps}
+                  content="As part of the discovery process, we're collecting aggregated data about your VMware environment. This includes information such as the number of clusters, hosts, and VMs; VM counts per operating system type; total CPU cores and memory; network types and VLANs; and a list of datastores."
+                >
                   <Icon size="lg" className={questionIconStyle}>
                     <RhUiQuestionMarkCircleIcon
                       color={globalActiveColor300.var}

@@ -10,6 +10,11 @@ import type { SVGIconProps } from "@patternfly/react-icons/dist/js/createIcon";
 import classNames from "classnames";
 import React from "react";
 
+import {
+  getFlyoutAppendTo,
+  themePopoverFlyoutClassName,
+} from "../../../../lib/patternfly/flyoutAppendTo";
+
 type PopoverIconProps = PopoverProps & {
   variant?: ButtonProps["variant"];
   component?: ButtonProps["component"];
@@ -28,9 +33,20 @@ const PopoverIcon: React.FC<PopoverIconProps> = ({
   buttonClassName,
   buttonOuiaId,
   buttonStyle,
+  appendTo = getFlyoutAppendTo,
   ...props
 }) => (
-  <Popover {...props}>
+  // Popover prop order matters:
+  // 1. {...props} first — forwards all PopoverProps except those overridden below.
+  // 2. appendTo / className after the spread — prevents consumers from silently
+  //    dropping theme flyout styles by passing their own className via props.
+  // Do NOT destructure className out of props; it must stay on props so we can
+  // compose it here. classNames merge order: theme base, then consumer extension.
+  <Popover
+    {...props}
+    appendTo={appendTo}
+    className={classNames(themePopoverFlyoutClassName, props.className)}
+  >
     <Button
       icon={
         <Icon isInline={noVerticalAlign}>

@@ -1,5 +1,5 @@
 import type { MigrationIssue } from "@openshift-migration-advisor/planner-sdk";
-import { Card, CardBody, CardTitle, Icon } from "@patternfly/react-core";
+import { Card, CardBody, CardTitle } from "@patternfly/react-core";
 import { RhUiWarningFillIcon } from "@patternfly/react-icons";
 import { t_global_icon_color_status_warning_default as globalWarningColor100 } from "@patternfly/react-tokens/dist/js/t_global_icon_color_status_warning_default";
 import React from "react";
@@ -20,10 +20,7 @@ export const WarningsTable: React.FC<WarningsTableProps> = ({
   return (
     <Card className={dashboardCard} id="warnings-table">
       <CardTitle>
-        <Icon style={{ color: globalWarningColor100.var }}>
-          <RhUiWarningFillIcon />
-        </Icon>{" "}
-        Warnings
+        <RhUiWarningFillIcon color={globalWarningColor100.var} /> Warnings
       </CardTitle>
       <CardBody style={{ padding: 0 }}>
         <div

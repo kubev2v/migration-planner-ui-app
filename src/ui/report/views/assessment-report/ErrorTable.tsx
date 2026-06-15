@@ -1,5 +1,5 @@
 import type { MigrationIssue } from "@openshift-migration-advisor/planner-sdk";
-import { Card, CardBody, CardTitle, Icon } from "@patternfly/react-core";
+import { Card, CardBody, CardTitle } from "@patternfly/react-core";
 import { RhUiErrorFillIcon } from "@patternfly/react-icons";
 import { t_global_icon_color_status_danger_default as globalDangerColor100 } from "@patternfly/react-tokens/dist/js/t_global_icon_color_status_danger_default";
 import React from "react";
@@ -20,10 +20,7 @@ export const ErrorTable: React.FC<ErrorTableProps> = ({
   return (
     <Card className={dashboardCard} id="errors-table">
       <CardTitle>
-        <Icon style={{ color: globalDangerColor100.var }}>
-          <RhUiErrorFillIcon />
-        </Icon>{" "}
-        Errors
+        <RhUiErrorFillIcon color={globalDangerColor100.var} /> Errors
       </CardTitle>
       <CardBody style={{ padding: 0 }}>
         {errors.length === 0 ? (

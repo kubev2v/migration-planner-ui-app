@@ -1,7 +1,17 @@
-import { ChartDonut, ChartLabel, ChartLegend } from "@patternfly/react-charts";
+import {
+  ChartDonut,
+  ChartLabel,
+  ChartLegend,
+  ChartTooltip,
+} from "@patternfly/react-charts";
 import { Flex, FlexItem } from "@patternfly/react-core";
 import React, { useCallback, useMemo } from "react";
 
+import {
+  themedChartTooltipFlyoutPadding,
+  themedChartTooltipFlyoutStyle,
+  themedChartTooltipStyle,
+} from "../../../lib/patternfly/flyoutAppendTo";
 import { CardEmptyState } from "./CardEmptyState";
 
 interface OSData {
@@ -156,6 +166,17 @@ const MigrationDonutChart: React.FC<MigrationDonutChartProps> = ({
     return chartData.reduce((sum, item) => sum + (Number(item.y) || 0), 0);
   }, [chartData]);
 
+  const donutTooltip = useMemo(
+    () => (
+      <ChartTooltip
+        style={themedChartTooltipStyle}
+        flyoutStyle={themedChartTooltipFlyoutStyle}
+        flyoutPadding={themedChartTooltipFlyoutPadding}
+      />
+    ),
+    [],
+  );
+
   if (!data || data.length === 0) {
     return (
       <CardEmptyState
@@ -174,6 +195,7 @@ const MigrationDonutChart: React.FC<MigrationDonutChartProps> = ({
         <ChartDonut
           ariaDesc="Migration data donut chart"
           data={chartData}
+          labelComponent={donutTooltip}
           labels={({ datum }) => {
             const safeDatum = datum as ChartDatum;
             const percent =

@@ -2,6 +2,7 @@ import { Button, Icon, Tooltip } from "@patternfly/react-core";
 import { RhUiUploadIcon } from "@patternfly/react-icons";
 import React, { useCallback } from "react";
 
+import { themeTooltipFlyoutProps } from "../../../lib/patternfly/flyoutAppendTo";
 import { useEnvironmentPage } from "../view-models/EnvironmentPageContext";
 
 interface UploadInventoryProps {
@@ -28,7 +29,7 @@ export const UploadInventoryAction: React.FC<UploadInventoryProps> = ({
       Upload discovery file (JSON)
     </Button>
   ) : (
-    <Tooltip content="Upload JSON file">
+    <Tooltip {...themeTooltipFlyoutProps} content="Upload JSON file">
       <Button
         icon={
           <Icon size="md" isInline>
