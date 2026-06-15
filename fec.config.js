@@ -33,16 +33,33 @@ module.exports = {
         "/openshift/migration-advisor",
       ),
     }),
-    // Prevent EMFILE (too many open files) by excluding node_modules from
-    // webpack's file-system watcher.  The FEC-generated config sets no
-    // watchOptions, so without this patch watchpack opens OS-level watchers
-    // for every file in node_modules.
+    // Prevent ENOSPC / EMFILE by excluding node_modules from webpack's
+    // file-system watcher.  The FEC-generated config sets no watchOptions,
+    // so without this patch watchpack opens OS-level watchers for every
+    // file in node_modules (~150k files).
     {
       apply(compiler) {
-        compiler.options.watchOptions = {
-          ...compiler.options.watchOptions,
-          ignored: ["**/node_modules/**", "**/build-tools/**"],
+        const ignored = /[\\/]node_modules[\\/]|[\\/]build-tools[\\/]/;
+        const polling = process.env.WATCHPACK_POLLING;
+        const patchWatchOptions = (c) => {
+          c.options.watchOptions = {
+            ...c.options.watchOptions,
+            ignored,
+            followSymlinks: false,
+            ...(polling ? { poll: Number(polling) || 1000 } : {}),
+          };
         };
+        compiler.hooks.afterEnvironment.tap("ExcludeNodeModulesFromWatch", () =>
+          patchWatchOptions(compiler),
+        );
+        if (Array.isArray(compiler.compilers)) {
+          for (const child of compiler.compilers) {
+            child.hooks.afterEnvironment.tap(
+              "ExcludeNodeModulesFromWatch",
+              () => patchWatchOptions(child),
+            );
+          }
+        }
       },
     },
   ],
