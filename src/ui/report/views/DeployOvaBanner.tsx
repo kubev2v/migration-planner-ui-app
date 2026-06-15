@@ -15,10 +15,7 @@ import {
 import React from "react";
 import { useNavigate } from "react-router-dom";
 
-import {
-  getFlyoutAppendTo,
-  themeAwarePopoverClassName,
-} from "../../../lib/patternfly/flyoutAppendTo";
+import { themePopoverFlyoutProps } from "../../../lib/patternfly/flyoutAppendTo";
 import { routes } from "../../../routing/Routes";
 
 const bannerStyle = css`
@@ -43,8 +40,7 @@ export const DeployOvaBanner: React.FC = () => {
   return (
     <div className={bannerStyle}>
       <Popover
-        appendTo={getFlyoutAppendTo}
-        className={themeAwarePopoverClassName}
+        {...themePopoverFlyoutProps}
         headerContent="Deploy the Migration Advisor OVA"
         bodyContent={
           <div>

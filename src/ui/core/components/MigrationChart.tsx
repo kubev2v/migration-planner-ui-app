@@ -15,7 +15,7 @@ import React, { useMemo } from "react";
 
 import {
   getFlyoutAppendTo,
-  themeAwarePopoverClassName,
+  themePopoverFlyoutClassName,
 } from "../../../lib/patternfly/flyoutAppendTo";
 
 interface OSData {
@@ -182,7 +182,7 @@ const MigrationChart: React.FC<MigrationChartProps> = ({
                           <FlexItem shrink={{ default: "shrink" }}>
                             <Popover
                               appendTo={getFlyoutAppendTo}
-                              className={`${themeAwarePopoverClassName} ${upgradeRecommendationPopoverCloseButton}`}
+                              className={`${themePopoverFlyoutClassName} ${upgradeRecommendationPopoverCloseButton}`}
                               position="bottom"
                               headerContent="Upgrade to get support"
                               bodyContent={<div>{item.infoText}</div>}

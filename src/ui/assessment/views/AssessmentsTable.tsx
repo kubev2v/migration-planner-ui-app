@@ -29,10 +29,7 @@ import React, { useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 import type { AssessmentModel } from "../../../models/AssessmentModel";
-import {
-  getFlyoutAppendTo,
-  themeAwareTooltipClassName,
-} from "../../../lib/patternfly/flyoutAppendTo";
+import { themeTooltipFlyoutProps } from "../../../lib/patternfly/flyoutAppendTo";
 import { routes } from "../../../routing/Routes";
 import { EmptySearchResults } from "../../core/components/EmptySearchResults";
 
@@ -525,18 +522,13 @@ export const AssessmentsTable: React.FC<AssessmentsTableProps> = ({
             {isColumnVisible("Name") && (
               <Td dataLabel={Columns.Name} modifier="truncate">
                 {row.hasData ? (
-                  <Tooltip
-                    appendTo={getFlyoutAppendTo}
-                    className={themeAwareTooltipClassName}
-                    content={row.name}
-                  >
+                  <Tooltip {...themeTooltipFlyoutProps} content={row.name}>
                     <Link to={routes.assessmentById(row.id)}>{row.name}</Link>
                   </Tooltip>
                 ) : (
                   <span>
                     <Tooltip
-                      appendTo={getFlyoutAppendTo}
-                      className={themeAwareTooltipClassName}
+                      {...themeTooltipFlyoutProps}
                       content={
                         row.sourceType.toLowerCase().includes("rvtools")
                           ? "No inventory data found. The uploaded file may be corrupted. Please verify and re-upload."
@@ -547,11 +539,7 @@ export const AssessmentsTable: React.FC<AssessmentsTableProps> = ({
                         <RhUiWarningFillIcon />
                       </Icon>
                     </Tooltip>{" "}
-                    <Tooltip
-                      appendTo={getFlyoutAppendTo}
-                      className={themeAwareTooltipClassName}
-                      content={row.name}
-                    >
+                    <Tooltip {...themeTooltipFlyoutProps} content={row.name}>
                       <span>{row.name}</span>
                     </Tooltip>
                   </span>
@@ -606,8 +594,7 @@ export const AssessmentsTable: React.FC<AssessmentsTableProps> = ({
               <Td dataLabel={Columns.AssessmentReport}>
                 <TableText>
                   <Tooltip
-                    appendTo={getFlyoutAppendTo}
-                    className={themeAwareTooltipClassName}
+                    {...themeTooltipFlyoutProps}
                     content={
                       row.hasData
                         ? "View assessment report"

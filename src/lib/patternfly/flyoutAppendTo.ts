@@ -1,4 +1,4 @@
-import { css } from "@emotion/css";
+import { css, cx } from "@emotion/css";
 
 /**
  * DOM target for portaled PatternFly flyouts (Popover, Tooltip).
@@ -8,7 +8,8 @@ import { css } from "@emotion/css";
  */
 export const getFlyoutAppendTo = (): HTMLElement => document.body;
 
-const flyoutTypography = css`
+/** Shared typography for portaled popover and tooltip content. */
+export const flyoutTypographyClassName = css`
   .pf-v6-c-popover__content,
   .pf-v6-c-popover__title-text,
   .pf-v6-c-tooltip__content {
@@ -21,7 +22,7 @@ const flyoutTypography = css`
   }
 `;
 
-/** Popover surfaces that respect the active PatternFly theme. */
+/** Popover color tokens that respect the active PatternFly theme. */
 export const themeAwarePopoverClassName = css`
   --pf-v6-c-popover__content--BackgroundColor: var(
     --pf-t--global--background--color--floating--default
@@ -33,10 +34,9 @@ export const themeAwarePopoverClassName = css`
   --pf-v6-c-popover__arrow--BorderColor: var(
     --pf-t--global--border--color--default
   );
-  ${flyoutTypography}
 `;
 
-/** Tooltip surfaces that respect the active PatternFly theme. */
+/** Tooltip color tokens that respect the active PatternFly theme. */
 export const themeAwareTooltipClassName = css`
   --pf-v6-c-tooltip__content--BackgroundColor: var(
     --pf-t--global--background--color--floating--default
@@ -48,8 +48,19 @@ export const themeAwareTooltipClassName = css`
   --pf-v6-c-tooltip__arrow--BorderColor: var(
     --pf-t--global--border--color--default
   );
-  ${flyoutTypography}
 `;
+
+/** Typography + theme tokens for popovers. */
+export const themePopoverFlyoutClassName = cx(
+  flyoutTypographyClassName,
+  themeAwarePopoverClassName,
+);
+
+/** Typography + theme tokens for tooltips. */
+export const themeTooltipFlyoutClassName = cx(
+  flyoutTypographyClassName,
+  themeAwareTooltipClassName,
+);
 
 /** Victory chart tooltips (Voronoi) that respect the active PatternFly theme. */
 export const themedChartTooltipStyle = {
@@ -73,11 +84,11 @@ export const themedChartTooltipFlyoutPadding = {
 /** Shared props for theme-aware PatternFly Popovers. */
 export const themePopoverFlyoutProps = {
   appendTo: getFlyoutAppendTo,
-  className: themeAwarePopoverClassName,
+  className: themePopoverFlyoutClassName,
 } as const;
 
 /** Shared props for theme-aware PatternFly Tooltips. */
 export const themeTooltipFlyoutProps = {
   appendTo: getFlyoutAppendTo,
-  className: themeAwareTooltipClassName,
+  className: themeTooltipFlyoutClassName,
 } as const;

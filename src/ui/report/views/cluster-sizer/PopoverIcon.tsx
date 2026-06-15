@@ -12,7 +12,7 @@ import React from "react";
 
 import {
   getFlyoutAppendTo,
-  themeAwarePopoverClassName,
+  themePopoverFlyoutClassName,
 } from "../../../../lib/patternfly/flyoutAppendTo";
 
 type PopoverIconProps = PopoverProps & {
@@ -33,14 +33,19 @@ const PopoverIcon: React.FC<PopoverIconProps> = ({
   buttonClassName,
   buttonOuiaId,
   buttonStyle,
-  className,
   appendTo = getFlyoutAppendTo,
   ...props
 }) => (
+  // Popover prop order matters:
+  // 1. {...props} first — forwards all PopoverProps except those overridden below.
+  // 2. appendTo / className after the spread — prevents consumers from silently
+  //    dropping theme flyout styles by passing their own className via props.
+  // Do NOT destructure className out of props; it must stay on props so we can
+  // compose it here. classNames merge order: theme base, then consumer extension.
   <Popover
-    appendTo={appendTo}
-    className={classNames(themeAwarePopoverClassName, className)}
     {...props}
+    appendTo={appendTo}
+    className={classNames(themePopoverFlyoutClassName, props.className)}
   >
     <Button
       icon={

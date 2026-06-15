@@ -22,10 +22,7 @@ import {
 import React, { useRef } from "react";
 import { Link } from "react-router-dom";
 
-import {
-  getFlyoutAppendTo,
-  themeAwareTooltipClassName,
-} from "../../../lib/patternfly/flyoutAppendTo";
+import { themeTooltipFlyoutProps } from "../../../lib/patternfly/flyoutAppendTo";
 import { routes } from "../../../routing/Routes";
 import CreateAssessmentModal from "../../assessment/views/CreateAssessmentModal";
 import { AppPage } from "../../core/components/AppPage";
@@ -283,8 +280,7 @@ const ReportContent: React.FC = () => {
                 />
               ) : (
                 <Tooltip
-                  appendTo={getFlyoutAppendTo}
-                  className={themeAwareTooltipClassName}
+                  {...themeTooltipFlyoutProps}
                   content={
                     <p>
                       Export is unavailable because this cluster has no VMs.
@@ -313,8 +309,7 @@ const ReportContent: React.FC = () => {
                   </Button>
                 ) : (
                   <Tooltip
-                    appendTo={getFlyoutAppendTo}
-                    className={themeAwareTooltipClassName}
+                    {...themeTooltipFlyoutProps}
                     content={
                       <p>
                         This cluster has no VMs. Cluster recommendations are not
