@@ -31,7 +31,9 @@ import {
   themedChartTooltipFlyoutStyle,
   themedChartTooltipStyle,
 } from "../../../../lib/patternfly/flyoutAppendTo";
+import { CardEmptyState } from "../../../core/components/CardEmptyState";
 import MigrationDonutChart from "../../../core/components/MigrationDonutChart";
+import { REPORT_CARD_EMPTY_STATE_TITLES } from "./constants";
 import {
   dashboardCard,
   storageCardOverflowHidden,
@@ -41,7 +43,6 @@ import {
   storageExportSectionTitle,
   storageFlexFullWidth,
   storageMenuToggleMinWidth,
-  storageNoDataContainer,
   storageTotalsNote,
 } from "./styles";
 
@@ -413,7 +414,9 @@ export const StorageOverview: React.FC<StorageOverviewProps> = ({
         {!isExportMode || !exportAllViews ? (
           viewMode === "vmCountByDiskType" ? (
             diskTypeChartData.length === 0 ? (
-              <div className={storageNoDataContainer}>No Data Available</div>
+              <CardEmptyState
+                title={REPORT_CARD_EMPTY_STATE_TITLES.diskTypes}
+              />
             ) : (
               <>
                 <div className={storageChartWrapper}>
@@ -503,6 +506,7 @@ export const StorageOverview: React.FC<StorageOverviewProps> = ({
               itemsPerRow={Math.ceil(sharedDisksChartData.length / 2)}
               labelFontSize={18}
               marginLeft="52%"
+              emptyStateTitle={REPORT_CARD_EMPTY_STATE_TITLES.storage}
               tooltipLabelFormatter={({ datum, percent }) =>
                 `${datum.countDisplay}\n${percent.toFixed(1)}%`
               }
@@ -528,6 +532,7 @@ export const StorageOverview: React.FC<StorageOverviewProps> = ({
               itemsPerRow={Math.min(Math.ceil(chartData.length / 2), 2)}
               legendWidth={420}
               labelFontSize={14}
+              emptyStateTitle={REPORT_CARD_EMPTY_STATE_TITLES.storage}
               tooltipLabelFormatter={({ datum, percent }) =>
                 `${datum.countDisplay}\n${percent.toFixed(1)}%`
               }
@@ -627,6 +632,7 @@ export const StorageOverview: React.FC<StorageOverviewProps> = ({
                 )}
                 legendWidth={420}
                 labelFontSize={14}
+                emptyStateTitle={REPORT_CARD_EMPTY_STATE_TITLES.storage}
                 tooltipLabelFormatter={({ datum, percent }) =>
                   `${datum.countDisplay}\n${percent.toFixed(1)}%`
                 }
@@ -651,6 +657,7 @@ export const StorageOverview: React.FC<StorageOverviewProps> = ({
                 )}
                 legendWidth={420}
                 labelFontSize={14}
+                emptyStateTitle={REPORT_CARD_EMPTY_STATE_TITLES.storage}
                 tooltipLabelFormatter={({ datum, percent }) =>
                   `${datum.countDisplay}\n${percent.toFixed(1)}%`
                 }
@@ -672,6 +679,7 @@ export const StorageOverview: React.FC<StorageOverviewProps> = ({
                 itemsPerRow={Math.ceil(sharedDisksChartData.length / 2)}
                 labelFontSize={18}
                 marginLeft="52%"
+                emptyStateTitle={REPORT_CARD_EMPTY_STATE_TITLES.storage}
                 tooltipLabelFormatter={({ datum, percent }) =>
                   `${datum.countDisplay}\n${percent.toFixed(1)}%`
                 }

@@ -11,8 +11,13 @@ import {
 import { RhUiInformationFillIcon } from "@patternfly/react-icons";
 import React from "react";
 
+import { CardEmptyState } from "../../../core/components/CardEmptyState";
 import MigrationChart from "../../../core/components/MigrationChart";
-import { chartColorFailure, chartColorSuccess } from "./constants";
+import {
+  chartColorFailure,
+  chartColorSuccess,
+  REPORT_CARD_EMPTY_STATE_TITLES,
+} from "./constants";
 import { dashboardCard } from "./styles";
 
 interface OSDistributionProps {
@@ -108,6 +113,12 @@ export const OSBarChart: React.FC<OSBarChartProps> = ({
       : "Not supported by MTV",
     infoText: osInfo.upgradeRecommendation,
   }));
+
+  if (chartData.length === 0) {
+    return (
+      <CardEmptyState title={REPORT_CARD_EMPTY_STATE_TITLES.operatingSystems} />
+    );
+  }
 
   // Define custom colors: green for supported, red for not supported
   const customLegend = {

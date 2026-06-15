@@ -17,6 +17,7 @@ import {
 import React, { useMemo, useState } from "react";
 
 import MigrationDonutChart from "../../../core/components/MigrationDonutChart";
+import { REPORT_CARD_EMPTY_STATE_TITLES } from "./constants";
 import { dashboardCard } from "./styles";
 
 // Reuse an extended palette similar to ClustersOverview to provide stable colors
@@ -330,6 +331,7 @@ export const NetworkOverview: React.FC<NetworkOverviewProps> = ({
                 subTitleColor="var(--pf-t--global--text--color--subtle)"
                 itemsPerRow={Math.ceil(chartData.length / 2)}
                 labelFontSize={18}
+                emptyStateTitle={REPORT_CARD_EMPTY_STATE_TITLES.networks}
                 tooltipLabelFormatter={({ datum, percent }) =>
                   `${datum.countDisplay}\n${percent.toFixed(1)}%\nVLAN: ${legendVlanMap[datum.legendCategory] ?? "-"}`
                 }
@@ -351,6 +353,7 @@ export const NetworkOverview: React.FC<NetworkOverviewProps> = ({
                 subTitleColor="var(--pf-t--global--text--color--subtle)"
                 itemsPerRow={Math.ceil((nicChartData?.length ?? 0) / 2)}
                 labelFontSize={18}
+                emptyStateTitle={REPORT_CARD_EMPTY_STATE_TITLES.nicCount}
                 tooltipLabelFormatter={({ datum, percent }) =>
                   `${datum.countDisplay}\n${percent.toFixed(1)}%`
                 }
@@ -372,6 +375,7 @@ export const NetworkOverview: React.FC<NetworkOverviewProps> = ({
                 subTitleColor="var(--pf-t--global--text--color--subtle)"
                 itemsPerRow={Math.ceil(chartData.length / 2)}
                 labelFontSize={18}
+                emptyStateTitle={REPORT_CARD_EMPTY_STATE_TITLES.networks}
                 tooltipLabelFormatter={({ datum, percent }) =>
                   `${datum.countDisplay}\n${percent.toFixed(1)}%\nVLAN: ${legendVlanMap[datum.legendCategory] ?? "-"}`
                 }
@@ -390,6 +394,7 @@ export const NetworkOverview: React.FC<NetworkOverviewProps> = ({
                 subTitleColor="var(--pf-t--global--text--color--subtle)"
                 itemsPerRow={Math.ceil((nicChartData?.length ?? 0) / 2)}
                 labelFontSize={18}
+                emptyStateTitle={REPORT_CARD_EMPTY_STATE_TITLES.nicCount}
                 tooltipLabelFormatter={({ datum, percent }) =>
                   `${datum.countDisplay}\n${percent.toFixed(1)}%`
                 }
