@@ -1,8 +1,5 @@
 import {
-  Alert,
   Button,
-  Form,
-  FormAlert,
   Modal,
   ModalBody,
   ModalFooter,
@@ -12,25 +9,13 @@ import React, { useCallback, useEffect, useState } from "react";
 
 import { getNetworkConfig } from "../../helpers/networkConfig";
 import { getProxyConfig } from "../../helpers/proxyConfig";
+import { normalizeSshKey } from "../../helpers/sshKey";
 import { useEnvironmentPage } from "../../view-models/EnvironmentPageContext";
+import { EnvironmentForm, type EnvironmentFormValues } from "./EnvironmentForm";
 import {
-  EnvironmentForm,
-  type EnvironmentFormErrors,
-  type EnvironmentFormValues,
-} from "./EnvironmentForm";
-import {
-  calculateFormChanges,
-  getInitialErrors,
   getInitialFormValues,
   getModalMode,
-  handleFieldChangeHelper,
-  isSubmitDisabledHelper,
   type ModalMode,
-  normalizeSshKey,
-  validateField,
-  validateProxyFields,
-  validateSshKeyForMode,
-  validateStaticIpSubmit,
 } from "./helpers/environmentModalHelpers";
 
 type CreateModeProps = {
@@ -60,11 +45,7 @@ export const EnvironmentModal: React.FC<EnvironmentModalProps> = (props) => {
   const editProxyConfig = editSource ? getProxyConfig(editSource) : null;
   const editNetworkConfig = editSource ? getNetworkConfig(editSource) : null;
 
-  const [formValues, setFormValues] = useState<EnvironmentFormValues>(() =>
-    getInitialFormValues(mode, editSource, editProxyConfig, editNetworkConfig),
-  );
-
-  const [initialValues] = useState<EnvironmentFormValues>(() =>
+  const [initialValues] = useState<EnvironmentFormValues | undefined>(() =>
     mode === "edit"
       ? getInitialFormValues(
           mode,
@@ -72,30 +53,12 @@ export const EnvironmentModal: React.FC<EnvironmentModalProps> = (props) => {
           editProxyConfig,
           editNetworkConfig,
         )
-      : getInitialFormValues("create"),
+      : undefined,
   );
 
-  const [errors, setErrors] = useState<EnvironmentFormErrors>(getInitialErrors);
-
-  const handleValidate = useCallback(
-    (field: string): void => {
-      validateField(field, formValues, setErrors);
-    },
-    [formValues],
-  );
-
-  const handleFieldChange = useCallback(
-    (field: keyof EnvironmentFormValues, value: string | boolean): void => {
-      handleFieldChangeHelper(field, value, setFormValues, setErrors);
-    },
-    [],
-  );
+  const [isValid, setIsValid] = useState(false);
 
   const resetForm = useCallback((): void => {
-    if (mode === "create") {
-      setFormValues(getInitialFormValues("create"));
-    }
-    setErrors(getInitialErrors());
     vm.clearErrors?.({
       ...(mode === "create" && { downloading: true, creating: true }),
       ...(mode === "edit" && { updating: true }),
@@ -107,26 +70,8 @@ export const EnvironmentModal: React.FC<EnvironmentModalProps> = (props) => {
     onClose();
   }, [onClose, resetForm]);
 
-  const handleSubmit = useCallback<React.FormEventHandler<HTMLFormElement>>(
-    (e) => {
-      e.preventDefault();
-
-      if (!validateProxyFields(formValues, setErrors)) {
-        return;
-      }
-
-      if (!validateSshKeyForMode(mode, formValues.sshKey, setErrors)) {
-        return;
-      }
-
-      if (mode === "create" && formValues.environmentName === "") {
-        return;
-      }
-
-      if (!validateStaticIpSubmit(formValues, setErrors)) {
-        return;
-      }
-
+  const handleSubmit = useCallback(
+    (formValues: EnvironmentFormValues) => {
       if (mode === "create") {
         void vm.createDownloadSource({
           name: formValues.environmentName,
@@ -164,13 +109,13 @@ export const EnvironmentModal: React.FC<EnvironmentModalProps> = (props) => {
           });
       }
     },
-    [formValues, vm, mode, props, handleClose],
+    [vm, mode, props, handleClose],
   );
 
   useEffect(() => {
     if (mode === "create" && vm.downloadSourceUrl && isOpen) {
       const url = vm.downloadSourceUrl;
-      const name = formValues.environmentName;
+      const name = initialValues?.environmentName || "";
       void Promise.resolve().then(() => {
         (props as CreateModeProps).onSuccess(url, name);
         resetForm();
@@ -178,16 +123,6 @@ export const EnvironmentModal: React.FC<EnvironmentModalProps> = (props) => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [vm.downloadSourceUrl, isOpen, mode]);
-
-  const hasFormChanges =
-    mode === "edit" ? calculateFormChanges(formValues, initialValues) : true;
-
-  const isSubmitDisabled = isSubmitDisabledHelper(
-    formValues,
-    errors,
-    mode,
-    hasFormChanges,
-  );
 
   const modalConfig = {
     create: {
@@ -231,37 +166,15 @@ export const EnvironmentModal: React.FC<EnvironmentModalProps> = (props) => {
         description={modalConfig.description}
       />
       <ModalBody id={modalConfig.ariaDescribedBy}>
-        <Form
-          noValidate={false}
+        <EnvironmentForm
           id={modalConfig.formId}
+          formValues={initialValues}
           onSubmit={handleSubmit}
-        >
-          <EnvironmentForm
-            mode={mode}
-            formValues={formValues}
-            errors={errors}
-            onFieldChange={handleFieldChange}
-            onValidate={handleValidate}
-          />
-          {errors.proxyGroupError && (
-            <FormAlert>
-              <Alert
-                isInline
-                variant="danger"
-                title="Proxy configuration error"
-              >
-                {errors.proxyGroupError}
-              </Alert>
-            </FormAlert>
-          )}
-          {modalConfig.errorFlag && (
-            <FormAlert>
-              <Alert isInline variant="danger" title={modalConfig.errorTitle}>
-                {modalConfig.errorFlag.message}
-              </Alert>
-            </FormAlert>
-          )}
-        </Form>
+          setIsValid={setIsValid}
+          hasError={!!modalConfig.errorFlag}
+          errorTitle={modalConfig.errorTitle}
+          errorMessage={modalConfig.errorFlag?.message}
+        />
       </ModalBody>
       <ModalFooter>
         <Button
@@ -269,7 +182,7 @@ export const EnvironmentModal: React.FC<EnvironmentModalProps> = (props) => {
           type="submit"
           key="confirm"
           variant="primary"
-          isDisabled={isSubmitDisabled}
+          isDisabled={!isValid}
         >
           {modalConfig.submitText}
         </Button>

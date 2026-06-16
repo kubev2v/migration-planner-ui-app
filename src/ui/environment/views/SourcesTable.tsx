@@ -25,8 +25,8 @@ import { Table, Tbody, Td, Th, Thead, Tr } from "@patternfly/react-table";
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-import type { SourceModel } from "../../../models/SourceModel";
 import { themeTooltipFlyoutProps } from "../../../lib/patternfly/flyoutAppendTo";
+import type { SourceModel } from "../../../models/SourceModel";
 import { routes } from "../../../routing/Routes";
 import { ConfirmationModal } from "../../core/components/ConfirmationModal";
 import { EmptySearchResults } from "../../core/components/EmptySearchResults";

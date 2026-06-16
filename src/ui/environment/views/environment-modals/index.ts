@@ -1,7 +1,6 @@
 export type { DownloadEnvironmentModalProps } from "./DownloadEnvironmentModal";
 export { DownloadEnvironmentModal } from "./DownloadEnvironmentModal";
 export type {
-  EnvironmentFormErrors,
   EnvironmentFormProps,
   EnvironmentFormValues,
 } from "./EnvironmentForm";

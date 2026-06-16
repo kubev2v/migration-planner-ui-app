@@ -28,8 +28,8 @@ import {
 import React, { useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
-import type { AssessmentModel } from "../../../models/AssessmentModel";
 import { themeTooltipFlyoutProps } from "../../../lib/patternfly/flyoutAppendTo";
+import type { AssessmentModel } from "../../../models/AssessmentModel";
 import { routes } from "../../../routing/Routes";
 import { EmptySearchResults } from "../../core/components/EmptySearchResults";
 
