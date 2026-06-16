@@ -6,6 +6,7 @@ import {
   validateHttpProxy,
   validateHttpsProxy,
   validateIpAddress,
+  validateNoProxy,
   validateProxyGroup,
   validateStaticIpFields,
   validateSubnetMask,
@@ -82,6 +83,12 @@ describe("validation", () => {
         "must start with http://",
       );
     });
+
+    it("rejects invalid HTTP URLs", () => {
+      expect(validateHttpProxy("http://")).not.toBeNull();
+      expect(validateHttpProxy("http:// invalid")).not.toBeNull();
+      expect(validateHttpProxy("http://[invalid]")).not.toBeNull();
+    });
   });
 
   describe("validateHttpsProxy", () => {
@@ -106,6 +113,12 @@ describe("validation", () => {
       expect(validateHttpsProxy("proxy.com")).toContain(
         "must start with https://",
       );
+    });
+
+    it("rejects invalid HTTPS URLs", () => {
+      expect(validateHttpsProxy("https://")).not.toBeNull();
+      expect(validateHttpsProxy("https:// invalid")).not.toBeNull();
+      expect(validateHttpsProxy("https://[invalid]")).not.toBeNull();
     });
   });
 
@@ -255,6 +268,66 @@ describe("validation", () => {
     it("returns true when all fields are empty", () => {
       expect(areStaticIpFieldsEmpty("", "", "", "")).toBe(true);
       expect(areStaticIpFieldsEmpty("   ", "   ", "   ", "   ")).toBe(true);
+    });
+  });
+
+  describe("validateNoProxy", () => {
+    it("returns null for empty input", () => {
+      expect(validateNoProxy("")).toBeNull();
+      expect(validateNoProxy("   ")).toBeNull();
+    });
+
+    it("returns null for wildcard", () => {
+      expect(validateNoProxy("*")).toBeNull();
+    });
+
+    it("validates single domain", () => {
+      expect(validateNoProxy("test.example.com")).toBeNull();
+      expect(validateNoProxy("example.com")).toBeNull();
+      expect(validateNoProxy("sub.domain.example.com")).toBeNull();
+    });
+
+    it("validates domain with leading dot", () => {
+      expect(validateNoProxy(".example.com")).toBeNull();
+      expect(validateNoProxy(".test.example.com")).toBeNull();
+    });
+
+    it("validates comma-separated domains", () => {
+      expect(validateNoProxy("test.example.com,example.org")).toBeNull();
+      expect(validateNoProxy("test.example.com, example.org")).toBeNull();
+      expect(validateNoProxy("localhost,127.0.0.1,.example.com")).toBeNull();
+    });
+
+    it("validates IP addresses", () => {
+      expect(validateNoProxy("127.0.0.1")).toBeNull();
+      expect(validateNoProxy("192.168.1.1")).toBeNull();
+      expect(validateNoProxy("10.0.0.0")).toBeNull();
+      expect(validateNoProxy("localhost,127.0.0.1")).toBeNull();
+    });
+
+    it("accepts trailing comma", () => {
+      expect(validateNoProxy("test.example.com,")).toBeNull();
+      expect(validateNoProxy("test.example.com, ")).toBeNull();
+    });
+
+    it("rejects invalid domain formats", () => {
+      expect(validateNoProxy("-invalid.com")).not.toBeNull();
+      expect(validateNoProxy("invalid-.com")).not.toBeNull();
+      expect(validateNoProxy("invalid..com")).not.toBeNull();
+      expect(validateNoProxy(".")).not.toBeNull();
+      expect(validateNoProxy("..example.com")).not.toBeNull();
+    });
+
+    it("rejects invalid characters", () => {
+      expect(validateNoProxy("invalid_domain.com")).not.toBeNull();
+      expect(validateNoProxy("invalid domain.com")).not.toBeNull();
+      expect(validateNoProxy("invalid@domain.com")).not.toBeNull();
+    });
+
+    it("provides helpful error message", () => {
+      const result = validateNoProxy("-invalid.com");
+      expect(result).toContain("Invalid entry");
+      expect(result).toContain("-invalid.com");
     });
   });
 });

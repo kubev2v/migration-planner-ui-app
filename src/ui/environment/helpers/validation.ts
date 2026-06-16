@@ -42,10 +42,15 @@ export const validateHttpProxy = (proxy: string): string | null => {
   if (!trimmed) return null;
 
   if (!/^http:\/\//i.test(trimmed)) {
-    return "URL must start with http://";
+    return "HTTP proxy URL must start with http://";
   }
 
-  return null;
+  try {
+    new URL(trimmed);
+    return null;
+  } catch {
+    return "Invalid HTTP proxy URL. Please provide a valid URL.";
+  }
 };
 
 export const validateHttpsProxy = (proxy: string): string | null => {
@@ -53,9 +58,38 @@ export const validateHttpsProxy = (proxy: string): string | null => {
   if (!trimmed) return null;
 
   if (!/^https:\/\//i.test(trimmed)) {
-    return "URL must start with https://";
+    return "HTTPS proxy URL must start with https://";
   }
 
+  try {
+    new URL(trimmed);
+    return null;
+  } catch {
+    return "Invalid HTTPS proxy URL. Please provide a valid URL.";
+  }
+};
+
+export const validateNoProxy = (noProxy: string): string | null => {
+  const trimmed = noProxy.trim();
+  if (!trimmed) return null;
+  if (trimmed === "*") return null;
+
+  const entries = trimmed.split(",").map((d) => d.trim());
+  for (const entry of entries) {
+    if (!entry) continue;
+
+    const ipPattern = /^((25[0-5]|(2[0-4]|1\d|[1-9]|)\d)\.?\b){4}$/;
+    if (ipPattern.test(entry)) {
+      continue;
+    }
+
+    const domainPattern =
+      /^\.?([a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?\.)*[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?$/;
+
+    if (!domainPattern.test(entry)) {
+      return `Invalid entry: "${entry}". Use valid domain names or IP addresses separated by commas.`;
+    }
+  }
   return null;
 };
 

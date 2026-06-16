@@ -19,11 +19,12 @@ export default function FormFieldHelperText({
   return (
     <FormHelperText>
       <HelperText>
-        {helpText && <HelperTextItem>{helpText}</HelperTextItem>}
-        {errorMessage && (
+        {errorMessage ? (
           <HelperTextItem icon={<RhUiErrorFillIcon />} variant="error">
             {errorMessage}
           </HelperTextItem>
+        ) : (
+          helpText && <HelperTextItem>{helpText}</HelperTextItem>
         )}
       </HelperText>
     </FormHelperText>
