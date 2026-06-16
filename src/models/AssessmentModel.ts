@@ -1,5 +1,6 @@
 import type {
   Assessment,
+  AssessmentPermissionsEnum,
   Snapshot,
 } from "@openshift-migration-advisor/planner-sdk";
 
@@ -33,6 +34,25 @@ export type AssessmentModel = Assessment & {
 };
 
 // ---------------------------------------------------------------------------
+// Permissions
+// ---------------------------------------------------------------------------
+
+/**
+ * Default permissions when the API omits them (e.g. standalone with auth disabled).
+ * Auth-enabled deployments always populate permissions via AuthzAssessmentService.
+ */
+const DEFAULT_OWNER_PERMISSIONS: AssessmentPermissionsEnum[] = [
+  "read",
+  "share",
+  "delete",
+];
+
+const resolvePermissions = (
+  permissions: Assessment["permissions"],
+): AssessmentPermissionsEnum[] =>
+  permissions?.length ? permissions : DEFAULT_OWNER_PERMISSIONS;
+
+// ---------------------------------------------------------------------------
 // Factory
 // ---------------------------------------------------------------------------
 
@@ -58,6 +78,7 @@ const computeOwnerFullName = (raw: Assessment): string => {
  */
 export const createAssessmentModel = (raw: Assessment): AssessmentModel => ({
   ...raw,
+  permissions: resolvePermissions(raw.permissions),
   ownerFullName: computeOwnerFullName(raw),
   latestSnapshot: parseLatestSnapshot(raw.snapshots),
   hasUsefulData: hasUsefulData(raw.snapshots),
