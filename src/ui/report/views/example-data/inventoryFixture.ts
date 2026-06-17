@@ -336,10 +336,10 @@ const inventoryData = {
           },
           {
             assessment:
-              "The guest operating system is not currently supported by the Migration Toolkit for Virtualization",
+              "The guest operating system is considered out of scope for the Migration Toolkit for Virtualization",
             count: 105,
             id: "vmware.os.unsupported",
-            label: "Unsupported operating system detected",
+            label: "Out of scope operating system detected",
           },
           {
             assessment:
@@ -1009,10 +1009,10 @@ const inventoryData = {
           },
           {
             assessment:
-              "The guest operating system is not currently supported by the Migration Toolkit for Virtualization",
+              "The guest operating system is considered out of scope for the Migration Toolkit for Virtualization",
             count: 133,
             id: "vmware.os.unsupported",
-            label: "Unsupported operating system detected",
+            label: "Out of scope operating system detected",
           },
           {
             assessment:
@@ -1802,10 +1802,10 @@ const inventoryData = {
         },
         {
           assessment:
-            "The guest operating system is not currently supported by the Migration Toolkit for Virtualization",
+            "The guest operating system is considered out of scope for the Migration Toolkit for Virtualization",
           count: 238,
           id: "vmware.os.unsupported",
-          label: "Unsupported operating system detected",
+          label: "Out of scope operating system detected",
         },
         {
           assessment:
