@@ -48,6 +48,7 @@ export const CPU_OPTIONS: { value: number; label: string }[] = [
   { value: 64, label: "64" },
   { value: 128, label: "128" },
   { value: 200, label: "200" },
+  { value: 384, label: "384" },
 ];
 
 /**
@@ -59,6 +60,9 @@ export const MEMORY_OPTIONS: { value: number; label: string }[] = [
   { value: 128, label: "128" },
   { value: 256, label: "256" },
   { value: 512, label: "512" },
+  { value: 1024, label: "1024" },
+  { value: 2048, label: "2048" },
+  { value: 4096, label: "4096" },
 ];
 
 /**
@@ -71,6 +75,7 @@ export const CONTROL_PLANE_CPU_OPTIONS: { value: number; label: string }[] = [
   { value: 64, label: "64" },
   { value: 128, label: "128" },
   { value: 200, label: "200" },
+  { value: 384, label: "384" },
 ];
 
 /**
@@ -84,6 +89,9 @@ export const CONTROL_PLANE_MEMORY_OPTIONS: { value: number; label: string }[] =
     { value: 128, label: "128" },
     { value: 256, label: "256" },
     { value: 512, label: "512" },
+    { value: 1024, label: "1024" },
+    { value: 2048, label: "2048" },
+    { value: 4096, label: "4096" },
   ];
 
 /**
@@ -258,12 +266,12 @@ export const ESTIMATION_SLIDER_LIMITS = {
 export const WORKER_NODE_CONSTRAINTS = {
   cpu: {
     min: 2,
-    max: 200,
+    max: 384,
     step: 2,
   },
   memory: {
     min: 4,
-    max: 512,
+    max: 4096,
     step: 4,
   },
 };
