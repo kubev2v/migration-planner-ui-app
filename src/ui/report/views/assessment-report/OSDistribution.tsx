@@ -109,8 +109,8 @@ export const OSBarChart: React.FC<OSBarChartProps> = ({
     name: os,
     count: osInfo.count,
     legendCategory: osInfo.supported
-      ? "Supported by MTV"
-      : "Not supported by MTV",
+      ? "Recommended In Scope"
+      : "Recommended Out of Scope",
     infoText: osInfo.upgradeRecommendation,
   }));
 
@@ -122,8 +122,8 @@ export const OSBarChart: React.FC<OSBarChartProps> = ({
 
   // Define custom colors: green for supported, red for not supported
   const customLegend = {
-    "Supported by MTV": chartColorSuccess,
-    "Not supported by MTV": chartColorFailure,
+    "Recommended In Scope": chartColorSuccess,
+    "Recommended Out of Scope": chartColorFailure,
   };
 
   const tableHeight = isExportMode ? "auto !important" : "350px";
