@@ -194,6 +194,7 @@ describe("EnvironmentModal - Edit mode", () => {
       isOpen: true,
       onClose: vi.fn(),
       sourceId: "source-123",
+      onSuccess: vi.fn(),
     };
 
     render(
@@ -212,6 +213,7 @@ describe("EnvironmentModal - Edit mode", () => {
       isOpen: false,
       onClose: vi.fn(),
       sourceId: "source-123",
+      onSuccess: vi.fn(),
     };
 
     render(
@@ -230,6 +232,7 @@ describe("EnvironmentModal - Edit mode", () => {
       isOpen: true,
       onClose: vi.fn(),
       sourceId: "source-123",
+      onSuccess: vi.fn(),
     };
 
     render(
@@ -248,6 +251,7 @@ describe("EnvironmentModal - Edit mode", () => {
       isOpen: true,
       onClose: vi.fn(),
       sourceId: "source-123",
+      onSuccess: vi.fn(),
     };
 
     render(
@@ -266,6 +270,7 @@ describe("EnvironmentModal - Edit mode", () => {
       isOpen: true,
       onClose,
       sourceId: "source-123",
+      onSuccess: vi.fn(),
     };
 
     render(
@@ -283,6 +288,7 @@ describe("EnvironmentModal - Edit mode", () => {
       isOpen: true,
       onClose: vi.fn(),
       sourceId: "source-123",
+      onSuccess: vi.fn(),
     };
 
     render(

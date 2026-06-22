@@ -25,7 +25,7 @@ type CreateModeProps = {
 
 type EditModeProps = {
   sourceId: string;
-  onSuccess?: () => void;
+  onSuccess: (downloadUrl: string, sourceName: string) => void;
 };
 
 export type EnvironmentModalProps = {
@@ -88,36 +88,35 @@ export const EnvironmentModal: React.FC<EnvironmentModalProps> = (props) => {
         });
       } else {
         const editProps = props as EditModeProps;
-        void vm
-          .updateSource({
-            sourceId: editProps.sourceId,
-            sshPublicKey: normalizeSshKey(formValues.sshKey),
-            enableProxy: formValues.enableProxy,
-            httpProxy: formValues.httpProxy,
-            httpsProxy: formValues.httpsProxy,
-            noProxy: formValues.noProxy,
-            networkConfigType: formValues.networkConfigType,
-            ipAddress: formValues.ipAddress,
-            subnetMask: formValues.subnetMask,
-            defaultGateway: formValues.defaultGateway,
-            dns: formValues.dns,
-          })
-          .then(() => {
-            void vm.listSources();
-            editProps.onSuccess?.();
-            handleClose();
-          });
+        void vm.updateSource({
+          sourceId: editProps.sourceId,
+          sshPublicKey: normalizeSshKey(formValues.sshKey),
+          enableProxy: formValues.enableProxy,
+          httpProxy: formValues.httpProxy,
+          httpsProxy: formValues.httpsProxy,
+          noProxy: formValues.noProxy,
+          networkConfigType: formValues.networkConfigType,
+          ipAddress: formValues.ipAddress,
+          subnetMask: formValues.subnetMask,
+          defaultGateway: formValues.defaultGateway,
+          dns: formValues.dns,
+        });
       }
     },
     [vm, mode, props, handleClose],
   );
 
   useEffect(() => {
-    if (mode === "create" && vm.downloadSourceUrl && isOpen) {
+    if (vm.downloadSourceUrl && isOpen) {
       const url = vm.downloadSourceUrl;
-      const name = initialValues?.environmentName || "";
       void Promise.resolve().then(() => {
-        (props as CreateModeProps).onSuccess(url, name);
+        if (mode === "create") {
+          const name = initialValues?.environmentName || "";
+          props.onSuccess(url, name);
+        } else {
+          const sourceName = editSource?.name || "";
+          props.onSuccess(url, sourceName);
+        }
         resetForm();
       });
     }

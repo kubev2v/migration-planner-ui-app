@@ -184,8 +184,11 @@ const EnvironmentContent: React.FC<EnvironmentContentProps> = ({ vm }) => {
             setShouldShowEditModal(false);
           }}
           sourceId={editSourceId}
-          onSuccess={() => {
-            void vm.listSources();
+          onSuccess={(url, name) => {
+            setShouldShowEditModal(false);
+            setDownloadUrlForModal(url);
+            setSourceNameForModal(name);
+            setShouldShowDownloadModal(true);
           }}
         />
       )}
