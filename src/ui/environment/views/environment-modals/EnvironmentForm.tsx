@@ -106,6 +106,19 @@ const createBaseValidationSchema = () =>
         if (!value) return true;
         const error = validateNoProxy(value);
         return error === null ? true : this.createError({ message: error });
+      })
+      .when(["httpProxy", "httpsProxy"], {
+        is: (httpProxy: string, httpsProxy: string) => {
+          return !httpProxy?.trim() && !httpsProxy?.trim();
+        },
+        then: (schema) =>
+          schema.test("requires-proxy-url", function (value) {
+            if (!value?.trim()) return true;
+            return this.createError({
+              message:
+                "No proxy domains requires at least one proxy URL (HTTP or HTTPS)",
+            });
+          }),
       }),
 
     networkConfigType: yup
@@ -217,10 +230,24 @@ export const EnvironmentForm: React.FC<EnvironmentFormProps> = ({
     control: methods.control,
     name: "networkConfigType",
   });
+  const httpProxy = useWatch({
+    control: methods.control,
+    name: "httpProxy",
+  });
+  const httpsProxy = useWatch({
+    control: methods.control,
+    name: "httpsProxy",
+  });
 
   useEffect(() => {
     setIsValid?.(methods.formState.isValid);
   }, [methods.formState.isValid, setIsValid]);
+
+  useEffect(() => {
+    if (methods.formState.touchedFields.noProxy) {
+      void methods.trigger("noProxy");
+    }
+  }, [httpProxy, httpsProxy, methods]);
 
   return (
     <FormProvider {...methods}>

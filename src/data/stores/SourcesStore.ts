@@ -38,24 +38,12 @@ const buildProxyPayload = (
   httpProxy: string,
   httpsProxy: string,
   noProxy: string,
-): ProxyPayload | undefined => {
-  const proxyFields: {
-    httpUrl?: string;
-    httpsUrl?: string;
-    noProxy?: string;
-  } = {};
-
-  if (httpProxy && httpProxy.trim()) {
-    proxyFields.httpUrl = httpProxy;
-  }
-  if (httpsProxy && httpsProxy.trim()) {
-    proxyFields.httpsUrl = httpsProxy;
-  }
-  if (noProxy && noProxy.trim()) {
-    proxyFields.noProxy = noProxy;
-  }
-
-  return Object.keys(proxyFields).length > 0 ? proxyFields : undefined;
+): ProxyPayload => {
+  return {
+    httpUrl: httpProxy && httpProxy.trim() ? httpProxy : null,
+    httpsUrl: httpsProxy && httpsProxy.trim() ? httpsProxy : null,
+    noProxy: noProxy && noProxy.trim() ? noProxy : null,
+  };
 };
 
 const buildNetworkPayload = (
