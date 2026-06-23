@@ -4,6 +4,7 @@ import type {
   MemberCreate,
 } from "@openshift-migration-advisor/planner-sdk";
 
+import { parseApiError } from "../../lib/common/ErrorParser";
 import { ExternalStoreBase } from "../../lib/mvvm/ExternalStore";
 import type {
   GroupMembersSnapshot,
@@ -28,46 +29,58 @@ export class GroupMembersStore
   }
 
   async list(groupId: string): Promise<Member[]> {
-    this.members = await this.api.listGroupMembers({ id: groupId });
-    this.currentGroupId = groupId;
-    this.snapshot = {
-      groupId: this.currentGroupId,
-      members: this.members,
-    };
-    this.notify();
-    return this.members;
+    try {
+      this.members = await this.api.listGroupMembers({ id: groupId });
+      this.currentGroupId = groupId;
+      this.snapshot = {
+        groupId: this.currentGroupId,
+        members: this.members,
+      };
+      this.notify();
+      return this.members;
+    } catch (err) {
+      throw await parseApiError(err, "Failed to load group members");
+    }
   }
 
   async create(groupId: string, data: MemberCreate): Promise<Member> {
-    const newMember = await this.api.createGroupMember({
-      id: groupId,
-      memberCreate: data,
-    });
-    if (this.currentGroupId === groupId) {
-      this.members = [...this.members, newMember];
-      this.snapshot = {
-        groupId: this.currentGroupId,
-        members: this.members,
-      };
-      this.notify();
+    try {
+      const newMember = await this.api.createGroupMember({
+        id: groupId,
+        memberCreate: data,
+      });
+      if (this.currentGroupId === groupId) {
+        this.members = [...this.members, newMember];
+        this.snapshot = {
+          groupId: this.currentGroupId,
+          members: this.members,
+        };
+        this.notify();
+      }
+      return newMember;
+    } catch (err) {
+      throw await parseApiError(err, "Failed to create group member");
     }
-    return newMember;
   }
 
   async delete(groupId: string, username: string): Promise<void> {
-    await this.api.removeGroupMember({
-      id: groupId,
-      username: username,
-    });
-    if (this.currentGroupId === groupId) {
-      this.members = this.members.filter(
-        (member) => member.username !== username,
-      );
-      this.snapshot = {
-        groupId: this.currentGroupId,
-        members: this.members,
-      };
-      this.notify();
+    try {
+      await this.api.removeGroupMember({
+        id: groupId,
+        username: username,
+      });
+      if (this.currentGroupId === groupId) {
+        this.members = this.members.filter(
+          (member) => member.username !== username,
+        );
+        this.snapshot = {
+          groupId: this.currentGroupId,
+          members: this.members,
+        };
+        this.notify();
+      }
+    } catch (err) {
+      throw await parseApiError(err, "Failed to delete group member");
     }
   }
 
