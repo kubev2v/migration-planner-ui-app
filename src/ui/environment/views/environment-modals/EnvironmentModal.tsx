@@ -103,7 +103,7 @@ export const EnvironmentModal: React.FC<EnvironmentModalProps> = (props) => {
         });
       }
     },
-    [vm, mode, props, handleClose],
+    [vm, mode, props],
   );
 
   useEffect(() => {

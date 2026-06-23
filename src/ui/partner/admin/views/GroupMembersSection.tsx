@@ -4,8 +4,8 @@ import type {
   MemberCreate,
 } from "@openshift-migration-advisor/planner-sdk";
 import {
+  Alert,
   Button,
-  Content,
   Dropdown,
   DropdownItem,
   DropdownList,
@@ -15,6 +15,8 @@ import {
   MenuToggle,
   type MenuToggleElement,
   PageSection,
+  Stack,
+  StackItem,
   Title,
 } from "@patternfly/react-core";
 import {
@@ -58,88 +60,101 @@ export const GroupMembersSection: React.FC<GroupMembersSectionProps> = ({
 
   return (
     <PageSection>
-      <Content>
-        <Flex justifyContent={{ default: "justifyContentSpaceBetween" }}>
-          <FlexItem>
-            <Title headingLevel="h1">Group members</Title>
-          </FlexItem>
-          <FlexItem>
-            <Button onClick={() => setIsModalOpen(true)}>
-              Add group members
-            </Button>
-          </FlexItem>
-        </Flex>
-      </Content>
-      {vm.isLoading && <LoadingSpinner />}
-      {vm.error && (
-        <div>
-          Error loading members (id: {vm.id}): {vm.error.message}
-        </div>
-      )}
-      {vm.members && vm.members.length === 0 && (
-        <EmptyState
-          headingLevel="h4"
-          icon={RhUiSearchIcon}
-          titleText={`No members in this group`}
-          variant="sm"
-        />
-      )}
-      {vm.members && vm.members.length > 0 && (
-        <Table aria-label="Members table" variant="compact">
-          <Thead>
-            <Tr>
-              <Th>Username</Th>
-              <Th>Email</Th>
-              <Th screenReaderText="Actions" />
-            </Tr>
-          </Thead>
-          <Tbody>
-            {sortByNewestFirst(vm.members).map((member) => (
-              <Tr key={member.username}>
-                <Td dataLabel="Username">{member.username}</Td>
-                <Td dataLabel="Email">{member.email}</Td>
-                <Td dataLabel="Actions" isActionCell>
-                  <Dropdown
-                    isOpen={openRowId === member.username}
-                    popperProps={{
-                      appendTo: () => document.body,
-                      position: "end",
-                    }}
-                    onOpenChange={(isOpen) =>
-                      setOpenRowId(isOpen ? member.username : null)
-                    }
-                    toggle={(toggleRef: React.Ref<MenuToggleElement>) => (
-                      <MenuToggle
-                        ref={toggleRef}
-                        aria-label={`Actions for ${member.username}`}
-                        variant="plain"
-                        onClick={() =>
-                          setOpenRowId((prev) =>
-                            prev === member.username ? null : member.username,
-                          )
-                        }
-                      >
-                        <RhUiEllipsisVerticalIcon />
-                      </MenuToggle>
-                    )}
-                  >
-                    <DropdownList>
-                      <DropdownItem
-                        onClick={() => {
-                          setDeleteTarget(member);
-                          setOpenRowId(null);
+      <Stack hasGutter>
+        <StackItem>
+          <Flex justifyContent={{ default: "justifyContentSpaceBetween" }}>
+            <FlexItem>
+              <Title headingLevel="h1">Group members</Title>
+            </FlexItem>
+            <FlexItem>
+              <Button onClick={() => setIsModalOpen(true)}>
+                Add group members
+              </Button>
+            </FlexItem>
+          </Flex>
+        </StackItem>
+        {vm.isLoading && (
+          <StackItem>
+            <LoadingSpinner />
+          </StackItem>
+        )}
+        {vm.error && (
+          <StackItem>
+            <Alert variant="danger" title={vm.error.message} isInline></Alert>
+          </StackItem>
+        )}
+        {vm.members && vm.members.length === 0 && (
+          <StackItem>
+            <EmptyState
+              headingLevel="h4"
+              icon={RhUiSearchIcon}
+              titleText={`No members in this group`}
+              variant="sm"
+            />
+          </StackItem>
+        )}
+        {vm.members && vm.members.length > 0 && (
+          <StackItem>
+            <Table aria-label="Members table" variant="compact">
+              <Thead>
+                <Tr>
+                  <Th>Username</Th>
+                  <Th>Email</Th>
+                  <Th screenReaderText="Actions" />
+                </Tr>
+              </Thead>
+              <Tbody>
+                {sortByNewestFirst(vm.members).map((member) => (
+                  <Tr key={member.username}>
+                    <Td dataLabel="Username">{member.username}</Td>
+                    <Td dataLabel="Email">{member.email}</Td>
+                    <Td dataLabel="Actions" isActionCell>
+                      <Dropdown
+                        isOpen={openRowId === member.username}
+                        popperProps={{
+                          appendTo: () => document.body,
+                          position: "end",
                         }}
+                        onOpenChange={(isOpen) =>
+                          setOpenRowId(isOpen ? member.username : null)
+                        }
+                        toggle={(toggleRef: React.Ref<MenuToggleElement>) => (
+                          <MenuToggle
+                            ref={toggleRef}
+                            aria-label={`Actions for ${member.username}`}
+                            variant="plain"
+                            onClick={() =>
+                              setOpenRowId((prev) =>
+                                prev === member.username
+                                  ? null
+                                  : member.username,
+                              )
+                            }
+                          >
+                            <RhUiEllipsisVerticalIcon />
+                          </MenuToggle>
+                        )}
                       >
-                        Delete member
-                      </DropdownItem>
-                    </DropdownList>
-                  </Dropdown>
-                </Td>
-              </Tr>
-            ))}
-          </Tbody>
-        </Table>
-      )}
+                        <DropdownList>
+                          <DropdownItem
+                            onClick={() => {
+                              setDeleteTarget(member);
+                              setOpenRowId(null);
+                            }}
+                          >
+                            Delete member
+                          </DropdownItem>
+                        </DropdownList>
+                      </Dropdown>
+                    </Td>
+                  </Tr>
+                ))}
+              </Tbody>
+            </Table>
+          </StackItem>
+        )}
+      </Stack>
+
       <CreateGroupMemberModal
         isOpen={isModalOpen}
         onClose={handleCloseModal}
