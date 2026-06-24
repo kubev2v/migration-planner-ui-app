@@ -13,7 +13,7 @@ export const HomeScreen: React.FC = () => {
   return (
     <AppPage
       breadcrumbs={vm.breadcrumbs}
-      title="Start Your VMWare to OpenShift Migration"
+      title="Start Your VMware to OpenShift Migration"
       caption={<HowDoesItWork />}
     >
       <Tabs
