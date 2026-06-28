@@ -1,0 +1,105 @@
+name: Rebase Dev Branch on Master
+
+on:
+  push:
+    branches:
+      - master
+
+permissions:
+  contents: write
+
+jobs:
+  rebase-dev-branch:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # Configure 'ours' merge strategy to keep target branch's version
+          git config merge.ours.driver true
+
+      - name: Checkout internal dev branch
+        run: |
+          git fetch origin internal
+          git checkout internal
+
+      - name: Rebase internal dev branch on master
+        id: rebase
+        run: |
+          SOURCE_BRANCH="master"
+          TARGET_BRANCH="internal"
+
+          echo "Starting rebase of $TARGET_BRANCH on $SOURCE_BRANCH..."
+
+          # Fetch latest master branch
+          git fetch origin $SOURCE_BRANCH
+
+          # Perform rebase
+          if git rebase origin/$SOURCE_BRANCH; then
+            echo "✅ Rebase successful without conflicts"
+            echo "conflicts=false" >> $GITHUB_OUTPUT
+          else
+            echo "⚠️ Conflicts detected during rebase"
+            echo "conflicts=true" >> $GITHUB_OUTPUT
+
+            # The .gitattributes file with merge=ours should handle most conflicts
+            # But if there are still conflicts, we'll keep target branch's version
+
+            # List conflicted files
+            CONFLICTS=$(git diff --name-only --diff-filter=U)
+
+            if [ -n "$CONFLICTS" ]; then
+              echo "Resolving remaining conflicts by keeping $TARGET_BRANCH's version:"
+              echo "$CONFLICTS"
+
+              # For each conflicted file, keep target branch's version
+              echo "$CONFLICTS" | while read -r file; do
+                echo "  - Keeping $TARGET_BRANCH version of $file"
+                git checkout --ours "$file"
+                git add "$file"
+              done
+
+              # Continue rebase
+              git -c core.editor=true rebase --continue || {
+                echo "Failed to continue rebase after conflict resolution"
+                git rebase --abort
+                exit 1
+              }
+            fi
+          fi
+
+      - name: Push rebased internal branch
+        run: |
+          # Force push since rebase rewrites history
+          git push origin internal --force-with-lease
+
+      - name: Summary
+        if: always()
+        run: |
+          HAD_CONFLICTS="${{ steps.rebase.outputs.conflicts }}"
+
+          echo "## Dev Branch Rebase" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Property | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|----------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Source Branch | \`master\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| Target Branch | \`internal\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| Had Conflicts | $HAD_CONFLICTS |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Protected files** (kept internal's version):" >> $GITHUB_STEP_SUMMARY
+          echo "- fec.config.js" >> $GITHUB_STEP_SUMMARY
+          echo "- src/routing/Routes.ts" >> $GITHUB_STEP_SUMMARY
+          echo "- package.json" >> $GITHUB_STEP_SUMMARY
+          echo "- deploy/frontend.yaml" >> $GITHUB_STEP_SUMMARY
+          echo "- renovate.json" >> $GITHUB_STEP_SUMMARY
+          echo "- src/data/stores/VersionsStore.ts" >> $GITHUB_STEP_SUMMARY
+          echo "- Makefile" >> $GITHUB_STEP_SUMMARY
+          echo "- .tekton/migration-planner-ui-dev-*.yaml" >> $GITHUB_STEP_SUMMARY
