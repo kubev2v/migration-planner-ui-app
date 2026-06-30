@@ -12,6 +12,9 @@ import React from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { createSourceModel } from "../../../../models/SourceModel";
+import { mockClusterRequirementsResponse } from "../../views/cluster-sizer/__tests__/mocks/ClusterRequirementsResponse.mock";
+import { EXAMPLE_FORM_VALUES } from "../../views/example-data/clusterSizingFixture";
+import type { SizingPdfData } from "../useReportPageViewModel";
 import { useReportPageViewModel } from "../useReportPageViewModel";
 
 // ---------------------------------------------------------------------------
@@ -54,6 +57,7 @@ const mockAssessmentsStore = {
   subscribe: vi.fn(() => () => {}),
   getSnapshot: vi.fn((): Assessment[] => []),
   list: vi.fn().mockResolvedValue([]),
+  get: vi.fn().mockResolvedValue(undefined),
   getById: vi.fn(),
   startPolling: vi.fn(),
   stopPolling: vi.fn(),
@@ -211,6 +215,16 @@ const mockSource = createSourceModel({
   },
 });
 
+const createSizingPdfData = (
+  clusterId: string,
+  clusterName: string,
+): SizingPdfData => ({
+  clusterId,
+  clusterName,
+  formValues: EXAMPLE_FORM_VALUES,
+  result: mockClusterRequirementsResponse,
+});
+
 // ---------------------------------------------------------------------------
 // Tests
 // ---------------------------------------------------------------------------
@@ -245,12 +259,48 @@ describe("useReportPageViewModel", () => {
     expect(result.current.assessment?.name).toBe("Assessment assessment-1");
   });
 
-  it("fetches data on mount when assessments are empty", () => {
+  it("fetches assessment by ID and sources on mount", () => {
     mockAssessmentsStore.getSnapshot.mockReturnValue([]);
+    mockAssessmentsStore.getById.mockReturnValue(undefined);
     renderHook(() => useReportPageViewModel());
 
-    // useMount triggers and calls the fetch fn
-    expect(mockAssessmentsStore.list).toHaveBeenCalled();
+    expect(mockAssessmentsStore.get).toHaveBeenCalledWith("assessment-1");
+    expect(mockSourcesStore.list).toHaveBeenCalled();
+  });
+
+  it("skips GET assessment when cached snapshot already has subsetInventories", () => {
+    const assessment = createAssessment("assessment-1", {
+      "Cluster-A": { infra: createInfra(2, 2), vms: createVMs(5) },
+    });
+    assessment.snapshots = [
+      {
+        createdAt: new Date(),
+        inventory: assessment.snapshots?.[0]?.inventory ?? {
+          vcenterId: "vcenter-1",
+          clusters: {},
+        },
+        subsetInventories: null,
+      },
+    ];
+    mockAssessmentsStore.getSnapshot.mockReturnValue([assessment]);
+    mockAssessmentsStore.getById.mockReturnValue(assessment);
+
+    renderHook(() => useReportPageViewModel());
+
+    expect(mockAssessmentsStore.get).not.toHaveBeenCalled();
+    expect(mockSourcesStore.list).toHaveBeenCalled();
+  });
+
+  it("fetches GET assessment when cached snapshot lacks subsetInventories key", () => {
+    const assessment = createAssessment("assessment-1", {
+      "Cluster-A": { infra: createInfra(2, 2), vms: createVMs(5) },
+    });
+    mockAssessmentsStore.getSnapshot.mockReturnValue([assessment]);
+    mockAssessmentsStore.getById.mockReturnValue(assessment);
+
+    renderHook(() => useReportPageViewModel());
+
+    expect(mockAssessmentsStore.get).toHaveBeenCalledWith("assessment-1");
     expect(mockSourcesStore.list).toHaveBeenCalled();
   });
 
@@ -431,6 +481,87 @@ describe("useReportPageViewModel", () => {
       );
     });
 
+    it("exportPdf includes only sized clusters from the active group in aggregate view", () => {
+      const assessment = createAssessment("assessment-1", {
+        "Cluster-A": { infra: createInfra(2, 2), vms: createVMs(5) },
+        "Cluster-B": { infra: createInfra(2, 2), vms: createVMs(6) },
+        "Cluster-C": { infra: createInfra(2, 2), vms: createVMs(4) },
+      });
+      assessment.snapshots = [
+        {
+          createdAt: new Date(),
+          inventory: assessment.snapshots?.[0]?.inventory ?? {
+            vcenterId: "vcenter-1",
+            clusters: {},
+          },
+          subsetInventories: [
+            {
+              id: "group-1",
+              name: "Group 1",
+              vcenterId: "vcenter-1",
+              vmsCount: 9,
+              createdAt: new Date(),
+              inventory: {
+                vcenterId: "vcenter-1",
+                clusters: {
+                  "Cluster-A": {
+                    infra: createInfra(2, 2),
+                    vms: createVMs(5),
+                  },
+                  "Cluster-C": {
+                    infra: createInfra(2, 2),
+                    vms: createVMs(4),
+                  },
+                },
+                vcenter: {
+                  infra: createInfra(4, 4),
+                  vms: createVMs(9),
+                },
+              },
+            },
+          ],
+        },
+      ];
+      mockAssessmentsStore.getSnapshot.mockReturnValue([assessment]);
+
+      const { result } = renderHook(() => useReportPageViewModel());
+      const mockContainer = document.createElement("div");
+
+      act(() => {
+        result.current.onSizingCalculated(
+          createSizingPdfData("Cluster-A", "Cluster A"),
+        );
+        result.current.onSizingCalculated(
+          createSizingPdfData("Cluster-B", "Cluster B"),
+        );
+        result.current.onSizingCalculated(
+          createSizingPdfData("Cluster-C", "Cluster C"),
+        );
+        result.current.selectGroup("group-1");
+        result.current.selectCluster("all");
+      });
+
+      act(() => {
+        result.current.exportPdf(mockContainer);
+      });
+
+      const calls = mockReportStore.exportPdf.mock.calls as Array<
+        [
+          HTMLElement,
+          { additionalTocItems?: string[]; extraPages?: unknown[] } | undefined,
+        ]
+      >;
+      const exportOptions = calls[0]?.[1];
+      expect(exportOptions?.additionalTocItems).toHaveLength(2);
+      expect(exportOptions?.additionalTocItems).toEqual(
+        expect.arrayContaining([
+          "- Cluster sizing recommendations: Cluster A",
+          "- Cluster sizing recommendations: Cluster C",
+        ]),
+      );
+      expect(exportOptions?.extraPages).toHaveLength(2);
+    });
+
     it("exportHtml delegates to store.exportHtml()", () => {
       const { result } = renderHook(() => useReportPageViewModel());
 
@@ -439,6 +570,62 @@ describe("useReportPageViewModel", () => {
       });
 
       expect(mockReportStore.exportHtml).toHaveBeenCalledTimes(1);
+    });
+
+    it("exportHtml uses scoped inventory when a group is selected", () => {
+      const assessment = createAssessment("assessment-1", {
+        "Cluster-A": { infra: createInfra(2, 2), vms: createVMs(10) },
+      });
+      const subsetInventory = {
+        vcenterId: "vcenter-1",
+        clusters: {
+          "Cluster-A": {
+            infra: createInfra(1, 1),
+            vms: createVMs(3),
+          },
+        },
+        vcenter: {
+          infra: createInfra(1, 1),
+          vms: createVMs(3),
+        },
+      };
+      assessment.snapshots = [
+        {
+          createdAt: new Date(),
+          inventory: assessment.snapshots?.[0]?.inventory ?? {
+            vcenterId: "vcenter-1",
+            clusters: {},
+          },
+          subsetInventories: [
+            {
+              id: "group-1",
+              name: "Group 1",
+              vcenterId: "vcenter-1",
+              vmsCount: 3,
+              createdAt: new Date(),
+              inventory: subsetInventory,
+            },
+          ],
+        },
+      ];
+      mockAssessmentsStore.getSnapshot.mockReturnValue([assessment]);
+
+      const { result } = renderHook(() => useReportPageViewModel());
+
+      act(() => {
+        result.current.selectGroup("group-1");
+      });
+
+      act(() => {
+        result.current.exportHtml();
+      });
+
+      expect(mockReportStore.exportHtml).toHaveBeenCalledTimes(1);
+      const calls = mockReportStore.exportHtml.mock.calls as Array<
+        [unknown, { documentTitle?: string } | undefined]
+      >;
+      expect(calls[0]?.[0]).toBe(subsetInventory);
+      expect(calls[0]?.[1]?.documentTitle).toContain("Group 1");
     });
   });
 
@@ -498,6 +685,72 @@ describe("useReportPageViewModel", () => {
 
       const { result } = renderHook(() => useReportPageViewModel());
       expect(result.current.clusterSelectDisabled).toBe(false);
+    });
+  });
+
+  describe("group selection", () => {
+    it("hides group filter when no subset inventories are present", () => {
+      const assessment = createAssessment("assessment-1", {
+        "Cluster-A": { infra: createInfra(2, 2), vms: createVMs(5) },
+      });
+      mockAssessmentsStore.getSnapshot.mockReturnValue([assessment]);
+
+      const { result } = renderHook(() => useReportPageViewModel());
+      expect(result.current.groupView.showGroupFilter).toBe(false);
+      expect(result.current.selectedGroupId).toBe("all");
+    });
+
+    it("shows group options from subset inventories and scopes dashboard data", () => {
+      const assessment = createAssessment("assessment-1", {
+        "Cluster-A": { infra: createInfra(2, 2), vms: createVMs(10) },
+      });
+      assessment.snapshots = [
+        {
+          createdAt: new Date(),
+          inventory: assessment.snapshots?.[0]?.inventory ?? {
+            vcenterId: "vcenter-1",
+            clusters: {},
+          },
+          subsetInventories: [
+            {
+              id: "group-1",
+              name: "Group 1",
+              vcenterId: "vcenter-1",
+              vmsCount: 3,
+              createdAt: new Date(),
+              inventory: {
+                vcenterId: "vcenter-1",
+                clusters: {
+                  "Cluster-A": {
+                    infra: createInfra(1, 1),
+                    vms: createVMs(3),
+                  },
+                },
+                vcenter: {
+                  infra: createInfra(1, 1),
+                  vms: createVMs(3),
+                },
+              },
+            },
+          ],
+        },
+      ];
+      mockAssessmentsStore.getSnapshot.mockReturnValue([assessment]);
+
+      const { result } = renderHook(() => useReportPageViewModel());
+      expect(result.current.groupView.showGroupFilter).toBe(true);
+      expect(result.current.groupView.groupOptions).toHaveLength(2);
+      expect(result.current.groupView.groupOptions[1].label).toBe(
+        "Group 1 (3 VMs)",
+      );
+
+      act(() => {
+        result.current.selectGroup("group-1");
+      });
+
+      expect(result.current.selectedGroupId).toBe("group-1");
+      expect(result.current.clusterView.viewVms?.total).toBe(3);
+      expect(result.current.reportSummaryVms?.total).toBe(10);
     });
   });
 

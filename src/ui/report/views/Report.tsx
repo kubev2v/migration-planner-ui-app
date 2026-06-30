@@ -7,11 +7,6 @@ import {
   Content,
   List,
   ListItem,
-  MenuToggle,
-  type MenuToggleElement,
-  Select,
-  SelectList,
-  SelectOption,
   Spinner,
   Split,
   SplitItem,
@@ -30,8 +25,8 @@ import CreateAssessmentDropdown from "../../core/components/CreateAssessmentDrop
 import { OffScreenRenderer } from "../../core/components/OffScreenRenderer";
 import { AgentStatusView } from "../../environment/views/AgentStatusView";
 import { useReportPageViewModel } from "../view-models/useReportPageViewModel";
-import type { ClusterOption } from "./assessment-report/ClusterView";
 import { Dashboard } from "./assessment-report/Dashboard";
+import { ReportFilterBar } from "./assessment-report/ReportFilterBar";
 import { ClusterSizingWizard } from "./cluster-sizer/ClusterSizingWizard";
 import { DeployOvaBanner } from "./DeployOvaBanner";
 import { ExportReportButton } from "./ExportReportButton";
@@ -162,9 +157,9 @@ const ReportContent: React.FC = () => {
           </StackItem>
           <StackItem>
             {vm.clusterCount > 0 ? (
-              typeof vm.vms?.total === "number" ? (
+              typeof vm.reportSummaryVms?.total === "number" ? (
                 <>
-                  Detected <strong>{vm.vms?.total} VMS</strong> in{" "}
+                  Detected <strong>{vm.reportSummaryVms.total} VMs</strong> in{" "}
                   <strong>
                     {vm.clusterCount}{" "}
                     {vm.clusterCount === 1
@@ -188,38 +183,21 @@ const ReportContent: React.FC = () => {
             )}
           </StackItem>
           <StackItem>
-            <Select
-              isScrollable
-              isOpen={vm.isClusterSelectOpen}
-              selected={vm.clusterView.selectionId}
-              onSelect={handleClusterSelect}
-              onOpenChange={(isOpen: boolean) => {
-                if (!vm.clusterSelectDisabled) vm.setClusterSelectOpen(isOpen);
+            <ReportFilterBar
+              clusterView={vm.clusterView}
+              clusterSelectDisabled={vm.clusterSelectDisabled}
+              isClusterSelectOpen={vm.isClusterSelectOpen}
+              onClusterSelectOpenChange={vm.setClusterSelectOpen}
+              onClusterSelect={handleClusterSelect}
+              groupView={vm.groupView}
+              isGroupSelectOpen={vm.isGroupSelectOpen}
+              onGroupSelectOpenChange={vm.setGroupSelectOpen}
+              onGroupSelect={(_event, value) => {
+                if (typeof value === "string") {
+                  vm.selectGroup(value);
+                }
               }}
-              toggle={(toggleRef: React.Ref<MenuToggleElement>) => (
-                <MenuToggle
-                  ref={toggleRef}
-                  isExpanded={vm.isClusterSelectOpen}
-                  onClick={() => {
-                    if (!vm.clusterSelectDisabled) {
-                      vm.setClusterSelectOpen(!vm.isClusterSelectOpen);
-                    }
-                  }}
-                  isDisabled={vm.clusterSelectDisabled}
-                  style={{ minWidth: "422px" }}
-                >
-                  {vm.clusterView.selectionLabel}
-                </MenuToggle>
-              )}
-            >
-              <SelectList>
-                {vm.clusterView.clusterOptions.map((option: ClusterOption) => (
-                  <SelectOption key={option.id} value={option.id}>
-                    {option.label}
-                  </SelectOption>
-                ))}
-              </SelectList>
-            </Select>
+            />
           </StackItem>
         </Stack>
       }

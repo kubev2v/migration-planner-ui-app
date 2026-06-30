@@ -1,4 +1,5 @@
 import type {
+  AssessmentSubsetInventory,
   ClusterRequirementsResponse,
   Infra,
   InventoryData,
@@ -42,6 +43,12 @@ import {
   compareClustersByVmCount,
 } from "../helpers/clusterViewModel";
 import {
+  assessmentHasSubsetDataFetched,
+  extractScopedInventoryData,
+  type ReportInventorySource,
+} from "../helpers/groupInventoryFilter";
+import { ALL_VMS_GROUP_ID } from "../helpers/groupViewModel";
+import {
   isControlPlaneOnlyClusterMode,
   type SizingFormValues,
 } from "../views/cluster-sizer/types";
@@ -51,6 +58,7 @@ import {
   getCpuOvercommitLabel,
   getMemoryOvercommitLabel,
 } from "./ClusterSizingHelpers";
+import { useGroupInventoryFilter } from "./useGroupInventoryFilter";
 
 // ---------------------------------------------------------------------------
 // Sizing → PDF page builder
@@ -191,6 +199,13 @@ export interface ReportPageViewModel {
   setClusterSelectOpen: (open: boolean) => void;
   clusterSelectDisabled: boolean;
 
+  // Group view (subset inventories from GET assessment)
+  groupView: ReturnType<typeof useGroupInventoryFilter>["groupView"];
+  selectedGroupId: string;
+  selectGroup: (groupId: string) => void;
+  isGroupSelectOpen: boolean;
+  setGroupSelectOpen: (open: boolean) => void;
+
   // Computed data from latest snapshot
   infra: Infra | undefined;
   vms: VMs | undefined;
@@ -198,6 +213,7 @@ export interface ReportPageViewModel {
   latestSnapshot: SnapshotLike;
   lastUpdatedText: string;
   clusterCount: number;
+  reportSummaryVms: VMs | undefined;
 
   // Scoped cluster view (typed with required fields for Dashboard rendering)
   scopedClusterView: ClusterScopedView | undefined;
@@ -341,16 +357,30 @@ export const useReportPageViewModel = (): ReportPageViewModel => {
     jobsStore.getSnapshot.bind(jobsStore),
   );
 
-  // ---- Initial data fetch (no polling — detail page) -----------------------
+  // ---- Initial data fetch (GET assessment when subset data not yet loaded) --
   const [fetchState, doFetchData] = useAsyncFn(async () => {
-    await Promise.all([assessmentsStore.list(), sourcesStore.list()]);
-  }, [assessmentsStore, sourcesStore]);
+    const cachedAssessment = id ? assessmentsStore.getById(id) : undefined;
+    const sourcesPromise = sourcesStore.list();
+
+    if (id) {
+      const shouldFetchAssessment =
+        !cachedAssessment ||
+        !assessmentHasSubsetDataFetched(cachedAssessment.snapshots);
+
+      if (shouldFetchAssessment) {
+        await Promise.all([assessmentsStore.get(id), sourcesPromise]);
+        return;
+      }
+
+      await sourcesPromise;
+      return;
+    }
+
+    await Promise.all([assessmentsStore.list(), sourcesPromise]);
+  }, [assessmentsStore, sourcesStore, id]);
 
   useMount(() => {
-    // Only fetch if data is not already loaded
-    if (!assessments || assessments.length === 0) {
-      void doFetchData();
-    }
+    void doFetchData();
   });
 
   // ---- Assessment lookup ---------------------------------------------------
@@ -389,15 +419,39 @@ export const useReportPageViewModel = (): ReportPageViewModel => {
     return snapshots.length > 0 ? snapshots[snapshots.length - 1] : {};
   }, [assessment?.snapshots]);
 
-  const infra = useMemo(
-    () =>
-      (latestSnapshot.infra ||
-        latestSnapshot.inventory?.infra ||
-        latestSnapshot.inventory?.vcenter?.infra) as Infra | undefined,
-    [latestSnapshot],
+  const subsetInventories = useMemo(
+    (): AssessmentSubsetInventory[] => latestSnapshot.subsetInventories ?? [],
+    [latestSnapshot.subsetInventories],
   );
 
-  const vms = useMemo(
+  const fullInventory = useMemo(
+    () => latestSnapshot.inventory as ReportInventorySource | undefined,
+    [latestSnapshot.inventory],
+  );
+
+  const resetClusterSelection = useCallback(() => {
+    setUserSelectedClusterId(null);
+  }, []);
+
+  const {
+    selectedGroupId,
+    groupView,
+    activeInventory,
+    isGroupSelectOpen,
+    setIsGroupSelectOpen,
+    selectGroup,
+  } = useGroupInventoryFilter({
+    subsetInventories,
+    fullInventory,
+    onGroupChange: resetClusterSelection,
+  });
+
+  const { infra, vms, clusters } = useMemo(
+    () => extractScopedInventoryData(activeInventory, latestSnapshot),
+    [activeInventory, latestSnapshot],
+  );
+
+  const reportSummaryVms = useMemo(
     () =>
       (latestSnapshot.vms ||
         latestSnapshot.inventory?.vms ||
@@ -405,22 +459,15 @@ export const useReportPageViewModel = (): ReportPageViewModel => {
     [latestSnapshot],
   );
 
-  const clusters = useMemo(
-    () =>
-      latestSnapshot.inventory?.clusters as
-        | { [key: string]: InventoryData }
-        | undefined,
-    [latestSnapshot],
-  );
+  const reportSummaryClusterCount = useMemo(() => {
+    const summaryClusters = latestSnapshot.inventory?.clusters as
+      | { [key: string]: InventoryData }
+      | undefined;
+    return summaryClusters ? Object.keys(summaryClusters).length : 0;
+  }, [latestSnapshot.inventory?.clusters]);
 
   // ---- Cluster selection ---------------------------------------------------
-  const assessmentClusters = assessment?.snapshots?.length
-    ? (
-        assessment.snapshots[assessment.snapshots.length - 1] as {
-          inventory?: { clusters?: { [key: string]: InventoryData } };
-        }
-      ).inventory?.clusters
-    : undefined;
+  const assessmentClusters = clusters;
 
   const selectedClusterId = useMemo(() => {
     if (userSelectedClusterId !== null) {
@@ -510,7 +557,7 @@ export const useReportPageViewModel = (): ReportPageViewModel => {
     return model?.latestSnapshot?.lastUpdated || "-";
   }, [assessment]);
 
-  const clusterCount = clusters ? Object.keys(clusters).length : 0;
+  const clusterCount = reportSummaryClusterCount;
 
   // ---- Missing metrics detection -------------------------------------------
   // Uses the scoped (cluster-level) data that the Dashboard actually renders,
@@ -573,14 +620,23 @@ export const useReportPageViewModel = (): ReportPageViewModel => {
 
   const exportPdf = useCallback(
     (container: HTMLElement): void => {
-      const title = `${assessment?.name || `Assessment ${id}`} - vCenter report`;
+      // PDF captures the already-rendered dashboard DOM, which reflects the
+      // active group + cluster filters shown on screen.
+      const groupSuffix =
+        selectedGroupId !== ALL_VMS_GROUP_ID
+          ? ` - ${groupView.selectionLabel}`
+          : "";
+      const title = `${assessment?.name || `Assessment ${id}`} - vCenter report${groupSuffix}`;
 
       // Determine which sizing entries to include:
       // - Single cluster view → only that cluster (if calculated)
-      // - All-clusters view → every cluster that has been sized
+      // - All-clusters view → sized clusters within the active group inventory
+      const scopedClusterIds = new Set(clusters ? Object.keys(clusters) : []);
       const sizingEntries: SizingPdfData[] =
         selectedClusterId === "all"
-          ? Object.values(savedSizingDataMap)
+          ? Object.values(savedSizingDataMap).filter((entry) =>
+              scopedClusterIds.has(entry.clusterId),
+            )
           : savedSizingDataMap[selectedClusterId]
             ? [savedSizingDataMap[selectedClusterId]]
             : [];
@@ -597,18 +653,43 @@ export const useReportPageViewModel = (): ReportPageViewModel => {
         extraPages,
       });
     },
-    [reportStore, assessment?.name, id, savedSizingDataMap, selectedClusterId],
+    [
+      reportStore,
+      assessment?.name,
+      id,
+      savedSizingDataMap,
+      selectedClusterId,
+      clusters,
+      selectedGroupId,
+      groupView.selectionLabel,
+    ],
   );
 
   const exportHtml = useCallback((): void => {
     const inventory =
-      source?.inventory ?? latestSnapshot?.inventory ?? latestSnapshot;
+      activeInventory ??
+      source?.inventory ??
+      latestSnapshot?.inventory ??
+      latestSnapshot;
     if (!inventory) {
       return;
     }
-    const title = `${assessment?.name || `Assessment ${id}`} - vCenter report`;
+    const groupSuffix =
+      selectedGroupId !== ALL_VMS_GROUP_ID
+        ? ` - ${groupView.selectionLabel}`
+        : "";
+    const title = `${assessment?.name || `Assessment ${id}`} - vCenter report${groupSuffix}`;
     void reportStore.exportHtml(inventory, { documentTitle: title });
-  }, [reportStore, source, latestSnapshot, assessment?.name, id]);
+  }, [
+    reportStore,
+    activeInventory,
+    source,
+    latestSnapshot,
+    assessment?.name,
+    id,
+    selectedGroupId,
+    groupView.selectionLabel,
+  ]);
 
   const clearExportError = useCallback((): void => {
     reportStore.clearError();
@@ -721,12 +802,19 @@ export const useReportPageViewModel = (): ReportPageViewModel => {
     setClusterSelectOpen: setIsClusterSelectOpen,
     clusterSelectDisabled,
 
+    groupView,
+    selectedGroupId,
+    selectGroup,
+    isGroupSelectOpen,
+    setGroupSelectOpen: setIsGroupSelectOpen,
+
     infra,
     vms,
     clusters,
     latestSnapshot,
     lastUpdatedText,
     clusterCount,
+    reportSummaryVms,
 
     scopedClusterView,
     canExportReport,

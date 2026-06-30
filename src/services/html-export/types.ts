@@ -6,6 +6,7 @@
  */
 
 import type {
+  AssessmentSubsetInventory,
   Infra,
   InventoryData as ApiInventoryData,
   VMs,
@@ -117,4 +118,5 @@ export interface SnapshotLike {
     };
     clusters?: Record<string, unknown> | { [key: string]: ApiInventoryData };
   };
+  subsetInventories?: AssessmentSubsetInventory[] | null;
 }

@@ -1,13 +1,7 @@
-import { css } from "@emotion/css";
 import {
   Button,
   Content,
   Icon,
-  MenuToggle,
-  type MenuToggleElement,
-  Select,
-  SelectList,
-  SelectOption,
   Split,
   SplitItem,
   Stack,
@@ -20,14 +14,10 @@ import React from "react";
 import { routes } from "../../../routing/Routes";
 import { AppPage } from "../../core/components/AppPage";
 import { useExampleReportViewModel } from "../view-models/useExampleReportViewModel";
-import type { ClusterOption } from "./assessment-report/ClusterView";
 import { Dashboard } from "./assessment-report/Dashboard";
+import { ReportFilterBar } from "./assessment-report/ReportFilterBar";
 import { ClusterSizingWizard } from "./cluster-sizer/ClusterSizingWizard";
 import { EXAMPLE_FORM_VALUES } from "./example-data/clusterSizingFixture";
-
-const clusterToggleStyle = css`
-  min-width: 422px;
-`;
 
 const ExampleReport: React.FC = () => {
   const vm = useExampleReportViewModel();
@@ -79,39 +69,17 @@ const ExampleReport: React.FC = () => {
           </StackItem>
           <StackItem>{vm.detectedSummaryText}</StackItem>
           <StackItem>
-            <Select
-              isScrollable
-              isOpen={vm.isClusterSelectOpen}
-              selected={vm.clusterView.selectionId}
-              onSelect={vm.handleClusterSelect}
-              onOpenChange={(isOpen: boolean) => {
-                if (!vm.clusterSelectDisabled)
-                  vm.setIsClusterSelectOpen(isOpen);
-              }}
-              toggle={(toggleRef: React.Ref<MenuToggleElement>) => (
-                <MenuToggle
-                  ref={toggleRef}
-                  isExpanded={vm.isClusterSelectOpen}
-                  onClick={() => {
-                    if (!vm.clusterSelectDisabled) {
-                      vm.setIsClusterSelectOpen(!vm.isClusterSelectOpen);
-                    }
-                  }}
-                  isDisabled={vm.clusterSelectDisabled}
-                  className={clusterToggleStyle}
-                >
-                  {vm.clusterView.selectionLabel}
-                </MenuToggle>
-              )}
-            >
-              <SelectList>
-                {vm.clusterView.clusterOptions.map((option: ClusterOption) => (
-                  <SelectOption key={option.id} value={option.id}>
-                    {option.label}
-                  </SelectOption>
-                ))}
-              </SelectList>
-            </Select>
+            <ReportFilterBar
+              clusterView={vm.clusterView}
+              clusterSelectDisabled={vm.clusterSelectDisabled}
+              isClusterSelectOpen={vm.isClusterSelectOpen}
+              onClusterSelectOpenChange={vm.setIsClusterSelectOpen}
+              onClusterSelect={vm.handleClusterSelect}
+              groupView={vm.groupView}
+              isGroupSelectOpen={vm.isGroupSelectOpen}
+              onGroupSelectOpenChange={vm.setIsGroupSelectOpen}
+              onGroupSelect={vm.handleGroupSelect}
+            />
           </StackItem>
         </Stack>
       }
