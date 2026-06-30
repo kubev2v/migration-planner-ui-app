@@ -1,4 +1,4 @@
-name: Pull request
+name: PR Validations
 
 on:
   pull_request:
@@ -10,38 +10,57 @@ on:
       - ready_for_review
     branches:
       - master
-      - "release-*"
+      - stable
 
 env:
   NODE_OPTIONS: "--max-old-space-size=8192"
+
 jobs:
-  lint-pull-request:
-    name: Validate PR title
-    runs-on: ubuntu-slim
-    if: |
-      github.actor != 'red-hat-konflux[bot]' &&
-      github.actor != 'dependabot[bot]'
-    permissions:
-      pull-requests: read
+  # Configuration job - define all shared values once
+  config:
+    runs-on: ubuntu-latest
+    outputs:
+      allowed-types: ${{ steps.set-config.outputs.allowed-types }}
+      jira-pattern: ${{ steps.set-config.outputs.jira-pattern }}
+      jira-required-types: ${{ steps.set-config.outputs.jira-required-types }}
+      bot-authors: ${{ steps.set-config.outputs.bot-authors }}
     steps:
-      - uses: amannn/action-semantic-pull-request@v6
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          headerPattern: '^(ECOPROJECT-\d+|NO-JIRA) \| (\w+): (.+)$'
-          headerPatternCorrespondence: scope, type, subject
-          types: |
-            build
-            chore
-            ci
-            docs
-            feat
-            fix
-            perf
-            refactor
-            style
-            test
-          requireScope: true
+      - id: set-config
+        run: |
+          echo 'allowed-types=["feat","fix","ci","build","chore","docs","refactor","test","style","perf"]' >> $GITHUB_OUTPUT
+          echo 'jira-pattern=ECOPROJECT-[0-9]+' >> $GITHUB_OUTPUT
+          echo 'jira-required-types=["feat","fix"]' >> $GITHUB_OUTPUT
+          echo 'bot-authors=["red-hat-konflux[bot]","dependabot[bot]"]' >> $GITHUB_OUTPUT
+
+  # Validate commit messages
+  validate-commits:
+    needs: config
+    uses: kubev2v/migration-planner-workflows/.github/workflows/validate-commit-messages.yml@main
+    with:
+      types: ${{ needs.config.outputs.allowed-types }}
+      jira-pattern: ${{ needs.config.outputs.jira-pattern }}
+      jira-required-types: ${{ needs.config.outputs.jira-required-types }}
+      skip-authors: ${{ needs.config.outputs.bot-authors }}
+
+  # Validate PR title and description
+  validate-pr-title:
+    needs: config
+    uses: kubev2v/migration-planner-workflows/.github/workflows/validate-pr-title-description.yml@main
+    with:
+      allowed-types: ${{ needs.config.outputs.allowed-types }}
+      jira-pattern: ${{ needs.config.outputs.jira-pattern }}
+      jira-required-types: ${{ needs.config.outputs.jira-required-types }}
+      skip-authors: ${{ needs.config.outputs.bot-authors }}
+
+  lint-pull-request:
+    name: PR Validation Gate
+    runs-on: ubuntu-latest
+    needs: [validate-commits, validate-pr-title]
+    if: |
+      needs.validate-commits.result == 'success' &&
+      needs.validate-pr-title.result == 'success'
+    steps:
+      - run: echo "PR validation passed"
   lint:
     needs: lint-pull-request
     if: ${{ ! github.event.pull_request.draft && (needs.lint-pull-request.result == 'success' || needs.lint-pull-request.result == 'skipped') }}
