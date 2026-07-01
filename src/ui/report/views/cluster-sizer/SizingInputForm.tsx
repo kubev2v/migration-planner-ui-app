@@ -100,7 +100,9 @@ export const SizingInputForm: React.FC<SizingInputFormProps> = ({
       ...values,
       clusterMode,
       scheduleOnControlPlane:
-        clusterMode === "single-node" ? true : values.scheduleOnControlPlane,
+        clusterMode === "single-node" || clusterMode === "compact"
+          ? true
+          : values.scheduleOnControlPlane,
     });
   };
 
@@ -552,7 +554,7 @@ export const SizingInputForm: React.FC<SizingInputFormProps> = ({
           </>
         )}
 
-        {/* Control plane section - show for Full HA and Single node */}
+        {/* Control plane section - show for Full HA, Compact, and Single node */}
         {showControlPlane && (
           <>
             <GridItem span={12}>

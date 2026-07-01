@@ -196,6 +196,7 @@ export const CLUSTER_MODE_OPTIONS: {
   label: string;
 }[] = [
   { value: "full-ha", label: "Full HA (3CP)" },
+  { value: "compact", label: "Compact (3CP)" },
   { value: "single-node", label: "Single node (SNO)" },
   { value: "hosted-control-plane", label: "Hosted control plane (HCP)" },
 ];

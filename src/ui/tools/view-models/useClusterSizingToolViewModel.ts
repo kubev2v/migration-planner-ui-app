@@ -85,7 +85,8 @@ export const useClusterSizingToolViewModel = (): ClusterSizingToolViewModel => {
     formValues.clusterMode === "hosted-control-plane";
   const showControlPlane =
     formValues.clusterMode === "full-ha" ||
-    formValues.clusterMode === "single-node";
+    formValues.clusterMode === "single-node" ||
+    formValues.clusterMode === "compact";
   const showControlPlaneScheduling = formValues.clusterMode === "full-ha";
   const showSmt = smtVisible;
   const isFormValid = !hasSmtError && !hasInvalidWorkload;

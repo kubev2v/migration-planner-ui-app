@@ -41,7 +41,10 @@ import {
   type ClusterViewModel,
   compareClustersByVmCount,
 } from "../helpers/clusterViewModel";
-import type { SizingFormValues } from "../views/cluster-sizer/types";
+import {
+  isControlPlaneOnlyClusterMode,
+  type SizingFormValues,
+} from "../views/cluster-sizer/types";
 import {
   formatNumber,
   formatRatio,
@@ -55,7 +58,7 @@ import {
 
 const buildSizingPdfExtraPage = (data: SizingPdfData): PdfExtraPage => {
   const { result, formValues, clusterName } = data;
-  const isSNO = formValues.clusterMode === "single-node";
+  const isSNO = isControlPlaneOnlyClusterMode(formValues.clusterMode);
   const hasControlPlane = result.clusterSizing.controlPlaneNodes > 0;
 
   const cpuOverCommitRatio =

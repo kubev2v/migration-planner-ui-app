@@ -66,7 +66,15 @@ export type HAReplicaCount = 1 | 2 | 3;
 /**
  * Cluster mode types
  */
-export type ClusterMode = "full-ha" | "single-node" | "hosted-control-plane";
+export type ClusterMode =
+  | "full-ha"
+  | "compact"
+  | "single-node"
+  | "hosted-control-plane";
+
+/** Cluster modes that only expose control plane sizing inputs (no worker node section). */
+export const isControlPlaneOnlyClusterMode = (mode: ClusterMode): boolean =>
+  mode === "single-node" || mode === "compact";
 
 /**
  * User input for standalone cluster sizing workload totals (form state)
@@ -190,6 +198,7 @@ const CLUSTER_MODE_TO_NODE_COUNT: Record<
   ClusterRequirementsRequest["controlPlaneNodeCount"] | undefined
 > = {
   "full-ha": ClusterRequirementsRequestControlPlaneNodeCountEnum.NUMBER_3,
+  compact: ClusterRequirementsRequestControlPlaneNodeCountEnum.NUMBER_3,
   "single-node": ClusterRequirementsRequestControlPlaneNodeCountEnum.NUMBER_1,
   "hosted-control-plane": undefined,
 };
@@ -199,6 +208,8 @@ const STANDALONE_CLUSTER_MODE_TO_NODE_COUNT: Record<
   StandaloneClusterRequirementsRequest["controlPlaneNodeCount"] | undefined
 > = {
   "full-ha":
+    StandaloneClusterRequirementsRequestControlPlaneNodeCountEnum.NUMBER_3,
+  compact:
     StandaloneClusterRequirementsRequestControlPlaneNodeCountEnum.NUMBER_3,
   "single-node":
     StandaloneClusterRequirementsRequestControlPlaneNodeCountEnum.NUMBER_1,
@@ -213,6 +224,7 @@ const SNO_DEFAULT_WORKER_MEMORY = 128;
  *
  * Mode-specific mapping:
  * - Full HA:  all fields sent (worker node, control plane, overcommit, SMT, scheduling)
+ * - Compact:  same minimal payload as SNO plus compactMode=true and controlPlaneNodeCount=3
  * - SNO:      minimal payload — controlPlaneSchedulable=true, control plane CPU/memory
  *             from form, workerNodeCPU/Memory use fixed defaults (required by SDK)
  * - HCP:      control-plane fields omitted (hosted externally)
@@ -225,16 +237,19 @@ export const formValuesToRequest = (
 ): ClusterRequirementsRequest => {
   const isHCP = values.clusterMode === "hosted-control-plane";
   const isSNO = values.clusterMode === "single-node";
+  const isCompact = values.clusterMode === "compact";
   const isFullHA = values.clusterMode === "full-ha";
 
-  if (isSNO) {
+  if (isSNO || isCompact) {
     return {
       clusterId,
       workerNodeCPU: SNO_DEFAULT_WORKER_CPU,
       workerNodeMemory: SNO_DEFAULT_WORKER_MEMORY,
       controlPlaneSchedulable: true,
-      controlPlaneNodeCount:
-        ClusterRequirementsRequestControlPlaneNodeCountEnum.NUMBER_1,
+      controlPlaneNodeCount: isCompact
+        ? ClusterRequirementsRequestControlPlaneNodeCountEnum.NUMBER_3
+        : ClusterRequirementsRequestControlPlaneNodeCountEnum.NUMBER_1,
+      compactMode: isCompact ? true : undefined,
       controlPlaneCPU: values.controlPlaneCpu,
       controlPlaneMemory: values.controlPlaneMemoryGb,
     } as ClusterRequirementsRequest;
@@ -275,6 +290,7 @@ export const workloadAndFormValuesToStandaloneRequest = (
 ): StandaloneClusterRequirementsRequest => {
   const isHCP = values.clusterMode === "hosted-control-plane";
   const isSNO = values.clusterMode === "single-node";
+  const isCompact = values.clusterMode === "compact";
   const isFullHA = values.clusterMode === "full-ha";
 
   const workloadFields = {
@@ -283,7 +299,7 @@ export const workloadAndFormValuesToStandaloneRequest = (
     totalMemory: workload.totalMemory,
   };
 
-  if (isSNO) {
+  if (isSNO || isCompact) {
     return {
       ...workloadFields,
       cpuOverCommitRatio: cpuOvercommitRatioToApiEnum(
@@ -295,8 +311,10 @@ export const workloadAndFormValuesToStandaloneRequest = (
       workerNodeCPU: SNO_DEFAULT_WORKER_CPU,
       workerNodeMemory: SNO_DEFAULT_WORKER_MEMORY,
       controlPlaneSchedulable: true,
-      controlPlaneNodeCount:
-        StandaloneClusterRequirementsRequestControlPlaneNodeCountEnum.NUMBER_1,
+      controlPlaneNodeCount: isCompact
+        ? StandaloneClusterRequirementsRequestControlPlaneNodeCountEnum.NUMBER_3
+        : StandaloneClusterRequirementsRequestControlPlaneNodeCountEnum.NUMBER_1,
+      compactMode: isCompact ? true : undefined,
       controlPlaneCPU: values.controlPlaneCpu,
       controlPlaneMemory: values.controlPlaneMemoryGb,
     };
