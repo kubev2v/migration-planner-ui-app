@@ -473,10 +473,7 @@ export const useReportPageViewModel = (): ReportPageViewModel => {
         userSelectedClusterId === "all" ||
         Boolean(
           clusters &&
-          Object.prototype.hasOwnProperty.call(
-            clusters,
-            userSelectedClusterId,
-          ),
+          Object.prototype.hasOwnProperty.call(clusters, userSelectedClusterId),
         );
       if (isValidSelection) {
         return userSelectedClusterId;

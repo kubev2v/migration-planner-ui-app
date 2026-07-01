@@ -1,3 +1,4 @@
+import { css } from "@emotion/css";
 import {
   Button,
   Content,
@@ -18,6 +19,11 @@ import { Dashboard } from "./assessment-report/Dashboard";
 import { ReportFilterBar } from "./assessment-report/ReportFilterBar";
 import { ClusterSizingWizard } from "./cluster-sizer/ClusterSizingWizard";
 import { EXAMPLE_FORM_VALUES } from "./example-data/clusterSizingFixture";
+
+const reservedHeaderActionStyle = css`
+  visibility: hidden;
+  pointer-events: none;
+`;
 
 const ExampleReport: React.FC = () => {
   const vm = useExampleReportViewModel();
@@ -42,18 +48,21 @@ const ExampleReport: React.FC = () => {
       ]}
       title="RVTools example report"
       headerActions={
-        vm.exampleSizing ? (
-          <Split hasGutter>
-            <SplitItem>
-              <Button
-                variant="primary"
-                onClick={() => vm.setIsSizingWizardOpen(true)}
-              >
-                View recommendation for {vm.exampleSizing.clusterName}
-              </Button>
-            </SplitItem>
-          </Split>
-        ) : undefined
+        <Split hasGutter>
+          <SplitItem
+            className={vm.exampleSizing ? undefined : reservedHeaderActionStyle}
+            aria-hidden={!vm.exampleSizing}
+          >
+            <Button
+              variant="primary"
+              tabIndex={vm.exampleSizing ? undefined : -1}
+              onClick={() => vm.setIsSizingWizardOpen(true)}
+            >
+              View recommendation for{" "}
+              {vm.exampleSizing?.clusterName ?? "Cluster domain-c146658"}
+            </Button>
+          </SplitItem>
+        </Split>
       }
       caption={
         <Stack hasGutter>
