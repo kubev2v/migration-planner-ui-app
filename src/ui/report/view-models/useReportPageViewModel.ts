@@ -467,16 +467,14 @@ export const useReportPageViewModel = (): ReportPageViewModel => {
   }, [latestSnapshot.inventory?.clusters]);
 
   // ---- Cluster selection ---------------------------------------------------
-  const assessmentClusters = clusters;
-
   const selectedClusterId = useMemo(() => {
     if (userSelectedClusterId !== null) {
       const isValidSelection =
         userSelectedClusterId === "all" ||
         Boolean(
-          assessmentClusters &&
+          clusters &&
           Object.prototype.hasOwnProperty.call(
-            assessmentClusters,
+            clusters,
             userSelectedClusterId,
           ),
         );
@@ -485,20 +483,18 @@ export const useReportPageViewModel = (): ReportPageViewModel => {
       }
     }
 
-    const clusterKeys = assessmentClusters
-      ? Object.keys(assessmentClusters)
-      : [];
+    const clusterKeys = clusters ? Object.keys(clusters) : [];
 
     if (clusterKeys.length === 0) {
       return "all";
     }
 
     const sortedKeys = [...clusterKeys].sort((a, b) =>
-      compareClustersByVmCount(a, b, assessmentClusters),
+      compareClustersByVmCount(a, b, clusters),
     );
 
     return sortedKeys[0];
-  }, [userSelectedClusterId, assessmentClusters]);
+  }, [userSelectedClusterId, clusters]);
 
   const selectCluster = useCallback((clusterId: string) => {
     setUserSelectedClusterId(clusterId);
@@ -556,8 +552,6 @@ export const useReportPageViewModel = (): ReportPageViewModel => {
     const model = assessment;
     return model?.latestSnapshot?.lastUpdated || "-";
   }, [assessment]);
-
-  const clusterCount = reportSummaryClusterCount;
 
   // ---- Missing metrics detection -------------------------------------------
   // Uses the scoped (cluster-level) data that the Dashboard actually renders,
@@ -813,7 +807,7 @@ export const useReportPageViewModel = (): ReportPageViewModel => {
     clusters,
     latestSnapshot,
     lastUpdatedText,
-    clusterCount,
+    clusterCount: reportSummaryClusterCount,
     reportSummaryVms,
 
     scopedClusterView,
