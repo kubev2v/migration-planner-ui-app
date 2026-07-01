@@ -126,4 +126,8 @@ export const mockRequestsByCpuOvercommitRatio: Record<
     cpuOverCommitRatio: "1:6",
     memoryOverCommitRatio: "1:4",
   }),
+  "1:8": createMockClusterRequirementsRequest({
+    cpuOverCommitRatio: "1:8",
+    memoryOverCommitRatio: "1:4",
+  }),
 };
