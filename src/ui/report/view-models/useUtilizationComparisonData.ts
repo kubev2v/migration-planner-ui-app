@@ -1,10 +1,11 @@
 import { useMemo } from "react";
 
-import type {
-  ClusterSizing,
-  InventoryTotals,
-  Savings,
-  SizingFormValues,
+import {
+  type ClusterSizing,
+  type InventoryTotals,
+  isControlPlaneOnlyClusterMode,
+  type Savings,
+  type SizingFormValues,
 } from "../views/cluster-sizer/types";
 import {
   computeEffectiveCpu,
@@ -38,7 +39,7 @@ export const useUtilizationComparisonData = ({
     const memoryUtilization = optimizedSizing.memoryUtilizationMax;
 
     return {
-      isSNO: formValues.clusterMode === "single-node",
+      isSNO: isControlPlaneOnlyClusterMode(formValues.clusterMode),
       cpuUtilization,
       memoryUtilization,
       effectiveCpu: computeEffectiveCpu(

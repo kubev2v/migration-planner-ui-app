@@ -22,6 +22,7 @@ import {
   getMemoryOvercommitLabel,
 } from "../../view-models/ClusterSizingHelpers";
 import type { ClusterRequirementsResponse, SizingFormValues } from "./types";
+import { isControlPlaneOnlyClusterMode } from "./types";
 import { UtilizationComparisonCards } from "./UtilizationComparisonCards";
 import {
   getOptimizationStatusMessage,
@@ -103,7 +104,7 @@ export const SizingResult: React.FC<SizingResultProps> = ({
     );
   }
 
-  const isSNO = formValues.clusterMode === "single-node";
+  const isSNO = isControlPlaneOnlyClusterMode(formValues.clusterMode);
   const showUtilizationComparison = hasUtilizationComparison(sizerOutput);
   const displaySizing =
     showUtilizationComparison && sizerOutput.optimizedSizing

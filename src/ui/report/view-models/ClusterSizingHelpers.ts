@@ -2,9 +2,10 @@ import {
   CPU_OVERCOMMIT_OPTIONS,
   MEMORY_OVERCOMMIT_OPTIONS,
 } from "../views/cluster-sizer/constants";
-import type {
-  ClusterRequirementsResponse,
-  SizingFormValues,
+import {
+  type ClusterRequirementsResponse,
+  isControlPlaneOnlyClusterMode,
+  type SizingFormValues,
 } from "../views/cluster-sizer/types";
 import {
   computeEffectiveCpu,
@@ -71,7 +72,7 @@ ${DISCLAIMER_TEXT}
 `.trim();
   }
 
-  const isSNO = formValues.clusterMode === "single-node";
+  const isSNO = isControlPlaneOnlyClusterMode(formValues.clusterMode);
 
   if (isSNO) {
     return `
