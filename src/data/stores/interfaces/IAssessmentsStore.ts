@@ -13,11 +13,11 @@ import type {
 } from "@openshift-migration-advisor/planner-sdk";
 
 import type { ExternalStore } from "../../../lib/mvvm/ExternalStore";
+import type { AssessmentModel } from "../../../models/AssessmentModel";
 import type {
-  AssessmentModel,
   CalculateCostEstimationRequest,
   CostEstimationResponse,
-} from "../../../models/AssessmentModel";
+} from "../../../models/CostEstimationModel";
 type AssessmentCreateForm = {
   name: string;
   sourceType?: string;

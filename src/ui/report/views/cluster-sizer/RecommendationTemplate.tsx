@@ -5,26 +5,14 @@ import {
   ExpandableSection,
   Flex,
   FlexItem,
-  Panel,
-  PanelHeader,
-  PanelMain,
-  PanelMainBody,
   Stack,
   StackItem,
+  TabContent,
+  TabContentBody,
   Title,
 } from "@patternfly/react-core";
 import type { ReactNode } from "react";
 import React, { useState } from "react";
-
-const preferencesWrapperStyle = css`
-  padding: var(--pf-t--global--spacer--400);
-  border-radius: var(--pf-t--global--border--radius--large);
-`;
-
-const preferencesWrapperCollapsedStyle = css`
-  padding: var(--pf-t--global--spacer--300);
-  border-radius: var(--pf-t--global--border--radius--large);
-`;
 
 const expandableSectionStyle = css`
   background-color: var(
@@ -45,6 +33,7 @@ const preferencesContentStackStyle = css`
 `;
 
 interface RecommendationTemplateProps {
+  id: string;
   /** Title for the preferences section */
   preferencesTitle?: string;
   /** React component or element to render in the preferences section */
@@ -86,6 +75,7 @@ interface RecommendationTemplateProps {
 }
 
 export const RecommendationTemplate: React.FC<RecommendationTemplateProps> = ({
+  id,
   preferencesTitle = "Migration preferences",
   preferencesContent,
   resultsContent,
@@ -137,73 +127,62 @@ export const RecommendationTemplate: React.FC<RecommendationTemplateProps> = ({
   };
 
   return (
-    <Stack hasGutter>
-      {!hidePreferences && (
-        <StackItem>
-          <div
-            className={
-              isPreferencesExpanded
-                ? preferencesWrapperStyle
-                : preferencesWrapperCollapsedStyle
-            }
-          >
-            <ExpandableSection
-              title={preferencesTitle}
-              toggleText={preferencesTitle}
-              isExpanded={isPreferencesExpanded}
-              onToggle={
-                isPreferencesDisabled
-                  ? undefined
-                  : (_event, expanded) => setManualExpanded(expanded)
-              }
-              displaySize="lg"
-              className={
-                isPreferencesDisabled
-                  ? expandableSectionDisabledStyle
-                  : expandableSectionStyle
-              }
-              isIndented
-            >
-              <Stack hasGutter className={preferencesContentStackStyle}>
-                <StackItem>{preferencesContent}</StackItem>
-                <StackItem>
-                  <Button
-                    variant="primary"
-                    onClick={handleGenerate}
-                    isLoading={isLoading}
-                    isDisabled={
-                      isLoading || isPreferencesDisabled || isGenerateDisabled
-                    }
-                  >
-                    {generateButtonText}
-                  </Button>
-                </StackItem>
-              </Stack>
-            </ExpandableSection>
-          </div>
-        </StackItem>
-      )}
+    <TabContent id={id}>
+      <TabContentBody>
+        <Stack hasGutter>
+          {!hidePreferences && (
+            <StackItem>
+              <ExpandableSection
+                title={preferencesTitle}
+                toggleText={preferencesTitle}
+                isExpanded={isPreferencesExpanded}
+                onToggle={
+                  isPreferencesDisabled
+                    ? undefined
+                    : (_event, expanded) => setManualExpanded(expanded)
+                }
+                displaySize="lg"
+                className={
+                  isPreferencesDisabled
+                    ? expandableSectionDisabledStyle
+                    : expandableSectionStyle
+                }
+              >
+                <Stack hasGutter className={preferencesContentStackStyle}>
+                  <StackItem>{preferencesContent}</StackItem>
+                  <StackItem>
+                    <Button
+                      variant="primary"
+                      onClick={handleGenerate}
+                      isLoading={isLoading}
+                      isDisabled={
+                        isLoading || isPreferencesDisabled || isGenerateDisabled
+                      }
+                    >
+                      {generateButtonText}
+                    </Button>
+                  </StackItem>
+                </Stack>
+              </ExpandableSection>
+            </StackItem>
+          )}
 
-      {hasResults && (
-        <StackItem>
-          <Panel>
-            {(resultsTitle || headerAction) && (
-              <PanelHeader>
-                <Flex
-                  justifyContent={{ default: "justifyContentSpaceBetween" }}
-                  alignItems={{ default: "alignItemsCenter" }}
-                >
-                  {resultsTitle && (
-                    <FlexItem>
-                      <Title headingLevel="h2">{resultsTitle}</Title>
-                    </FlexItem>
-                  )}
-                  {headerAction && <FlexItem>{headerAction}</FlexItem>}
-                </Flex>
-              </PanelHeader>
-            )}
-            <PanelMain>
-              <PanelMainBody>
+          {hasResults && (
+            <StackItem>
+              <div>
+                {(resultsTitle || headerAction) && (
+                  <Flex
+                    justifyContent={{ default: "justifyContentSpaceBetween" }}
+                    alignItems={{ default: "alignItemsCenter" }}
+                  >
+                    {resultsTitle && (
+                      <FlexItem>
+                        <Title headingLevel="h2">{resultsTitle}</Title>
+                      </FlexItem>
+                    )}
+                    {headerAction && <FlexItem>{headerAction}</FlexItem>}
+                  </Flex>
+                )}
                 <Stack hasGutter>
                   {showAlert && (
                     <StackItem>
@@ -219,12 +198,12 @@ export const RecommendationTemplate: React.FC<RecommendationTemplateProps> = ({
                   )}
                   <StackItem>{resultsContent}</StackItem>
                 </Stack>
-              </PanelMainBody>
-            </PanelMain>
-          </Panel>
-        </StackItem>
-      )}
-    </Stack>
+              </div>
+            </StackItem>
+          )}
+        </Stack>
+      </TabContentBody>
+    </TabContent>
   );
 };
 

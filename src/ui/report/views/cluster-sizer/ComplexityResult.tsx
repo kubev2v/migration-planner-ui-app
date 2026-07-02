@@ -19,6 +19,8 @@ import {
 import {
   Alert,
   Badge,
+  Card,
+  CardBody,
   Flex,
   FlexItem,
   Spinner,
@@ -536,70 +538,74 @@ export const ComplexityResult: React.FC<ComplexityResultProps> = ({
   };
 
   return (
-    <Stack hasGutter>
-      <StackItem>
-        <Flex
-          justifyContent={{ default: "justifyContentSpaceBetween" }}
-          alignItems={{ default: "alignItemsFlexStart" }}
-          flexWrap={{ default: "wrap" }}
-        >
-          <FlexItem>
-            <div className={headerStyle}>
-              <div className={titleWithHelpStyle}>
-                <Title headingLevel="h2">Migration complexity</Title>
-                <MigrationComplexityHelpPopover />
-              </div>
-            </div>
-          </FlexItem>
-          <FlexItem>
-            <div className={legendContainerStyle}>
-              {[1, 2, 3, 4, 0].map((score) => (
-                <Badge
-                  key={score}
-                  style={{
-                    backgroundColor: COMPLEXITY_COLORS[score],
-                    color: "white",
-                  }}
-                >
-                  {COMPLEXITY_LABELS[score]}
-                </Badge>
-              ))}
-            </div>
-          </FlexItem>
-        </Flex>
-      </StackItem>
+    <Card>
+      <CardBody>
+        <Stack hasGutter>
+          <StackItem>
+            <Flex
+              justifyContent={{ default: "justifyContentSpaceBetween" }}
+              alignItems={{ default: "alignItemsFlexStart" }}
+              flexWrap={{ default: "wrap" }}
+            >
+              <FlexItem>
+                <div className={headerStyle}>
+                  <div className={titleWithHelpStyle}>
+                    <Title headingLevel="h2">Migration complexity</Title>
+                    <MigrationComplexityHelpPopover />
+                  </div>
+                </div>
+              </FlexItem>
+              <FlexItem>
+                <div className={legendContainerStyle}>
+                  {[1, 2, 3, 4, 0].map((score) => (
+                    <Badge
+                      key={score}
+                      style={{
+                        backgroundColor: COMPLEXITY_COLORS[score],
+                        color: "white",
+                      }}
+                    >
+                      {COMPLEXITY_LABELS[score]}
+                    </Badge>
+                  ))}
+                </div>
+              </FlexItem>
+            </Flex>
+          </StackItem>
 
-      <StackItem>
-        <div className={toggleGroupStyle}>
-          <ToggleGroup aria-label="Complexity view selector">
-            <ToggleGroupItem
-              text="By Operation System"
-              buttonId="toggle-by-os"
-              isSelected={activeTabKey === 0}
-              onChange={() => setActiveTabKey(0)}
-            />
-            <ToggleGroupItem
-              text="By Disk size"
-              buttonId="toggle-by-disk"
-              isSelected={activeTabKey === 1}
-              onChange={() => setActiveTabKey(1)}
-            />
-            <ToggleGroupItem
-              text="By Disk size & Operating system"
-              buttonId="toggle-by-disk-os"
-              isSelected={activeTabKey === 2}
-              onChange={() => setActiveTabKey(2)}
-            />
-          </ToggleGroup>
-        </div>
-      </StackItem>
+          <StackItem>
+            <div className={toggleGroupStyle}>
+              <ToggleGroup aria-label="Complexity view selector">
+                <ToggleGroupItem
+                  text="By Operation System"
+                  buttonId="toggle-by-os"
+                  isSelected={activeTabKey === 0}
+                  onChange={() => setActiveTabKey(0)}
+                />
+                <ToggleGroupItem
+                  text="By Disk size"
+                  buttonId="toggle-by-disk"
+                  isSelected={activeTabKey === 1}
+                  onChange={() => setActiveTabKey(1)}
+                />
+                <ToggleGroupItem
+                  text="By Disk size & Operating system"
+                  buttonId="toggle-by-disk-os"
+                  isSelected={activeTabKey === 2}
+                  onChange={() => setActiveTabKey(2)}
+                />
+              </ToggleGroup>
+            </div>
+          </StackItem>
 
-      <StackItem>
-        {activeTabKey === 0 && renderByOSTab()}
-        {activeTabKey === 1 && renderByDiskTab()}
-        {activeTabKey === 2 && renderByDiskAndOSTab()}
-      </StackItem>
-    </Stack>
+          <StackItem>
+            {activeTabKey === 0 && renderByOSTab()}
+            {activeTabKey === 1 && renderByDiskTab()}
+            {activeTabKey === 2 && renderByDiskAndOSTab()}
+          </StackItem>
+        </Stack>
+      </CardBody>
+    </Card>
   );
 };
 

@@ -16,7 +16,11 @@ import { useAsyncFn } from "react-use";
 import { Symbols } from "../../../config/Dependencies";
 import type { IAccountStore } from "../../../data/stores/interfaces/IAccountStore";
 import type { IAssessmentsStore } from "../../../data/stores/interfaces/IAssessmentsStore";
-import type { CostEstimationResponse } from "../../../models/AssessmentModel";
+import { parseApiError } from "../../../lib/common/ErrorParser";
+import type {
+  CostEstimationFormValues,
+  CostEstimationResponse,
+} from "../../../models/CostEstimationModel";
 import {
   DEFAULT_ESTIMATION_FORM_VALUES,
   DEFAULT_FORM_VALUES,
@@ -67,7 +71,9 @@ export interface ClusterSizingWizardViewModel {
   ensureEstimationForMenu: (menuItem: string | null) => void;
   reset: () => void;
   isCostEstimationTabVisible: boolean;
-  getCostEstimation: () => void;
+  calculateCostEstimation: (
+    costEstimationData: CostEstimationFormValues,
+  ) => Promise<void>;
   costEstimation: CostEstimationResponse | null;
   isLoadingCostEstimation: boolean;
   costEstimationError: Error | undefined;
@@ -338,42 +344,39 @@ export const useClusterSizingWizardViewModel = (
       }
     }, [assessmentId, assessmentsStore, clusterId]);
 
-  const [costEstimationState, doGetCostEstimation] = useAsyncFn(
-    async () => {
+  const [costEstimationState, doCalculateCostEstimation] = useAsyncFn(
+    async (costEstimationData: CostEstimationFormValues) => {
       setManualCostEstimationError(undefined);
-      const costEstimation = await assessmentsStore.calculateCostEstimation({
-        assessmentId,
-        clusterId,
-        discounts: {
-          vcfDiscountPct: 0,
-          vvfDiscountPct: 0,
-          redhatDiscountPct: 0,
-          aapDiscountPct: 0,
-        },
-      });
-      setCostEstimation(costEstimation);
+      setCostEstimation(null);
+      try {
+        const costEstimation = await assessmentsStore.calculateCostEstimation({
+          assessmentId,
+          clusterId,
+          rhEdition: costEstimationData.rhEdition,
+          includeACM: costEstimationData.includeACM,
+          consolidationPct: costEstimationData.consolidationPct,
+          discounts: {
+            vcfDiscountPct: 0,
+            vvfDiscountPct: 0,
+            vvsDiscountPct: 0,
+            redhatDiscountPct: 0,
+            aapDiscountPct: 0,
+          },
+        });
+        setCostEstimation(costEstimation);
+      } catch (error) {
+        const parsedError = await parseApiError(
+          error,
+          "Failed to calculate cost estimation",
+        );
+        setManualCostEstimationError(parsedError);
+      }
     },
-    [assessmentId, assessmentsStore, clusterId],
-    { loading: true },
+    [assessmentId, clusterId, assessmentsStore],
   );
-
-  const getCostEstimation = () => {
-    void doGetCostEstimation().catch((err: unknown) => {
-      setManualCostEstimationError(
-        err instanceof Error
-          ? err
-          : new Error("Failed to calculate cost estimation"),
-      );
-    });
-  };
 
   const ensureEstimationForMenu = useCallback(
     (menuItem: string | null) => {
-      if (menuItem === "cost-estimation") {
-        if (!costEstimation && !costEstimationState.error) {
-          void doGetCostEstimation();
-        }
-      }
       if (menuItem === "complexity") {
         if (
           !complexityEstimation &&
@@ -392,9 +395,6 @@ export const useClusterSizingWizardViewModel = (
       }
     },
     [
-      costEstimation,
-      costEstimationState.error,
-      doGetCostEstimation,
       complexityEstimation,
       complexityState.loading,
       manualComplexityError,
@@ -470,7 +470,7 @@ export const useClusterSizingWizardViewModel = (
     ensureEstimationForMenu,
     reset,
     isCostEstimationTabVisible: identity?.kind === "partner",
-    getCostEstimation,
+    calculateCostEstimation: doCalculateCostEstimation,
     costEstimation,
     isLoadingCostEstimation: costEstimationState.loading,
     costEstimationError: manualCostEstimationError ?? costEstimationState.error,

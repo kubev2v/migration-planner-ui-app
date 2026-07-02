@@ -18,10 +18,12 @@ import { parseApiError } from "../../lib/common/ErrorParser";
 import { PollableStoreBase } from "../../lib/mvvm/PollableStore";
 import {
   type AssessmentModel,
-  type CalculateCostEstimationRequest,
-  type CostEstimationResponse,
   createAssessmentModel,
 } from "../../models/AssessmentModel";
+import {
+  type CalculateCostEstimationRequest,
+  type CostEstimationResponse,
+} from "../../models/CostEstimationModel";
 import type { IAssessmentsStore } from "./interfaces/IAssessmentsStore";
 
 export type AssessmentListResponse =
