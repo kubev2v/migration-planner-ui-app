@@ -23,6 +23,7 @@ const makeAssessment = (overrides: Partial<Assessment> = {}): Assessment =>
 const createMockApi = (): AssessmentApiInterface =>
   ({
     listAssessments: vi.fn(),
+    getAssessment: vi.fn(),
     createAssessment: vi.fn(),
     updateAssessment: vi.fn(),
     deleteAssessment: vi.fn(),
@@ -93,6 +94,32 @@ describe("AssessmentsStore", () => {
     expect(result).toHaveLength(1);
     expect(result[0].id).toBe("a-1");
     expect(result[0].name).toBe("Assessment");
+  });
+
+  it("get() fetches and upserts a single assessment", async () => {
+    const raw = makeAssessment({ id: "a-1", name: "Detailed" });
+    vi.mocked(api.getAssessment).mockResolvedValue(raw);
+
+    const result = await store.get("a-1");
+
+    expect(api.getAssessment).toHaveBeenCalledWith({ id: "a-1" }, undefined);
+    expect(result.id).toBe("a-1");
+    expect(store.getSnapshot()).toHaveLength(1);
+    expect(store.getById("a-1")?.name).toBe("Detailed");
+  });
+
+  it("get() replaces an existing assessment in local state", async () => {
+    const listed = makeAssessment({ id: "a-1", name: "Listed" });
+    vi.mocked(api.listAssessments).mockResolvedValue([listed]);
+    await store.list();
+
+    const detailed = makeAssessment({ id: "a-1", name: "Detailed" });
+    vi.mocked(api.getAssessment).mockResolvedValue(detailed);
+
+    await store.get("a-1");
+
+    expect(store.getById("a-1")?.name).toBe("Detailed");
+    expect(store.getSnapshot()).toHaveLength(1);
   });
 
   it("list() maps results to AssessmentModel (has ownerFullName, hasUsefulData etc.)", async () => {

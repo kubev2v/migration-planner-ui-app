@@ -87,8 +87,7 @@
   },
   "overrides": {
     "@redhat-cloud-services/frontend-components-config": {
-      "webpack-dev-server": ">=5.2.5",
-      "http-proxy-middleware": ">=3.0.6"
+      "webpack-dev-server": ">=5.2.5"
     },
     "@redhat-cloud-services/tsc-transform-imports": {
       "glob": ">=10.4.6"

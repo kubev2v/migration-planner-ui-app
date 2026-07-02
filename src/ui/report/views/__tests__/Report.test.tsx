@@ -154,6 +154,7 @@ const mockSource = createSourceModel({
   },
 });
 
+import { buildGroupViewModel } from "../../helpers/groupViewModel";
 import { buildClusterViewModel } from "../assessment-report/ClusterView";
 
 function makeBaseVm(
@@ -168,6 +169,7 @@ function makeBaseVm(
     clusters,
     selectedClusterId: "all",
   });
+  const groupView = buildGroupViewModel({ subsetInventories: [] });
 
   return {
     assessmentId: "assessment-1",
@@ -180,12 +182,18 @@ function makeBaseVm(
     isClusterSelectOpen: false,
     setClusterSelectOpen: vi.fn(),
     clusterSelectDisabled: true,
+    groupView,
+    selectedGroupId: "all",
+    selectGroup: vi.fn(),
+    isGroupSelectOpen: false,
+    setGroupSelectOpen: vi.fn(),
     infra,
     vms,
     clusters,
     latestSnapshot: {},
     lastUpdatedText: "-",
     clusterCount: 0,
+    reportSummaryVms: vms,
     scopedClusterView: undefined,
     canExportReport: false,
     canShowClusterRecommendations: false,

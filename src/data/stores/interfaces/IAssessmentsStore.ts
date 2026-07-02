@@ -33,6 +33,10 @@ export interface IAssessmentsStore extends ExternalStore<AssessmentModel[]> {
     sourceId?: string,
     initOverrides?: RequestInit | InitOverrideFunction,
   ): Promise<AssessmentModel[]>;
+  get(
+    id: string,
+    initOverrides?: RequestInit | InitOverrideFunction,
+  ): Promise<AssessmentModel>;
   getById(id: string): AssessmentModel | undefined;
   create(
     assessmentForm: AssessmentCreateForm,

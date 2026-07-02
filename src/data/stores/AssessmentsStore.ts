@@ -102,6 +102,31 @@ export class AssessmentsStore
     return this.assessments.find((assessment) => assessment.id === id);
   }
 
+  async get(
+    id: string,
+    initOverrides?: RequestInit | InitOverrideFunction,
+  ): Promise<AssessmentModel> {
+    let raw;
+    try {
+      raw = await this.api.getAssessment({ id }, initOverrides);
+    } catch (err) {
+      throw await parseApiError(err, "Failed to fetch assessment");
+    }
+    const model = createAssessmentModel(raw);
+    const existingIndex = this.assessments.findIndex(
+      (assessment) => assessment.id === model.id,
+    );
+    if (existingIndex >= 0) {
+      this.assessments = this.assessments.map((assessment) =>
+        assessment.id === model.id ? model : assessment,
+      );
+    } else {
+      this.assessments = [...this.assessments, model];
+    }
+    this.notify();
+    return model;
+  }
+
   async create(
     assessmentForm: AssessmentCreateForm,
     initOverrides?: RequestInit | InitOverrideFunction,

@@ -7,11 +7,6 @@ import {
   Content,
   List,
   ListItem,
-  MenuToggle,
-  type MenuToggleElement,
-  Select,
-  SelectList,
-  SelectOption,
   Spinner,
   Split,
   SplitItem,
@@ -30,14 +25,19 @@ import CreateAssessmentDropdown from "../../core/components/CreateAssessmentDrop
 import { OffScreenRenderer } from "../../core/components/OffScreenRenderer";
 import { AgentStatusView } from "../../environment/views/AgentStatusView";
 import { useReportPageViewModel } from "../view-models/useReportPageViewModel";
-import type { ClusterOption } from "./assessment-report/ClusterView";
 import { Dashboard } from "./assessment-report/Dashboard";
+import { ReportFilterBar } from "./assessment-report/ReportFilterBar";
 import { ClusterSizingWizard } from "./cluster-sizer/ClusterSizingWizard";
 import { DeployOvaBanner } from "./DeployOvaBanner";
 import { ExportReportButton } from "./ExportReportButton";
 
 const alertSpacing = css`
   margin-top: var(--pf-t--global--spacer--md);
+`;
+
+const reservedHeaderActionStyle = css`
+  visibility: hidden;
+  pointer-events: none;
 `;
 
 const ReportContent: React.FC = () => {
@@ -162,9 +162,9 @@ const ReportContent: React.FC = () => {
           </StackItem>
           <StackItem>
             {vm.clusterCount > 0 ? (
-              typeof vm.vms?.total === "number" ? (
+              typeof vm.reportSummaryVms?.total === "number" ? (
                 <>
-                  Detected <strong>{vm.vms?.total} VMS</strong> in{" "}
+                  Detected <strong>{vm.reportSummaryVms.total} VMs</strong> in{" "}
                   <strong>
                     {vm.clusterCount}{" "}
                     {vm.clusterCount === 1
@@ -188,38 +188,21 @@ const ReportContent: React.FC = () => {
             )}
           </StackItem>
           <StackItem>
-            <Select
-              isScrollable
-              isOpen={vm.isClusterSelectOpen}
-              selected={vm.clusterView.selectionId}
-              onSelect={handleClusterSelect}
-              onOpenChange={(isOpen: boolean) => {
-                if (!vm.clusterSelectDisabled) vm.setClusterSelectOpen(isOpen);
+            <ReportFilterBar
+              clusterView={vm.clusterView}
+              clusterSelectDisabled={vm.clusterSelectDisabled}
+              isClusterSelectOpen={vm.isClusterSelectOpen}
+              onClusterSelectOpenChange={vm.setClusterSelectOpen}
+              onClusterSelect={handleClusterSelect}
+              groupView={vm.groupView}
+              isGroupSelectOpen={vm.isGroupSelectOpen}
+              onGroupSelectOpenChange={vm.setGroupSelectOpen}
+              onGroupSelect={(_event, value) => {
+                if (typeof value === "string") {
+                  vm.selectGroup(value);
+                }
               }}
-              toggle={(toggleRef: React.Ref<MenuToggleElement>) => (
-                <MenuToggle
-                  ref={toggleRef}
-                  isExpanded={vm.isClusterSelectOpen}
-                  onClick={() => {
-                    if (!vm.clusterSelectDisabled) {
-                      vm.setClusterSelectOpen(!vm.isClusterSelectOpen);
-                    }
-                  }}
-                  isDisabled={vm.clusterSelectDisabled}
-                  style={{ minWidth: "422px" }}
-                >
-                  {vm.clusterView.selectionLabel}
-                </MenuToggle>
-              )}
-            >
-              <SelectList>
-                {vm.clusterView.clusterOptions.map((option: ClusterOption) => (
-                  <SelectOption key={option.id} value={option.id}>
-                    {option.label}
-                  </SelectOption>
-                ))}
-              </SelectList>
-            </Select>
+            />
           </StackItem>
         </Stack>
       }
@@ -298,36 +281,43 @@ const ReportContent: React.FC = () => {
               )}
             </SplitItem>
 
-            {vm.selectedClusterId !== "all" ? (
-              <SplitItem>
-                {vm.canShowClusterRecommendations ? (
+            <SplitItem
+              className={
+                vm.selectedClusterId === "all"
+                  ? reservedHeaderActionStyle
+                  : undefined
+              }
+              aria-hidden={vm.selectedClusterId === "all"}
+            >
+              {vm.canShowClusterRecommendations ? (
+                <Button
+                  variant="primary"
+                  tabIndex={vm.selectedClusterId === "all" ? -1 : undefined}
+                  onClick={() => vm.setIsSizingWizardOpen(true)}
+                >
+                  View Recommendation based on vCenter cluster
+                </Button>
+              ) : (
+                <Tooltip
+                  {...themeTooltipFlyoutProps}
+                  content={
+                    <p>
+                      This cluster has no VMs. Cluster recommendations are not
+                      available for empty clusters.
+                    </p>
+                  }
+                >
                   <Button
                     variant="primary"
+                    tabIndex={vm.selectedClusterId === "all" ? -1 : undefined}
                     onClick={() => vm.setIsSizingWizardOpen(true)}
+                    isAriaDisabled
                   >
                     View Recommendation based on vCenter cluster
                   </Button>
-                ) : (
-                  <Tooltip
-                    {...themeTooltipFlyoutProps}
-                    content={
-                      <p>
-                        This cluster has no VMs. Cluster recommendations are not
-                        available for empty clusters.
-                      </p>
-                    }
-                  >
-                    <Button
-                      variant="primary"
-                      onClick={() => vm.setIsSizingWizardOpen(true)}
-                      isAriaDisabled
-                    >
-                      View Recommendation based on vCenter cluster
-                    </Button>
-                  </Tooltip>
-                )}
-              </SplitItem>
-            ) : null}
+                </Tooltip>
+              )}
+            </SplitItem>
           </Split>
         ) : undefined
       }

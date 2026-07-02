@@ -4,8 +4,9 @@ import type {
   InventoryData,
   VMs,
 } from "@openshift-migration-advisor/planner-sdk";
-import React, { useMemo, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 
+import { extractScopedInventoryData } from "../helpers/groupInventoryFilter";
 import {
   buildClusterViewModel,
   type ClusterViewModel,
@@ -13,6 +14,8 @@ import {
 import type { ExampleClusterData } from "../views/example-data/clusterSizingFixture";
 import { EXAMPLE_SIZING_MAP } from "../views/example-data/clusterSizingFixture";
 import { getExampleInventory } from "../views/example-data/inventoryFixture";
+import { getExampleSubsetInventories } from "../views/example-data/subsetInventoryFixture";
+import { useGroupInventoryFilter } from "./useGroupInventoryFilter";
 
 export interface ExampleReportVM {
   infra: Infra | undefined;
@@ -33,22 +36,54 @@ export interface ExampleReportVM {
     value: string | number | undefined,
   ) => void;
 
+  groupView: ReturnType<typeof useGroupInventoryFilter>["groupView"];
+  selectedGroupId: string;
+  isGroupSelectOpen: boolean;
+  setIsGroupSelectOpen: (open: boolean) => void;
+  handleGroupSelect: (
+    event: React.MouseEvent<Element, MouseEvent> | undefined,
+    value: string | number | undefined,
+  ) => void;
+
   isSizingWizardOpen: boolean;
   setIsSizingWizardOpen: (open: boolean) => void;
   exampleSizing: ExampleClusterData | null;
 }
 
 export function useExampleReportViewModel(): ExampleReportVM {
-  const inventory: Inventory = getExampleInventory();
-  const infra = inventory.vcenter?.infra;
-  const vms = inventory.vcenter?.vms;
-  const clusters = inventory.clusters;
+  const fullInventory: Inventory = useMemo(() => getExampleInventory(), []);
+  const subsetInventories = useMemo(
+    () => getExampleSubsetInventories(fullInventory),
+    [fullInventory],
+  );
 
   const [userSelectedClusterId, setUserSelectedClusterId] = useState<
     string | null
   >(null);
   const [isClusterSelectOpen, setIsClusterSelectOpen] = useState(false);
   const [isSizingWizardOpen, setIsSizingWizardOpen] = useState(false);
+
+  const resetClusterSelection = useCallback(() => {
+    setUserSelectedClusterId(null);
+  }, []);
+
+  const {
+    selectedGroupId,
+    groupView,
+    activeInventory,
+    isGroupSelectOpen,
+    setIsGroupSelectOpen,
+    handleGroupSelect,
+  } = useGroupInventoryFilter({
+    subsetInventories,
+    fullInventory,
+    onGroupChange: resetClusterSelection,
+  });
+
+  const { infra, vms, clusters } = useMemo(
+    () => extractScopedInventoryData(activeInventory, {}),
+    [activeInventory],
+  );
 
   const selectedClusterId = useMemo(
     () => userSelectedClusterId ?? "all",
@@ -60,8 +95,10 @@ export function useExampleReportViewModel(): ExampleReportVM {
     [infra, vms, clusters, selectedClusterId],
   );
 
-  const clusterCount = clusters ? Object.keys(clusters).length : 0;
-  const clusterSelectDisabled = clusterCount <= 0;
+  const clusterCount = fullInventory.clusters
+    ? Object.keys(fullInventory.clusters).length
+    : 0;
+  const clusterSelectDisabled = clusterView.clusterOptions.length <= 1;
 
   const exampleSizing =
     selectedClusterId !== "all"
@@ -72,12 +109,12 @@ export function useExampleReportViewModel(): ExampleReportVM {
     if (clusterCount <= 0) return "No clusters detected";
     const clusterLabel =
       clusterCount === 1 ? "vSphere cluster" : "vSphere clusters";
-    const totalVMs = vms?.total;
+    const totalVMs = fullInventory.vcenter?.vms?.total;
     if (typeof totalVMs === "number") {
       return `Detected ${totalVMs} VMs in ${clusterCount} ${clusterLabel}`;
     }
     return `Detected ${clusterCount} ${clusterLabel}`;
-  }, [vms?.total, clusterCount]);
+  }, [fullInventory.vcenter?.vms?.total, clusterCount]);
 
   const handleClusterSelect = (
     _event: React.MouseEvent<Element, MouseEvent> | undefined,
@@ -100,6 +137,11 @@ export function useExampleReportViewModel(): ExampleReportVM {
     isClusterSelectOpen,
     setIsClusterSelectOpen,
     handleClusterSelect,
+    groupView,
+    selectedGroupId,
+    isGroupSelectOpen,
+    setIsGroupSelectOpen,
+    handleGroupSelect,
     isSizingWizardOpen,
     setIsSizingWizardOpen,
     exampleSizing,
