@@ -2,15 +2,8 @@ import { css } from "@emotion/css";
 import type { PartnerRequestCreate } from "@openshift-migration-advisor/planner-sdk";
 import {
   Alert,
-  Button,
-  Card,
-  CardBody,
-  CardFooter,
-  CardHeader,
-  CardTitle,
   Content,
   EmptyState,
-  Gallery,
   PageSection,
   Title,
 } from "@patternfly/react-core";
@@ -19,6 +12,7 @@ import React from "react";
 
 import { LoadingSpinner } from "../../../core/components/LoadingSpinner";
 import { ContactFormModal } from "../components/ContactFormModal";
+import { PartnersGallery } from "../components/PartnersGallery";
 import { usePartnersViewModel } from "../view-models/usePartnersViewModel";
 
 const introStyle = css`
@@ -58,32 +52,10 @@ export const PartnersListSection: React.FC = () => {
         />
       )}
       {!vm.isLoading && !vm.error && vm.partners.length > 0 && (
-        <Gallery hasGutter minWidths={{ default: "300px" }}>
-          {vm.partners.map((partner) => (
-            <Card key={partner.id}>
-              <CardHeader>
-                <img
-                  src={partner.icon}
-                  alt={`${partner.name} icon`}
-                  style={{
-                    height: "60px",
-                  }}
-                />
-              </CardHeader>
-              <CardTitle>{partner.name}</CardTitle>
-              <CardBody>{partner.description}</CardBody>
-              <CardFooter>
-                <Button
-                  variant="primary"
-                  isBlock
-                  onClick={() => vm.openContactFormModal(partner)}
-                >
-                  Request assignment
-                </Button>
-              </CardFooter>
-            </Card>
-          ))}
-        </Gallery>
+        <PartnersGallery
+          partners={vm.partners}
+          onRequestAssignment={vm.openContactFormModal}
+        />
       )}
 
       {vm.isContactFormModalOpen && (
