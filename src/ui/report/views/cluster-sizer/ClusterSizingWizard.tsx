@@ -18,11 +18,7 @@ import {
   useClusterSizingWizardViewModel,
 } from "../../view-models/useClusterSizingWizardViewModel";
 import { ComplexityResult } from "./ComplexityResult";
-import {
-  CostEstimationResult,
-  CostEstimationResultSkeleton,
-} from "./CostEstimationResult";
-import RecommendationTabContent from "./RecommendationTabContent";
+import CostEstimationTabContent from "./cost-estimation/CostEstimationTabContent";
 import { RecommendationTemplate } from "./RecommendationTemplate";
 import { SizingInputForm } from "./SizingInputForm";
 import { SizingResult } from "./SizingResult";
@@ -204,6 +200,7 @@ export const ClusterSizingWizard: React.FC<ClusterSizingWizardProps> = ({
         return (
           <RecommendationTemplate
             key="architecture"
+            id="architecture"
             preferencesTitle="Migration preferences"
             preferencesContent={
               <SizingInputForm
@@ -255,22 +252,19 @@ export const ClusterSizingWizard: React.FC<ClusterSizingWizardProps> = ({
       case "cost-estimation":
         if (!vm.isCostEstimationTabVisible) return null;
         return (
-          <RecommendationTabContent
-            id="cost-estimation"
-            key="cost-estimation"
-            title="Cost estimation"
-            content={
-              <CostEstimationResult costEstimation={vm.costEstimation} />
-            }
+          <CostEstimationTabContent
             isLoading={vm.isLoadingCostEstimation}
-            loadingComponent={<CostEstimationResultSkeleton />}
             errorMessage={vm.costEstimationError}
+            costEstimation={vm.costEstimation}
+            calculateCostEstimation={vm.calculateCostEstimation}
           />
         );
+
       case "time-estimation":
         return (
           <RecommendationTemplate
             key="time-estimation"
+            id="time-estimation"
             preferencesTitle="Migration preferences"
             preferencesContent={
               <TimeEstimationForm
@@ -308,6 +302,7 @@ export const ClusterSizingWizard: React.FC<ClusterSizingWizardProps> = ({
         return (
           <RecommendationTemplate
             key="complexity"
+            id="complexity"
             preferencesTitle="Complexity analysis parameters"
             preferencesContent={<div>Analysis parameters (coming soon)</div>}
             resultsContent={

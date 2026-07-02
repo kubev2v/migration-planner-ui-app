@@ -18,7 +18,7 @@ import RhUiServerIcon from "@patternfly/react-icons/dist/esm/icons/server-icon";
 import RhUiVirtualMachineIcon from "@patternfly/react-icons/dist/esm/icons/virtual-machine-icon";
 import React from "react";
 
-import type { CostEstimationResponse } from "../../../../models/AssessmentModel";
+import type { CostEstimationResponse } from "../../../../../models/CostEstimationModel";
 
 interface CostEstimationResultProps {
   costEstimation: CostEstimationResponse | null;
@@ -90,8 +90,8 @@ const savingsAmountStyle = css`
 `;
 
 const sectionTitleStyle = css`
-  margin-top: var(--pf-t--global--spacer--xl);
-  margin-bottom: var(--pf-t--global--spacer--md);
+  margin-top: var(--pf-t--global--spacer--md);
+  margin-bottom: var(--pf-t--global--spacer--sm);
 `;
 
 const formatCurrency = (value: number): string => {
@@ -143,10 +143,6 @@ export const CostEstimationResult: React.FC<CostEstimationResultProps> = ({
 
   return (
     <Stack hasGutter>
-      <StackItem>
-        <Title headingLevel="h2">Cost estimation</Title>
-      </StackItem>
-
       <StackItem>
         <Card className={heroCardStyle}>
           <CardBody>
@@ -231,7 +227,9 @@ export const CostEstimationResult: React.FC<CostEstimationResultProps> = ({
                 <Card className={savingsCardStyle}>
                   <CardBody>
                     <Flex
-                      justifyContent={{ default: "justifyContentSpaceBetween" }}
+                      justifyContent={{
+                        default: "justifyContentSpaceBetween",
+                      }}
                       alignItems={{ default: "alignItemsCenter" }}
                     >
                       <FlexItem>
@@ -257,7 +255,9 @@ export const CostEstimationResult: React.FC<CostEstimationResultProps> = ({
                 <Card className={savingsCardStyle}>
                   <CardBody>
                     <Flex
-                      justifyContent={{ default: "justifyContentSpaceBetween" }}
+                      justifyContent={{
+                        default: "justifyContentSpaceBetween",
+                      }}
                       alignItems={{ default: "alignItemsCenter" }}
                     >
                       <FlexItem>
@@ -290,10 +290,6 @@ CostEstimationResult.displayName = "CostEstimationResult";
 export const CostEstimationResultSkeleton: React.FC = () => {
   return (
     <Stack hasGutter>
-      <StackItem>
-        <Title headingLevel="h2">Cost estimation</Title>
-      </StackItem>
-
       <StackItem>
         <Card className={heroCardStyle}>
           <CardBody>
