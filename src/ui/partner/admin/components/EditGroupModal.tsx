@@ -31,7 +31,7 @@ export const EditGroupModal: React.FC<EditGroupModalProps> = ({
 
   return (
     <Modal
-      variant={ModalVariant.medium}
+      variant={ModalVariant.large}
       isOpen={isOpen}
       onClose={onClose}
       aria-label="Edit group"

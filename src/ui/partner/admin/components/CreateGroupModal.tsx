@@ -28,7 +28,7 @@ export const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
 
   return (
     <Modal
-      variant={ModalVariant.medium}
+      variant={ModalVariant.large}
       isOpen={isOpen}
       onClose={onClose}
       aria-label="Create group"
