@@ -111,6 +111,7 @@ export const useCreateFromOvaViewModel = (): CreateFromOvaViewModel => {
   // Derive upload feedback from the environment view model
   const uploadMessage = envVm.inventoryUploadResult?.message ?? null;
   const isUploadError = envVm.inventoryUploadResult?.isError ?? false;
+  const { clearInventoryUploadResult } = envVm;
 
   // ---------------------------------------------------------------------------
   // Derived data
@@ -146,8 +147,8 @@ export const useCreateFromOvaViewModel = (): CreateFromOvaViewModel => {
   // ---------------------------------------------------------------------------
 
   React.useEffect(() => {
-    envVm.clearInventoryUploadResult();
-  }, [selectedEnvironmentId, envVm]);
+    clearInventoryUploadResult();
+  }, [selectedEnvironmentId, clearInventoryUploadResult]);
 
   // ---------------------------------------------------------------------------
   // Actions

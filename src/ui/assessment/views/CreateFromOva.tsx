@@ -1,6 +1,7 @@
 import {
   ActionGroup,
   Alert,
+  AlertActionCloseButton,
   AlertActionLink,
   Button,
   Checkbox,
@@ -17,7 +18,7 @@ import {
   TextInput,
 } from "@patternfly/react-core";
 import { RhUiQuestionMarkCircleIcon } from "@patternfly/react-icons";
-import React from "react";
+import React, { useEffect } from "react";
 
 import { routes } from "../../../routing/Routes";
 import { AppPage } from "../../core/components/AppPage";
@@ -37,6 +38,16 @@ import { MigrationAssessmentStepsModal } from "./MigrationAssessmentStepsModal";
 
 const CreateFromOvaContent: React.FC = () => {
   const vm = useCreateFromOvaViewModel();
+
+  useEffect(() => {
+    if (vm.uploadMessage && !vm.isUploadError) {
+      const timeout = setTimeout(() => {
+        vm.envVm.clearInventoryUploadResult();
+      }, 5000);
+
+      return () => clearTimeout(timeout);
+    }
+  }, [vm.uploadMessage, vm.isUploadError, vm.envVm]);
 
   return (
     <AppPage
@@ -152,15 +163,15 @@ const CreateFromOvaContent: React.FC = () => {
                 isInline
                 variant={vm.isUploadError ? "danger" : "success"}
                 title={vm.isUploadError ? "Upload error" : "Upload success"}
+                actionClose={
+                  vm.isUploadError ? (
+                    <AlertActionCloseButton
+                      onClose={() => vm.envVm.clearInventoryUploadResult()}
+                    />
+                  ) : undefined
+                }
               >
                 {vm.uploadMessage}
-              </Alert>
-            </div>
-          )}
-          {!vm.uploadMessage && vm.errorUpdatingInventory && (
-            <div className="pf-v6-u-mt-md">
-              <Alert isInline variant="danger" title="Upload error">
-                {vm.errorUpdatingInventory.message}
               </Alert>
             </div>
           )}

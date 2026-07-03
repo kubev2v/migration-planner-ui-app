@@ -510,4 +510,33 @@ describe("useCreateFromOvaViewModel", () => {
     expect(result.current.uploadMessage).toBeNull();
     expect(result.current.isUploadError).toBe(false);
   });
+
+  it("clearInventoryUploadResult runs when environment changes but not on envVm rerender", () => {
+    mockEnvVm.sources = [makeSource({ id: "s-1", name: "Alpha" })];
+
+    const { result, rerender } = renderHook(() => useCreateFromOvaViewModel());
+
+    expect(mockEnvVm.clearInventoryUploadResult).toHaveBeenCalledTimes(1);
+
+    mockEnvVm.clearInventoryUploadResult.mockClear();
+
+    act(() => {
+      result.current.setSelectedEnvironmentId("s-1");
+    });
+
+    expect(mockEnvVm.clearInventoryUploadResult).toHaveBeenCalledTimes(1);
+
+    mockEnvVm.clearInventoryUploadResult.mockClear();
+    mockEnvVm.inventoryUploadResult = {
+      message:
+        "The uploaded file is using an old schema version and cannot be parsed.",
+      isError: true,
+    };
+    rerender();
+
+    expect(mockEnvVm.clearInventoryUploadResult).not.toHaveBeenCalled();
+    expect(result.current.uploadMessage).toBe(
+      "The uploaded file is using an old schema version and cannot be parsed.",
+    );
+  });
 });
