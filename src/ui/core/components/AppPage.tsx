@@ -45,16 +45,12 @@ export const AppPage: React.FC<React.PropsWithChildren<AppPage.Props>> = (
         </PageBreadcrumb>
         <PageHeader>
           <Flex>
-            <FlexItem>
+            <FlexItem flex={{ default: "flex_1" }}>
               <PageHeaderTitle title={title} />
             </FlexItem>
 
             {React.Children.map(headerActions, (action, index) => (
-              <FlexItem
-                {...(index === 0 ? { align: { default: "alignRight" } } : null)}
-              >
-                {action}
-              </FlexItem>
+              <FlexItem key={index}>{action}</FlexItem>
             ))}
           </Flex>
           {caption}

@@ -254,6 +254,48 @@ describe("Report", () => {
   });
 
   describe("Cluster recommendations button", () => {
+    it("hides recommendations button in aggregate view so export stays right-aligned", async () => {
+      const clusterData = {
+        "Cluster A": { infra: createInfra(2, 2), vms: createVMs(5) },
+      };
+      const clusterView = buildClusterViewModel({
+        infra: clusterData["Cluster A"].infra,
+        vms: clusterData["Cluster A"].vms,
+        clusters: clusterData,
+        selectedClusterId: "all",
+      });
+
+      mockVm = makeBaseVm({
+        assessment: {
+          id: "assessment-1",
+          name: "Assessment 1",
+          sourceId: "source-1",
+          sourceType: "vcenter",
+        },
+        clusterView,
+        selectedClusterId: "all",
+        clusters: clusterData,
+        scopedClusterView: {
+          ...clusterView,
+          viewInfra: clusterData["Cluster A"].infra,
+          viewVms: clusterData["Cluster A"].vms,
+          cpuCores: clusterData["Cluster A"].vms.cpuCores,
+          ramGB: clusterData["Cluster A"].vms.ramGB,
+        },
+        canExportReport: true,
+      });
+
+      render(<Report />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId("download-button")).toBeInTheDocument();
+      });
+
+      expect(
+        screen.queryByText("View Recommendation based on vCenter cluster"),
+      ).not.toBeInTheDocument();
+    });
+
     it("auto-selects first cluster to show recommendations button", async () => {
       const clusterData = {
         "Cluster A": { infra: createInfra(2, 2), vms: createVMs(5) },

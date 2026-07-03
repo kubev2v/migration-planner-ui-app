@@ -35,11 +35,6 @@ const alertSpacing = css`
   margin-top: var(--pf-t--global--spacer--md);
 `;
 
-const reservedHeaderActionStyle = css`
-  visibility: hidden;
-  pointer-events: none;
-`;
-
 const ReportContent: React.FC = () => {
   const vm = useReportPageViewModel();
   const offScreenRef = useRef<HTMLDivElement>(null);
@@ -281,43 +276,36 @@ const ReportContent: React.FC = () => {
               )}
             </SplitItem>
 
-            <SplitItem
-              className={
-                vm.selectedClusterId === "all"
-                  ? reservedHeaderActionStyle
-                  : undefined
-              }
-              aria-hidden={vm.selectedClusterId === "all"}
-            >
-              {vm.canShowClusterRecommendations ? (
-                <Button
-                  variant="primary"
-                  tabIndex={vm.selectedClusterId === "all" ? -1 : undefined}
-                  onClick={() => vm.setIsSizingWizardOpen(true)}
-                >
-                  View Recommendation based on vCenter cluster
-                </Button>
-              ) : (
-                <Tooltip
-                  {...themeTooltipFlyoutProps}
-                  content={
-                    <p>
-                      This cluster has no VMs. Cluster recommendations are not
-                      available for empty clusters.
-                    </p>
-                  }
-                >
+            {vm.selectedClusterId !== "all" ? (
+              <SplitItem>
+                {vm.canShowClusterRecommendations ? (
                   <Button
                     variant="primary"
-                    tabIndex={vm.selectedClusterId === "all" ? -1 : undefined}
                     onClick={() => vm.setIsSizingWizardOpen(true)}
-                    isAriaDisabled
                   >
                     View Recommendation based on vCenter cluster
                   </Button>
-                </Tooltip>
-              )}
-            </SplitItem>
+                ) : (
+                  <Tooltip
+                    {...themeTooltipFlyoutProps}
+                    content={
+                      <p>
+                        This cluster has no VMs. Cluster recommendations are not
+                        available for empty clusters.
+                      </p>
+                    }
+                  >
+                    <Button
+                      variant="primary"
+                      onClick={() => vm.setIsSizingWizardOpen(true)}
+                      isAriaDisabled
+                    >
+                      View Recommendation based on vCenter cluster
+                    </Button>
+                  </Tooltip>
+                )}
+              </SplitItem>
+            ) : null}
           </Split>
         ) : undefined
       }
