@@ -234,6 +234,8 @@ export const StorageOverview: React.FC<StorageOverviewProps> = ({
     [totalVMs, totalWithSharedDisks],
   );
 
+  const isSharedDisksViewAvailable = totalWithSharedDisks !== 0;
+
   const sharedDisksChartData = useMemo(() => {
     const withoutShared = totalVMs - normalizedWithShared;
 
@@ -397,10 +399,7 @@ export const StorageOverview: React.FC<StorageOverviewProps> = ({
                   <DropdownItem
                     key="sharedDisks"
                     value="sharedDisks"
-                    isDisabled={
-                      totalWithSharedDisks !== undefined &&
-                      totalWithSharedDisks === 0
-                    }
+                    isDisabled={!isSharedDisksViewAvailable}
                   >
                     Shared disks VS. No shared disks
                   </DropdownItem>
@@ -663,28 +662,30 @@ export const StorageOverview: React.FC<StorageOverviewProps> = ({
                 }
               />
             </div>
-            <div className={storageExportSectionMargin}>
-              <div className={storageExportSectionTitle}>
-                {VIEW_MODE_LABELS["sharedDisks"]}
+            {isSharedDisksViewAvailable && (
+              <div className={storageExportSectionMargin}>
+                <div className={storageExportSectionTitle}>
+                  {VIEW_MODE_LABELS["sharedDisks"]}
+                </div>
+                <MigrationDonutChart
+                  data={sharedDisksChartData}
+                  height={300}
+                  width={420}
+                  donutThickness={18}
+                  titleFontSize={34}
+                  title={`${totalVMs} VMs`}
+                  subTitle={`${normalizedWithShared} with shared disks`}
+                  subTitleColor="var(--pf-t--global--text--color--subtle)"
+                  itemsPerRow={Math.ceil(sharedDisksChartData.length / 2)}
+                  labelFontSize={18}
+                  marginLeft="52%"
+                  emptyStateTitle={REPORT_CARD_EMPTY_STATE_TITLES.storage}
+                  tooltipLabelFormatter={({ datum, percent }) =>
+                    `${datum.countDisplay}\n${percent.toFixed(1)}%`
+                  }
+                />
               </div>
-              <MigrationDonutChart
-                data={sharedDisksChartData}
-                height={300}
-                width={420}
-                donutThickness={18}
-                titleFontSize={34}
-                title={`${totalVMs} VMs`}
-                subTitle={`${normalizedWithShared} with shared disks`}
-                subTitleColor="var(--pf-t--global--text--color--subtle)"
-                itemsPerRow={Math.ceil(sharedDisksChartData.length / 2)}
-                labelFontSize={18}
-                marginLeft="52%"
-                emptyStateTitle={REPORT_CARD_EMPTY_STATE_TITLES.storage}
-                tooltipLabelFormatter={({ datum, percent }) =>
-                  `${datum.countDisplay}\n${percent.toFixed(1)}%`
-                }
-              />
-            </div>
+            )}
           </>
         )}
       </CardBody>

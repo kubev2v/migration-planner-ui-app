@@ -254,7 +254,7 @@ describe("StorageOverview", () => {
       });
     });
 
-    it("handles zero VMs with shared disks", () => {
+    it("excludes shared disks chart from export when there are no shared disks", () => {
       render(
         <StorageOverview
           DiskSizeTierSummary={mockDiskSizeTierSummary}
@@ -266,26 +266,17 @@ describe("StorageOverview", () => {
         />,
       );
 
+      expect(
+        screen.queryByText(/Shared disks VS\. No shared disks/i),
+      ).not.toBeInTheDocument();
+
       const donutCharts = screen.getAllByTestId("donut-chart");
       const sharedDisksChart = donutCharts.find((chart) => {
         const subtitle = chart.querySelector('[data-testid="chart-subtitle"]');
-        return subtitle?.textContent === "0 with shared disks";
+        return subtitle?.textContent?.includes("with shared disks");
       });
 
-      expect(sharedDisksChart).toBeDefined();
-
-      const chartData = sharedDisksChart!.querySelector(
-        '[data-testid="chart-data"]',
-      );
-      const data = JSON.parse(
-        chartData!.textContent || "[]",
-      ) as ChartDataItem[];
-
-      expect(data.length).toBeGreaterThan(0);
-      const withoutShared = data.find((d) => d.name === "No shared disks");
-      expect(withoutShared).toMatchObject({
-        count: 100,
-      });
+      expect(sharedDisksChart).toBeUndefined();
     });
 
     it("handles all VMs with shared disks", () => {
@@ -322,7 +313,7 @@ describe("StorageOverview", () => {
       });
     });
 
-    it("handles undefined totalWithSharedDisks", () => {
+    it("excludes shared disks chart from export when totalWithSharedDisks is undefined", () => {
       render(
         <StorageOverview
           DiskSizeTierSummary={mockDiskSizeTierSummary}
@@ -334,13 +325,9 @@ describe("StorageOverview", () => {
         />,
       );
 
-      const donutCharts = screen.getAllByTestId("donut-chart");
-      const sharedDisksChart = donutCharts.find((chart) => {
-        const subtitle = chart.querySelector('[data-testid="chart-subtitle"]');
-        return subtitle?.textContent?.includes("with shared disks");
-      });
-
-      expect(sharedDisksChart).toBeDefined();
+      expect(
+        screen.queryByText(/Shared disks VS\. No shared disks/i),
+      ).not.toBeInTheDocument();
     });
 
     it("clamps totalWithSharedDisks to valid range", () => {
