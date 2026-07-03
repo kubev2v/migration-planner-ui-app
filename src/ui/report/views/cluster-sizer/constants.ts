@@ -125,8 +125,15 @@ export const CPU_OVERCOMMIT_OPTIONS: {
   {
     value: 6,
     label: "High Density (1:6)",
-    description: "Heavy sharing. Maximum savings for test environments.",
+    description: "Heavy sharing. Good savings for test environments.",
     helpText: "Only recommended for non-production workloads.",
+  },
+  {
+    value: 8,
+    label: "Maximum Density (1:8)",
+    description: "Extreme sharing. Lowest infrastructure cost.",
+    helpText:
+      'Example: At 1:8, you can run 800 "virtual" CPUs on 100 "physical" cores. Only for non-production workloads.',
   },
 ];
 
