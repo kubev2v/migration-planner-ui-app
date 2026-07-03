@@ -299,10 +299,14 @@ export const useEnvironmentPageViewModel = (): EnvironmentPageViewModel => {
                 isError: false,
               });
             } catch (error: unknown) {
-              const message =
-                (error as { message?: string })?.message ||
-                "Failed to upload the inventory file";
-              setInventoryUploadResult({ message, isError: true });
+              const parsed = await parseApiError(
+                error,
+                "Failed to upload the inventory file",
+              );
+              setInventoryUploadResult({
+                message: parsed.message,
+                isError: true,
+              });
               return;
             }
           } else {
