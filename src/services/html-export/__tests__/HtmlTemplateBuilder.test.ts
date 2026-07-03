@@ -167,5 +167,58 @@ describe("HtmlTemplateBuilder", () => {
         expect(html).not.toContain("onerror=alert");
       });
     });
+
+    describe("HTML body numeric safety", () => {
+      const htmlBreaker = "<img src=x onerror=alert(1)>";
+
+      it("does not embed malicious strings in summary counts", () => {
+        const inventory: InventoryData = {
+          ...mockInventory,
+          vms: {
+            ...mockInventory.vms,
+            total: htmlBreaker as unknown as number,
+          },
+          infra: {
+            ...mockInventory.infra,
+            totalHosts: htmlBreaker as unknown as number,
+          },
+        };
+
+        const html = builder.build(mockChartData, inventory);
+
+        expect(html).not.toContain(htmlBreaker);
+        expect(html).not.toContain("onerror=alert");
+      });
+
+      it("does not embed malicious strings in resource and warning table cells", () => {
+        const inventory: InventoryData = {
+          ...mockInventory,
+          vms: {
+            ...mockInventory.vms,
+            total: htmlBreaker as unknown as number,
+            cpuCores: { total: htmlBreaker as unknown as number },
+            ramGB: { total: htmlBreaker as unknown as number },
+            diskGB: { total: htmlBreaker as unknown as number },
+            os: { Linux: htmlBreaker as unknown as number },
+            migrationWarnings: [
+              {
+                label: "Test Warning",
+                count: htmlBreaker as unknown as number,
+              },
+            ],
+          },
+        };
+
+        const chartData: ChartData = {
+          ...mockChartData,
+          osData: [["Linux", htmlBreaker as unknown as number]],
+        };
+
+        const html = builder.build(chartData, inventory);
+
+        expect(html).not.toContain(htmlBreaker);
+        expect(html).not.toContain("onerror=alert");
+      });
+    });
   });
 });

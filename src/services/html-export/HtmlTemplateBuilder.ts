@@ -30,6 +30,10 @@ const formatNumber = (num: unknown): string => {
   return n.toString();
 };
 
+/** Safe numeric text for HTML body interpolation (table cells, summary counts). */
+const bodyNumber = (value: unknown): string =>
+  coerceFiniteNumber(value).toString();
+
 const escapeHtml = (str: string): string => {
   const div = document.createElement("div");
   div.textContent = str;
@@ -153,11 +157,11 @@ export class HtmlTemplateBuilder {
         <div class="summary-grid">
             <div class="summary-card">
                 <h4>Total VMs</h4>
-                <div class="number">${vms.total}</div>
+                <div class="number">${bodyNumber(vms.total)}</div>
             </div>
             <div class="summary-card" style="background: #e74c3c;">
                 <h4>ESXi Hosts</h4>
-                <div class="number">${infra.totalHosts}</div>
+                <div class="number">${bodyNumber(infra.totalHosts)}</div>
             </div>
             <div class="summary-card" style="background: #27ae60;">
                 <h4>Datastores</h4>
@@ -231,6 +235,13 @@ export class HtmlTemplateBuilder {
   }
 
   private buildDetailedTables(infra: InfraData, vms: VMsData): string {
+    const totalVms = coerceFiniteNumber(vms.total);
+    const cpuTotal = coerceFiniteNumber(vms.cpuCores.total);
+    const ramTotal = coerceFiniteNumber(vms.ramGB.total);
+    const diskTotal = coerceFiniteNumber(vms.diskGB.total);
+    const avgPerVm = (total: number): string =>
+      totalVms > 0 ? (total / totalVms).toFixed(1) : "0.0";
+
     return `
         <div class="section">
             <h2>Detailed Analysis Tables</h2>
@@ -266,21 +277,21 @@ export class HtmlTemplateBuilder {
                     <tbody>
                         <tr>
                             <td><strong>CPU Cores (vCPUs)</strong></td>
-                            <td>${vms.cpuCores.total}</td>
-                            <td>${vms.total > 0 ? (vms.cpuCores.total / vms.total).toFixed(1) : "0.0"}</td>
-                            <td>${Math.round(vms.cpuCores.total * 1.2)} (with 20% overhead)</td>
+                            <td>${bodyNumber(cpuTotal)}</td>
+                            <td>${avgPerVm(cpuTotal)}</td>
+                            <td>${Math.round(cpuTotal * 1.2)} (with 20% overhead)</td>
                         </tr>
                         <tr>
                             <td><strong>Memory (GB)</strong></td>
-                            <td>${vms.ramGB.total}</td>
-                            <td>${vms.total > 0 ? (vms.ramGB.total / vms.total).toFixed(1) : "0.0"}</td>
-                            <td>${Math.round(vms.ramGB.total * 1.25)} (with 25% overhead)</td>
+                            <td>${bodyNumber(ramTotal)}</td>
+                            <td>${avgPerVm(ramTotal)}</td>
+                            <td>${Math.round(ramTotal * 1.25)} (with 25% overhead)</td>
                         </tr>
                         <tr>
                             <td><strong>Storage (GB)</strong></td>
-                            <td>${vms.diskGB.total}</td>
-                            <td>${vms.total > 0 ? (vms.diskGB.total / vms.total).toFixed(1) : "0.0"}</td>
-                            <td>${Math.round(vms.diskGB.total * 1.15)} (with 15% overhead)</td>
+                            <td>${bodyNumber(diskTotal)}</td>
+                            <td>${avgPerVm(diskTotal)}</td>
+                            <td>${Math.round(diskTotal * 1.15)} (with 15% overhead)</td>
                         </tr>
                     </tbody>
                 </table>
@@ -327,10 +338,13 @@ export class HtmlTemplateBuilder {
       return '<tr><td colspan="4">No operating system data available</td></tr>';
     }
 
+    const totalVms = coerceFiniteNumber(vms.total);
+
     return osEntries
       .map(([osName, count]) => {
+        const countNum = coerceFiniteNumber(count);
         const percentage =
-          vms.total === 0 ? "0.0" : ((count / vms.total) * 100).toFixed(1);
+          totalVms === 0 ? "0.0" : ((countNum / totalVms) * 100).toFixed(1);
         const priority = osName.includes("Windows")
           ? "High"
           : osName.includes("Linux") || osName.includes("Red Hat")
@@ -339,7 +353,7 @@ export class HtmlTemplateBuilder {
         return `
       <tr>
         <td><strong>${escapeHtml(osName)}</strong></td>
-        <td>${count}</td>
+        <td>${bodyNumber(countNum)}</td>
         <td>${percentage}%</td>
         <td>${escapeHtml(priority)}</td>
       </tr>`;
@@ -355,20 +369,21 @@ export class HtmlTemplateBuilder {
     </div>`;
     }
 
+    const totalVms = coerceFiniteNumber(vms.total);
+
     const warningsRows = vms.migrationWarnings
       .map((warning: MigrationWarning) => {
+        const count = coerceFiniteNumber(warning.count);
         const impact =
-          warning.count > 50
+          count > 50
             ? "Critical"
-            : warning.count > 20
+            : count > 20
               ? "High"
-              : warning.count > 5
+              : count > 5
                 ? "Medium"
                 : "Low";
         const percentage =
-          vms.total > 0
-            ? ((warning.count / vms.total) * 100).toFixed(1)
-            : "0.0";
+          totalVms > 0 ? ((count / totalVms) * 100).toFixed(1) : "0.0";
         const priority =
           impact === "Critical"
             ? "Immediate"
@@ -389,7 +404,7 @@ export class HtmlTemplateBuilder {
         return `
       <tr class="${rowClass}">
         <td><strong>${escapeHtml(warning.label)}</strong></td>
-        <td>${warning.count}</td>
+        <td>${bodyNumber(count)}</td>
         <td>${escapeHtml(impact)}</td>
         <td>${percentage}%</td>
         <td>${escapeHtml(priority)}</td>
