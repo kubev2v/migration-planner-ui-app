@@ -51,7 +51,7 @@ export type WorkerNodePreset = "small" | "medium" | "large" | "custom";
 /**
  * Over-commit ratio options for CPU (numeric value)
  */
-export type OvercommitRatio = 1 | 2 | 4 | 6;
+export type OvercommitRatio = 1 | 2 | 4 | 6 | 8;
 
 /**
  * Over-commit ratio options for memory (1:6 not supported by API)
@@ -157,6 +157,7 @@ const CPU_OVERCOMMIT_RATIO_MAP: Record<
   2: CpuOverCommitRatio.CpuOneToTwo,
   4: CpuOverCommitRatio.CpuOneToFour,
   6: CpuOverCommitRatio.CpuOneToSix,
+  8: CpuOverCommitRatio.CpuOneToEight,
 };
 
 /**

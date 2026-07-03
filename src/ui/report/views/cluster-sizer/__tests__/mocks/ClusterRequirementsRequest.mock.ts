@@ -61,7 +61,7 @@ export const mockCustomNodeWithControlPlaneRequest: ClusterRequirementsRequest =
  */
 export const mockMaxValuesRequest: ClusterRequirementsRequest = {
   clusterId: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-  cpuOverCommitRatio: "1:6",
+  cpuOverCommitRatio: "1:8",
   memoryOverCommitRatio: "1:4",
   workerNodeCPU: 200,
   workerNodeMemory: 512,
