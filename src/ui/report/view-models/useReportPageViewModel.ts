@@ -43,7 +43,6 @@ import {
   compareClustersByVmCount,
 } from "../helpers/clusterViewModel";
 import {
-  assessmentHasSubsetDataFetched,
   extractScopedInventoryData,
   type ReportInventorySource,
 } from "../helpers/groupInventoryFilter";
@@ -342,7 +341,7 @@ export const useReportPageViewModel = (): ReportPageViewModel => {
     assessmentsStore.getSnapshot.bind(assessmentsStore),
   );
 
-  useSyncExternalStore(
+  const sources = useSyncExternalStore(
     sourcesStore.subscribe.bind(sourcesStore),
     sourcesStore.getSnapshot.bind(sourcesStore),
   );
@@ -357,22 +356,15 @@ export const useReportPageViewModel = (): ReportPageViewModel => {
     jobsStore.getSnapshot.bind(jobsStore),
   );
 
-  // ---- Initial data fetch (GET assessment when subset data not yet loaded) --
+  // ---- Initial data fetch (always GET assessment for subset inventory data) --
   const [fetchState, doFetchData] = useAsyncFn(async () => {
-    const cachedAssessment = id ? assessmentsStore.getById(id) : undefined;
     const sourcesPromise = sourcesStore.list();
 
     if (id) {
-      const shouldFetchAssessment =
-        !cachedAssessment ||
-        !assessmentHasSubsetDataFetched(cachedAssessment.snapshots);
-
-      if (shouldFetchAssessment) {
-        await Promise.all([assessmentsStore.get(id), sourcesPromise]);
-        return;
-      }
-
-      await sourcesPromise;
+      // LIST responses omit subset inventories. The SDK also normalizes a missing
+      // field to `subsetInventories: undefined`, so cache heuristics cannot tell
+      // list data apart from a GET response with no groups — always fetch by ID.
+      await Promise.all([assessmentsStore.get(id), sourcesPromise]);
       return;
     }
 
@@ -394,9 +386,9 @@ export const useReportPageViewModel = (): ReportPageViewModel => {
   const source = useMemo(
     () =>
       assessment?.sourceId
-        ? sourcesStore.getById(assessment.sourceId)
+        ? sources.find((entry) => entry.id === assessment.sourceId)
         : undefined,
-    [assessment, sourcesStore],
+    [assessment, sources],
   );
 
   // ---- Local UI state ------------------------------------------------------
@@ -415,9 +407,13 @@ export const useReportPageViewModel = (): ReportPageViewModel => {
 
   // ---- Snapshot data -------------------------------------------------------
   const latestSnapshot = useMemo((): SnapshotLike => {
-    const snapshots = assessment?.snapshots || [];
+    if (assessment?.snapshotsSorted?.length) {
+      return assessment.snapshotsSorted[0];
+    }
+
+    const snapshots = assessment?.snapshots ?? [];
     return snapshots.length > 0 ? snapshots[snapshots.length - 1] : {};
-  }, [assessment?.snapshots]);
+  }, [assessment]);
 
   const subsetInventories = useMemo(
     (): AssessmentSubsetInventory[] => latestSnapshot.subsetInventories ?? [],

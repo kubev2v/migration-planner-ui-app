@@ -67,20 +67,3 @@ export const extractScopedInventoryData = (
     latestSnapshot.inventory?.vcenter?.vms) as VMs | undefined,
   clusters: activeInventory?.clusters,
 });
-
-/**
- * GET assessment responses include `subsetInventories` (nullable).
- * LIST responses omit the field entirely — use that to skip redundant fetches.
- */
-export const assessmentHasSubsetDataFetched = (
-  snapshots: SnapshotLike[] | undefined,
-): boolean => {
-  if (!snapshots?.length) {
-    return false;
-  }
-  const latestSnapshot = snapshots[snapshots.length - 1];
-  return Object.prototype.hasOwnProperty.call(
-    latestSnapshot,
-    "subsetInventories",
-  );
-};

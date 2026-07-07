@@ -8,7 +8,6 @@ import { describe, expect, it } from "vitest";
 
 import type { SnapshotLike } from "../../../../services/html-export/types";
 import {
-  assessmentHasSubsetDataFetched,
   extractScopedInventoryData,
   resolveActiveInventory,
   resolveEffectiveGroupId,
@@ -163,28 +162,6 @@ describe("groupInventoryFilter", () => {
       const result = extractScopedInventoryData(undefined, latestSnapshot);
       expect(result.infra?.totalHosts).toBe(4);
       expect(result.vms?.total).toBe(8);
-    });
-  });
-
-  describe("assessmentHasSubsetDataFetched", () => {
-    it("returns false when snapshots are missing", () => {
-      expect(assessmentHasSubsetDataFetched(undefined)).toBe(false);
-      expect(assessmentHasSubsetDataFetched([])).toBe(false);
-    });
-
-    it("returns false when latest snapshot omits subsetInventories (list response)", () => {
-      expect(assessmentHasSubsetDataFetched([{ createdAt: new Date() }])).toBe(
-        false,
-      );
-    });
-
-    it("returns true when latest snapshot includes subsetInventories (GET response)", () => {
-      expect(
-        assessmentHasSubsetDataFetched([
-          { createdAt: new Date() },
-          { createdAt: new Date(), subsetInventories: null },
-        ]),
-      ).toBe(true);
     });
   });
 });
