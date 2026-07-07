@@ -142,7 +142,7 @@ const ALL_STATUS_SOURCES: SourceModel[] = [
     inventory: SAMPLE_INVENTORY,
   }),
 
-  // 4. Uploaded manually — with agentVersionWarning → "N/A" + popover
+  // 4. Uploaded manually — with agentVersionWarning → "N/A" (no popover)
   makeSource({
     id: "src-uploaded-manually-warning",
     name: "On-prem vCenter (uploaded, warning)",
@@ -364,7 +364,7 @@ describe("SourcesTable — all status states", () => {
     expect(cells[2]).toHaveTextContent("N/A");
   });
 
-  it('shows "N/A" with an info popover when uploaded manually and agentVersionWarning is set', () => {
+  it('shows "N/A" without a popover when uploaded manually, even if agentVersionWarning is set', () => {
     mockVm = makeBaseVm({
       sources: [
         makeSource({
@@ -385,8 +385,8 @@ describe("SourcesTable — all status states", () => {
     const cells = within(dataRow).getAllByRole("cell");
     expect(cells[2]).toHaveTextContent("N/A");
     expect(
-      within(cells[2]).getByRole("button", { name: "Version information" }),
-    ).toBeInTheDocument();
+      within(cells[2]).queryByRole("button", { name: "Version information" }),
+    ).not.toBeInTheDocument();
   });
 
   it('shows "Up to date" in the agent version column for sources with a current agent', () => {
