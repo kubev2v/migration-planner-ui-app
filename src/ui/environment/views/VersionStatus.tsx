@@ -7,10 +7,7 @@ import {
   Split,
   SplitItem,
 } from "@patternfly/react-core";
-import {
-  RhUiInformationFillIcon,
-  RhUiQuestionMarkCircleIcon,
-} from "@patternfly/react-icons";
+import { RhUiQuestionMarkCircleIcon } from "@patternfly/react-icons";
 import { t_global_color_status_success_default as globalSuccessColor } from "@patternfly/react-tokens/dist/js/t_global_color_status_success_default";
 import { t_global_icon_color_status_info_default as globalInfoColor } from "@patternfly/react-tokens/dist/js/t_global_icon_color_status_info_default";
 import { t_global_text_color_status_warning_default as globalTextWarningColor } from "@patternfly/react-tokens/dist/js/t_global_text_color_status_warning_default";
@@ -111,34 +108,7 @@ const OvaDownloaded: React.FC = () => (
   </Split>
 );
 
-const NotAvailable: React.FC<{ warning?: string | null }> = ({ warning }) => (
-  <Split hasGutter className={splitGap}>
-    <SplitItem>
-      <span>{VALUE_NOT_AVAILABLE}</span>
-    </SplitItem>
-    {warning && (
-      <SplitItem>
-        <Popover
-          {...themePopoverFlyoutProps}
-          aria-label="Version information"
-          headerContent="Version Information"
-          headerComponent="h2"
-          bodyContent={<div>{warning}</div>}
-        >
-          <Button
-            variant="plain"
-            aria-label="Version information"
-            className={popoverButton}
-          >
-            <Icon isInline>
-              <RhUiInformationFillIcon color={globalInfoColor.value} />
-            </Icon>
-          </Button>
-        </Popover>
-      </SplitItem>
-    )}
-  </Split>
-);
+const NotAvailable: React.FC = () => <span>{VALUE_NOT_AVAILABLE}</span>;
 
 const VersionWarning: React.FC<{ warning: string }> = ({ warning }) => (
   <Split hasGutter className={splitGap}>
@@ -180,8 +150,7 @@ const VersionWarning: React.FC<{ warning: string }> = ({ warning }) => (
  * |-------------------------------|--------------------|--------------|---------------------|-------------------------------------|
  * | `not-connected`               | `false`            | falsy        | any                 | "Download pending" (blue) + popover |
  * | `not-connected`               | `false`            | truthy       | any                 | "OVA downloaded" (blue) + popover   |
- * | `not-connected`               | `true`             | any          | falsy               | "N/A"                               |
- * | `not-connected`               | `true`             | any          | truthy              | "N/A" (blue info icon) + popover    |
+ * | `not-connected`               | `true`             | any          | any                 | "N/A"                               |
  * | `waiting-for-credentials`     | n/a                | any          | falsy               | "Up to date" (green)                |
  * | `waiting-for-credentials`     | n/a                | any          | truthy              | "Outdated" (yellow) + popover       |
  * | `gathering-initial-inventory` | n/a                | any          | falsy               | "Up to date" (green)                |
@@ -237,7 +206,7 @@ export const VersionStatus: React.FC<VersionStatusProps> = (props) => {
     case AGENT_LABEL_OVA_DOWNLOADED:
       return <OvaDownloaded />;
     case AGENT_VERSION_NOT_AVAILABLE:
-      return <NotAvailable warning={props.agentVersionWarning} />;
+      return <NotAvailable />;
     case AGENT_LABEL_OUTDATED:
       return <VersionWarning warning={props.agentVersionWarning!} />;
     case AGENT_LABEL_UP_TO_DATE:
