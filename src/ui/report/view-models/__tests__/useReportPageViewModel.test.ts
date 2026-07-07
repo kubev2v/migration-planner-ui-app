@@ -11,7 +11,10 @@ import { act, renderHook } from "@testing-library/react";
 import React from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { createSourceModel } from "../../../../models/SourceModel";
+import {
+  createSourceModel,
+  type SourceModel,
+} from "../../../../models/SourceModel";
 import { mockClusterRequirementsResponse } from "../../views/cluster-sizer/__tests__/mocks/ClusterRequirementsResponse.mock";
 import { EXAMPLE_FORM_VALUES } from "../../views/example-data/clusterSizingFixture";
 import type { SizingPdfData } from "../useReportPageViewModel";
@@ -65,7 +68,7 @@ const mockAssessmentsStore = {
 
 const mockSourcesStore = {
   subscribe: vi.fn(() => () => {}),
-  getSnapshot: vi.fn(() => []),
+  getSnapshot: vi.fn((): SourceModel[] => []),
   list: vi.fn().mockResolvedValue([]),
   getById: vi.fn(),
   startPolling: vi.fn(),
@@ -259,16 +262,7 @@ describe("useReportPageViewModel", () => {
     expect(result.current.assessment?.name).toBe("Assessment assessment-1");
   });
 
-  it("fetches assessment by ID and sources on mount", () => {
-    mockAssessmentsStore.getSnapshot.mockReturnValue([]);
-    mockAssessmentsStore.getById.mockReturnValue(undefined);
-    renderHook(() => useReportPageViewModel());
-
-    expect(mockAssessmentsStore.get).toHaveBeenCalledWith("assessment-1");
-    expect(mockSourcesStore.list).toHaveBeenCalled();
-  });
-
-  it("skips GET assessment when cached snapshot already has subsetInventories", () => {
+  it("always fetches assessment by ID and sources on mount", () => {
     const assessment = createAssessment("assessment-1", {
       "Cluster-A": { infra: createInfra(2, 2), vms: createVMs(5) },
     });
@@ -279,22 +273,21 @@ describe("useReportPageViewModel", () => {
           vcenterId: "vcenter-1",
           clusters: {},
         },
-        subsetInventories: null,
+        subsetInventories: [
+          {
+            id: "group-1",
+            name: "Group 1",
+            vcenterId: "vcenter-1",
+            vmsCount: 5,
+            createdAt: new Date(),
+            inventory: assessment.snapshots?.[0]?.inventory ?? {
+              vcenterId: "vcenter-1",
+              clusters: {},
+            },
+          },
+        ],
       },
     ];
-    mockAssessmentsStore.getSnapshot.mockReturnValue([assessment]);
-    mockAssessmentsStore.getById.mockReturnValue(assessment);
-
-    renderHook(() => useReportPageViewModel());
-
-    expect(mockAssessmentsStore.get).not.toHaveBeenCalled();
-    expect(mockSourcesStore.list).toHaveBeenCalled();
-  });
-
-  it("fetches GET assessment when cached snapshot lacks subsetInventories key", () => {
-    const assessment = createAssessment("assessment-1", {
-      "Cluster-A": { infra: createInfra(2, 2), vms: createVMs(5) },
-    });
     mockAssessmentsStore.getSnapshot.mockReturnValue([assessment]);
     mockAssessmentsStore.getById.mockReturnValue(assessment);
 
@@ -307,11 +300,24 @@ describe("useReportPageViewModel", () => {
   it("resolves source from the assessment's sourceId", () => {
     const assessment = createAssessment("assessment-1");
     mockAssessmentsStore.getSnapshot.mockReturnValue([assessment]);
-    mockSourcesStore.getById.mockReturnValue(mockSource);
+    mockSourcesStore.getSnapshot.mockReturnValue([mockSource]);
 
     const { result } = renderHook(() => useReportPageViewModel());
     expect(result.current.source).toBe(mockSource);
-    expect(mockSourcesStore.getById).toHaveBeenCalledWith("source-1");
+  });
+
+  it("updates source when sources finish loading after mount", () => {
+    const assessment = createAssessment("assessment-1");
+    mockAssessmentsStore.getSnapshot.mockReturnValue([assessment]);
+    mockSourcesStore.getSnapshot.mockReturnValue([]);
+
+    const { result, rerender } = renderHook(() => useReportPageViewModel());
+    expect(result.current.source).toBeUndefined();
+
+    mockSourcesStore.getSnapshot.mockReturnValue([mockSource]);
+    rerender();
+
+    expect(result.current.source).toBe(mockSource);
   });
 
   it("returns undefined source when assessment has no sourceId", () => {
