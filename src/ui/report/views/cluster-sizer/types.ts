@@ -303,12 +303,6 @@ export const workloadAndFormValuesToStandaloneRequest = (
   if (isSNO || isCompact) {
     return {
       ...workloadFields,
-      cpuOverCommitRatio: cpuOvercommitRatioToApiEnum(
-        values.cpuOvercommitRatio,
-      ),
-      memoryOverCommitRatio: memoryOvercommitRatioToApiEnum(
-        values.memoryOvercommitRatio,
-      ),
       workerNodeCPU: SNO_DEFAULT_WORKER_CPU,
       workerNodeMemory: SNO_DEFAULT_WORKER_MEMORY,
       controlPlaneSchedulable: true,
@@ -318,7 +312,7 @@ export const workloadAndFormValuesToStandaloneRequest = (
       compactMode: isCompact ? true : undefined,
       controlPlaneCPU: values.controlPlaneCpu,
       controlPlaneMemory: values.controlPlaneMemoryGb,
-    };
+    } as StandaloneClusterRequirementsRequest;
   }
 
   return {
