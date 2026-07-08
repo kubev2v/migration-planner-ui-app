@@ -8,7 +8,6 @@ import {
   type MenuToggleElement,
   Toolbar,
   ToolbarContent,
-  ToolbarGroup,
   ToolbarItem,
   Tooltip,
 } from "@patternfly/react-core";
@@ -27,6 +26,7 @@ import { routes } from "../../../routing/Routes";
 import {
   AttributeValueFilter,
   type AttributeValueFilterAttribute,
+  attributeValueFilterToolbarStyle,
 } from "../../core/components/attribute-value-filter";
 import { ConfirmationModal } from "../../core/components/ConfirmationModal";
 import { EmptySearchResults } from "../../core/components/EmptySearchResults";
@@ -442,16 +442,15 @@ export const SourcesTable: React.FC<SourceTableProps> = ({
         </div>
       )}
 
-      <Toolbar clearAllFilters={clearAllFilters}>
+      <Toolbar
+        clearAllFilters={clearAllFilters}
+        className={attributeValueFilterToolbarStyle}
+      >
         <ToolbarContent>
-          <ToolbarGroup>
-            <ToolbarItem>
-              <AttributeValueFilter
-                attributes={filterAttributes}
-                defaultActiveAttributeId="name"
-              />
-            </ToolbarItem>
-          </ToolbarGroup>
+          <AttributeValueFilter
+            attributes={filterAttributes}
+            defaultActiveAttributeId="name"
+          />
           <ToolbarItem>
             {hasSources && onAddEnvironment ? (
               <Button

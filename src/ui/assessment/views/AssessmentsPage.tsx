@@ -16,6 +16,7 @@ import type { AssessmentModel } from "../../../models/AssessmentModel";
 import {
   AttributeValueFilter,
   type AttributeValueFilterAttribute,
+  attributeValueFilterToolbarStyle,
 } from "../../core/components/attribute-value-filter";
 import { ConfirmationModal } from "../../core/components/ConfirmationModal";
 import CreateAssessmentDropdown from "../../core/components/CreateAssessmentDropdown";
@@ -123,21 +124,25 @@ export const AssessmentsPage: React.FC<AssessmentsPageProps> = ({
       .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
       .join(" ");
 
-  const owners = Array.from(
-    new Set(
-      (Array.isArray(assessments) ? assessments : [])
-        .map((a) => {
-          const ownerFirstName = formatName(a.ownerFirstName);
-          const ownerLastName = formatName(a.ownerLastName);
-          const ownerFullName =
-            ownerFirstName && ownerLastName
-              ? `${ownerFirstName} ${ownerLastName}`
-              : ownerFirstName || ownerLastName || "";
-          return ownerFullName;
-        })
-        .filter((name) => !!name && name.trim() !== ""),
-    ),
-  ).sort((a, b) => a.localeCompare(b));
+  const owners = useMemo(
+    () =>
+      Array.from(
+        new Set(
+          (Array.isArray(assessments) ? assessments : [])
+            .map((a) => {
+              const ownerFirstName = formatName(a.ownerFirstName);
+              const ownerLastName = formatName(a.ownerLastName);
+              const ownerFullName =
+                ownerFirstName && ownerLastName
+                  ? `${ownerFirstName} ${ownerLastName}`
+                  : ownerFirstName || ownerLastName || "";
+              return ownerFullName;
+            })
+            .filter((name) => !!name && name.trim() !== ""),
+        ),
+      ).sort((a, b) => a.localeCompare(b)),
+    [assessments],
+  );
 
   const onSort = (
     _event: unknown,
@@ -271,29 +276,24 @@ export const AssessmentsPage: React.FC<AssessmentsPageProps> = ({
   return (
     <>
       {!isTableEmpty() && (
-        <Toolbar clearAllFilters={clearAllFilters}>
+        <Toolbar
+          clearAllFilters={clearAllFilters}
+          className={attributeValueFilterToolbarStyle}
+        >
           <ToolbarContent>
-            <ToolbarGroup
-              align={{ default: "alignStart" }}
-              rowWrap={{ default: "wrap", md: "nowrap" }}
-            >
-              <ToolbarItem>
-                <AttributeValueFilter
-                  attributes={filterAttributes}
-                  defaultActiveAttributeId="name"
-                />
-              </ToolbarItem>
-
-              <ToolbarItem>
-                <Button
-                  variant="control"
-                  icon={<RhUiColumnsIcon />}
-                  onClick={() => setIsColumnModalOpen(true)}
-                >
-                  Manage Columns
-                </Button>
-              </ToolbarItem>
-            </ToolbarGroup>
+            <AttributeValueFilter
+              attributes={filterAttributes}
+              defaultActiveAttributeId="name"
+            />
+            <ToolbarItem>
+              <Button
+                variant="control"
+                icon={<RhUiColumnsIcon />}
+                onClick={() => setIsColumnModalOpen(true)}
+              >
+                Manage Columns
+              </Button>
+            </ToolbarItem>
             <ToolbarGroup align={{ default: "alignStart", lg: "alignEnd" }}>
               <ToolbarItem>
                 <CreateAssessmentDropdown

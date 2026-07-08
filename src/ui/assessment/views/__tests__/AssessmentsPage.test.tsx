@@ -7,6 +7,10 @@ import React from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { createAssessmentModel } from "../../../../models/AssessmentModel";
+import {
+  selectAttribute,
+  selectCheckboxOption,
+} from "../../../core/components/attribute-value-filter/__tests__/filterTestHelpers";
 import type { useAssessmentPageViewModel } from "../../view-models/useAssessmentPageViewModel";
 import { AssessmentsPage } from "../AssessmentsPage";
 import { DEFAULT_VISIBLE_COLUMNS } from "../AssessmentsTable";
@@ -101,33 +105,6 @@ const assessments = [
     ownerLastName: "Smith",
   }),
 ];
-
-const getAttributeToggle = (label: string): HTMLElement => {
-  const toggles = screen.getAllByRole("button", { name: label });
-  const menuToggle = toggles.find((button) =>
-    button.classList.contains("pf-v6-c-menu-toggle"),
-  );
-  if (!menuToggle) {
-    throw new Error(`Attribute toggle not found for label: ${label}`);
-  }
-  return menuToggle;
-};
-
-const selectAttribute = async (
-  user: ReturnType<typeof userEvent.setup>,
-  attributeLabel: string,
-  currentAttributeLabel = "Name",
-): Promise<void> => {
-  await user.click(getAttributeToggle(currentAttributeLabel));
-  await user.click(screen.getByRole("option", { name: attributeLabel }));
-};
-
-const selectCheckboxOption = async (
-  user: ReturnType<typeof userEvent.setup>,
-  optionLabel: string,
-): Promise<void> => {
-  await user.click(screen.getByRole("checkbox", { name: optionLabel }));
-};
 
 beforeEach(() => {
   mockViewModel = makeViewModel();
