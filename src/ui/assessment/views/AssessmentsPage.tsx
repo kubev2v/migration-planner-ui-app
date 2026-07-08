@@ -4,30 +4,21 @@ import ColumnManagementModal, {
 } from "@patternfly/react-component-groups/dist/dynamic/ColumnManagementModal";
 import {
   Button,
-  Dropdown,
-  DropdownItem,
-  DropdownList,
-  InputGroup,
-  InputGroupItem,
-  MenuToggle,
-  type MenuToggleElement,
-  SearchInput,
   Toolbar,
   ToolbarContent,
   ToolbarGroup,
   ToolbarItem,
 } from "@patternfly/react-core";
-import {
-  RhUiCloseIcon,
-  RhUiColumnsIcon,
-  RhUiFilterIcon,
-} from "@patternfly/react-icons";
-import React, { useCallback, useState } from "react";
+import { RhUiColumnsIcon } from "@patternfly/react-icons";
+import React, { useCallback, useMemo, useState } from "react";
 
 import type { AssessmentModel } from "../../../models/AssessmentModel";
+import {
+  AttributeValueFilter,
+  type AttributeValueFilterAttribute,
+} from "../../core/components/attribute-value-filter";
 import { ConfirmationModal } from "../../core/components/ConfirmationModal";
 import CreateAssessmentDropdown from "../../core/components/CreateAssessmentDropdown";
-import FilterPill from "../../core/components/FilterPill";
 import { useAssessmentPageViewModel } from "../view-models/useAssessmentPageViewModel";
 import AssessmentEmptyState from "./AssessmentEmptyState";
 import {
@@ -47,36 +38,6 @@ type AssessmentsPageProps = {
   // When this token changes, the component should open the RVTools modal.
   rvtoolsOpenToken?: string;
 };
-
-const checkboxStyle = css`
-  margin-right: 8px;
-`;
-
-const searchInputStyle = css`
-  min-width: 300px;
-  width: 300px;
-`;
-
-const filterContainerStyle = css`
-  margin-top: 8px;
-`;
-
-const filterInnerStyle = css`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-  background: var(--pf-t--global--background--color--secondary--default);
-  padding: 6px 8px;
-  border-radius: 6px;
-`;
-
-const filterLabelStyle = css`
-  background: var(--pf-t--global--background--color--secondary--hover);
-  border-radius: 12px;
-  padding: 2px 8px;
-  font-size: 12px;
-`;
 
 const tableContainerStyle = css`
   margin-top: 10px;
@@ -138,7 +99,6 @@ export const AssessmentsPage: React.FC<AssessmentsPageProps> = ({
   );
 
   const [search, setSearch] = useState("");
-  const [isFilterDropdownOpen, setIsFilterDropdownOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState<AssessmentMode>("inventory");
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
@@ -151,21 +111,11 @@ export const AssessmentsPage: React.FC<AssessmentsPageProps> = ({
   const [selectedSourceTypes, setSelectedSourceTypes] = useState<string[]>([]);
   const [selectedOwners, setSelectedOwners] = useState<string[]>([]);
 
-  const toggleSourceType = (value: "rvtools" | "discovery"): void => {
-    setSelectedSourceTypes((prev) =>
-      prev.includes(value) ? prev.filter((v) => v !== value) : [...prev, value],
-    );
+  const clearAllFilters = (): void => {
+    setSearch("");
+    setSelectedSourceTypes([]);
+    setSelectedOwners([]);
   };
-
-  const clearSourceTypes = (): void => setSelectedSourceTypes([]);
-
-  const toggleOwner = (owner: string): void => {
-    setSelectedOwners((prev) =>
-      prev.includes(owner) ? prev.filter((o) => o !== owner) : [...prev, owner],
-    );
-  };
-
-  const clearOwners = (): void => setSelectedOwners([]);
 
   const formatName = (name?: string): string | undefined =>
     name
@@ -217,16 +167,39 @@ export const AssessmentsPage: React.FC<AssessmentsPageProps> = ({
     }
   }, [rvtoolsOpenToken]);
 
-  // Close filter dropdown whenever any modal in this page opens
-  const anyModalOpen =
-    isModalOpen ||
-    isUpdateModalOpen ||
-    isDeleteModalOpen ||
-    isSharingModalOpen ||
-    isColumnModalOpen;
-  if (anyModalOpen && isFilterDropdownOpen) {
-    setIsFilterDropdownOpen(false);
-  }
+  const filterAttributes = useMemo(
+    (): AttributeValueFilterAttribute[] => [
+      {
+        id: "name",
+        label: "Name",
+        type: "text",
+        value: search,
+        onChange: setSearch,
+        placeholder: "Filter by name",
+        ariaLabel: "Filter by name",
+      },
+      {
+        id: "source-type",
+        label: "Source type",
+        type: "checkbox",
+        options: [
+          { value: "discovery", label: "Discovery OVA" },
+          { value: "rvtools", label: "RVTools (XLS/X)" },
+        ],
+        selections: selectedSourceTypes,
+        onSelectionsChange: setSelectedSourceTypes,
+      },
+      {
+        id: "owner",
+        label: "Owner",
+        type: "checkbox",
+        options: owners.map((owner) => ({ value: owner, label: owner })),
+        selections: selectedOwners,
+        onSelectionsChange: setSelectedOwners,
+      },
+    ],
+    [owners, search, selectedOwners, selectedSourceTypes],
+  );
 
   const handleUpdateAssessment = (assessmentId: string): void => {
     const assessment = assessments.find((a) => a.id === assessmentId);
@@ -298,135 +271,17 @@ export const AssessmentsPage: React.FC<AssessmentsPageProps> = ({
   return (
     <>
       {!isTableEmpty() && (
-        <Toolbar>
+        <Toolbar clearAllFilters={clearAllFilters}>
           <ToolbarContent>
             <ToolbarGroup
               align={{ default: "alignStart" }}
               rowWrap={{ default: "wrap", md: "nowrap" }}
             >
               <ToolbarItem>
-                <InputGroup>
-                  <InputGroupItem>
-                    <Dropdown
-                      isOpen={isFilterDropdownOpen}
-                      onOpenChange={(open) => setIsFilterDropdownOpen(open)}
-                      onSelect={() => setIsFilterDropdownOpen(false)}
-                      toggle={(toggleRef: React.Ref<MenuToggleElement>) => (
-                        <MenuToggle
-                          ref={toggleRef}
-                          onClick={() =>
-                            setIsFilterDropdownOpen(!isFilterDropdownOpen)
-                          }
-                          isExpanded={isFilterDropdownOpen}
-                          icon={<RhUiFilterIcon />}
-                        >
-                          Filters
-                        </MenuToggle>
-                      )}
-                    >
-                      <DropdownList>
-                        <DropdownItem isDisabled key="heading-source-type">
-                          Source type
-                        </DropdownItem>
-                        <DropdownItem
-                          key="st-all"
-                          onClick={(
-                            event: React.MouseEvent | React.KeyboardEvent,
-                          ) => {
-                            event.preventDefault();
-                            event.stopPropagation();
-                            clearSourceTypes();
-                          }}
-                        >
-                          All source types
-                        </DropdownItem>
-                        <DropdownItem
-                          key="st-discovery"
-                          onClick={(
-                            event: React.MouseEvent | React.KeyboardEvent,
-                          ) => {
-                            event.preventDefault();
-                            event.stopPropagation();
-                            toggleSourceType("discovery");
-                          }}
-                        >
-                          <input
-                            type="checkbox"
-                            readOnly
-                            checked={selectedSourceTypes.includes("discovery")}
-                            className={checkboxStyle}
-                          />
-                          Discovery OVA
-                        </DropdownItem>
-                        <DropdownItem
-                          key="st-rvtools"
-                          onClick={(
-                            event: React.MouseEvent | React.KeyboardEvent,
-                          ) => {
-                            event.preventDefault();
-                            event.stopPropagation();
-                            toggleSourceType("rvtools");
-                          }}
-                        >
-                          <input
-                            type="checkbox"
-                            readOnly
-                            checked={selectedSourceTypes.includes("rvtools")}
-                            className={checkboxStyle}
-                          />
-                          RVTools (XLS/X)
-                        </DropdownItem>
-
-                        <DropdownItem isDisabled key="heading-owner">
-                          Owner
-                        </DropdownItem>
-                        <DropdownItem
-                          key="owner-all"
-                          onClick={(
-                            event: React.MouseEvent | React.KeyboardEvent,
-                          ) => {
-                            event.preventDefault();
-                            event.stopPropagation();
-                            clearOwners();
-                          }}
-                        >
-                          All owners
-                        </DropdownItem>
-                        {owners.map((owner) => (
-                          <DropdownItem
-                            key={`owner-${owner}`}
-                            onClick={(
-                              event: React.MouseEvent | React.KeyboardEvent,
-                            ) => {
-                              event.preventDefault();
-                              event.stopPropagation();
-                              toggleOwner(owner);
-                            }}
-                          >
-                            <input
-                              type="checkbox"
-                              readOnly
-                              checked={selectedOwners.includes(owner)}
-                              className={checkboxStyle}
-                            />
-                            {owner}
-                          </DropdownItem>
-                        ))}
-                      </DropdownList>
-                    </Dropdown>
-                  </InputGroupItem>
-                  <InputGroupItem isFill>
-                    <SearchInput
-                      id="assessment-search"
-                      aria-label="Search by name"
-                      placeholder="Search by name"
-                      value={search}
-                      onChange={(_event, value) => setSearch(value)}
-                      onClear={() => setSearch("")}
-                      className={searchInputStyle}
-                    />
-                  </InputGroupItem>
-                </InputGroup>
+                <AttributeValueFilter
+                  attributes={filterAttributes}
+                  defaultActiveAttributeId="name"
+                />
               </ToolbarItem>
 
               <ToolbarItem>
@@ -449,49 +304,6 @@ export const AssessmentsPage: React.FC<AssessmentsPageProps> = ({
             </ToolbarGroup>
           </ToolbarContent>
         </Toolbar>
-      )}
-      {(selectedSourceTypes.length > 0 || selectedOwners.length > 0) && (
-        <div className={filterContainerStyle}>
-          <div className={filterInnerStyle}>
-            <span className={filterLabelStyle}>Filters</span>
-
-            {selectedSourceTypes
-              .filter((t) => t === "discovery" || t === "rvtools")
-              .map((t) => (
-                <FilterPill
-                  key={t}
-                  label={`source type=${
-                    t === "discovery" ? "discovery ova" : "rvtools"
-                  }`}
-                  ariaLabel={`Remove source type ${
-                    t === "discovery" ? "discovery ova" : "rvtools"
-                  }`}
-                  onClear={() => toggleSourceType(t)}
-                />
-              ))}
-
-            {selectedOwners
-              .filter((o) => typeof o === "string" && o.trim() !== "")
-              .map((owner) => (
-                <FilterPill
-                  key={owner}
-                  label={`owner=${owner}`}
-                  ariaLabel={`Remove owner ${owner}`}
-                  onClear={() => toggleOwner(owner)}
-                />
-              ))}
-
-            <Button
-              icon={<RhUiCloseIcon />}
-              variant="plain"
-              aria-label="Clear all filters"
-              onClick={() => {
-                clearSourceTypes();
-                clearOwners();
-              }}
-            />
-          </div>
-        </div>
       )}
 
       {isTableEmpty() ? (

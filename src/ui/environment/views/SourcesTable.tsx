@@ -4,22 +4,18 @@ import {
   Dropdown,
   DropdownItem,
   DropdownList,
-  InputGroup,
-  InputGroupItem,
   MenuToggle,
   type MenuToggleElement,
-  SearchInput,
   Toolbar,
   ToolbarContent,
+  ToolbarGroup,
   ToolbarItem,
   Tooltip,
 } from "@patternfly/react-core";
 import {
   RhUiAddCircleIcon,
   RhUiArrowLeftIcon,
-  RhUiCloseIcon,
   RhUiEllipsisVerticalIcon,
-  RhUiFilterIcon,
 } from "@patternfly/react-icons";
 import { Table, Tbody, Td, Th, Thead, Tr } from "@patternfly/react-table";
 import React, { useEffect, useMemo, useState } from "react";
@@ -28,9 +24,12 @@ import { useNavigate } from "react-router-dom";
 import { themeTooltipFlyoutProps } from "../../../lib/patternfly/flyoutAppendTo";
 import type { SourceModel } from "../../../models/SourceModel";
 import { routes } from "../../../routing/Routes";
+import {
+  AttributeValueFilter,
+  type AttributeValueFilterAttribute,
+} from "../../core/components/attribute-value-filter";
 import { ConfirmationModal } from "../../core/components/ConfirmationModal";
 import { EmptySearchResults } from "../../core/components/EmptySearchResults";
-import FilterPill from "../../core/components/FilterPill";
 import {
   DISCOVERY_VM_STATUS_FILTER_OPTIONS,
   type DiscoveryVmStatusFilterKey,
@@ -82,36 +81,6 @@ const tableContainerStyle = css`
 
 const backButtonWrapper = css`
   margin-bottom: 16px;
-`;
-
-const checkboxInput = css`
-  margin-right: 8px;
-`;
-
-const searchInputStyle = css`
-  min-width: 300px;
-  width: 300px;
-`;
-
-const filterChipsContainer = css`
-  margin-top: 8px;
-`;
-
-const filterChipsWrapper = css`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-  background: var(--pf-t--global--background--color--secondary--default);
-  padding: 6px 8px;
-  border-radius: 6px;
-`;
-
-const filterBadge = css`
-  background: var(--pf-t--global--background--color--secondary--hover);
-  border-radius: 12px;
-  padding: 2px 8px;
-  font-size: 12px;
 `;
 
 const tableHeaderNormal = css`
@@ -197,7 +166,6 @@ export const SourcesTable: React.FC<SourceTableProps> = ({
   );
   const [deleteTarget, setDeleteTarget] = useState<SourceModel | null>(null);
   const [search, setSearch] = useState("");
-  const [isFilterDropdownOpen, setIsFilterDropdownOpen] = useState(false);
   const [selectedStatuses, setSelectedStatuses] = useState<
     DiscoveryVmStatusFilterKey[]
   >([]);
@@ -209,15 +177,10 @@ export const SourcesTable: React.FC<SourceTableProps> = ({
     direction: "asc",
   });
 
-  const toggleStatus = (statusKey: DiscoveryVmStatusFilterKey): void => {
-    setSelectedStatuses((prev) =>
-      prev.includes(statusKey)
-        ? prev.filter((s) => s !== statusKey)
-        : [...prev, statusKey],
-    );
+  const clearAllFilters = (): void => {
+    setSearch("");
+    setSelectedStatuses([]);
   };
-
-  const clearStatuses = (): void => setSelectedStatuses([]);
 
   const statusOptions = DISCOVERY_VM_STATUS_FILTER_OPTIONS;
 
@@ -324,6 +287,33 @@ export const SourcesTable: React.FC<SourceTableProps> = ({
 
     return copy;
   }, [sourcesList, search, selectedStatuses, onlySourceId, sortBy]);
+
+  const filterAttributes = useMemo(
+    (): AttributeValueFilterAttribute[] => [
+      {
+        id: "name",
+        label: "Name",
+        type: "text",
+        value: search,
+        onChange: setSearch,
+        placeholder: "Filter by name",
+        ariaLabel: "Filter by name",
+      },
+      {
+        id: "status",
+        label: "Discovery VM status",
+        type: "checkbox",
+        options: statusOptions.map((option) => ({
+          value: option.key,
+          label: option.label,
+        })),
+        selections: selectedStatuses,
+        onSelectionsChange: (selections) =>
+          setSelectedStatuses(selections as DiscoveryVmStatusFilterKey[]),
+      },
+    ],
+    [search, selectedStatuses, statusOptions],
+  );
 
   const getSortParams = (columnKey: SortableColumnKey) => {
     const columnIndex = SORTABLE_COLUMNS.indexOf(columnKey);
@@ -452,80 +442,16 @@ export const SourcesTable: React.FC<SourceTableProps> = ({
         </div>
       )}
 
-      <Toolbar>
+      <Toolbar clearAllFilters={clearAllFilters}>
         <ToolbarContent>
-          <ToolbarItem>
-            <InputGroup>
-              <InputGroupItem>
-                <Dropdown
-                  isOpen={isFilterDropdownOpen}
-                  onOpenChange={(open) => setIsFilterDropdownOpen(open)}
-                  onSelect={() => setIsFilterDropdownOpen(false)}
-                  toggle={(toggleRef: React.Ref<MenuToggleElement>) => (
-                    <MenuToggle
-                      ref={toggleRef}
-                      onClick={() =>
-                        setIsFilterDropdownOpen(!isFilterDropdownOpen)
-                      }
-                      isExpanded={isFilterDropdownOpen}
-                      icon={<RhUiFilterIcon />}
-                    >
-                      Filters
-                    </MenuToggle>
-                  )}
-                >
-                  <DropdownList>
-                    <DropdownItem isDisabled key="heading-status">
-                      Discovery VM Status
-                    </DropdownItem>
-                    <DropdownItem
-                      key="status-all"
-                      onClick={(
-                        event: React.MouseEvent | React.KeyboardEvent,
-                      ) => {
-                        event.preventDefault();
-                        event.stopPropagation();
-                        clearStatuses();
-                      }}
-                    >
-                      All statuses
-                    </DropdownItem>
-                    {statusOptions.map((opt) => (
-                      <DropdownItem
-                        key={`status-${opt.key}`}
-                        onClick={(
-                          event: React.MouseEvent | React.KeyboardEvent,
-                        ) => {
-                          event.preventDefault();
-                          event.stopPropagation();
-                          toggleStatus(opt.key);
-                        }}
-                      >
-                        <input
-                          type="checkbox"
-                          readOnly
-                          checked={selectedStatuses.includes(opt.key)}
-                          className={checkboxInput}
-                        />
-                        {opt.label}
-                      </DropdownItem>
-                    ))}
-                  </DropdownList>
-                </Dropdown>
-              </InputGroupItem>
-              <InputGroupItem isFill>
-                <SearchInput
-                  id="environment-search"
-                  aria-label="Search by name"
-                  placeholder="Search by name"
-                  value={search}
-                  onChange={(_event, value) => setSearch(value)}
-                  onClear={() => setSearch("")}
-                  className={searchInputStyle}
-                />
-              </InputGroupItem>
-            </InputGroup>
-          </ToolbarItem>
+          <ToolbarGroup>
+            <ToolbarItem>
+              <AttributeValueFilter
+                attributes={filterAttributes}
+                defaultActiveAttributeId="name"
+              />
+            </ToolbarItem>
+          </ToolbarGroup>
           <ToolbarItem>
             {hasSources && onAddEnvironment ? (
               <Button
@@ -540,52 +466,6 @@ export const SourcesTable: React.FC<SourceTableProps> = ({
         </ToolbarContent>
       </Toolbar>
 
-      {selectedStatuses.length > 0 && (
-        <div className={filterChipsContainer}>
-          <div className={filterChipsWrapper}>
-            <span className={filterBadge}>Filters</span>
-
-            {((): JSX.Element => {
-              const MAX_STATUS_CHIPS = 6;
-              const visible = selectedStatuses.slice(0, MAX_STATUS_CHIPS);
-              const overflow = selectedStatuses.length - visible.length;
-              const hidden = selectedStatuses.slice(MAX_STATUS_CHIPS);
-              const labelMap = new Map(
-                statusOptions.map((s) => [s.key, s.label]),
-              );
-              return (
-                <>
-                  {visible.map((key) => (
-                    <FilterPill
-                      key={`chip-status-${key}`}
-                      label={`status=${labelMap.get(key) ?? key}`}
-                      ariaLabel={`Remove status ${labelMap.get(key) ?? key}`}
-                      onClear={() => toggleStatus(key)}
-                    />
-                  ))}
-                  {overflow > 0 && (
-                    <FilterPill
-                      key="status-overflow"
-                      label={`${overflow} more`}
-                      ariaLabel="Remove hidden statuses"
-                      onClear={() => {
-                        hidden.forEach((k) => toggleStatus(k));
-                      }}
-                    />
-                  )}
-                </>
-              );
-            })()}
-
-            <Button
-              icon={<RhUiCloseIcon />}
-              variant="plain"
-              aria-label="Clear all filters"
-              onClick={() => clearStatuses()}
-            />
-          </div>
-        </div>
-      )}
       <div className={tableContainerStyle}>
         <Table
           aria-label="Sources table"
