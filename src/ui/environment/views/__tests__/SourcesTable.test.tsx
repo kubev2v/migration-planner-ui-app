@@ -549,3 +549,136 @@ describe("SourcesTable — all status states", () => {
     }
   });
 });
+
+const getAttributeToggle = (label: string): HTMLElement => {
+  const toggles = screen.getAllByRole("button", { name: label });
+  const menuToggle = toggles.find((button) =>
+    button.classList.contains("pf-v6-c-menu-toggle"),
+  );
+  if (!menuToggle) {
+    throw new Error(`Attribute toggle not found for label: ${label}`);
+  }
+  return menuToggle;
+};
+
+const selectAttribute = async (
+  user: ReturnType<typeof userEvent.setup>,
+  attributeLabel: string,
+  currentAttributeLabel = "Name",
+): Promise<void> => {
+  await user.click(getAttributeToggle(currentAttributeLabel));
+  await user.click(screen.getByRole("option", { name: attributeLabel }));
+};
+
+const selectCheckboxOption = async (
+  user: ReturnType<typeof userEvent.setup>,
+  optionLabel: string,
+): Promise<void> => {
+  await user.click(screen.getByRole("checkbox", { name: optionLabel }));
+};
+
+describe("SourcesTable filters", () => {
+  beforeEach(() => {
+    mockVm = makeBaseVm();
+  });
+
+  it("filters sources by name", async () => {
+    const user = userEvent.setup();
+    render(<SourcesTable onAddEnvironment={vi.fn()} />);
+
+    await user.type(
+      screen.getByRole("textbox", { name: "Filter by name" }),
+      "Production",
+    );
+
+    expect(
+      screen.getByText("Production vCenter (up to date)"),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByText("Lab vCenter (OVA downloading)"),
+    ).not.toBeInTheDocument();
+  });
+
+  it("filters sources by discovery VM status", async () => {
+    const user = userEvent.setup();
+    render(<SourcesTable onAddEnvironment={vi.fn()} />);
+
+    await selectAttribute(user, "Discovery VM status");
+    await user.click(
+      screen.getByRole("button", { name: "Filter by discovery vm status" }),
+    );
+    await selectCheckboxOption(user, "Ready");
+
+    expect(
+      screen.getByText("Production vCenter (up to date)"),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText("Legacy vCenter (outdated agent)"),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByText("Lab vCenter (OVA downloading)"),
+    ).not.toBeInTheDocument();
+  });
+
+  it("removes a status filter chip", async () => {
+    const user = userEvent.setup();
+    render(<SourcesTable onAddEnvironment={vi.fn()} />);
+
+    await selectAttribute(user, "Discovery VM status");
+    await user.click(
+      screen.getByRole("button", { name: "Filter by discovery vm status" }),
+    );
+    await selectCheckboxOption(user, "Ready");
+    expect(
+      screen.queryByText("Lab vCenter (OVA downloading)"),
+    ).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Close Ready" }));
+
+    expect(
+      screen.getByText("Lab vCenter (OVA downloading)"),
+    ).toBeInTheDocument();
+  });
+
+  it("clears all filters from the toolbar action", async () => {
+    const user = userEvent.setup();
+    render(<SourcesTable onAddEnvironment={vi.fn()} />);
+
+    await user.type(
+      screen.getByRole("textbox", { name: "Filter by name" }),
+      "Production",
+    );
+    await selectAttribute(user, "Discovery VM status");
+    await user.click(
+      screen.getByRole("button", { name: "Filter by discovery vm status" }),
+    );
+    await selectCheckboxOption(user, "Ready");
+
+    await user.click(screen.getByRole("button", { name: "Clear all filters" }));
+
+    expect(
+      screen.getByText("Lab vCenter (OVA downloading)"),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText("Production vCenter (up to date)"),
+    ).toBeInTheDocument();
+  });
+
+  it("switches the visible value control when the active attribute changes", async () => {
+    const user = userEvent.setup();
+    render(<SourcesTable onAddEnvironment={vi.fn()} />);
+
+    expect(
+      screen.getByRole("textbox", { name: "Filter by name" }),
+    ).toBeInTheDocument();
+
+    await selectAttribute(user, "Discovery VM status");
+
+    expect(
+      screen.getByRole("button", { name: "Filter by discovery vm status" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("textbox", { name: "Filter by name" }),
+    ).not.toBeInTheDocument();
+  });
+});
