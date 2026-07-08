@@ -93,14 +93,14 @@ const CheckboxValueFilter: React.FC<{
   };
 
   const removeSelection = (label: string): void => {
-    const valueToRemove = attribute.options.find(
-      (option) => option.label === label,
-    )?.value;
-    if (!valueToRemove) {
+    const option = attribute.options.find(
+      (candidate) => candidate.label === label,
+    );
+    if (!option) {
       return;
     }
     attribute.onSelectionsChange(
-      attribute.selections.filter((selection) => selection !== valueToRemove),
+      attribute.selections.filter((selection) => selection !== option.value),
     );
   };
 

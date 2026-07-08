@@ -14,6 +14,10 @@ import {
   createSourceModel,
   type SourceModel,
 } from "../../../../models/SourceModel";
+import {
+  selectAttribute,
+  selectCheckboxOption,
+} from "../../../core/components/attribute-value-filter/__tests__/filterTestHelpers";
 import type { EnvironmentPageViewModel } from "../../view-models/useEnvironmentPageViewModel";
 import { SourcesTable } from "../SourcesTable";
 
@@ -549,33 +553,6 @@ describe("SourcesTable — all status states", () => {
     }
   });
 });
-
-const getAttributeToggle = (label: string): HTMLElement => {
-  const toggles = screen.getAllByRole("button", { name: label });
-  const menuToggle = toggles.find((button) =>
-    button.classList.contains("pf-v6-c-menu-toggle"),
-  );
-  if (!menuToggle) {
-    throw new Error(`Attribute toggle not found for label: ${label}`);
-  }
-  return menuToggle;
-};
-
-const selectAttribute = async (
-  user: ReturnType<typeof userEvent.setup>,
-  attributeLabel: string,
-  currentAttributeLabel = "Name",
-): Promise<void> => {
-  await user.click(getAttributeToggle(currentAttributeLabel));
-  await user.click(screen.getByRole("option", { name: attributeLabel }));
-};
-
-const selectCheckboxOption = async (
-  user: ReturnType<typeof userEvent.setup>,
-  optionLabel: string,
-): Promise<void> => {
-  await user.click(screen.getByRole("checkbox", { name: optionLabel }));
-};
 
 describe("SourcesTable filters", () => {
   beforeEach(() => {
