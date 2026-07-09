@@ -309,12 +309,12 @@ export class AssessmentsStore
         configuration: Configuration;
       };
       const config = apiWithConfig.configuration;
-      const basePath = config.basePath || "";
       const middleware: Middleware[] = config.middleware || [];
       const fetchApi = config.fetchApi || fetch;
 
-      // Build the full URL using SDK's basePath
-      const url = `${basePath}/api/v1/cost-estimation`;
+      const basePath =
+        process.env.MIGRATION_PLANNER_COST_ESTIMATION_API_BASE_URL;
+      const url = `${basePath}/v1/cost-estimation`;
 
       // Prepare request configuration
       let init: RequestInit = {
