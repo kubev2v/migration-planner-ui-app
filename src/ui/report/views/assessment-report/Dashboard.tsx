@@ -100,7 +100,9 @@ export const Dashboard: React.FC<Props> = ({
                 migratable: vms.totalMigratable,
                 nonMigratable: vms.total - vms.totalMigratable,
               }}
+              issuesBreakdown={vms.issuesBreakdown}
               isExportMode={isExportMode}
+              exportAllViews={exportAllViews}
             />
           </GalleryItem>
           <GalleryItem>

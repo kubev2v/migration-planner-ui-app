@@ -2011,6 +2011,13 @@ const inventoryData = {
       total: 630,
       totalMigratable: 521,
       totalMigratableWithWarnings: 630,
+      issuesBreakdown: {
+        critical: 45,
+        error: 18,
+        warning: 92,
+        information: 36,
+        advisory: 11,
+      },
     },
   },
   vcenter_id: "502d878c-af91-4a6f-93e9-61c4a1986172",
