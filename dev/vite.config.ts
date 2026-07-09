@@ -31,6 +31,8 @@ export default defineConfig(({ mode }) => {
       "process.env.MIGRATION_PLANNER_API_BASE_URL": JSON.stringify(
         env.MIGRATION_PLANNER_API_BASE_URL,
       ),
+      "process.env.MIGRATION_PLANNER_COST_ESTIMATION_API_BASE_URL":
+        JSON.stringify(env.MIGRATION_PLANNER_COST_ESTIMATION_API_BASE_URL),
       "process.env.MIGRATION_PLANNER_UI_GIT_COMMIT": JSON.stringify(
         env.MIGRATION_PLANNER_UI_GIT_COMMIT,
       ),
@@ -59,16 +61,19 @@ export default defineConfig(({ mode }) => {
     server: {
       port: 3000,
       proxy: {
-        [`${env.MIGRATION_PLANNER_API_BASE_URL}/api/v1/cost-estimation`]: {
-          target: "http://localhost:9205",
-          secure: false,
-          changeOrigin: true,
-          rewrite: (path) =>
-            path.replace(
-              new RegExp(`^${env.MIGRATION_PLANNER_API_BASE_URL}`),
-              "",
-            ),
-        },
+        [`${env.MIGRATION_PLANNER_COST_ESTIMATION_API_BASE_URL}/v1/cost-estimation`]:
+          {
+            target: "http://localhost:9205",
+            secure: false,
+            changeOrigin: true,
+            rewrite: (path) =>
+              path.replace(
+                new RegExp(
+                  `^${env.MIGRATION_PLANNER_COST_ESTIMATION_API_BASE_URL}`,
+                ),
+                "/api",
+              ),
+          },
         [env.MIGRATION_PLANNER_API_BASE_URL]: {
           target,
           secure: false,

@@ -20,6 +20,10 @@ module.exports = {
       "process.env.MIGRATION_PLANNER_API_BASE_URL": JSON.stringify(
         process.env.MIGRATION_PLANNER_API_BASE_URL,
       ),
+      "process.env.MIGRATION_PLANNER_COST_ESTIMATION_API_BASE_URL":
+        JSON.stringify(
+          process.env.MIGRATION_PLANNER_COST_ESTIMATION_API_BASE_URL,
+        ),
       "process.env.MIGRATION_PLANNER_UI_GIT_COMMIT": JSON.stringify(
         process.env.MIGRATION_PLANNER_UI_GIT_COMMIT,
       ),
