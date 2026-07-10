@@ -3,7 +3,6 @@ import {
   Card,
   CardBody,
   CardTitle,
-  Content,
   Dropdown,
   DropdownItem,
   DropdownList,
@@ -13,27 +12,19 @@ import {
   type MenuToggleElement,
 } from "@patternfly/react-core";
 import RhUiVirtualMachineIcon from "@patternfly/react-icons/dist/esm/icons/virtual-machine-icon";
-import React, { useMemo, useState } from "react";
+import React, { useState } from "react";
 
 import { CardEmptyState } from "../../../core/components/CardEmptyState";
+import IssuesBreakdownChart from "../../../core/components/IssuesBreakdownChart";
 import MigrationDonutChart from "../../../core/components/MigrationDonutChart";
 import {
   chartColorFailure,
   chartColorSuccess,
-  ISSUE_CATEGORY_COLORS,
-  ISSUE_CATEGORY_ORDER,
   REPORT_CARD_EMPTY_STATE_TITLES,
 } from "./constants";
+import { DashboardExportSection } from "./DashboardExportSection";
 import {
   dashboardCard,
-  migrationStatusBar,
-  migrationStatusBarColumn,
-  migrationStatusBarLabel,
-  migrationStatusBarTrack,
-  migrationStatusTotalsNote,
-  storageChartWrapper,
-  storageExportSectionMargin,
-  storageExportSectionTitle,
   storageFlexFullWidth,
   storageMenuToggleMinWidth,
 } from "./styles";
@@ -84,22 +75,6 @@ export const VMMigrationStatus: React.FC<VmMigrationStatusProps> = ({
     "Not ready for migration": chartColorFailure,
   };
 
-  const breakdownData = useMemo(() => {
-    if (!issuesBreakdown) return [];
-
-    return ISSUE_CATEGORY_ORDER.map((category) => ({
-      name: category,
-      count:
-        issuesBreakdown[category.toLowerCase() as keyof IssuesBreakdown] ?? 0,
-    }));
-  }, [issuesBreakdown]);
-
-  const maxCount = useMemo(() => {
-    return breakdownData.length > 0
-      ? Math.max(...breakdownData.map((item) => item.count))
-      : 0;
-  }, [breakdownData]);
-
   const onDropdownToggle = (): void => {
     setIsDropdownOpen(!isDropdownOpen);
   };
@@ -115,7 +90,6 @@ export const VMMigrationStatus: React.FC<VmMigrationStatusProps> = ({
   };
 
   const totalVMs = data.migratable + data.nonMigratable;
-  const barTrackHeight = isExportMode ? 140 : 200;
 
   const renderDonutChart = (): React.ReactNode => (
     <MigrationDonutChart
@@ -136,74 +110,16 @@ export const VMMigrationStatus: React.FC<VmMigrationStatusProps> = ({
     />
   );
 
-  const renderBreakdownChart = (showTotalsNote: boolean): React.ReactNode => (
-    <div>
-      <div className={storageChartWrapper}>
-        <Flex
-          direction={{ default: "row" }}
-          alignItems={{ default: "alignItemsFlexEnd" }}
-          justifyContent={{ default: "justifyContentCenter" }}
-          spaceItems={{ default: "spaceItemsMd" }}
-          style={{
-            height: isExportMode ? "180px" : "250px",
-            width: "100%",
-          }}
-        >
-          {breakdownData.map((item) => {
-            const heightPercentage =
-              maxCount > 0 ? (item.count / maxCount) * 100 : 0;
-            const minHeightPercentage = item.count > 0 ? 20 : 0;
-            const finalHeightPercentage = Math.max(
-              heightPercentage,
-              minHeightPercentage,
-            );
-            const barColor =
-              ISSUE_CATEGORY_COLORS[item.name] ??
-              ISSUE_CATEGORY_COLORS.Critical;
-
-            return (
-              <Flex
-                key={item.name}
-                direction={{ default: "column" }}
-                alignItems={{ default: "alignItemsCenter" }}
-                spaceItems={{ default: "spaceItemsSm" }}
-                className={migrationStatusBarColumn}
-              >
-                <FlexItem
-                  className={migrationStatusBarTrack}
-                  style={{ height: `${barTrackHeight}px` }}
-                >
-                  <div
-                    className={migrationStatusBar}
-                    style={{
-                      height: `${finalHeightPercentage}%`,
-                      backgroundColor: barColor,
-                    }}
-                    title={`${item.name}: ${item.count} VMs`}
-                  />
-                </FlexItem>
-                <FlexItem>
-                  <Content
-                    component="small"
-                    className={migrationStatusBarLabel}
-                  >
-                    {item.name}
-                    <br />({item.count} VMs)
-                  </Content>
-                </FlexItem>
-              </Flex>
-            );
-          })}
-        </Flex>
-      </div>
-      {showTotalsNote && (
-        <Content component="small" className={migrationStatusTotalsNote}>
-          Totals may exceed the unique VM count because a VM can appear in
-          multiple categories
-        </Content>
-      )}
-    </div>
-  );
+  const renderBreakdownChart = (showTotalsNote: boolean): React.ReactNode =>
+    issuesBreakdown ? (
+      <IssuesBreakdownChart
+        issuesBreakdown={issuesBreakdown}
+        isExportMode={isExportMode}
+        showTotalsNote={showTotalsNote}
+      />
+    ) : (
+      <CardEmptyState title={REPORT_CARD_EMPTY_STATE_TITLES.issuesBreakdown} />
+    );
 
   return (
     <Card
@@ -256,31 +172,18 @@ export const VMMigrationStatus: React.FC<VmMigrationStatusProps> = ({
       <CardBody>
         {isExportMode && exportAllViews ? (
           <>
-            <div className={storageExportSectionMargin}>
-              <div className={storageExportSectionTitle}>
-                {VIEW_MODE_LABELS.issuesVsNoIssues}
-              </div>
+            <DashboardExportSection
+              title={VIEW_MODE_LABELS.issuesVsNoIssues}
+              withMargin
+            >
               {renderDonutChart()}
-            </div>
-            <div>
-              <div className={storageExportSectionTitle}>
-                {VIEW_MODE_LABELS.issuesBreakdown}
-              </div>
-              {issuesBreakdown ? (
-                renderBreakdownChart(false)
-              ) : (
-                <CardEmptyState
-                  title={REPORT_CARD_EMPTY_STATE_TITLES.issuesBreakdown}
-                />
-              )}
-            </div>
+            </DashboardExportSection>
+            <DashboardExportSection title={VIEW_MODE_LABELS.issuesBreakdown}>
+              {renderBreakdownChart(false)}
+            </DashboardExportSection>
           </>
         ) : viewMode === "issuesVsNoIssues" ? (
           renderDonutChart()
-        ) : !issuesBreakdown ? (
-          <CardEmptyState
-            title={REPORT_CARD_EMPTY_STATE_TITLES.issuesBreakdown}
-          />
         ) : (
           renderBreakdownChart(true)
         )}

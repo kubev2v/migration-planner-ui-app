@@ -14,6 +14,7 @@ import React, { useMemo, useState } from "react";
 
 import MigrationDonutChart from "../../../core/components/MigrationDonutChart";
 import { REPORT_CARD_EMPTY_STATE_TITLES } from "./constants";
+import { DashboardExportSection } from "./DashboardExportSection";
 import { dashboardCard } from "./styles";
 
 interface CpuAndMemoryOverviewProps {
@@ -217,10 +218,10 @@ export const CpuAndMemoryOverview: React.FC<CpuAndMemoryOverviewProps> = ({
       <CardBody>
         {isExportMode && exportAllViews ? (
           <>
-            <div style={{ marginBottom: "24px" }}>
-              <div style={{ fontWeight: 600, marginBottom: 8 }}>
-                {VIEW_MODE_LABELS["memoryTiers"]}
-              </div>
+            <DashboardExportSection
+              title={VIEW_MODE_LABELS.memoryTiers}
+              withMargin
+            >
               <MigrationDonutChart
                 data={memorySlices}
                 height={300}
@@ -246,11 +247,8 @@ export const CpuAndMemoryOverview: React.FC<CpuAndMemoryOverviewProps> = ({
                   `${datum.countDisplay}\n${percent.toFixed(1)}%`
                 }
               />
-            </div>
-            <div>
-              <div style={{ fontWeight: 600, marginBottom: 8 }}>
-                {VIEW_MODE_LABELS["vcpuTiers"]}
-              </div>
+            </DashboardExportSection>
+            <DashboardExportSection title={VIEW_MODE_LABELS.vcpuTiers}>
               <MigrationDonutChart
                 data={vcpuSlices}
                 height={300}
@@ -276,7 +274,7 @@ export const CpuAndMemoryOverview: React.FC<CpuAndMemoryOverviewProps> = ({
                   `${datum.countDisplay}\n${percent.toFixed(1)}%`
                 }
               />
-            </div>
+            </DashboardExportSection>
           </>
         ) : (
           <MigrationDonutChart

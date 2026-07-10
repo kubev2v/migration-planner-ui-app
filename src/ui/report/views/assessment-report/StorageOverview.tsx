@@ -34,13 +34,12 @@ import {
 import { CardEmptyState } from "../../../core/components/CardEmptyState";
 import MigrationDonutChart from "../../../core/components/MigrationDonutChart";
 import { REPORT_CARD_EMPTY_STATE_TITLES } from "./constants";
+import { DashboardExportSection } from "./DashboardExportSection";
 import {
   dashboardCard,
   storageCardOverflowHidden,
   storageCardOverflowVisible,
   storageChartWrapper,
-  storageExportSectionMargin,
-  storageExportSectionTitle,
   storageFlexFullWidth,
   storageMenuToggleMinWidth,
   storageTotalsNote,
@@ -539,10 +538,10 @@ export const StorageOverview: React.FC<StorageOverviewProps> = ({
           )
         ) : (
           <>
-            <div className={storageExportSectionMargin}>
-              <div className={storageExportSectionTitle}>
-                {VIEW_MODE_LABELS["vmCountByDiskType"]}
-              </div>
+            <DashboardExportSection
+              title={VIEW_MODE_LABELS.vmCountByDiskType}
+              withMargin
+            >
               <div className={storageChartWrapper}>
                 <div style={{ width: `${barChartWidth + 200}px` }}>
                   <Chart
@@ -611,11 +610,8 @@ export const StorageOverview: React.FC<StorageOverviewProps> = ({
                   </Chart>
                 </div>
               </div>
-            </div>
-            <div className={storageExportSectionMargin}>
-              <div className={storageExportSectionTitle}>
-                {VIEW_MODE_LABELS["vmCount"]}
-              </div>
+            </DashboardExportSection>
+            <DashboardExportSection title={VIEW_MODE_LABELS.vmCount} withMargin>
               <MigrationDonutChart
                 data={chartDataForVmCount}
                 height={300}
@@ -636,11 +632,8 @@ export const StorageOverview: React.FC<StorageOverviewProps> = ({
                   `${datum.countDisplay}\n${percent.toFixed(1)}%`
                 }
               />
-            </div>
-            <div>
-              <div className={storageExportSectionTitle}>
-                {VIEW_MODE_LABELS["totalSize"]}
-              </div>
+            </DashboardExportSection>
+            <DashboardExportSection title={VIEW_MODE_LABELS.totalSize}>
               <MigrationDonutChart
                 data={chartDataForTotalSize}
                 height={300}
@@ -661,12 +654,9 @@ export const StorageOverview: React.FC<StorageOverviewProps> = ({
                   `${datum.countDisplay}\n${percent.toFixed(1)}%`
                 }
               />
-            </div>
+            </DashboardExportSection>
             {isSharedDisksViewAvailable && (
-              <div className={storageExportSectionMargin}>
-                <div className={storageExportSectionTitle}>
-                  {VIEW_MODE_LABELS["sharedDisks"]}
-                </div>
+              <DashboardExportSection title={VIEW_MODE_LABELS.sharedDisks}>
                 <MigrationDonutChart
                   data={sharedDisksChartData}
                   height={300}
@@ -684,7 +674,7 @@ export const StorageOverview: React.FC<StorageOverviewProps> = ({
                     `${datum.countDisplay}\n${percent.toFixed(1)}%`
                   }
                 />
-              </div>
+              </DashboardExportSection>
             )}
           </>
         )}

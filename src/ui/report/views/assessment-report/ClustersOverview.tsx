@@ -17,6 +17,7 @@ import React, { useMemo, useState } from "react";
 import { CardEmptyState } from "../../../core/components/CardEmptyState";
 import MigrationDonutChart from "../../../core/components/MigrationDonutChart";
 import { REPORT_CARD_EMPTY_STATE_TITLES } from "./constants";
+import { DashboardExportSection } from "./DashboardExportSection";
 import { dashboardCard } from "./styles";
 
 // ---------------------------------------------------------------------------
@@ -524,10 +525,10 @@ export const ClustersOverview: React.FC<ClustersOverviewProps> = ({
         {isExportMode && exportAllViews ? (
           <>
             {vmByClusterData && (
-              <div style={{ marginBottom: "24px" }}>
-                <div style={{ fontWeight: 600, marginBottom: 8 }}>
-                  {VIEW_MODE_LABELS["vmByCluster"]}
-                </div>
+              <DashboardExportSection
+                title={VIEW_MODE_LABELS.vmByCluster}
+                withMargin
+              >
                 <MigrationDonutChart
                   data={vmByClusterData.chartData}
                   height={300}
@@ -546,13 +547,13 @@ export const ClustersOverview: React.FC<ClustersOverviewProps> = ({
                     `${datum.countDisplay}\n${percent.toFixed(1)}%`
                   }
                 />
-              </div>
+              </DashboardExportSection>
             )}
             {dataCenterDistributionData && (
-              <div>
-                <div style={{ fontWeight: 600, marginBottom: 8 }}>
-                  {VIEW_MODE_LABELS["dataCenterDistribution"]}
-                </div>
+              <DashboardExportSection
+                title={VIEW_MODE_LABELS.dataCenterDistribution}
+                withMargin={!!cpuOverCommitmentData}
+              >
                 <MigrationDonutChart
                   data={dataCenterDistributionData.chartData}
                   height={300}
@@ -573,13 +574,12 @@ export const ClustersOverview: React.FC<ClustersOverviewProps> = ({
                     `${datum.countDisplay}\n${percent.toFixed(1)}%`
                   }
                 />
-              </div>
+              </DashboardExportSection>
             )}
             {cpuOverCommitmentData && (
-              <div style={{ marginTop: "24px" }}>
-                <div style={{ fontWeight: 600, marginBottom: 8 }}>
-                  {VIEW_MODE_LABELS["cpuOverCommitment"]}
-                </div>
+              <DashboardExportSection
+                title={VIEW_MODE_LABELS.cpuOverCommitment}
+              >
                 {cpuOverCommitmentData.chartData.length === 0 ? (
                   <CardEmptyState
                     title={REPORT_CARD_EMPTY_STATE_TITLES.cpuOvercommitment}
@@ -623,7 +623,7 @@ export const ClustersOverview: React.FC<ClustersOverviewProps> = ({
                     </div>
                   </>
                 )}
-              </div>
+              </DashboardExportSection>
             )}
           </>
         ) : viewMode === "cpuOverCommitment" ? (

@@ -18,6 +18,7 @@ import React, { useMemo, useState } from "react";
 
 import MigrationDonutChart from "../../../core/components/MigrationDonutChart";
 import { REPORT_CARD_EMPTY_STATE_TITLES } from "./constants";
+import { DashboardExportSection } from "./DashboardExportSection";
 import { dashboardCard } from "./styles";
 
 // Reuse an extended palette similar to ClustersOverview to provide stable colors
@@ -315,10 +316,10 @@ export const NetworkOverview: React.FC<NetworkOverviewProps> = ({
       <CardBody>
         {isExportMode && exportAllViews ? (
           <>
-            <div style={{ marginBottom: "24px" }}>
-              <div style={{ fontWeight: 600, marginBottom: 8 }}>
-                {VIEW_MODE_LABELS["networkDistribution"]}
-              </div>
+            <DashboardExportSection
+              title={VIEW_MODE_LABELS.networkDistribution}
+              withMargin
+            >
               <MigrationDonutChart
                 data={chartData}
                 height={300}
@@ -336,11 +337,8 @@ export const NetworkOverview: React.FC<NetworkOverviewProps> = ({
                   `${datum.countDisplay}\n${percent.toFixed(1)}%\nVLAN: ${legendVlanMap[datum.legendCategory] ?? "-"}`
                 }
               />
-            </div>
-            <div>
-              <div style={{ fontWeight: 600, marginBottom: 8 }}>
-                {VIEW_MODE_LABELS["nicCount"]}
-              </div>
+            </DashboardExportSection>
+            <DashboardExportSection title={VIEW_MODE_LABELS.nicCount}>
               <MigrationDonutChart
                 data={nicChartData}
                 height={300}
@@ -358,7 +356,7 @@ export const NetworkOverview: React.FC<NetworkOverviewProps> = ({
                   `${datum.countDisplay}\n${percent.toFixed(1)}%`
                 }
               />
-            </div>
+            </DashboardExportSection>
           </>
         ) : (
           <>
