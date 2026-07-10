@@ -94,39 +94,6 @@ export const storageTotalsNote = css`
   margin-left: 20px;
 `;
 
-export const migrationStatusBarColumn = css`
-  flex: 1;
-  max-width: 120px;
-`;
-
-export const migrationStatusBarTrack = css`
-  display: flex;
-  align-items: flex-end;
-  width: 100%;
-  justify-content: center;
-`;
-
-export const migrationStatusBar = css`
-  width: 60px;
-  transition: height 0.3s ease;
-  border-radius: 4px 4px 0 0;
-`;
-
-export const migrationStatusBarLabel = css`
-  font-size: 12px;
-  text-align: center;
-  word-break: break-word;
-  color: var(--pf-t--global--text--color--regular);
-`;
-
-export const migrationStatusTotalsNote = css`
-  font-size: 12px;
-  color: var(--pf-t--global--text--color--subtle);
-  margin-top: 16px;
-  text-align: center;
-  display: block;
-`;
-
 export const storageExportSectionMargin = css`
   margin-bottom: 24px;
 `;
