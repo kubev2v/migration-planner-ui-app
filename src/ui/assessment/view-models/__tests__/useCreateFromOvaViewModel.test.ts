@@ -14,8 +14,7 @@ import { useCreateFromOvaViewModel } from "../useCreateFromOvaViewModel";
 
 const mockNavigate = vi.fn();
 let mockLocationState:
-  | { reset?: boolean; preselectedSourceId?: string }
-  | undefined = undefined;
+  { reset?: boolean; preselectedSourceId?: string } | undefined = undefined;
 
 vi.mock("react-router-dom", () => ({
   useNavigate: () => mockNavigate,

@@ -16,8 +16,7 @@ export default function TextAreaFormGroup({
   const methods = useFormContext();
   const error = methods.formState.errors[name] as FieldError | undefined;
   const isTouched = methods.formState.touchedFields[name] as
-    | boolean
-    | undefined;
+    boolean | undefined;
   const isSubmitted = methods.formState.isSubmitted;
   const showError = error && (isTouched || isSubmitted);
 
