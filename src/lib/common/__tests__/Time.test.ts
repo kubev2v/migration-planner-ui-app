@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   AVERAGE_DAYS_PER_MONTH,
   AVERAGE_DAYS_PER_YEAR,
+  formatRelativeTime,
   humanizeDate,
   sleep,
   Time,
@@ -277,5 +278,49 @@ describe("humanizeDate", () => {
 
       expect(humanizeDate(now)).toBe("just now");
     });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Tests — formatRelativeTime
+// ---------------------------------------------------------------------------
+
+describe("formatRelativeTime", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("returns '-' for missing or invalid values", () => {
+    expect(formatRelativeTime()).toBe("-");
+    expect(formatRelativeTime("")).toBe("-");
+    expect(formatRelativeTime("not-a-date")).toBe("-");
+  });
+
+  it("returns relative minutes for recent timestamps", () => {
+    const now = new Date("2026-04-01T12:00:00.000Z");
+    vi.setSystemTime(now);
+
+    const nineMinutesAgo = new Date(now.getTime() - 9 * 60 * 1000);
+    expect(formatRelativeTime(nineMinutesAgo)).toBe("9 minutes ago");
+  });
+
+  it("returns 'today' for same-day timestamps", () => {
+    const now = new Date("2026-04-01T12:00:00.000Z");
+    vi.setSystemTime(now);
+
+    const earlierToday = new Date(now.getTime() - 2 * 60 * 60 * 1000);
+    expect(formatRelativeTime(earlierToday)).toBe("2 hours ago");
+  });
+
+  it("accepts epoch milliseconds", () => {
+    const now = new Date("2026-04-01T12:00:00.000Z");
+    vi.setSystemTime(now);
+
+    const oneDayAgoMs = now.getTime() - 24 * 60 * 60 * 1000;
+    expect(formatRelativeTime(oneDayAgoMs)).toBe("yesterday");
   });
 });

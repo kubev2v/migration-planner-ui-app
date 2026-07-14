@@ -28,6 +28,7 @@ import {
 import React, { useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
+import { formatRelativeTime } from "../../../lib/common/Time";
 import { themeTooltipFlyoutProps } from "../../../lib/patternfly/flyoutAppendTo";
 import type { AssessmentModel } from "../../../models/AssessmentModel";
 import { routes } from "../../../routing/Routes";
@@ -233,7 +234,6 @@ export const AssessmentsTable: React.FC<AssessmentsTableProps> = ({
         id,
         name,
         sourceType,
-        lastUpdated: snapshotData.lastUpdated,
         lastUpdatedMs,
         owner: ownerFullName,
         hosts: snapshotData.hosts,
@@ -276,7 +276,7 @@ export const AssessmentsTable: React.FC<AssessmentsTableProps> = ({
           // eslint-disable-next-line react-hooks/purity
           const nowMs = Date.now();
           const oneDayMs = 24 * 60 * 60 * 1000;
-          const matchByRule = (itemMs: number, itemLabel: string): boolean => {
+          const matchByRule = (itemMs: number): boolean => {
             if (!itemMs) {
               return false;
             }
@@ -322,13 +322,11 @@ export const AssessmentsTable: React.FC<AssessmentsTableProps> = ({
               );
             }
 
-            // Fallback: substring on rendered label (e.g., "Today", "1 day ago")
-            return itemLabel.toLowerCase().includes(query);
+            // Fallback: substring on rendered label (e.g., "today", "1 day ago")
+            return formatRelativeTime(itemMs).toLowerCase().includes(query);
           };
 
-          filtered = filtered.filter((i) =>
-            matchByRule(i.lastUpdatedMs, i.lastUpdated),
-          );
+          filtered = filtered.filter((i) => matchByRule(i.lastUpdatedMs));
           break;
         }
       }
@@ -570,7 +568,16 @@ export const AssessmentsTable: React.FC<AssessmentsTableProps> = ({
             )}
             {isColumnVisible("LastUpdated") && (
               <Td dataLabel={Columns.LastUpdated}>
-                <Truncate content={row.lastUpdated} />
+                {row.lastUpdatedMs ? (
+                  <Tooltip
+                    {...themeTooltipFlyoutProps}
+                    content={new Date(row.lastUpdatedMs).toLocaleString()}
+                  >
+                    <span>{formatRelativeTime(row.lastUpdatedMs)}</span>
+                  </Tooltip>
+                ) : (
+                  "-"
+                )}
               </Td>
             )}
             {isColumnVisible("Owner") && (

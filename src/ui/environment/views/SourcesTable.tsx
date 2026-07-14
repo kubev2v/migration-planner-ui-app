@@ -20,6 +20,7 @@ import { Table, Tbody, Td, Th, Thead, Tr } from "@patternfly/react-table";
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+import { formatRelativeTime } from "../../../lib/common/Time";
 import { themeTooltipFlyoutProps } from "../../../lib/patternfly/flyoutAppendTo";
 import type { SourceModel } from "../../../models/SourceModel";
 import { routes } from "../../../routing/Routes";
@@ -112,53 +113,6 @@ export const SourcesTable: React.FC<SourceTableProps> = ({
   onAddEnvironment,
   onDownloadOva,
 }) => {
-  const formatRelativeTime = (updatedAt?: string | number | Date): string => {
-    if (!updatedAt) return "-";
-    const date = new Date(updatedAt);
-    if (isNaN(date.getTime())) return "-";
-
-    const now = new Date();
-    const diffMs = date.getTime() - now.getTime();
-    const absMs = Math.abs(diffMs);
-
-    const minute = 60 * 1000;
-    const hour = 60 * minute;
-    const day = 24 * hour;
-    const week = 7 * day;
-    const month = 30 * day;
-    const year = 365 * day;
-
-    let unit: Intl.RelativeTimeFormatUnit = "second";
-    let value = 0;
-
-    if (absMs < minute) {
-      unit = "second";
-      value = Math.round(diffMs / 1000);
-    } else if (absMs < hour) {
-      unit = "minute";
-      value = Math.round(diffMs / minute);
-    } else if (absMs < day) {
-      unit = "hour";
-      value = Math.round(diffMs / hour);
-    } else if (absMs < week) {
-      unit = "day";
-      value = Math.round(diffMs / day);
-    } else if (absMs < month) {
-      unit = "week";
-      value = Math.round(diffMs / week);
-    } else if (absMs < year) {
-      unit = "month";
-      value = Math.round(diffMs / month);
-    } else {
-      unit = "year";
-      value = Math.round(diffMs / year);
-    }
-
-    return new Intl.RelativeTimeFormat("en", { numeric: "auto" }).format(
-      value,
-      unit,
-    );
-  };
   const vm = useEnvironmentPage();
   const navigate = useNavigate();
   const [openDropdowns, setOpenDropdowns] = useState<Record<string, boolean>>(
