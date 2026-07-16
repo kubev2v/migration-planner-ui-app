@@ -34,6 +34,7 @@ const PopoverIcon: React.FC<PopoverIconProps> = ({
   buttonOuiaId,
   buttonStyle,
   appendTo = getFlyoutAppendTo,
+  "aria-label": ariaLabel,
   ...props
 }) => (
   // Popover prop order matters:
@@ -55,6 +56,7 @@ const PopoverIcon: React.FC<PopoverIconProps> = ({
       }
       component={component}
       variant={variant}
+      aria-label={ariaLabel}
       onClick={(e) => {
         e.preventDefault();
         e.stopPropagation();
