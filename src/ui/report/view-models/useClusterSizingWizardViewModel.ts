@@ -356,11 +356,11 @@ export const useClusterSizingWizardViewModel = (
           includeACM: costEstimationData.includeACM,
           consolidationPct: costEstimationData.consolidationPct,
           discounts: {
-            vcfDiscountPct: 0,
-            vvfDiscountPct: 0,
-            vvsDiscountPct: 0,
-            redhatDiscountPct: 0,
-            aapDiscountPct: 0,
+            vcfDiscountPct: costEstimationData.vcfDiscountPct,
+            vvfDiscountPct: costEstimationData.vvfDiscountPct,
+            vvsDiscountPct: costEstimationData.vvsDiscountPct,
+            redhatDiscountPct: costEstimationData.redhatDiscountPct,
+            aapDiscountPct: costEstimationData.aapDiscountPct,
           },
         });
         setCostEstimation(costEstimation);

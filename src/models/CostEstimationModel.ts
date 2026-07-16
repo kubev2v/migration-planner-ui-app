@@ -6,12 +6,17 @@
 export type RhEdition = "OVE" | "OKE" | "OCP" | "OPP";
 
 export interface CostEstimationFormValues {
+  // VMware Solution Scope
+  vcfDiscountPct: number; // 0-100
+  vvfDiscountPct: number; // 0-100
+  vvsDiscountPct: number; // 0-100
+  consolidationPct: number; // 0-100 (default 10)
+
   // Red Hat Solution Scope
   rhEdition: RhEdition;
   includeACM: boolean;
-
-  // Consolidation
-  consolidationPct: number; // 0-100 (default 10)
+  redhatDiscountPct: number; // 0-100
+  aapDiscountPct: number; // 0-100
 }
 
 export interface ACMConfig {
