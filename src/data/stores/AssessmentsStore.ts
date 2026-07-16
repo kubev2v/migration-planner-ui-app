@@ -27,9 +27,7 @@ import {
 import type { IAssessmentsStore } from "./interfaces/IAssessmentsStore";
 
 export type AssessmentListResponse =
-  | Assessment[]
-  | { items?: Assessment[] }
-  | { assessments?: Assessment[] };
+  Assessment[] | { items?: Assessment[] } | { assessments?: Assessment[] };
 
 type AssessmentCreateForm = Parameters<
   AssessmentApiInterface["createAssessment"]

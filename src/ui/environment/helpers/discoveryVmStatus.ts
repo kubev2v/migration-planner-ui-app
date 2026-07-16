@@ -7,8 +7,7 @@ export const DISCOVERY_VM_STATUS_FILTER_NOT_CONNECTED_UPLOADED =
   "not-connected-uploaded" as const;
 
 export type DiscoveryVmStatusFilterKey =
-  | typeof DISCOVERY_VM_STATUS_FILTER_NOT_CONNECTED_UPLOADED
-  | Agent["status"];
+  typeof DISCOVERY_VM_STATUS_FILTER_NOT_CONNECTED_UPLOADED | Agent["status"];
 
 /** User-visible Discovery VM status label (matches {@link AgentStatusView}). */
 export const getDiscoveryVmStatusLabel = (

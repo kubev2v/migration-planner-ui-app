@@ -39,8 +39,7 @@ interface CreateGroupMemberFormProps extends BaseGroupMemberFormProps {
 }
 
 export type GroupMemberFormProps =
-  | EditGroupMemberFormProps
-  | CreateGroupMemberFormProps;
+  EditGroupMemberFormProps | CreateGroupMemberFormProps;
 
 export const GroupMemberForm: React.FC<GroupMemberFormProps> = ({
   id,

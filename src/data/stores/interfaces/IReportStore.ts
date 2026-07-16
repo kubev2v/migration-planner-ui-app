@@ -2,10 +2,7 @@ import type { ExternalStore } from "../../../lib/mvvm/ExternalStore";
 
 // Loading states for export operations
 export type LoadingState =
-  | "idle"
-  | "generating-pdf"
-  | "generating-html"
-  | "error";
+  "idle" | "generating-pdf" | "generating-html" | "error";
 
 // Export error structure
 export interface ExportError {
