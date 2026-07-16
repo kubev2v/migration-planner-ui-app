@@ -67,10 +67,7 @@ export type HAReplicaCount = 1 | 2 | 3;
  * Cluster mode types
  */
 export type ClusterMode =
-  | "full-ha"
-  | "compact"
-  | "single-node"
-  | "hosted-control-plane";
+  "full-ha" | "compact" | "single-node" | "hosted-control-plane";
 
 /** Cluster modes that only expose control plane sizing inputs (no worker node section). */
 export const isControlPlaneOnlyClusterMode = (mode: ClusterMode): boolean =>

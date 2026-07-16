@@ -457,8 +457,7 @@ export const useReportPageViewModel = (): ReportPageViewModel => {
 
   const reportSummaryClusterCount = useMemo(() => {
     const summaryClusters = latestSnapshot.inventory?.clusters as
-      | { [key: string]: InventoryData }
-      | undefined;
+      { [key: string]: InventoryData } | undefined;
     return summaryClusters ? Object.keys(summaryClusters).length : 0;
   }, [latestSnapshot.inventory?.clusters]);
 

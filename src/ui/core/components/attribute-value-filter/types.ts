@@ -23,5 +23,4 @@ export type CheckboxFilterAttribute = {
 };
 
 export type AttributeValueFilterAttribute =
-  | TextFilterAttribute
-  | CheckboxFilterAttribute;
+  TextFilterAttribute | CheckboxFilterAttribute;
