@@ -11,11 +11,13 @@ import type {
   InventoryData as ApiInventoryData,
   VMs,
 } from "@openshift-migration-advisor/planner-sdk";
+import type { OsInfoSupportTierEnum } from "@openshift-migration-advisor/planner-sdk";
 
 // OS Information
 export interface OSInfo {
   count: number;
   supported: boolean;
+  supportTier?: OsInfoSupportTierEnum;
 }
 
 // Migration warning entry

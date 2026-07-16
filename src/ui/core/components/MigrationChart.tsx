@@ -6,6 +6,7 @@ import {
   Flex,
   FlexItem,
   Popover,
+  Tooltip,
 } from "@patternfly/react-core";
 import { RhUiInformationFillIcon } from "@patternfly/react-icons";
 import { Table, Tbody, Td, Tr } from "@patternfly/react-table";
@@ -16,6 +17,7 @@ import React, { useMemo } from "react";
 import {
   getFlyoutAppendTo,
   themePopoverFlyoutClassName,
+  themeTooltipFlyoutProps,
 } from "../../../lib/patternfly/flyoutAppendTo";
 
 interface OSData {
@@ -23,11 +25,13 @@ interface OSData {
   count: number;
   legendCategory: string;
   infoText?: string;
+  isGroupHeader?: boolean;
 }
 
 interface MigrationChartProps {
   data: OSData[];
   legend?: Record<string, string>;
+  legendTooltips?: Record<string, string>;
   dataLength?: DLength;
   maxHeight?: string;
   barHeight?: number;
@@ -57,6 +61,7 @@ const legendColors = [
 const MigrationChart: React.FC<MigrationChartProps> = ({
   data,
   legend,
+  legendTooltips,
   dataLength = 40,
   maxHeight = "200px",
   barHeight = 8,
@@ -81,12 +86,37 @@ const MigrationChart: React.FC<MigrationChartProps> = ({
   // Calculate the sum of all count values to normalize bar widths
   const sumOfAllCounts = useMemo(() => {
     if (!data || data.length === 0) return 1;
-    return data.reduce((sum, item) => sum + item.count, 0) || 1;
+    return (
+      data
+        .filter((item) => !item.isGroupHeader)
+        .reduce((sum, item) => sum + item.count, 0) || 1
+    );
   }, [data]);
 
   const chartLegend = legend ?? dynamicLegend;
   const getColor = (name: string): string =>
     chartLegend[name] ?? legendColors[0];
+
+  const renderLegendLabel = (label: string): React.ReactNode => {
+    const tooltip = legendTooltips?.[label];
+    if (!tooltip) {
+      return <Content component={ContentVariants.small}>{label}</Content>;
+    }
+
+    return (
+      <Tooltip {...themeTooltipFlyoutProps} content={tooltip}>
+        <Content
+          component={ContentVariants.small}
+          style={{
+            borderBottom: "1px dotted currentColor",
+            cursor: "help",
+          }}
+        >
+          {label}
+        </Content>
+      </Tooltip>
+    );
+  };
 
   return (
     <Flex
@@ -94,7 +124,7 @@ const MigrationChart: React.FC<MigrationChartProps> = ({
       spaceItems={{ default: "spaceItemsLg" }}
     >
       {/* Legend */}
-      <FlexItem>
+      <FlexItem data-testid="migration-chart-legend">
         <Flex
           spaceItems={{ default: "spaceItemsLg" }}
           justifyContent={{ default: "justifyContentFlexEnd" }}
@@ -115,9 +145,7 @@ const MigrationChart: React.FC<MigrationChartProps> = ({
                     }}
                   />
                 </FlexItem>
-                <FlexItem>
-                  <Content component={ContentVariants.small}>{key}</Content>
-                </FlexItem>
+                <FlexItem>{renderLegendLabel(key)}</FlexItem>
               </Flex>
             </FlexItem>
           ))}
@@ -137,111 +165,155 @@ const MigrationChart: React.FC<MigrationChartProps> = ({
           >
             <Table variant="compact" borders={false}>
               <Tbody>
-                {data.map((item, index) => (
-                  <Tr key={index}>
-                    <Td
-                      width={dataLength}
-                      style={{ paddingLeft: "0px", paddingTop: "4px" }}
-                    >
-                      <Flex
-                        alignItems={{ default: "alignItemsCenter" }}
-                        spaceItems={{ default: "spaceItemsXs" }}
-                        flexWrap={{ default: "nowrap" }}
+                {data.map((item, index) =>
+                  item.isGroupHeader ? (
+                    <Tr key={`group-${item.legendCategory}`}>
+                      <Td
+                        colSpan={2}
+                        style={{
+                          paddingLeft: "0px",
+                          paddingTop: index === 0 ? "4px" : "12px",
+                          paddingBottom: "4px",
+                        }}
                       >
-                        <FlexItem>
-                          <Content
-                            component={ContentVariants.p}
-                            style={{
-                              fontSize: "clamp(0.4rem, 0.7vw, 1.1rem)",
-                              overflow: "hidden",
-                              textOverflow: "ellipsis",
-                              wordBreak: "break-word",
-                              display: "-webkit-box",
-                              WebkitLineClamp: 1,
-                              textTransform: "capitalize",
-                              WebkitBoxOrient: "vertical",
-                            }}
-                          >
-                            {item.name}
-                          </Content>
-                        </FlexItem>
-                        {item.infoText ? (
-                          <FlexItem shrink={{ default: "shrink" }}>
-                            <Popover
-                              appendTo={getFlyoutAppendTo}
-                              className={`${themePopoverFlyoutClassName} ${upgradeRecommendationPopoverCloseButton}`}
-                              position="bottom"
-                              headerContent="Upgrade to get support"
-                              bodyContent={<div>{item.infoText}</div>}
-                            >
-                              <Button
-                                type="button"
-                                aria-label="Open operating system upgrade information"
-                                variant="plain"
-                                style={{
-                                  padding: "0",
-                                  verticalAlign: "middle",
-                                }}
-                              >
-                                <RhUiInformationFillIcon color="var(--pf-t--global--icon--color--status--info--default)" />
-                              </Button>
-                            </Popover>
-                          </FlexItem>
-                        ) : null}
-                      </Flex>
-                    </Td>
-                    <Td>
-                      {/* Visual Bar */}
-                      <div>
-                        <div
+                        <Content
+                          component={ContentVariants.p}
                           style={{
-                            position: "relative",
-                            height: `${barHeight}px`,
-                            backgroundColor:
-                              "var(--pf-t--global--background--color--secondary--default)",
-                            overflow: "hidden",
+                            fontSize: "clamp(0.45rem, 0.75vw, 1.15rem)",
+                            fontWeight: 600,
                           }}
                         >
-                          {((): React.ReactNode => {
-                            const barWidth =
-                              sumOfAllCounts > 0
-                                ? (item.count / sumOfAllCounts) * 100
-                                : 0;
-                            const hasValue = barWidth > 0;
-                            return (
-                              <div
-                                style={{
-                                  height: "100%",
-                                  width: `${barWidth}%`,
-                                  minWidth: hasValue ? `${MIN_BAR_PX}px` : "0",
-                                  backgroundColor: `${getColor(
-                                    item.legendCategory,
-                                  )}`,
-                                  transition: "width 0.3s ease",
-                                }}
-                              />
-                            );
-                          })()}
-                        </div>
-                      </div>
-                    </Td>
-                    <Td
-                      width={10}
-                      style={{
-                        paddingRight: "0px",
-                        textAlign: "center",
-                        paddingTop: "5px",
-                      }}
-                    >
-                      <Content
-                        component="p"
-                        style={{ fontSize: "clamp(0.4rem, 0.7vw, 1.1rem)" }}
+                          {item.name}
+                        </Content>
+                      </Td>
+                      <Td
+                        width={10}
+                        style={{
+                          paddingRight: "0px",
+                          textAlign: "center",
+                          paddingTop: index === 0 ? "4px" : "12px",
+                          paddingBottom: "4px",
+                        }}
                       >
-                        {item.count}
-                      </Content>
-                    </Td>
-                  </Tr>
-                ))}
+                        <Content
+                          component="p"
+                          style={{
+                            fontSize: "clamp(0.45rem, 0.75vw, 1.15rem)",
+                            fontWeight: 600,
+                          }}
+                        >
+                          {item.count}
+                        </Content>
+                      </Td>
+                    </Tr>
+                  ) : (
+                    <Tr key={`${item.legendCategory}-${item.name}`}>
+                      <Td
+                        width={dataLength}
+                        style={{ paddingLeft: "16px", paddingTop: "4px" }}
+                      >
+                        <Flex
+                          alignItems={{ default: "alignItemsCenter" }}
+                          spaceItems={{ default: "spaceItemsXs" }}
+                          flexWrap={{ default: "nowrap" }}
+                        >
+                          <FlexItem>
+                            <Content
+                              component={ContentVariants.p}
+                              style={{
+                                fontSize: "clamp(0.4rem, 0.7vw, 1.1rem)",
+                                overflow: "hidden",
+                                textOverflow: "ellipsis",
+                                wordBreak: "break-word",
+                                display: "-webkit-box",
+                                WebkitLineClamp: 1,
+                                textTransform: "capitalize",
+                                WebkitBoxOrient: "vertical",
+                              }}
+                            >
+                              {item.name}
+                            </Content>
+                          </FlexItem>
+                          {item.infoText ? (
+                            <FlexItem shrink={{ default: "shrink" }}>
+                              <Popover
+                                appendTo={getFlyoutAppendTo}
+                                className={`${themePopoverFlyoutClassName} ${upgradeRecommendationPopoverCloseButton}`}
+                                position="bottom"
+                                headerContent="Upgrade to get support"
+                                bodyContent={<div>{item.infoText}</div>}
+                              >
+                                <Button
+                                  type="button"
+                                  aria-label="Open operating system upgrade information"
+                                  variant="plain"
+                                  style={{
+                                    padding: "0",
+                                    verticalAlign: "middle",
+                                  }}
+                                >
+                                  <RhUiInformationFillIcon color="var(--pf-t--global--icon--color--status--info--default)" />
+                                </Button>
+                              </Popover>
+                            </FlexItem>
+                          ) : null}
+                        </Flex>
+                      </Td>
+                      <Td>
+                        {/* Visual Bar */}
+                        <div>
+                          <div
+                            style={{
+                              position: "relative",
+                              height: `${barHeight}px`,
+                              backgroundColor:
+                                "var(--pf-t--global--background--color--secondary--default)",
+                              overflow: "hidden",
+                            }}
+                          >
+                            {((): React.ReactNode => {
+                              const barWidth =
+                                sumOfAllCounts > 0
+                                  ? (item.count / sumOfAllCounts) * 100
+                                  : 0;
+                              const hasValue = barWidth > 0;
+                              return (
+                                <div
+                                  style={{
+                                    height: "100%",
+                                    width: `${barWidth}%`,
+                                    minWidth: hasValue
+                                      ? `${MIN_BAR_PX}px`
+                                      : "0",
+                                    backgroundColor: `${getColor(
+                                      item.legendCategory,
+                                    )}`,
+                                    transition: "width 0.3s ease",
+                                  }}
+                                />
+                              );
+                            })()}
+                          </div>
+                        </div>
+                      </Td>
+                      <Td
+                        width={10}
+                        style={{
+                          paddingRight: "0px",
+                          textAlign: "center",
+                          paddingTop: "5px",
+                        }}
+                      >
+                        <Content
+                          component="p"
+                          style={{ fontSize: "clamp(0.4rem, 0.7vw, 1.1rem)" }}
+                        >
+                          {item.count}
+                        </Content>
+                      </Td>
+                    </Tr>
+                  ),
+                )}
               </Tbody>
             </Table>
           </div>
