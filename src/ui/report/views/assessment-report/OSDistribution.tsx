@@ -3,11 +3,8 @@ import {
   Card,
   CardBody,
   CardTitle,
-  Content,
-  ContentVariants,
   Flex,
   FlexItem,
-  Icon,
   MenuToggle,
   type MenuToggleElement,
   SearchInput,
@@ -18,10 +15,7 @@ import {
   ToolbarContent,
   ToolbarItem,
 } from "@patternfly/react-core";
-import {
-  RhUiDesktopIcon,
-  RhUiInformationFillIcon,
-} from "@patternfly/react-icons";
+import { RhUiDesktopIcon } from "@patternfly/react-icons";
 import { Table, Tbody, Td, Th, Thead, Tr } from "@patternfly/react-table";
 import React from "react";
 
@@ -35,6 +29,8 @@ import {
   type OSDistributionEntry,
 } from "./osSupportTier";
 import { OsSupportTiersHelpPopover } from "./OsSupportTiersHelpPopover";
+import { OsUpgradeNotice } from "./OsUpgradeNotice";
+import { OsNameCell } from "./OsUpgradeRecommendationPopover";
 import { dashboardCard, dashboardCardScroll } from "./styles";
 import { SupportTierBadge } from "./SupportTierBadge";
 
@@ -61,10 +57,6 @@ export const OSDistribution: React.FC<OSDistributionProps> = ({
   osData,
   isExportMode = false,
 }) => {
-  const hasUpgradeRecommendation = Object.values(osData).some(
-    (o) => o.upgradeRecommendation && o.upgradeRecommendation.trim() !== "",
-  );
-
   return (
     <Card className={dashboardCard} id="os-distribution">
       <CardTitle>
@@ -81,27 +73,6 @@ export const OSDistribution: React.FC<OSDistributionProps> = ({
         </Flex>
       </CardTitle>
       <CardBody>
-        {hasUpgradeRecommendation ? (
-          <Flex
-            alignItems={{ default: "alignItemsCenter" }}
-            spaceItems={{ default: "spaceItemsSm" }}
-            style={{ marginBottom: "8px" }}
-          >
-            <FlexItem>
-              <Icon>
-                <RhUiInformationFillIcon color="var(--pf-t--global--icon--color--status--info--default)" />
-              </Icon>
-            </FlexItem>
-            <FlexItem>
-              <Content
-                component={ContentVariants.p}
-                style={{ fontWeight: 500 }}
-              >
-                Some operating systems may need upgrades before migration
-              </Content>
-            </FlexItem>
-          </Flex>
-        ) : null}
         <OSBarChart osData={osData} isExportMode={isExportMode} />
       </CardBody>
     </Card>
@@ -171,6 +142,8 @@ export const OSBarChart: React.FC<OSBarChartProps> = ({
         </Toolbar>
       ) : null}
 
+      {vm.showUpgradeNotice ? <OsUpgradeNotice /> : null}
+
       <div
         className={isExportMode ? undefined : dashboardCardScroll}
         style={isExportMode ? undefined : { maxHeight: "350px" }}
@@ -193,7 +166,13 @@ export const OSBarChart: React.FC<OSBarChartProps> = ({
             ) : (
               vm.filteredRows.map((row) => (
                 <Tr key={row.osName}>
-                  <Td dataLabel="OS">{row.osName}</Td>
+                  <Td dataLabel="OS">
+                    <OsNameCell
+                      osName={row.osName}
+                      upgradeRecommendation={row.upgradeRecommendation}
+                      isExportMode={isExportMode}
+                    />
+                  </Td>
                   <Td dataLabel="Tier">
                     <SupportTierBadge
                       tier={row.tier}
