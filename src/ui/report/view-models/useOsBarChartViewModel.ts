@@ -5,6 +5,7 @@ import { useMemo, useState } from "react";
 import {
   getSupportTierLegendLabel,
   getSupportTierSortOrder,
+  hasOsUpgradeNotice,
   type OSDistributionEntry,
   resolveSupportTier,
 } from "../views/assessment-report/osSupportTier";
@@ -15,6 +16,7 @@ export interface OsTableRow {
   osName: string;
   tier: SupportTier;
   count: number;
+  upgradeRecommendation?: string;
 }
 
 export interface OsBarChartViewModel {
@@ -25,6 +27,7 @@ export interface OsBarChartViewModel {
   filteredRows: OsTableRow[];
   tierFilterLabel: string;
   showNoResults: boolean;
+  showUpgradeNotice: boolean;
   setOsFilter: (value: string) => void;
   clearOsFilter: () => void;
   setIsTierSelectOpen: (open: boolean) => void;
@@ -44,6 +47,7 @@ function buildOsTableRows(
       osName,
       tier: resolveSupportTier(entry.supportTier, entry.supported),
       count: entry.count,
+      upgradeRecommendation: entry.upgradeRecommendation || undefined,
     }))
     .sort((a, b) => {
       const tierOrder =
@@ -102,6 +106,7 @@ export function useOsBarChartViewModel(
     filteredRows,
     tierFilterLabel,
     showNoResults: filteredRows.length === 0,
+    showUpgradeNotice: hasOsUpgradeNotice(osData),
     setOsFilter,
     clearOsFilter: () => setOsFilter(""),
     setIsTierSelectOpen,
