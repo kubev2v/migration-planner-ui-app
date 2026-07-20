@@ -352,16 +352,21 @@ export const useClusterSizingWizardViewModel = (
         const costEstimation = await assessmentsStore.calculateCostEstimation({
           assessmentId,
           clusterId,
-          rhEdition: costEstimationData.rhEdition,
-          includeACM: costEstimationData.includeACM,
-          consolidationPct: costEstimationData.consolidationPct,
-          discounts: {
-            vcfDiscountPct: costEstimationData.vcfDiscountPct,
-            vvfDiscountPct: costEstimationData.vvfDiscountPct,
-            vvsDiscountPct: costEstimationData.vvsDiscountPct,
-            redhatDiscountPct: costEstimationData.redhatDiscountPct,
-            aapDiscountPct: costEstimationData.aapDiscountPct,
+          VMwareSolution: {
+            name: costEstimationData.vmwareSolution,
+            discount: costEstimationData.vmwareDiscount,
           },
+          rhEdition: {
+            name: costEstimationData.rhEdition,
+            includeACM: costEstimationData.includeACM,
+            openshiftDiscount: costEstimationData.openshiftDiscount,
+            thirdPartyISVCost: costEstimationData.thirdPartyISVCost,
+            additionalStorageCost: costEstimationData.additionalStorageCost,
+            swingHardwareCost: costEstimationData.swingHardwareCost,
+            withAap: costEstimationData.withAap,
+            aapDiscount: costEstimationData.aapDiscount,
+          },
+          consolidationPct: costEstimationData.consolidationPct,
         });
         setCostEstimation(costEstimation);
       } catch (error) {

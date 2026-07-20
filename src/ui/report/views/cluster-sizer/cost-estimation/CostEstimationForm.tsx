@@ -7,12 +7,10 @@ import {
   Form,
   FormGroup,
   FormSection,
-  FormSelect,
-  FormSelectOption,
   Grid,
   GridItem,
 } from "@patternfly/react-core";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo } from "react";
 import { FormProvider, useForm, useWatch } from "react-hook-form";
 
 import type {
@@ -20,6 +18,7 @@ import type {
   CostEstimationFormValues,
 } from "../../../../../models/CostEstimationModel";
 import {
+  CheckboxFormGroup,
   SelectFormGroup,
   TextInputFormGroup,
 } from "../../../../core/components/form";
@@ -29,19 +28,22 @@ const styles = {
   form: css`
     gap: var(--pf-t--global--spacer--sm);
   `,
-  acmFormGroup: css`
+  formGroupCheckbox: css`
     margin-top: 0.5em;
   `,
 };
 
 const DEFAULT_COST_ESTIMATION_FORM_VALUES: CostEstimationFormValues = {
-  vcfDiscountPct: 0,
-  vvfDiscountPct: 0,
-  vvsDiscountPct: 0,
+  vmwareSolution: "vmwareVcf",
+  vmwareDiscount: 0,
   rhEdition: "OVE",
   includeACM: true,
-  redhatDiscountPct: 0,
-  aapDiscountPct: 0,
+  openshiftDiscount: 0,
+  withAap: false,
+  aapDiscount: 0,
+  additionalStorageCost: 0,
+  thirdPartyISVCost: 0,
+  swingHardwareCost: 0,
   consolidationPct: 10,
 };
 
@@ -65,8 +67,6 @@ export default function CostEstimationForm({
   const handleSubmit = (data: CostEstimationFormValues) => {
     onSubmit(data);
   };
-
-  const [vmwareSolution, setVmwareSolution] = useState("VCF");
 
   // Watch values for dynamic behavior
   const rhEdition = useWatch({ control: methods.control, name: "rhEdition" });
@@ -112,79 +112,46 @@ export default function CostEstimationForm({
         }}
         className={styles.form}
       >
-        <FormSection title="VMware Solution Scope">
-          <Grid hasGutter md={6}>
+        <FormSection title="VMware solution scope">
+          <Grid hasGutter md={4}>
             <GridItem>
-              <FormGroup label="VMware Solution" fieldId="vmwareSolution">
-                <FormSelect
-                  id="vmwareSolution"
-                  value={vmwareSolution}
-                  onChange={(_e, value) => setVmwareSolution(value)}
-                >
-                  <FormSelectOption
-                    value="VCF"
-                    label="VMware Cloud Foundation (VCF)"
-                  />
-                  <FormSelectOption
-                    value="VVF"
-                    label="VMware vSphere Foundation (VVF)"
-                  />
-                  <FormSelectOption
-                    value="VVS"
-                    label="VMware vSphere Standard (VVS)"
-                  />
-                </FormSelect>
-              </FormGroup>
+              <SelectFormGroup
+                id="vmwareSolution"
+                name="vmwareSolution"
+                label="VMware solution"
+                options={[
+                  {
+                    value: "vmwareVcf",
+                    label: "VMware Cloud Foundation (VCF)",
+                  },
+                  {
+                    value: "vmwareVvf",
+                    label: "VMware vSphere Foundation (VVF)",
+                  },
+                  {
+                    value: "vmwareVvs",
+                    label: "VMware vSphere Standard (VVS)",
+                  },
+                ]}
+              />
             </GridItem>
             <GridItem>
-              {vmwareSolution === "VCF" && (
-                <TextInputFormGroup
-                  id="vcfDiscountPct"
-                  name="vcfDiscountPct"
-                  label="Assumed VCF Discount (%)"
-                  type="number"
-                  isRequired
-                />
-              )}
-              {vmwareSolution === "VVF" && (
-                <TextInputFormGroup
-                  id="vvfDiscountPct"
-                  name="vvfDiscountPct"
-                  label="Assumed VVF Discount (%)"
-                  type="number"
-                  isRequired
-                />
-              )}
-              {vmwareSolution === "VVS" && (
-                <TextInputFormGroup
-                  id="vvsDiscountPct"
-                  name="vvsDiscountPct"
-                  label="Assumed VVS Discount (%)"
-                  type="number"
-                  isRequired
-                />
-              )}
+              <TextInputFormGroup
+                id="vmwareDiscount"
+                name="vmwareDiscount"
+                label="Assumed discount (%)"
+                type="number"
+              />
             </GridItem>
-          </Grid>
-          <Grid hasGutter md={6}>
-            <TextInputFormGroup
-              id="consolidationPct"
-              name="consolidationPct"
-              label="VMs Retired/Moved to Cloud (%)"
-              type="number"
-              isRequired
-              helpText="Percentage of VMs that will be decommissioned or moved to cloud"
-            />
           </Grid>
         </FormSection>
-        <FormSection title="Red Hat Solution Scope">
+        <FormSection title="Red Hat solution scope">
           <Grid hasGutter md={4}>
             <GridItem>
               <SelectFormGroup
                 id="rhEdition"
                 name="rhEdition"
-                label="OpenShift Edition"
-                isRequired
+                label="OpenShift edition"
                 options={[
                   {
                     value: "OVE",
@@ -201,7 +168,10 @@ export default function CostEstimationForm({
                   { value: "OPP", label: "OpenShift Platform Plus (OPP)" },
                 ]}
               />
-              <FormGroup fieldId="includeACM" className={styles.acmFormGroup}>
+              <FormGroup
+                fieldId="includeACM"
+                className={styles.formGroupCheckbox}
+              >
                 <Checkbox
                   id="includeACM"
                   label={acmConfig.label}
@@ -215,21 +185,62 @@ export default function CostEstimationForm({
             </GridItem>
             <GridItem>
               <TextInputFormGroup
-                id="redhatDiscountPct"
-                name="redhatDiscountPct"
-                label="Assumed Red Hat Discount (%)"
+                id="openshiftDiscount"
+                name="openshiftDiscount"
+                label="Assumed Red Hat discount (%)"
                 type="number"
-                isRequired
               />
             </GridItem>
-
             <GridItem>
               <TextInputFormGroup
-                id="aapDiscountPct"
-                name="aapDiscountPct"
-                label="Assumed AAP Discount (%)"
+                id="aapDiscount"
+                name="aapDiscount"
+                label="Assumed AAP discount (%)"
                 type="number"
-                isRequired
+              />
+              <CheckboxFormGroup
+                id="withAap"
+                name="withAap"
+                label="Include Ansible Automation Platform (AAP)"
+                className={styles.formGroupCheckbox}
+              />
+            </GridItem>
+          </Grid>
+        </FormSection>
+        <FormSection title="Cost & infrastructure assumptions">
+          <Grid hasGutter md={6}>
+            <GridItem>
+              <TextInputFormGroup
+                id="additionalStorageCost"
+                name="additionalStorageCost"
+                label="Annual storage cost ($)"
+                type="number"
+              />
+            </GridItem>
+            <GridItem>
+              <TextInputFormGroup
+                id="thirdPartyISVCost"
+                name="thirdPartyISVCost"
+                label="Annual 3rd party ISV cost ($)"
+                type="number"
+              />
+            </GridItem>
+            <GridItem>
+              <TextInputFormGroup
+                id="swingHardwareCost"
+                name="swingHardwareCost"
+                label="Swing hardware cost ($)"
+                type="number"
+                helpText="Net Cost per New Server minus residual recovery value"
+              />
+            </GridItem>
+            <GridItem>
+              <TextInputFormGroup
+                id="consolidationPct"
+                name="consolidationPct"
+                label="VMs retired/moved to cloud (%)"
+                type="number"
+                helpText="Percentage of VMs that will be decommissioned or moved to cloud"
               />
             </GridItem>
           </Grid>

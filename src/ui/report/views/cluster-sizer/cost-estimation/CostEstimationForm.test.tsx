@@ -18,9 +18,8 @@ describe("CostEstimationForm", () => {
       expect(screen.getByText(/Red Hat Solution Scope/i)).toBeInTheDocument();
     });
 
-    it("should populate form with default values", async () => {
+    it("should populate form with default values", () => {
       const mockOnSubmit = vi.fn();
-      const user = userEvent.setup();
       render(<CostEstimationForm onSubmit={mockOnSubmit} />);
 
       // Check default values
@@ -30,29 +29,11 @@ describe("CostEstimationForm", () => {
       ) as HTMLInputElement;
       expect(consolidationInput.value).toBe("10");
 
-      // VCF is visible by default
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-      const vcfDiscountInput = screen.getByLabelText(
-        /VCF Discount/i,
+      const vmwareDiscountInput = screen.getByLabelText(
+        /Assumed discount/i,
       ) as HTMLInputElement;
-      expect(vcfDiscountInput.value).toBe("0");
-
-      // Switch to VVF
-      const vmwareSolutionSelect = screen.getByLabelText("VMware Solution");
-      await user.selectOptions(vmwareSolutionSelect, "VVF");
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-      const vvfDiscountInput = screen.getByLabelText(
-        /VVF Discount/i,
-      ) as HTMLInputElement;
-      expect(vvfDiscountInput.value).toBe("0");
-
-      // Switch to VVS
-      await user.selectOptions(vmwareSolutionSelect, "VVS");
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-      const vvsDiscountInput = screen.getByLabelText(
-        /VVS Discount/i,
-      ) as HTMLInputElement;
-      expect(vvsDiscountInput.value).toBe("0");
+      expect(vmwareDiscountInput.value).toBe("0");
 
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
       const redhatDiscountInput = screen.getByLabelText(
@@ -96,13 +77,16 @@ describe("CostEstimationForm", () => {
         expect(mockOnSubmit).toHaveBeenCalledTimes(1);
         const submittedData = mockOnSubmit.mock
           .calls[0][0] as CostEstimationFormValues;
-        expect(submittedData.vcfDiscountPct).toBe(0);
-        expect(submittedData.vvfDiscountPct).toBe(0);
-        expect(submittedData.vvsDiscountPct).toBe(0);
+        expect(submittedData.vmwareSolution).toBe("vmwareVcf");
+        expect(submittedData.vmwareDiscount).toBe(0);
         expect(submittedData.rhEdition).toBe("OVE");
         expect(submittedData.includeACM).toBe(true);
-        expect(submittedData.redhatDiscountPct).toBe(0);
-        expect(submittedData.aapDiscountPct).toBe(0);
+        expect(submittedData.openshiftDiscount).toBe(0);
+        expect(submittedData.withAap).toBe(false);
+        expect(submittedData.aapDiscount).toBe(0);
+        expect(submittedData.additionalStorageCost).toBe(0);
+        expect(submittedData.thirdPartyISVCost).toBe(0);
+        expect(submittedData.swingHardwareCost).toBe(0);
         expect(submittedData.consolidationPct).toBe(10);
       });
     });
@@ -177,6 +161,24 @@ describe("CostEstimationForm", () => {
       await waitFor(() => {
         expect(
           screen.getByText("Discount cannot be negative"),
+        ).toBeInTheDocument();
+      });
+    });
+
+    it("should validate VMware discount percentage is 0-100", async () => {
+      const mockOnSubmit = vi.fn();
+      const user = userEvent.setup();
+
+      render(<CostEstimationForm onSubmit={mockOnSubmit} />);
+
+      const vmwareDiscountInput = screen.getByLabelText(/Assumed discount/i);
+      await user.clear(vmwareDiscountInput);
+      await user.type(vmwareDiscountInput, "110");
+      await user.tab();
+
+      await waitFor(() => {
+        expect(
+          screen.getByText("Discount cannot exceed 100%"),
         ).toBeInTheDocument();
       });
     });
@@ -295,24 +297,9 @@ describe("CostEstimationForm", () => {
 
       render(<CostEstimationForm onSubmit={mockOnSubmit} />);
 
-      const vmwareSolutionSelect = screen.getByLabelText("VMware Solution");
-
-      // VCF is visible by default
-      const vcfDiscountInput = screen.getByLabelText(/VCF Discount/i);
-      await user.clear(vcfDiscountInput);
-      await user.type(vcfDiscountInput, "10");
-
-      // Switch to VVF and fill discount
-      await user.selectOptions(vmwareSolutionSelect, "VVF");
-      const vvfDiscountInput = screen.getByLabelText(/VVF Discount/i);
-      await user.clear(vvfDiscountInput);
-      await user.type(vvfDiscountInput, "20");
-
-      // Switch to VVS and fill discount
-      await user.selectOptions(vmwareSolutionSelect, "VVS");
-      const vvsDiscountInput = screen.getByLabelText(/VVS Discount/i);
-      await user.clear(vvsDiscountInput);
-      await user.type(vvsDiscountInput, "30");
+      const vmwareDiscountInput = screen.getByLabelText(/Assumed discount/i);
+      await user.clear(vmwareDiscountInput);
+      await user.type(vmwareDiscountInput, "10");
 
       const redhatDiscountInput = screen.getByLabelText(/Red Hat Discount/i);
       await user.clear(redhatDiscountInput);
@@ -331,67 +318,46 @@ describe("CostEstimationForm", () => {
         expect(mockOnSubmit).toHaveBeenCalledTimes(1);
         const submittedData = mockOnSubmit.mock
           .calls[0][0] as CostEstimationFormValues;
-        expect(submittedData.vcfDiscountPct).toBe(10);
-        expect(submittedData.vvfDiscountPct).toBe(20);
-        expect(submittedData.vvsDiscountPct).toBe(30);
-        expect(submittedData.redhatDiscountPct).toBe(25);
-        expect(submittedData.aapDiscountPct).toBe(15);
-      });
-    });
-
-    it("should validate VMware discount percentage is 0-100", async () => {
-      const mockOnSubmit = vi.fn();
-      const user = userEvent.setup();
-
-      render(<CostEstimationForm onSubmit={mockOnSubmit} />);
-
-      const vcfDiscountInput = screen.getByLabelText(/VCF Discount/i);
-      await user.clear(vcfDiscountInput);
-      await user.type(vcfDiscountInput, "110");
-      await user.tab();
-
-      await waitFor(() => {
-        expect(
-          screen.getByText("Discount cannot exceed 100%"),
-        ).toBeInTheDocument();
+        expect(submittedData.vmwareDiscount).toBe(10);
+        expect(submittedData.openshiftDiscount).toBe(25);
+        expect(submittedData.aapDiscount).toBe(15);
       });
     });
   });
 
   describe("VMware Solution Select", () => {
-    it("should show VCF discount input by default", () => {
+    it("should default to VCF", () => {
       const mockOnSubmit = vi.fn();
       render(<CostEstimationForm onSubmit={mockOnSubmit} />);
 
-      expect(screen.getByLabelText(/VCF Discount/i)).toBeInTheDocument();
-      expect(screen.queryByLabelText(/VVF Discount/i)).not.toBeInTheDocument();
-      expect(screen.queryByLabelText(/VVS Discount/i)).not.toBeInTheDocument();
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+      const vmwareSolutionSelect = screen.getByLabelText("VMware solution", {
+        exact: true,
+      }) as HTMLInputElement;
+      expect(vmwareSolutionSelect.value).toBe("vmwareVcf");
     });
 
-    it("should show VVF discount input when VVF is selected", async () => {
+    it("should allow changing VMware solution", async () => {
       const mockOnSubmit = vi.fn();
       const user = userEvent.setup();
       render(<CostEstimationForm onSubmit={mockOnSubmit} />);
 
-      const vmwareSolutionSelect = screen.getByLabelText("VMware Solution");
-      await user.selectOptions(vmwareSolutionSelect, "VVF");
+      const vmwareSolutionSelect = screen.getByLabelText("VMware solution", {
+        exact: true,
+      });
+      await user.selectOptions(vmwareSolutionSelect, "vmwareVvf");
 
-      expect(screen.queryByLabelText(/VCF Discount/i)).not.toBeInTheDocument();
-      expect(screen.getByLabelText(/VVF Discount/i)).toBeInTheDocument();
-      expect(screen.queryByLabelText(/VVS Discount/i)).not.toBeInTheDocument();
-    });
+      const submitButton = screen.getByRole("button", {
+        name: /Calculate/i,
+      });
+      await user.click(submitButton);
 
-    it("should show VVS discount input when VVS is selected", async () => {
-      const mockOnSubmit = vi.fn();
-      const user = userEvent.setup();
-      render(<CostEstimationForm onSubmit={mockOnSubmit} />);
-
-      const vmwareSolutionSelect = screen.getByLabelText("VMware Solution");
-      await user.selectOptions(vmwareSolutionSelect, "VVS");
-
-      expect(screen.queryByLabelText(/VCF Discount/i)).not.toBeInTheDocument();
-      expect(screen.queryByLabelText(/VVF Discount/i)).not.toBeInTheDocument();
-      expect(screen.getByLabelText(/VVS Discount/i)).toBeInTheDocument();
+      await waitFor(() => {
+        expect(mockOnSubmit).toHaveBeenCalledTimes(1);
+        const submittedData = mockOnSubmit.mock
+          .calls[0][0] as CostEstimationFormValues;
+        expect(submittedData.vmwareSolution).toBe("vmwareVvf");
+      });
     });
   });
 
