@@ -1,5 +1,5 @@
 import { yupResolver } from "@hookform/resolvers/yup";
-import { Alert, Form, FormAlert } from "@patternfly/react-core";
+import { Alert, Form, FormAlert, FormGroup } from "@patternfly/react-core";
 import React, { useEffect } from "react";
 import { FormProvider, useForm, useWatch } from "react-hook-form";
 import * as yup from "yup";
@@ -365,7 +365,11 @@ export const EnvironmentForm: React.FC<EnvironmentFormProps> = ({
             />
           </>
         )}
-        {applianceVersion && <ApplianceVersionSection {...applianceVersion} />}
+        {applianceVersion && (
+          <FormGroup label="Appliance version" fieldId="appliance-version">
+            <ApplianceVersionSection {...applianceVersion} />
+          </FormGroup>
+        )}
         {hasError && (
           <FormAlert>
             <Alert isInline variant="danger" title={errorTitle}>

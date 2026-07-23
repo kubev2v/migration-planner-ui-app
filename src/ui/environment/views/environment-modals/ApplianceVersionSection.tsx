@@ -3,7 +3,6 @@ import {
   Button,
   Content,
   ContentVariants,
-  FormGroup,
   Spinner,
 } from "@patternfly/react-core";
 import { RhUiExternalLinkIcon } from "@patternfly/react-icons";
@@ -20,13 +19,12 @@ export interface ApplianceVersionSectionProps {
   displayVersion: string;
   isLoading: boolean;
   releaseNotesUrl: string;
-  labelVariant?: "form" | "definition";
 }
 
 export const ApplianceVersionSection: React.FC<
   ApplianceVersionSectionProps
-> = ({ displayVersion, isLoading, releaseNotesUrl, labelVariant = "form" }) => {
-  const versionContent = (
+> = ({ displayVersion, isLoading, releaseNotesUrl }) => {
+  return (
     <div className={versionRowStyle}>
       {isLoading ? (
         <Spinner size="sm" aria-label="Loading appliance version" />
@@ -47,19 +45,17 @@ export const ApplianceVersionSection: React.FC<
       </Button>
     </div>
   );
+};
 
-  if (labelVariant === "definition") {
-    return (
-      <>
-        <Content component={ContentVariants.dt}>Appliance version</Content>
-        <Content component={ContentVariants.dd}>{versionContent}</Content>
-      </>
-    );
-  }
-
+export const ApplianceVersionDefinitionList: React.FC<
+  ApplianceVersionSectionProps
+> = (props) => {
   return (
-    <FormGroup label="Appliance version" fieldId="appliance-version">
-      {versionContent}
-    </FormGroup>
+    <dl>
+      <Content component={ContentVariants.dt}>Appliance version</Content>
+      <Content component={ContentVariants.dd}>
+        <ApplianceVersionSection {...props} />
+      </Content>
+    </dl>
   );
 };
