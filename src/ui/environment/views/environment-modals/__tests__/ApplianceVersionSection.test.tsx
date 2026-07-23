@@ -40,6 +40,7 @@ describe("ApplianceVersionSection", () => {
   it("shows a loading spinner while version info is loading", () => {
     render(
       <ApplianceVersionSection
+        displayVersion="Unknown"
         isLoading={true}
         releaseNotesUrl="https://kubev2v.github.io/openshift-migration-advisor-docs/releases/"
       />,

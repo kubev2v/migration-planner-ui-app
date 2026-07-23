@@ -40,6 +40,12 @@ describe("VersionsStore", () => {
     expect(snap.api.versionName).toBe("unknown");
   });
 
+  it("initial agent.versionName = null", () => {
+    const snap = store.getSnapshot();
+    expect(snap.agent.versionName).toBeNull();
+    expect(snap.agent.gitCommit).toBeNull();
+  });
+
   it("getApiVersionInfo() merges API response", async () => {
     vi.mocked(api.getInfo).mockResolvedValue({
       versionName: "v1.2.3",
@@ -56,6 +62,18 @@ describe("VersionsStore", () => {
     expect(result.agent.versionName).toBe("v0.13.6");
     expect(result.agent.gitCommit).toBe("def789");
     expect(store.getSnapshot().api.versionName).toBe("v1.2.3");
+  });
+
+  it("stores null agent version when API omits agentVersionName", async () => {
+    vi.mocked(api.getInfo).mockResolvedValue({
+      versionName: "v1.2.3",
+      gitCommit: "abc123",
+    });
+
+    const result = await store.getApiVersionInfo();
+
+    expect(result.agent.versionName).toBeNull();
+    expect(result.agent.gitCommit).toBeNull();
   });
 
   it("subscriber notification on fetch", async () => {

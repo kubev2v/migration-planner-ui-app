@@ -17,7 +17,7 @@ const versionRowStyle = css`
 `;
 
 export interface ApplianceVersionSectionProps {
-  displayVersion?: string;
+  displayVersion: string;
   isLoading: boolean;
   releaseNotesUrl: string;
   labelVariant?: "form" | "definition";
@@ -31,7 +31,7 @@ export const ApplianceVersionSection: React.FC<
       {isLoading ? (
         <Spinner size="sm" aria-label="Loading appliance version" />
       ) : (
-        <span id="appliance-version">{displayVersion ?? "Unknown"}</span>
+        <span id="appliance-version">{displayVersion}</span>
       )}
       <Button
         isInline

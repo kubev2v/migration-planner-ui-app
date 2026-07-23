@@ -8,7 +8,7 @@ import { useApplianceVersionViewModel } from "../useApplianceVersionViewModel";
 const mockVersionInfo: VersionInfo = {
   ui: { name: "test", versionName: "v1", gitCommit: "" },
   api: { name: "api", versionName: "v2", gitCommit: "" },
-  agent: { versionName: "unknown", gitCommit: "unknown" },
+  agent: { versionName: null, gitCommit: null },
 };
 
 let mockVersionsStore: {
@@ -54,6 +54,17 @@ describe("useApplianceVersionViewModel", () => {
 
     expect(result.current.displayVersion).toBe("v0.13.6");
     expect(result.current.releaseNotesUrl).toBe(OVA_RELEASE_NOTES_URL);
+  });
+
+  it("returns Unknown when agent version is not available", async () => {
+    const { result } = renderHook(() => useApplianceVersionViewModel());
+
+    await act(async () => {
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    expect(result.current.displayVersion).toBe("Unknown");
   });
 
   it("calls getApiVersionInfo() on mount", async () => {
