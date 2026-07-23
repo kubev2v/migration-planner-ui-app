@@ -34,6 +34,10 @@ export class VersionsStore
       versionName: "unknown",
       gitCommit: "unknown",
     },
+    agent: {
+      versionName: "unknown",
+      gitCommit: "unknown",
+    },
   };
 
   constructor(infoApi: InfoApiInterface) {
@@ -76,6 +80,8 @@ export class VersionsStore
     const info = await this.infoApi.getInfo({ signal });
     this.state.api.versionName = info.versionName ?? "unknown";
     this.state.api.gitCommit = info.gitCommit ?? "unknown";
+    this.state.agent.versionName = info.agentVersionName ?? "unknown";
+    this.state.agent.gitCommit = info.agentGitCommit ?? "unknown";
     this.notify();
     return this.getSnapshot();
   }
