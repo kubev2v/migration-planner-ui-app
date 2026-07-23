@@ -44,6 +44,8 @@ describe("VersionsStore", () => {
     vi.mocked(api.getInfo).mockResolvedValue({
       versionName: "v1.2.3",
       gitCommit: "abc123",
+      agentVersionName: "v0.13.6",
+      agentGitCommit: "def789",
     });
 
     const result = await store.getApiVersionInfo();
@@ -51,6 +53,8 @@ describe("VersionsStore", () => {
     expect(api.getInfo).toHaveBeenCalledWith({ signal: undefined });
     expect(result.api.versionName).toBe("v1.2.3");
     expect(result.api.gitCommit).toBe("abc123");
+    expect(result.agent.versionName).toBe("v0.13.6");
+    expect(result.agent.gitCommit).toBe("def789");
     expect(store.getSnapshot().api.versionName).toBe("v1.2.3");
   });
 

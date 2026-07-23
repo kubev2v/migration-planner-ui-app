@@ -18,6 +18,10 @@ import {
   validateNoProxy,
   validateSubnetMask,
 } from "../../helpers/validation";
+import {
+  ApplianceVersionSection,
+  type ApplianceVersionSectionProps,
+} from "./ApplianceVersionSection";
 
 export interface EnvironmentFormValues {
   environmentName: string;
@@ -41,6 +45,7 @@ export interface EnvironmentFormProps {
   hasError?: boolean;
   errorTitle?: string;
   errorMessage?: string;
+  applianceVersion?: ApplianceVersionSectionProps;
 }
 
 const createBaseValidationSchema = () =>
@@ -203,6 +208,7 @@ export const EnvironmentForm: React.FC<EnvironmentFormProps> = ({
   hasError,
   errorTitle,
   errorMessage,
+  applianceVersion,
 }) => {
   const methods = useForm<EnvironmentFormValues>({
     resolver: yupResolver(createBaseValidationSchema()),
@@ -359,6 +365,7 @@ export const EnvironmentForm: React.FC<EnvironmentFormProps> = ({
             />
           </>
         )}
+        {applianceVersion && <ApplianceVersionSection {...applianceVersion} />}
         {hasError && (
           <FormAlert>
             <Alert isInline variant="danger" title={errorTitle}>

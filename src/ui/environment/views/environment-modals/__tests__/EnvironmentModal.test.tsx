@@ -58,6 +58,15 @@ vi.mock("../../../view-models/EnvironmentPageContext", () => ({
   useEnvironmentPage: () => mockVm,
 }));
 
+vi.mock("../../../view-models/useApplianceVersionViewModel", () => ({
+  useApplianceVersionViewModel: () => ({
+    displayVersion: "v0.13.6",
+    isLoading: false,
+    releaseNotesUrl:
+      "https://kubev2v.github.io/openshift-migration-advisor-docs/releases/",
+  }),
+}));
+
 describe("EnvironmentModal - Create mode", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -79,6 +88,8 @@ describe("EnvironmentModal - Create mode", () => {
     expect(
       screen.getByRole("heading", { name: "Add Environment" }),
     ).toBeInTheDocument();
+    expect(screen.getByText("Appliance version")).toBeInTheDocument();
+    expect(screen.getByText("v0.13.6")).toBeInTheDocument();
   });
 
   it("does not render when closed", () => {

@@ -1,5 +1,5 @@
 import { render, screen } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { EnvironmentPageProvider } from "../../../view-models/EnvironmentPageContext";
 import type { EnvironmentPageViewModel } from "../../../view-models/useEnvironmentPageViewModel";
@@ -49,6 +49,15 @@ vi.mock("../../../view-models/EnvironmentPageContext", () => ({
   useEnvironmentPage: () => mockVm,
 }));
 
+vi.mock("../../../view-models/useApplianceVersionViewModel", () => ({
+  useApplianceVersionViewModel: () => ({
+    displayVersion: "v0.13.6",
+    isLoading: false,
+    releaseNotesUrl:
+      "https://kubev2v.github.io/openshift-migration-advisor-docs/releases/",
+  }),
+}));
+
 describe("DownloadEnvironmentModal", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -74,6 +83,8 @@ describe("DownloadEnvironmentModal", () => {
     expect(
       screen.getByRole("button", { name: /Download OVA/i }),
     ).not.toBeDisabled();
+    expect(screen.getByText("Appliance version")).toBeInTheDocument();
+    expect(screen.getByText("v0.13.6")).toBeInTheDocument();
   });
 
   it("does not render when closed", () => {
