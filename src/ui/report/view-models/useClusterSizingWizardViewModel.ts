@@ -6,6 +6,7 @@ import { ResponseError } from "@openshift-migration-advisor/planner-sdk";
 import { useInjection } from "@y0n1/react-ioc";
 import {
   useCallback,
+  useEffect,
   useMemo,
   useRef,
   useState,
@@ -37,6 +38,7 @@ import type {
 import {
   estimationFormToParams,
   formValuesToRequest,
+  storedInputToFormValues,
 } from "../views/cluster-sizer/types";
 
 // ---------------------------------------------------------------------------
@@ -176,6 +178,35 @@ export const useClusterSizingWizardViewModel = (
   >(undefined);
   const [resetCounter, setResetCounter] = useState<number>(0);
   const latestComplexityRequestIdRef = useRef<string>("");
+
+  useEffect(() => {
+    if (options?.initialFormValues) return;
+
+    let cancelled = false;
+    assessmentsStore
+      .getAssessmentClusterRequirementsStoredInput({
+        id: assessmentId,
+        clusterId,
+      })
+      .then((storedInput) => {
+        if (!cancelled && storedInput) {
+          setFormValues(
+            storedInputToFormValues(storedInput, DEFAULT_FORM_VALUES),
+          );
+        }
+      })
+      .catch((err) => {
+        console.error(
+          "Can't get getAssessmentClusterRequirementsStoredInput:",
+          err,
+        );
+      });
+
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const smtVisible =
     formValues.clusterMode === "full-ha" ||

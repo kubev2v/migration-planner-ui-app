@@ -12,6 +12,7 @@ import {
   type ClusterRequirementsRequest,
   ClusterRequirementsRequestControlPlaneNodeCountEnum,
   type ClusterRequirementsResponse,
+  type ClusterRequirementsStoredInput,
   CpuOverCommitRatio,
   MemoryOverCommitRatio,
   type StandaloneClusterRequirementsRequest,
@@ -23,6 +24,7 @@ import {
 export type {
   ClusterRequirementsRequest,
   ClusterRequirementsResponse,
+  ClusterRequirementsStoredInput,
   ClusterSizing,
   ComplexityDiskScoreEntry,
   ComplexityOSScoreEntry,
@@ -331,6 +333,74 @@ export const workloadAndFormValuesToStandaloneRequest = (
     controlPlaneNodeCount: isHCP
       ? undefined
       : STANDALONE_CLUSTER_MODE_TO_NODE_COUNT[values.clusterMode],
+  };
+};
+
+const CPU_OVERCOMMIT_RATIO_FROM_API: Record<string, OvercommitRatio> = {
+  "1:1": 1,
+  "1:2": 2,
+  "1:4": 4,
+  "1:6": 6,
+  "1:8": 8,
+};
+
+const MEMORY_OVERCOMMIT_RATIO_FROM_API: Record<string, MemoryOvercommitRatio> =
+  {
+    "1:1": 1,
+    "1:2": 2,
+    "1:4": 4,
+  };
+
+/**
+ * Derive the cluster mode from the stored input flags.
+ */
+const deriveClusterMode = (
+  input: ClusterRequirementsStoredInput,
+): ClusterMode => {
+  if (input.hostedControlPlane) return "hosted-control-plane";
+  if (input.compactMode) return "compact";
+  if (input.controlPlaneNodeCount === 1) return "single-node";
+  return "full-ha";
+};
+
+/**
+ * Convert a stored input from the API into the form values used by the UI.
+ * Falls back to the provided defaults for any field the stored input omits.
+ */
+export const storedInputToFormValues = (
+  input: ClusterRequirementsStoredInput,
+  defaults: SizingFormValues,
+): SizingFormValues => {
+  const clusterMode = deriveClusterMode(input);
+
+  const cpuOvercommitRatio = input.cpuOverCommitRatio
+    ? (CPU_OVERCOMMIT_RATIO_FROM_API[input.cpuOverCommitRatio] ??
+      defaults.cpuOvercommitRatio)
+    : defaults.cpuOvercommitRatio;
+
+  const memoryOvercommitRatio = input.memoryOverCommitRatio
+    ? (MEMORY_OVERCOMMIT_RATIO_FROM_API[input.memoryOverCommitRatio] ??
+      defaults.memoryOvercommitRatio)
+    : defaults.memoryOvercommitRatio;
+
+  const smtEnabled =
+    input.workerNodeThreads != null && input.workerNodeThreads > 0;
+
+  return {
+    clusterMode,
+    workerNodePreset: "custom",
+    customCpu: input.workerNodeCPU ?? defaults.customCpu,
+    customMemoryGb: input.workerNodeMemory ?? defaults.customMemoryGb,
+    haReplicas: defaults.haReplicas,
+    cpuOvercommitRatio,
+    memoryOvercommitRatio,
+    scheduleOnControlPlane:
+      input.controlPlaneSchedulable ?? defaults.scheduleOnControlPlane,
+    smtEnabled,
+    smtThreads: input.workerNodeThreads ?? defaults.smtThreads,
+    controlPlaneCpu: input.controlPlaneCPU ?? defaults.controlPlaneCpu,
+    controlPlaneMemoryGb:
+      input.controlPlaneMemory ?? defaults.controlPlaneMemoryGb,
   };
 };
 
