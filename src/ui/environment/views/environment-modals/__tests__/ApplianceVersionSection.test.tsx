@@ -1,7 +1,10 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 
-import { ApplianceVersionSection } from "../ApplianceVersionSection";
+import {
+  ApplianceVersionDefinitionList,
+  ApplianceVersionSection,
+} from "../ApplianceVersionSection";
 
 describe("ApplianceVersionSection", () => {
   it("renders version and release notes link", () => {
@@ -13,7 +16,6 @@ describe("ApplianceVersionSection", () => {
       />,
     );
 
-    expect(screen.getByText("Appliance version")).toBeInTheDocument();
     expect(screen.getByText("v0.13.6")).toBeInTheDocument();
     expect(
       screen.getByRole("link", { name: /View release documentation/i }),
@@ -23,18 +25,21 @@ describe("ApplianceVersionSection", () => {
     );
   });
 
-  it("renders a bold definition label in download modal layout", () => {
-    render(
-      <ApplianceVersionSection
+  it("wraps definition terms in a dl in download modal layout", () => {
+    const { container } = render(
+      <ApplianceVersionDefinitionList
         displayVersion="v0.13.6"
         isLoading={false}
         releaseNotesUrl="https://kubev2v.github.io/openshift-migration-advisor-docs/releases/"
-        labelVariant="definition"
       />,
     );
 
-    const label = screen.getByText("Appliance version");
-    expect(label.tagName).toBe("DT");
+    const definitionList = container.querySelector("dl");
+    expect(definitionList).not.toBeNull();
+    expect(definitionList?.querySelector("dt")).toHaveTextContent(
+      "Appliance version",
+    );
+    expect(definitionList?.querySelector("dd")).toHaveTextContent("v0.13.6");
   });
 
   it("shows a loading spinner while version info is loading", () => {

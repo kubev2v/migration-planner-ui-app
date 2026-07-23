@@ -18,7 +18,7 @@ import React from "react";
 import { VCenterSetupInstructions } from "../../../core/components/VCenterSetupInstructions";
 import { useSourceDownload } from "../../hooks/useSourceDownload";
 import { useApplianceVersionViewModel } from "../../view-models/useApplianceVersionViewModel";
-import { ApplianceVersionSection } from "./ApplianceVersionSection";
+import { ApplianceVersionDefinitionList } from "./ApplianceVersionSection";
 
 export interface DownloadEnvironmentModalProps {
   isOpen: boolean;
@@ -97,10 +97,7 @@ export const DownloadEnvironmentModal: React.FC<
               </Alert>
             </StackItem>
             <StackItem>
-              <ApplianceVersionSection
-                {...applianceVersion}
-                labelVariant="definition"
-              />
+              <ApplianceVersionDefinitionList {...applianceVersion} />
             </StackItem>
             <StackItem>
               <Content key="Ova Download URL" component={ContentVariants.dt}>
