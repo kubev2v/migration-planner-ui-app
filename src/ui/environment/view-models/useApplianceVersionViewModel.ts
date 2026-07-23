@@ -5,10 +5,9 @@ import { useAsync } from "react-use";
 import { Symbols } from "../../../config/Dependencies";
 import type { IVersionsStore } from "../../../data/stores/interfaces/IVersionsStore";
 import { OVA_RELEASE_NOTES_URL } from "../constants";
-import { getApplianceVersionDisplay } from "../helpers/applianceVersion";
 
 export interface ApplianceVersionViewModel {
-  displayVersion?: string;
+  displayVersion: string;
   isLoading: boolean;
   releaseNotesUrl: string;
 }
@@ -26,7 +25,7 @@ export const useApplianceVersionViewModel = (): ApplianceVersionViewModel => {
   );
 
   return {
-    displayVersion: getApplianceVersionDisplay(versionInfo.agent.versionName),
+    displayVersion: versionInfo.agent.versionName || "Unknown",
     isLoading: loading,
     releaseNotesUrl: OVA_RELEASE_NOTES_URL,
   };

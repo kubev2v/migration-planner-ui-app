@@ -10,7 +10,7 @@ export interface VersionInfo {
     gitCommit: string;
   };
   agent: {
-    versionName: string;
-    gitCommit: string;
+    versionName: string | null;
+    gitCommit: string | null;
   };
 }
