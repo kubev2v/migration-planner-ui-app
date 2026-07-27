@@ -724,7 +724,7 @@ export const useReportPageViewModel = (): ReportPageViewModel => {
       try {
         await assessmentsStore.list();
         setIsRvtoolsModalOpen(false);
-        navigate(routes.assessmentReport(assessmentId));
+        void navigate(routes.assessmentReport(assessmentId));
       } finally {
         isNavigatingRef.current = false;
         jobsStore.reset();

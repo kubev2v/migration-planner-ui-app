@@ -114,7 +114,9 @@ export const HowDoesItWork: React.FC = () => {
                 <Button
                   isInline
                   variant="link"
-                  onClick={() => navigate(routes.exampleReport)}
+                  onClick={() => {
+                    void navigate(routes.exampleReport);
+                  }}
                   className={linkButtonStyle}
                 >
                   See RVtools example report
@@ -123,7 +125,9 @@ export const HowDoesItWork: React.FC = () => {
                 <Button
                   isInline
                   variant="link"
-                  onClick={() => navigate(routes.discoveryOvaExampleReport)}
+                  onClick={() => {
+                    void navigate(routes.discoveryOvaExampleReport);
+                  }}
                   className={linkButtonStyle}
                 >
                   See Discovery OVA example report

@@ -617,8 +617,9 @@ export const AssessmentsTable: React.FC<AssessmentsTableProps> = ({
                       }
                       onClick={
                         row.hasData && row.permissions.includes("read")
-                          ? (): void =>
-                              navigate(routes.assessmentReport(row.id))
+                          ? () => {
+                              void navigate(routes.assessmentReport(row.id));
+                            }
                           : undefined
                       }
                       icon={<RhUiMonitoringIcon />}
@@ -669,7 +670,9 @@ export const AssessmentsTable: React.FC<AssessmentsTableProps> = ({
                 >
                   <DropdownList>
                     <DropdownItem
-                      onClick={() => navigate(routes.assessmentReport(row.id))}
+                      onClick={() => {
+                        void navigate(routes.assessmentReport(row.id));
+                      }}
                       isDisabled={
                         !row.hasData || !row.permissions.includes("read")
                       }
