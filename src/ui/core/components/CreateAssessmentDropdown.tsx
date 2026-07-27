@@ -52,7 +52,9 @@ const CreateAssessmentDropdown: React.FC<Props> = ({
         <DropdownItem
           key="agent"
           component="button"
-          onClick={() => navigate(routes.assessmentCreate)}
+          onClick={() => {
+            void navigate(routes.assessmentCreate);
+          }}
         >
           With discovery OVA
         </DropdownItem>

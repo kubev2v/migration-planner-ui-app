@@ -120,25 +120,25 @@ export const useHomeScreenViewModel = (): HomeScreenViewModel => {
 
     switch (index) {
       case 0:
-        navigate(routes.assessments);
+        void navigate(routes.assessments);
         break;
       case 1:
-        navigate(routes.environments);
+        void navigate(routes.environments);
         break;
       case 2:
-        navigate(routes.tools);
+        void navigate(routes.tools);
         break;
       case 3:
-        navigate(partnerTab?.path ?? routes.partners);
+        void navigate(partnerTab?.path ?? routes.partners);
         break;
       default:
-        navigate(routes.assessments);
+        void navigate(routes.assessments);
     }
   };
 
   const handleOpenRVToolsModal = () => {
     setRvtoolsOpenToken(true);
-    navigate(routes.assessments); // switch to assessments tab
+    void navigate(routes.assessments); // switch to assessments tab
   };
 
   const getPartnerTabConfig = () => {
