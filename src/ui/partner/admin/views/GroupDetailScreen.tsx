@@ -45,7 +45,9 @@ export const GroupDetailScreen: React.FC = () => {
           <StackItem>
             <Button
               variant="link"
-              onClick={() => navigate(routes.adminGroups)}
+              onClick={() => {
+                void navigate(routes.adminGroups);
+              }}
               icon={<RhUiArrowLeftIcon />}
             >
               Back to groups

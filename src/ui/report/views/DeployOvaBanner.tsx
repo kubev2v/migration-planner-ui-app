@@ -79,7 +79,9 @@ export const DeployOvaBanner: React.FC = () => {
               <Button
                 isInline
                 variant="link"
-                onClick={() => navigate(routes.environments)}
+                onClick={() => {
+                  void navigate(routes.environments);
+                }}
               >
                 Download OVA
               </Button>
