@@ -90,10 +90,7 @@ export const AppShell: React.FC = () => {
   return (
     <Page masthead={masthead} sidebar={sidebar} isContentFilled>
       <PageSection aria-labelledby="section-1">
-        <BrowserRouter
-          future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
-          basename="/"
-        >
+        <BrowserRouter basename="/">
           <Routes>
             <Route path="/*" element={<MainApp />} />
           </Routes>

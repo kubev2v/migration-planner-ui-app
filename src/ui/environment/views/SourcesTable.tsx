@@ -355,14 +355,14 @@ export const SourcesTable: React.FC<SourceTableProps> = ({
   const handleShowReport = (sourceId: string): void => {
     const assessmentId = sourceToAssessmentId[sourceId];
     if (assessmentId) {
-      navigate(routes.assessmentReport(assessmentId));
+      void navigate(routes.assessmentReport(assessmentId));
     }
   };
 
   const handleCreateAssessment = (sourceId: string): void => {
     vm.setAssessmentFromAgent?.(true);
     vm.selectSourceById?.(sourceId);
-    navigate(routes.assessmentCreate, {
+    void navigate(routes.assessmentCreate, {
       state: { preselectedSourceId: sourceId },
     });
   };
@@ -388,7 +388,7 @@ export const SourcesTable: React.FC<SourceTableProps> = ({
             icon={<RhUiArrowLeftIcon />}
             onClick={() => {
               vm.setAssessmentFromAgent?.(false);
-              navigate(routes.assessments);
+              void navigate(routes.assessments);
             }}
           >
             Back to Assessments

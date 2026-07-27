@@ -172,7 +172,7 @@ export const useCreateFromOvaViewModel = (): CreateFromOvaViewModel => {
     }
 
     await assessmentsStore.list();
-    navigate(routes.assessmentReport(assessment.id));
+    void navigate(routes.assessmentReport(assessment.id));
     setName("");
     setUseExisting(false);
     setSelectedEnvironmentId("");
@@ -192,7 +192,7 @@ export const useCreateFromOvaViewModel = (): CreateFromOvaViewModel => {
     setName("");
     setUseExisting(false);
     setSelectedEnvironmentId("");
-    navigate(-1);
+    void navigate(-1);
   }, [navigate, setName, setUseExisting, setSelectedEnvironmentId]);
 
   const [refreshAfterCloseState, doRefreshAfterClose] = useAsyncFn(async () => {
