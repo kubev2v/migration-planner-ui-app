@@ -80,7 +80,9 @@ export const GroupsScreen: React.FC = () => {
         <GroupsTable
           groups={vm.groups}
           onCreateGroupClick={() => setIsCreateModalOpen(true)}
-          onGroupClick={(groupId) => navigate(routes.adminGroupById(groupId))}
+          onGroupClick={(groupId) => {
+            void navigate(routes.adminGroupById(groupId));
+          }}
           onDeleteGroup={setDeleteTarget}
         />
       )}
