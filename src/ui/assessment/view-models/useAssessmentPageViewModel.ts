@@ -237,7 +237,7 @@ export const useAssessmentPageViewModel = (): AssessmentPageViewModel => {
     async (assessmentId: string) => {
       try {
         await assessmentsStore.list();
-        navigate(routes.assessmentReport(assessmentId));
+        void navigate(routes.assessmentReport(assessmentId));
       } finally {
         isNavigatingRef.current = false;
         jobsStore.reset();

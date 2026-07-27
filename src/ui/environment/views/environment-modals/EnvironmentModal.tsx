@@ -11,6 +11,7 @@ import { getNetworkConfig } from "../../helpers/networkConfig";
 import { getProxyConfig } from "../../helpers/proxyConfig";
 import { normalizeSshKey } from "../../helpers/sshKey";
 import { useEnvironmentPage } from "../../view-models/EnvironmentPageContext";
+import { useApplianceVersionViewModel } from "../../view-models/useApplianceVersionViewModel";
 import { EnvironmentForm, type EnvironmentFormValues } from "./EnvironmentForm";
 import {
   getInitialFormValues,
@@ -36,6 +37,7 @@ export type EnvironmentModalProps = {
 export const EnvironmentModal: React.FC<EnvironmentModalProps> = (props) => {
   const { isOpen, onClose } = props;
   const vm = useEnvironmentPage();
+  const applianceVersion = useApplianceVersionViewModel();
 
   const mode: ModalMode = getModalMode(props.sourceId);
 
@@ -173,6 +175,7 @@ export const EnvironmentModal: React.FC<EnvironmentModalProps> = (props) => {
           hasError={!!modalConfig.errorFlag}
           errorTitle={modalConfig.errorTitle}
           errorMessage={modalConfig.errorFlag?.message}
+          applianceVersion={applianceVersion}
         />
       </ModalBody>
       <ModalFooter>

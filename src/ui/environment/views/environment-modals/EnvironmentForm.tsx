@@ -1,5 +1,5 @@
 import { yupResolver } from "@hookform/resolvers/yup";
-import { Alert, Form, FormAlert } from "@patternfly/react-core";
+import { Alert, Form, FormAlert, FormGroup } from "@patternfly/react-core";
 import React, { useEffect } from "react";
 import { FormProvider, useForm, useWatch } from "react-hook-form";
 import * as yup from "yup";
@@ -18,6 +18,10 @@ import {
   validateNoProxy,
   validateSubnetMask,
 } from "../../helpers/validation";
+import {
+  ApplianceVersionSection,
+  type ApplianceVersionSectionProps,
+} from "./ApplianceVersionSection";
 
 export interface EnvironmentFormValues {
   environmentName: string;
@@ -41,6 +45,7 @@ export interface EnvironmentFormProps {
   hasError?: boolean;
   errorTitle?: string;
   errorMessage?: string;
+  applianceVersion?: ApplianceVersionSectionProps;
 }
 
 const createBaseValidationSchema = () =>
@@ -203,6 +208,7 @@ export const EnvironmentForm: React.FC<EnvironmentFormProps> = ({
   hasError,
   errorTitle,
   errorMessage,
+  applianceVersion,
 }) => {
   const methods = useForm<EnvironmentFormValues>({
     resolver: yupResolver(createBaseValidationSchema()),
@@ -358,6 +364,11 @@ export const EnvironmentForm: React.FC<EnvironmentFormProps> = ({
               isRequired
             />
           </>
+        )}
+        {applianceVersion && (
+          <FormGroup label="Appliance version" fieldId="appliance-version">
+            <ApplianceVersionSection {...applianceVersion} />
+          </FormGroup>
         )}
         {hasError && (
           <FormAlert>

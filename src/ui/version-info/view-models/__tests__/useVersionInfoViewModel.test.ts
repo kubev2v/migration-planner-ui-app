@@ -11,6 +11,7 @@ import { useVersionInfoViewModel } from "../useVersionInfoViewModel";
 const mockVersionInfo: VersionInfo = {
   ui: { name: "test", versionName: "v1", gitCommit: "" },
   api: { name: "api", versionName: "v2", gitCommit: "" },
+  agent: { versionName: "v0.13.6", gitCommit: null },
 };
 
 let mockVersionsStore: {

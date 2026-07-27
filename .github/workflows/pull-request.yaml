@@ -66,8 +66,8 @@ jobs:
     if: ${{ ! github.event.pull_request.draft && (needs.lint-pull-request.result == 'success' || needs.lint-pull-request.result == 'skipped') }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-node@v6
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: ${{ vars.NODEJS_VERSION }}
       - run: make lint
@@ -76,8 +76,8 @@ jobs:
     if: ${{ ! github.event.pull_request.draft && (needs.lint-pull-request.result == 'success' || needs.lint-pull-request.result == 'skipped') }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-node@v6
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: ${{ vars.NODEJS_VERSION }}
       - run: make format
@@ -86,8 +86,8 @@ jobs:
     if: ${{ ! github.event.pull_request.draft && (needs.lint-pull-request.result == 'success' || needs.lint-pull-request.result == 'skipped') }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-node@v6
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: ${{ vars.NODEJS_VERSION }}
       - run: make type-check
@@ -96,8 +96,8 @@ jobs:
     if: ${{ ! github.event.pull_request.draft && (needs.lint-pull-request.result == 'success' || needs.lint-pull-request.result == 'skipped') }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-node@v6
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: ${{ vars.NODEJS_VERSION }}
       - run: make security-scan
@@ -106,8 +106,8 @@ jobs:
     if: ${{ ! github.event.pull_request.draft && (needs.lint-pull-request.result == 'success' || needs.lint-pull-request.result == 'skipped') }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-node@v6
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: ${{ vars.NODEJS_VERSION }}
       - run: make test
@@ -116,8 +116,8 @@ jobs:
     if: ${{ ! github.event.pull_request.draft && (needs.lint-pull-request.result == 'success' || needs.lint-pull-request.result == 'skipped') }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-node@v6
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: ${{ vars.NODEJS_VERSION }}
       - run: make build
