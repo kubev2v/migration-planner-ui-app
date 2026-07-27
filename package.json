@@ -98,7 +98,8 @@
     "sanitize-html": ">=2.17.4",
     "serialize-javascript": ">=7.0.3",
     "shell-quote": ">=1.8.4",
-    "uuid": ">=14.0.0"
+    "uuid": ">=14.0.0",
+    "minimatch": ">=10.0.3"
   },
   "insights": {
     "appname": "migration-advisor"
