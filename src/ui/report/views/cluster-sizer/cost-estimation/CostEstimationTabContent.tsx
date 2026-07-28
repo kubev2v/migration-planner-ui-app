@@ -2,6 +2,7 @@ import { css } from "@emotion/css";
 import {
   Alert,
   ExpandableSection,
+  Flex,
   Stack,
   StackItem,
   TabContent,
@@ -13,6 +14,7 @@ import type {
   CostEstimationFormValues,
   CostEstimationResponse,
 } from "../../../../../models/CostEstimationModel";
+import CostEstimationCopyAsTextButton from "./CostEstimationCopyAsTextButton";
 import CostEstimationForm from "./CostEstimationForm";
 import CostEstimationResult, {
   CostEstimationResultSkeleton,
@@ -77,6 +79,11 @@ export const CostEstimationTabContent: React.FC<
           ) : (
             costEstimation !== null && (
               <StackItem>
+                <Flex justifyContent={{ default: "justifyContentFlexEnd" }}>
+                  <CostEstimationCopyAsTextButton
+                    costEstimation={costEstimation}
+                  />
+                </Flex>
                 <CostEstimationResult costEstimation={costEstimation} />
               </StackItem>
             )

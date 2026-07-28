@@ -1,5 +1,6 @@
 import { css } from "@emotion/css";
 import {
+  Alert,
   Card,
   CardBody,
   Flex,
@@ -16,9 +17,14 @@ import RhUiCpuIcon from "@patternfly/react-icons/dist/esm/icons/cpu-icon";
 import RhUiServerGroupIcon from "@patternfly/react-icons/dist/esm/icons/server-group-icon";
 import RhUiServerIcon from "@patternfly/react-icons/dist/esm/icons/server-icon";
 import RhUiVirtualMachineIcon from "@patternfly/react-icons/dist/esm/icons/virtual-machine-icon";
+import { Table, Tbody, Td, Th, Thead, Tr } from "@patternfly/react-table";
 import React from "react";
 
-import type { CostEstimationResponse } from "../../../../../models/CostEstimationModel";
+import type {
+  CostEstimationBreakdown,
+  CostEstimationResponse,
+  VMwareSolutionName,
+} from "../../../../../models/CostEstimationModel";
 
 interface CostEstimationResultProps {
   costEstimation: CostEstimationResponse | null;
@@ -41,7 +47,8 @@ const heroPriceSkeletonStyle = css`
 `;
 
 const heroPriceStyle = css`
-  font-size: 3.5rem;
+  font-size: 3.5em;
+  line-height: 1;
   font-weight: var(--pf-t--global--font--weight--heading--default);
   color: var(--pf-t--global--color--brand--default);
 `;
@@ -71,6 +78,22 @@ const breakdownValueStyle = css`
   color: var(--pf-t--global--text--color--regular);
 `;
 
+const breakdownTdStyle = css`
+  text-align: right;
+`;
+
+const tBodyStyle = css`
+  tr:nth-last-child(2) {
+    --pf-v6-c-table__tr--BorderBlockEndColor: var(
+      --pf-t--global--border--color--300
+    );
+  }
+
+  tr:last-child {
+    --pf-v6-c-table__tr--BorderBlockEndWidth: 0;
+  }
+`;
+
 const savingsCardStyle = css`
   background: var(--pf-t--global--background--color--status--success--default);
   border: 1px solid var(--pf-t--global--border--color--status--success--default);
@@ -94,6 +117,42 @@ const sectionTitleStyle = css`
   margin-bottom: var(--pf-t--global--spacer--sm);
 `;
 
+const disclaimerStyle = css`
+  margin-bottom: var(--pf-t--global--spacer--sm);
+`;
+
+const BREAKDOWN_ROWS: { label: string; key: keyof CostEstimationBreakdown }[] =
+  [
+    { label: "Software Subscriptions", key: "softwareSubscriptions" },
+    { label: "Ansible Automation Platform", key: "ansibleAutomationPlatform" },
+    {
+      label: "Migration Consulting Services",
+      key: "migrationConsultingServices",
+    },
+    { label: "Swing Hardware Upgrades", key: "swingHardwareUpgrades" },
+    { label: "Additional Storage Costs", key: "additionalStorageCosts" },
+    { label: "Third-party ISV Costs", key: "thirdPartyIsvCosts" },
+  ];
+
+const VMWARE_SOLUTION_LABELS: Record<VMwareSolutionName, string> = {
+  vmwareVcf: "VMW VCF",
+  vmwareVvf: "VMW VVF",
+  vmwareVvs: "VMW VVS",
+};
+
+const resolveVMwareSolutionLabel = (
+  value: VMwareSolutionName | { name: VMwareSolutionName },
+): string => {
+  const key = typeof value === "string" ? value : value?.name;
+  if (
+    key &&
+    Object.prototype.hasOwnProperty.call(VMWARE_SOLUTION_LABELS, key)
+  ) {
+    return VMWARE_SOLUTION_LABELS[key];
+  }
+  return typeof key === "string" && key.length > 0 ? key : "VMware";
+};
+
 const formatCurrency = (value: number): string => {
   const sign = value < 0 ? "-" : "";
   const abs = Math.abs(value);
@@ -101,6 +160,20 @@ const formatCurrency = (value: number): string => {
   if (abs >= 1_000) return `${sign}$${(abs / 1_000).toFixed(1)}K`;
   return `${sign}$${abs.toFixed(0)}`;
 };
+
+const formatCell = (value: number): string => {
+  return value === 0 ? "-" : formatCurrency(value);
+};
+
+const DisclaimerCostEstimationAlert: React.FC = () => (
+  <Alert
+    variant="info"
+    isInline
+    title="These figures are estimates based on list prices and the information provided. Actual pricing may vary depending on subscriptions, discounts, regional pricing, and other commercial terms."
+    ouiaId="InfoAlert"
+    className={disclaimerStyle}
+  />
+);
 
 interface MetricCardProps {
   icon?: React.ReactNode;
@@ -137,9 +210,8 @@ export const CostEstimationResult: React.FC<CostEstimationResultProps> = ({
     return null;
   }
 
-  const { results, savings, customerEnvironment } = costEstimation;
-  const ovTotal = results.openshiftVirtualization.totalThreeYearCostEstimation;
-  const breakdown = results.openshiftVirtualization.breakdown;
+  const { redhat, vmware, savings, customerEnvironment } = costEstimation;
+  const vmwareLabel = resolveVMwareSolutionLabel(vmware.vmwareSolution);
 
   return (
     <Stack hasGutter>
@@ -149,7 +221,9 @@ export const CostEstimationResult: React.FC<CostEstimationResultProps> = ({
             <Title headingLevel="h3" className={heroTitleStyle}>
               Total OpenShift 3-Year cost estimation
             </Title>
-            <div className={heroPriceStyle}>{formatCurrency(ovTotal)}</div>
+            <div className={heroPriceStyle}>
+              {formatCurrency(redhat.totalThreeYearCostEstimation)}
+            </div>
           </CardBody>
         </Card>
       </StackItem>
@@ -192,92 +266,80 @@ export const CostEstimationResult: React.FC<CostEstimationResultProps> = ({
 
       <StackItem>
         <Title headingLevel="h3" className={sectionTitleStyle}>
-          Breakdown
+          Detailed 3-Year Breakdown
         </Title>
-        <Grid hasGutter md={6} lg={4}>
-          <GridItem>
-            <MetricCard
-              label="Software subscriptions"
-              value={formatCurrency(breakdown.softwareSubscriptions)}
-            />
-          </GridItem>
-          <GridItem>
-            <MetricCard
-              label="Migration consulting services"
-              value={formatCurrency(breakdown.migrationConsultingServices)}
-            />
-          </GridItem>
-          <GridItem>
-            <MetricCard
-              label="Swing hardware upgrades"
-              value={formatCurrency(breakdown.swingHardwareUpgrades)}
-            />
-          </GridItem>
-        </Grid>
+
+        <DisclaimerCostEstimationAlert />
+
+        <Card>
+          <CardBody>
+            <Table variant="compact">
+              <Thead>
+                <Tr>
+                  <Th screenReaderText="Cost category" />
+                  <Th className={breakdownTdStyle}>{vmwareLabel}</Th>
+                  <Th className={breakdownTdStyle}>Red Hat</Th>
+                </Tr>
+              </Thead>
+              <Tbody className={tBodyStyle}>
+                {BREAKDOWN_ROWS.map((row) => (
+                  <Tr key={row.key}>
+                    <Td>{row.label}</Td>
+                    <Td className={breakdownTdStyle}>
+                      {formatCell(vmware.breakdown[row.key])}
+                    </Td>
+                    <Td className={breakdownTdStyle}>
+                      {formatCell(redhat.breakdown[row.key])}
+                    </Td>
+                  </Tr>
+                ))}
+                <Tr>
+                  <Td>Total 3-Year TCO</Td>
+                  <Td className={breakdownTdStyle}>
+                    {formatCurrency(vmware.totalThreeYearCostEstimation)}
+                  </Td>
+                  <Td className={breakdownTdStyle}>
+                    {formatCurrency(redhat.totalThreeYearCostEstimation)}
+                  </Td>
+                </Tr>
+              </Tbody>
+            </Table>
+          </CardBody>
+        </Card>
       </StackItem>
 
-      {(savings.vsVcf || savings.vsVvf) && (
+      {savings && (
         <StackItem>
           <Title headingLevel="h3" className={sectionTitleStyle}>
             Savings summary
           </Title>
           <Grid hasGutter md={12} lg={6}>
-            {savings.vsVcf && (
-              <GridItem>
-                <Card className={savingsCardStyle}>
-                  <CardBody>
-                    <Flex
-                      justifyContent={{
-                        default: "justifyContentSpaceBetween",
-                      }}
-                      alignItems={{ default: "alignItemsCenter" }}
-                    >
-                      <FlexItem>
-                        <div className={savingsAmountStyle}>
-                          {formatCurrency(savings.vsVcf.absoluteThreeYearUsd)}
-                        </div>
-                        <Label color="green">
-                          {savings.vsVcf.percentage.toFixed(1)}% Saved
-                        </Label>
-                      </FlexItem>
-                      <FlexItem>
-                        <div className={savingsTitleStyle}>
-                          Savings vs VMware VCF
-                        </div>
-                      </FlexItem>
-                    </Flex>
-                  </CardBody>
-                </Card>
-              </GridItem>
-            )}
-            {savings.vsVvf && (
-              <GridItem>
-                <Card className={savingsCardStyle}>
-                  <CardBody>
-                    <Flex
-                      justifyContent={{
-                        default: "justifyContentSpaceBetween",
-                      }}
-                      alignItems={{ default: "alignItemsCenter" }}
-                    >
-                      <FlexItem>
-                        <div className={savingsAmountStyle}>
-                          {formatCurrency(savings.vsVvf.absoluteThreeYearUsd)}
-                        </div>
-                        <Label color="green">
-                          {savings.vsVvf.percentage.toFixed(1)}% Saved
-                        </Label>
-                      </FlexItem>
-                      <FlexItem>
-                        <div className={savingsTitleStyle}>
-                          Savings vs VMware VVF
-                        </div>
-                      </FlexItem>
-                    </Flex>
-                  </CardBody>
-                </Card>
-              </GridItem>
-            )}
+            <GridItem>
+              <Card className={savingsCardStyle}>
+                <CardBody>
+                  <Flex
+                    justifyContent={{
+                      default: "justifyContentSpaceBetween",
+                    }}
+                    alignItems={{ default: "alignItemsCenter" }}
+                  >
+                    <FlexItem>
+                      <div className={savingsAmountStyle}>
+                        {formatCurrency(savings.absoluteThreeYearUsd)}
+                      </div>
+                      <Label color="green">
+                        {savings.percentage.toFixed(1)}% Saved
+                      </Label>
+                    </FlexItem>
+                    <FlexItem>
+                      <div className={savingsTitleStyle}>
+                        Savings vs {vmwareLabel}
+                      </div>
+                    </FlexItem>
+                  </Flex>
+                </CardBody>
+              </Card>
+            </GridItem>
           </Grid>
         </StackItem>
       )}
@@ -336,19 +398,46 @@ export const CostEstimationResultSkeleton: React.FC = () => {
 
       <StackItem>
         <Title headingLevel="h3" className={sectionTitleStyle}>
-          Breakdown
+          Detailed 3-Year Breakdown
         </Title>
-        <Grid hasGutter md={6} lg={4}>
-          <GridItem>
-            <MetricCard label="Software subscriptions" />
-          </GridItem>
-          <GridItem>
-            <MetricCard label="Migration consulting services" />
-          </GridItem>
-          <GridItem>
-            <MetricCard label="Swing hardware upgrades" />
-          </GridItem>
-        </Grid>
+
+        <DisclaimerCostEstimationAlert />
+
+        <Card>
+          <CardBody>
+            <Table variant="compact">
+              <Thead>
+                <Tr>
+                  <Th screenReaderText="Cost category" />
+                  <Th className={breakdownTdStyle}>VMware</Th>
+                  <Th className={breakdownTdStyle}>Red Hat</Th>
+                </Tr>
+              </Thead>
+              <Tbody className={tBodyStyle}>
+                {BREAKDOWN_ROWS.map((row) => (
+                  <Tr key={row.key}>
+                    <Td>{row.label}</Td>
+                    <Td className={breakdownTdStyle}>
+                      <Skeleton />
+                    </Td>
+                    <Td className={breakdownTdStyle}>
+                      <Skeleton />
+                    </Td>
+                  </Tr>
+                ))}
+                <Tr>
+                  <Td>Total 3-Year TCO</Td>
+                  <Td className={breakdownTdStyle}>
+                    <Skeleton />
+                  </Td>
+                  <Td className={breakdownTdStyle}>
+                    <Skeleton />
+                  </Td>
+                </Tr>
+              </Tbody>
+            </Table>
+          </CardBody>
+        </Card>
       </StackItem>
     </Stack>
   );
