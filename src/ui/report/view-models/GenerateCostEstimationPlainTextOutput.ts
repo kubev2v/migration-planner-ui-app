@@ -2,7 +2,7 @@ import type {
   CostEstimationResponse,
   RhEdition,
   VMwareSolutionName,
-} from "../../../../../models/CostEstimationModel";
+} from "../../../models/CostEstimationModel";
 
 const LABEL_WIDTH = 34;
 const COL_WIDTH = 14;
@@ -70,7 +70,7 @@ function row(label: string, a: number, b: number): string {
   return `  ${label.padEnd(LABEL_WIDTH)}${formatUsd(a).padStart(COL_WIDTH)}${formatUsd(b).padStart(COL_WIDTH)}`;
 }
 
-export function generateCostEstimationPlainTextOutput(
+export function GenerateCostEstimationPlainTextOutput(
   costEstimation: CostEstimationResponse,
 ): string {
   const { customerEnvironment: env, vmware, redhat, savings } = costEstimation;
@@ -79,12 +79,12 @@ export function generateCostEstimationPlainTextOutput(
 
   const vmwareShort = lookupLabel(
     VMWARE_SOLUTION_SHORT_NAMES,
-    vmware.VMwareSolution,
+    vmware.vmwareSolution,
     "VMware",
   );
   const vmwareFull = lookupLabel(
     VMWARE_SOLUTION_FULL_NAMES,
-    vmware.VMwareSolution,
+    vmware.vmwareSolution,
     "VMware",
   );
   const rhEditionFull = lookupLabel(

@@ -211,7 +211,7 @@ export const CostEstimationResult: React.FC<CostEstimationResultProps> = ({
   }
 
   const { redhat, vmware, savings, customerEnvironment } = costEstimation;
-  const vmwareLabel = resolveVMwareSolutionLabel(vmware.VMwareSolution);
+  const vmwareLabel = resolveVMwareSolutionLabel(vmware.vmwareSolution);
 
   return (
     <Stack hasGutter>
@@ -276,7 +276,7 @@ export const CostEstimationResult: React.FC<CostEstimationResultProps> = ({
             <Table variant="compact">
               <Thead>
                 <Tr>
-                  <Th></Th>
+                  <Th screenReaderText="Cost category" />
                   <Th className={breakdownTdStyle}>{vmwareLabel}</Th>
                   <Th className={breakdownTdStyle}>Red Hat</Th>
                 </Tr>
@@ -408,7 +408,7 @@ export const CostEstimationResultSkeleton: React.FC = () => {
             <Table variant="compact">
               <Thead>
                 <Tr>
-                  <Th></Th>
+                  <Th screenReaderText="Cost category" />
                   <Th className={breakdownTdStyle}>VMware</Th>
                   <Th className={breakdownTdStyle}>Red Hat</Th>
                 </Tr>

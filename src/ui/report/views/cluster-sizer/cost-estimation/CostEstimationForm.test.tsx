@@ -46,6 +46,7 @@ describe("CostEstimationForm", () => {
         /AAP Discount/i,
       ) as HTMLInputElement;
       expect(aapDiscountInput.value).toBe("0");
+      expect(aapDiscountInput).toBeDisabled();
     });
 
     it("should render submit button", () => {
@@ -152,6 +153,10 @@ describe("CostEstimationForm", () => {
       const user = userEvent.setup();
 
       render(<CostEstimationForm onSubmit={mockOnSubmit} />);
+
+      await user.click(
+        screen.getByLabelText(/Include Ansible Automation Platform/i),
+      );
 
       const aapDiscountInput = screen.getByLabelText(/AAP Discount/i);
       await user.clear(aapDiscountInput);
@@ -305,6 +310,10 @@ describe("CostEstimationForm", () => {
       await user.clear(redhatDiscountInput);
       await user.type(redhatDiscountInput, "25");
 
+      await user.click(
+        screen.getByLabelText(/Include Ansible Automation Platform/i),
+      );
+
       const aapDiscountInput = screen.getByLabelText(/AAP Discount/i);
       await user.clear(aapDiscountInput);
       await user.type(aapDiscountInput, "15");
@@ -320,6 +329,7 @@ describe("CostEstimationForm", () => {
           .calls[0][0] as CostEstimationFormValues;
         expect(submittedData.vmwareDiscount).toBe(10);
         expect(submittedData.openshiftDiscount).toBe(25);
+        expect(submittedData.withAap).toBe(true);
         expect(submittedData.aapDiscount).toBe(15);
       });
     });

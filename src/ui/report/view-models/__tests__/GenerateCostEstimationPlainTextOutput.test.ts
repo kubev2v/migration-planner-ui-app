@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
 
-import type { CostEstimationResponse } from "../../../../../models/CostEstimationModel";
-import { generateCostEstimationPlainTextOutput } from "./generateCostEstimationPlainTextOutput";
+import type { CostEstimationResponse } from "../../../../models/CostEstimationModel";
+import { GenerateCostEstimationPlainTextOutput } from "../GenerateCostEstimationPlainTextOutput";
 
-describe("generateCostEstimationPlainTextOutput", () => {
+describe("GenerateCostEstimationPlainTextOutput", () => {
   it("should produce the expected plain text output", () => {
     const costEstimation: CostEstimationResponse = {
       calculatorVersion: "1.2.0",
@@ -22,7 +22,7 @@ describe("generateCostEstimationPlainTextOutput", () => {
         rhSubsRequired: 30,
       },
       vmware: {
-        VMwareSolution: "vmwareVcf",
+        vmwareSolution: "vmwareVcf",
         totalThreeYearCostEstimation: 1267200,
         breakdown: {
           softwareSubscriptions: 1267200,
@@ -51,7 +51,7 @@ describe("generateCostEstimationPlainTextOutput", () => {
       },
     };
 
-    expect(generateCostEstimationPlainTextOutput(costEstimation)).toBe(
+    expect(GenerateCostEstimationPlainTextOutput(costEstimation)).toBe(
       `Red Hat OpenShift TCO Estimate
 
 Customer Environment
@@ -99,7 +99,7 @@ Savings Summary
         rhSubsRequired: 30,
       },
       vmware: {
-        VMwareSolution: "vmwareVvf",
+        vmwareSolution: "vmwareVvf",
         totalThreeYearCostEstimation: 601920,
         breakdown: {
           softwareSubscriptions: 601920,
@@ -125,11 +125,11 @@ Savings Summary
       savings: null,
     };
 
-    const output = generateCostEstimationPlainTextOutput(costEstimation);
+    const output = GenerateCostEstimationPlainTextOutput(costEstimation);
     expect(output).not.toContain("Savings Summary");
   });
 
-  it("should accept VMwareSolution / rhEdition as { name } objects from the API", () => {
+  it("should accept vmwareSolution / rhEdition as { name } objects from the API", () => {
     const costEstimation = {
       calculatorVersion: "1.2.0",
       customerEnvironment: {
@@ -147,7 +147,7 @@ Savings Summary
         rhSubsRequired: 30,
       },
       vmware: {
-        VMwareSolution: { name: "vmwareVcf" as const },
+        vmwareSolution: { name: "vmwareVcf" as const },
         totalThreeYearCostEstimation: 1267200,
         breakdown: {
           softwareSubscriptions: 1267200,
@@ -176,7 +176,7 @@ Savings Summary
       },
     } as CostEstimationResponse;
 
-    const output = generateCostEstimationPlainTextOutput(costEstimation);
+    const output = GenerateCostEstimationPlainTextOutput(costEstimation);
     expect(output).toContain("VMW VCF");
     expect(output).toContain("VMware Cloud Foundation (VCF)");
     expect(output).toContain("Red Hat OpenShift Virtualization Engine");

@@ -71,6 +71,7 @@ export default function CostEstimationForm({
   // Watch values for dynamic behavior
   const rhEdition = useWatch({ control: methods.control, name: "rhEdition" });
   const includeACM = useWatch({ control: methods.control, name: "includeACM" });
+  const withAap = useWatch({ control: methods.control, name: "withAap" });
 
   // Compute ACM checkbox configuration based on edition
   const acmConfig: ACMConfig = useMemo(() => {
@@ -197,6 +198,7 @@ export default function CostEstimationForm({
                 name="aapDiscount"
                 label="Assumed AAP discount (%)"
                 type="number"
+                isDisabled={!withAap}
               />
               <CheckboxFormGroup
                 id="withAap"

@@ -16,6 +16,7 @@ export const costEstimationValidationSchema: yup.ObjectSchema<CostEstimationForm
 
     vmwareDiscount: yup
       .number()
+      .typeError("VMware discount is required")
       .required("VMware discount is required")
       .min(0, "Discount cannot be negative")
       .max(100, "Discount cannot exceed 100%")
@@ -35,6 +36,7 @@ export const costEstimationValidationSchema: yup.ObjectSchema<CostEstimationForm
 
     openshiftDiscount: yup
       .number()
+      .typeError("Red Hat discount is required")
       .required("Red Hat discount is required")
       .min(0, "Discount cannot be negative")
       .max(100, "Discount cannot exceed 100%")
@@ -44,6 +46,7 @@ export const costEstimationValidationSchema: yup.ObjectSchema<CostEstimationForm
 
     aapDiscount: yup
       .number()
+      .typeError("AAP discount is required")
       .required("AAP discount is required")
       .min(0, "Discount cannot be negative")
       .max(100, "Discount cannot exceed 100%")
@@ -52,24 +55,28 @@ export const costEstimationValidationSchema: yup.ObjectSchema<CostEstimationForm
     // Cost & infrastructure assumptions
     additionalStorageCost: yup
       .number()
+      .typeError("Storage cost is required")
       .required("Storage cost is required")
       .min(0, "Cannot be negative")
       .default(0),
 
     thirdPartyISVCost: yup
       .number()
+      .typeError("ISV cost is required")
       .required("ISV cost is required")
       .min(0, "Cannot be negative")
       .default(0),
 
     swingHardwareCost: yup
       .number()
+      .typeError("Swing hardware cost is required")
       .required("Swing hardware cost is required")
       .min(0, "Cannot be negative")
       .default(0),
 
     consolidationPct: yup
       .number()
+      .typeError("Consolidation percentage is required")
       .required("Consolidation percentage is required")
       .min(0, "Cannot be negative")
       .max(100, "Cannot exceed 100%")

@@ -42,9 +42,6 @@ export type RHEditionInput = {
   name: RhEdition;
   includeACM?: boolean;
   openshiftDiscount?: number;
-  thirdPartyISVCost?: number;
-  additionalStorageCost?: number;
-  swingHardwareCost?: number;
   withAap?: boolean;
   aapDiscount?: number;
 };
@@ -53,9 +50,12 @@ export type CalculateCostEstimationRequest = {
   assessmentId: string;
   clusterId?: string;
   scope?: "cluster" | "assessment";
-  VMwareSolution: VMwareSolutionInput;
+  vmwareSolution: VMwareSolutionInput;
   rhEdition: RHEditionInput;
   consolidationPct?: number;
+  thirdPartyISVCost?: number;
+  additionalStorageCost?: number;
+  swingHardwareCost?: number;
 };
 
 // Response
@@ -75,7 +75,7 @@ export type RedhatResult = {
 };
 
 export type VmwareResult = {
-  VMwareSolution: VMwareSolutionName | { name: VMwareSolutionName };
+  vmwareSolution: VMwareSolutionName | { name: VMwareSolutionName };
   breakdown: CostEstimationBreakdown;
   totalThreeYearCostEstimation: number;
 };
