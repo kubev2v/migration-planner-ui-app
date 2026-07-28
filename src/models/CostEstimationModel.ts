@@ -2,21 +2,28 @@
 // Cost Estimation types
 // ---------------------------------------------------------------------------
 
-// Form
+// Enums / unions
 export type RhEdition = "OVE" | "OKE" | "OCP" | "OPP";
+export type VMwareSolutionName = "vmwareVcf" | "vmwareVvf" | "vmwareVvs";
 
+// Form
 export interface CostEstimationFormValues {
   // VMware Solution Scope
-  vcfDiscountPct: number; // 0-100
-  vvfDiscountPct: number; // 0-100
-  vvsDiscountPct: number; // 0-100
-  consolidationPct: number; // 0-100 (default 10)
+  vmwareSolution: VMwareSolutionName;
+  vmwareDiscount: number; // 0-100
 
   // Red Hat Solution Scope
   rhEdition: RhEdition;
   includeACM: boolean;
-  redhatDiscountPct: number; // 0-100
-  aapDiscountPct: number; // 0-100
+  openshiftDiscount: number; // 0-100
+  withAap: boolean;
+  aapDiscount: number; // 0-100
+
+  // Cost & infrastructure assumptions
+  additionalStorageCost: number; // >= 0, USD
+  thirdPartyISVCost: number; // >= 0, USD
+  swingHardwareCost: number; // >= 0, USD
+  consolidationPct: number; // 0-100 (default 10)
 }
 
 export interface ACMConfig {
@@ -25,25 +32,33 @@ export interface ACMConfig {
   checked: boolean;
 }
 
-// Payload
-export type Discounts = {
-  vcfDiscountPct: number;
-  vvfDiscountPct: number;
-  vvsDiscountPct: number;
-  redhatDiscountPct: number;
-  aapDiscountPct: number;
+// Request payload
+export type VMwareSolutionInput = {
+  name: VMwareSolutionName;
+  discount: number;
+};
+
+export type RHEditionInput = {
+  name: RhEdition;
+  includeACM?: boolean;
+  openshiftDiscount?: number;
+  withAap?: boolean;
+  aapDiscount?: number;
 };
 
 export type CalculateCostEstimationRequest = {
   assessmentId: string;
-  clusterId: string;
-  rhEdition: RhEdition;
-  includeACM: boolean;
-  consolidationPct: number;
-  discounts: Discounts;
+  clusterId?: string;
+  scope?: "cluster" | "assessment";
+  vmwareSolution: VMwareSolutionInput;
+  rhEdition: RHEditionInput;
+  consolidationPct?: number;
+  thirdPartyISVCost?: number;
+  additionalStorageCost?: number;
+  swingHardwareCost?: number;
 };
 
-// Result
+// Response
 export type CostEstimationBreakdown = {
   softwareSubscriptions: number;
   ansibleAutomationPlatform: number;
@@ -53,25 +68,21 @@ export type CostEstimationBreakdown = {
   thirdPartyIsvCosts: number;
 };
 
-export type CostEstimationScenario = {
-  totalThreeYearCostEstimation: number;
+export type RedhatResult = {
+  rhEdition: RhEdition | { name: RhEdition };
   breakdown: CostEstimationBreakdown;
+  totalThreeYearCostEstimation: number;
+};
+
+export type VmwareResult = {
+  vmwareSolution: VMwareSolutionName | { name: VMwareSolutionName };
+  breakdown: CostEstimationBreakdown;
+  totalThreeYearCostEstimation: number;
 };
 
 export type SavingsVsReference = {
   absoluteThreeYearUsd: number;
   percentage: number;
-};
-
-export type CostEstimateSavings = {
-  vsVcf?: SavingsVsReference;
-  vsVvf?: SavingsVsReference;
-};
-
-export type CostEstimateResults = {
-  vmwareVcf: CostEstimationScenario;
-  vmwareVvf: CostEstimationScenario;
-  openshiftVirtualization: CostEstimationScenario;
 };
 
 export type CustomerEnvironment = {
@@ -81,9 +92,37 @@ export type CustomerEnvironment = {
   totalVirtualMachines: number;
 };
 
+export type TargetEnvironment = {
+  targetHosts: number;
+  targetVMs: number;
+  consolidationPct: number;
+  effectiveCoresPerSocket: number;
+  totalLicensedCores: number;
+  rhSubsRequired: number;
+};
+
+export type BaselineDerivation = {
+  licensedCores: number;
+  unitPricePerCore: number;
+  discountPct: number;
+  threeYearCostUsd: number;
+};
+
+export type CostEstimationAssumptions = {
+  analysisYears: number;
+  totalEsxiHosts: number;
+  socketsPerHost: number;
+  effectiveCoresPerSocket: number;
+  totalLicensedCores: number;
+  vmwareBaseline: BaselineDerivation;
+};
+
 export type CostEstimationResponse = {
   calculatorVersion: string;
   customerEnvironment: CustomerEnvironment;
-  results: CostEstimateResults;
-  savings: CostEstimateSavings;
+  targetEnvironment: TargetEnvironment;
+  redhat: RedhatResult;
+  vmware: VmwareResult;
+  savings: SavingsVsReference | null;
+  assumptions?: CostEstimationAssumptions;
 };
