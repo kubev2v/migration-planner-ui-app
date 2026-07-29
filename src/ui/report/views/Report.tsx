@@ -120,7 +120,9 @@ const ReportContent: React.FC = () => {
               "Source: RVTools file upload"
             ) : (
               <Split hasGutter>
-                <SplitItem isFilled={false}>Discovery VM status:</SplitItem>
+                <SplitItem isFilled={false}>
+                  Discovery appliance status:
+                </SplitItem>
                 <SplitItem isFilled={false}>
                   <AgentStatusView
                     status={vm.source?.displayStatus ?? "not-connected"}

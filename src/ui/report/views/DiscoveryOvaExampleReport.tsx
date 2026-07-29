@@ -70,7 +70,7 @@ const DiscoveryOvaExampleReport: React.FC = () => {
                 >
                   <FlexItem>
                     <Content component="small">
-                      <strong>Discovery VM status:</strong>
+                      <strong>Discovery appliance status:</strong>
                     </Content>
                   </FlexItem>
                   <FlexItem>

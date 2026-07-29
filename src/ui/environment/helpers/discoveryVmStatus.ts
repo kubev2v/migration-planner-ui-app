@@ -9,7 +9,7 @@ export const DISCOVERY_VM_STATUS_FILTER_NOT_CONNECTED_UPLOADED =
 export type DiscoveryVmStatusFilterKey =
   typeof DISCOVERY_VM_STATUS_FILTER_NOT_CONNECTED_UPLOADED | Agent["status"];
 
-/** User-visible Discovery VM status label (matches {@link AgentStatusView}). */
+/** User-visible Appliance status label (matches {@link AgentStatusView}). */
 export const getDiscoveryVmStatusLabel = (
   status: Agent["status"],
   uploadedManually = false,
@@ -22,15 +22,15 @@ export const getDiscoveryVmStatusLabel = (
     case "gathering-initial-inventory":
       return "Gathering inventory";
     case "error":
-      return "Error";
+      return "Sharing error";
     case "up-to-date":
-      return "Ready";
+      return "Sharing with Red Hat";
     case "source-gone":
       return "Source removed";
   }
 };
 
-/** Filter dropdown options derived from {@link getDiscoveryVmStatusLabel}. */
+/** Filter dropdown options for the environments table Appliance status column. */
 export const DISCOVERY_VM_STATUS_FILTER_OPTIONS: {
   key: DiscoveryVmStatusFilterKey;
   label: string;

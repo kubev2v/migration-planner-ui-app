@@ -1,7 +1,7 @@
 export const Columns = {
   Name: "Name",
   CredentialsUrl: "Credentials URL",
-  Status: "Discovery VM Status",
+  Status: "Appliance status",
   VersionStatus: "Agent version",
   Hosts: "Hosts",
   VMs: "VMs",

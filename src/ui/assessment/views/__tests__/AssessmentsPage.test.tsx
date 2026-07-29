@@ -104,6 +104,11 @@ const assessments = [
     ownerFirstName: "Jane",
     ownerLastName: "Smith",
   }),
+  makeAssessment({
+    id: "a-4",
+    name: "Delta Appliance",
+    sourceType: "source",
+  }),
 ];
 
 beforeEach(() => {
@@ -113,6 +118,18 @@ beforeEach(() => {
 afterEach(() => {
   cleanup();
   vi.clearAllMocks();
+});
+
+describe("AssessmentsPage Source column", () => {
+  it("shows Uploaded file for rvtools and inventory assessments", () => {
+    render(<AssessmentsPage assessments={assessments} />);
+
+    const table = screen.getByRole("grid", { name: "Assessments table" });
+    expect(within(table).getAllByText("Uploaded file")).toHaveLength(3);
+    expect(
+      within(table).getByText("Connected discovery appliance"),
+    ).toBeInTheDocument();
+  });
 });
 
 describe("AssessmentsPage filters", () => {
@@ -130,18 +147,17 @@ describe("AssessmentsPage filters", () => {
     expect(screen.queryByText("Gamma Discovery")).not.toBeInTheDocument();
   });
 
-  it("filters assessments by source type", async () => {
+  it("filters assessments by source", async () => {
     const user = userEvent.setup();
     render(<AssessmentsPage assessments={assessments} />);
 
-    await selectAttribute(user, "Source type");
-    await user.click(
-      screen.getByRole("button", { name: "Filter by source type" }),
-    );
-    await selectCheckboxOption(user, "RVTools (XLS/X)");
+    await selectAttribute(user, "Source");
+    await user.click(screen.getByRole("button", { name: "Filter by source" }));
+    await selectCheckboxOption(user, "Connected discovery appliance");
 
-    expect(screen.getByText("Beta RVTools")).toBeInTheDocument();
+    expect(screen.getByText("Delta Appliance")).toBeInTheDocument();
     expect(screen.queryByText("Alpha Discovery")).not.toBeInTheDocument();
+    expect(screen.queryByText("Beta RVTools")).not.toBeInTheDocument();
     expect(screen.queryByText("Gamma Discovery")).not.toBeInTheDocument();
   });
 
@@ -162,19 +178,20 @@ describe("AssessmentsPage filters", () => {
     const user = userEvent.setup();
     render(<AssessmentsPage assessments={assessments} />);
 
-    await selectAttribute(user, "Source type");
-    await user.click(
-      screen.getByRole("button", { name: "Filter by source type" }),
-    );
-    await selectCheckboxOption(user, "RVTools (XLS/X)");
+    await selectAttribute(user, "Source");
+    await user.click(screen.getByRole("button", { name: "Filter by source" }));
+    await selectCheckboxOption(user, "Connected discovery appliance");
     expect(screen.queryByText("Alpha Discovery")).not.toBeInTheDocument();
 
     await user.click(
-      screen.getByRole("button", { name: "Close RVTools (XLS/X)" }),
+      screen.getByRole("button", {
+        name: "Close Connected discovery appliance",
+      }),
     );
 
     expect(screen.getByText("Alpha Discovery")).toBeInTheDocument();
     expect(screen.getByText("Beta RVTools")).toBeInTheDocument();
+    expect(screen.getByText("Delta Appliance")).toBeInTheDocument();
   });
 
   it("clears all filters from the toolbar action", async () => {
@@ -185,11 +202,9 @@ describe("AssessmentsPage filters", () => {
       screen.getByRole("textbox", { name: "Filter by name" }),
       "Beta",
     );
-    await selectAttribute(user, "Source type");
-    await user.click(
-      screen.getByRole("button", { name: "Filter by source type" }),
-    );
-    await selectCheckboxOption(user, "RVTools (XLS/X)");
+    await selectAttribute(user, "Source");
+    await user.click(screen.getByRole("button", { name: "Filter by source" }));
+    await selectCheckboxOption(user, "Connected discovery appliance");
 
     await user.click(screen.getByRole("button", { name: "Clear all filters" }));
 
@@ -197,6 +212,7 @@ describe("AssessmentsPage filters", () => {
     expect(within(table).getByText("Alpha Discovery")).toBeInTheDocument();
     expect(within(table).getByText("Beta RVTools")).toBeInTheDocument();
     expect(within(table).getByText("Gamma Discovery")).toBeInTheDocument();
+    expect(within(table).getByText("Delta Appliance")).toBeInTheDocument();
   });
 
   it("switches the visible value control when the active attribute changes", async () => {

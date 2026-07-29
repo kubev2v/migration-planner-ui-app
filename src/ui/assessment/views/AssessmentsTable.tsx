@@ -33,6 +33,12 @@ import { themeTooltipFlyoutProps } from "../../../lib/patternfly/flyoutAppendTo"
 import type { AssessmentModel } from "../../../models/AssessmentModel";
 import { routes } from "../../../routing/Routes";
 import { EmptySearchResults } from "../../core/components/EmptySearchResults";
+import {
+  type AssessmentSourceFilterKey,
+  getAssessmentSourceLabel,
+  isUploadedFileSourceType,
+  sourceMatchesAssessmentSourceFilter,
+} from "../helpers/assessmentSource";
 
 const openAssistedInstaller = (): void => {
   const currentHost = window.location.hostname;
@@ -54,7 +60,7 @@ type AssessmentsTableProps = {
   search?: string;
   filterBy?: string;
   filterValue?: string;
-  selectedSourceTypes?: string[];
+  selectedSources?: AssessmentSourceFilterKey[];
   selectedOwners?: string[];
   sortBy?: { columnKey: SortableColumn; direction: "asc" | "desc" } | undefined;
   onSort?: (
@@ -70,7 +76,7 @@ type AssessmentsTableProps = {
 
 export const Columns = {
   Name: "Name",
-  SourceType: "Source type",
+  Source: "Source",
   LastUpdated: "Last updated",
   Owner: "Owner",
   Hosts: "Hosts",
@@ -99,8 +105,8 @@ export const COLUMN_MANAGEMENT_METADATA: Record<
     isShownByDefault: true,
     isUntoggleable: true,
   },
-  SourceType: {
-    title: Columns.SourceType,
+  Source: {
+    title: Columns.Source,
     isShownByDefault: true,
     isUntoggleable: false,
   },
@@ -157,7 +163,7 @@ export type SortableColumn = Exclude<
 >;
 export const SORTABLE_COLUMNS: SortableColumn[] = [
   "Name",
-  "SourceType",
+  "Source",
   "LastUpdated",
   "Owner",
   "Hosts",
@@ -171,7 +177,7 @@ export const AssessmentsTable: React.FC<AssessmentsTableProps> = ({
   search: _search = "",
   filterBy = "Filter",
   filterValue = "",
-  selectedSourceTypes = [],
+  selectedSources = [],
   selectedOwners = [],
   sortBy,
   onSort,
@@ -205,6 +211,7 @@ export const AssessmentsTable: React.FC<AssessmentsTableProps> = ({
       const name = assessment.name;
       const id = String(assessment.id ?? "");
       const sourceType = assessment.sourceType || "Unknown";
+      const source = getAssessmentSourceLabel(sourceType);
       const snapshots = assessment.snapshots ?? [];
       const permissions = Array.isArray(assessment.permissions)
         ? assessment.permissions
@@ -233,6 +240,7 @@ export const AssessmentsTable: React.FC<AssessmentsTableProps> = ({
         key: id || name,
         id,
         name,
+        source,
         sourceType,
         lastUpdatedMs,
         owner: ownerFullName,
@@ -258,12 +266,12 @@ export const AssessmentsTable: React.FC<AssessmentsTableProps> = ({
       );
     }
 
-    // Apply dropdown filter (Source type or Owner)
+    // Apply dropdown filter (Source or Owner)
     if (filterBy !== "Filter" && filterValue.trim() !== "") {
       switch (filterBy) {
-        case "Source type":
+        case "Source":
           filtered = filtered.filter((i) =>
-            i.sourceType.toLowerCase().includes(filterValue.toLowerCase()),
+            i.source.toLowerCase().includes(filterValue.toLowerCase()),
           );
           break;
         case "Owner":
@@ -332,11 +340,10 @@ export const AssessmentsTable: React.FC<AssessmentsTableProps> = ({
       }
     }
 
-    // Apply source type filter (legacy - keeping for backward compatibility)
-    if (selectedSourceTypes && selectedSourceTypes.length > 0) {
+    if (selectedSources.length > 0) {
       filtered = filtered.filter((i) =>
-        selectedSourceTypes.includes(
-          i.sourceType.toLowerCase() === "rvtools" ? "rvtools" : "discovery",
+        selectedSources.some((key) =>
+          sourceMatchesAssessmentSourceFilter(i.sourceType, key),
         ),
       );
     }
@@ -359,11 +366,11 @@ export const AssessmentsTable: React.FC<AssessmentsTableProps> = ({
             : b.name.localeCompare(a.name),
         );
         break;
-      case "SourceType":
+      case "Source":
         copy.sort((a, b) =>
           sortBy.direction === "asc"
-            ? a.sourceType.localeCompare(b.sourceType)
-            : b.sourceType.localeCompare(a.sourceType),
+            ? a.source.localeCompare(b.source)
+            : b.source.localeCompare(a.source),
         );
         break;
       case "LastUpdated":
@@ -421,7 +428,7 @@ export const AssessmentsTable: React.FC<AssessmentsTableProps> = ({
     _search,
     filterBy,
     filterValue,
-    selectedSourceTypes,
+    selectedSources,
     selectedOwners,
     sortBy,
   ]);
@@ -459,9 +466,9 @@ export const AssessmentsTable: React.FC<AssessmentsTableProps> = ({
               {Columns.Name}
             </Th>
           )}
-          {isColumnVisible("SourceType") && (
-            <Th sort={getSortParams("SourceType")} modifier="nowrap">
-              {Columns.SourceType}
+          {isColumnVisible("Source") && (
+            <Th sort={getSortParams("Source")} modifier="nowrap">
+              {Columns.Source}
             </Th>
           )}
           {isColumnVisible("LastUpdated") && (
@@ -544,8 +551,8 @@ export const AssessmentsTable: React.FC<AssessmentsTableProps> = ({
                 )}
               </Td>
             )}
-            {isColumnVisible("SourceType") && (
-              <Td dataLabel={Columns.SourceType}>
+            {isColumnVisible("Source") && (
+              <Td dataLabel={Columns.Source}>
                 <div
                   style={{
                     display: "flex",
@@ -553,16 +560,12 @@ export const AssessmentsTable: React.FC<AssessmentsTableProps> = ({
                     gap: "8px",
                   }}
                 >
-                  {row.sourceType.toLowerCase() === "rvtools" ? (
+                  {isUploadedFileSourceType(row.sourceType) ? (
                     <RhUiDocumentIcon />
                   ) : (
                     <RhUiConnectedIcon />
                   )}
-                  {row.sourceType.toLowerCase() === "rvtools" ? (
-                    <Truncate content="RVTools (XLS/X)" />
-                  ) : (
-                    <Truncate content="Discovery OVA" />
-                  )}
+                  <Truncate content={row.source} />
                 </div>
               </Td>
             )}
