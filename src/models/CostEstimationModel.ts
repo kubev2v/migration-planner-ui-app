@@ -44,6 +44,9 @@ export type RHEditionInput = {
   openshiftDiscount?: number;
   withAap?: boolean;
   aapDiscount?: number;
+  thirdPartyISVCost?: number;
+  additionalStorageCost?: number;
+  swingHardwareCost?: number;
 };
 
 export type CalculateCostEstimationRequest = {
@@ -53,9 +56,6 @@ export type CalculateCostEstimationRequest = {
   vmwareSolution: VMwareSolutionInput;
   rhEdition: RHEditionInput;
   consolidationPct?: number;
-  thirdPartyISVCost?: number;
-  additionalStorageCost?: number;
-  swingHardwareCost?: number;
 };
 
 // Response

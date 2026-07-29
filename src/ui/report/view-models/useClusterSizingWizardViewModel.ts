@@ -362,11 +362,11 @@ export const useClusterSizingWizardViewModel = (
             openshiftDiscount: costEstimationData.openshiftDiscount,
             withAap: costEstimationData.withAap,
             aapDiscount: costEstimationData.aapDiscount,
+            thirdPartyISVCost: costEstimationData.thirdPartyISVCost,
+            additionalStorageCost: costEstimationData.additionalStorageCost,
+            swingHardwareCost: costEstimationData.swingHardwareCost,
           },
           consolidationPct: costEstimationData.consolidationPct,
-          thirdPartyISVCost: costEstimationData.thirdPartyISVCost,
-          additionalStorageCost: costEstimationData.additionalStorageCost,
-          swingHardwareCost: costEstimationData.swingHardwareCost,
         });
         setCostEstimation(costEstimation);
       } catch (error) {
