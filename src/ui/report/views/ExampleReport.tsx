@@ -67,7 +67,7 @@ const ExampleReport: React.FC = () => {
       caption={
         <Stack hasGutter>
           <StackItem>
-            Discovery VM status :{" "}
+            Discovery appliance status :{" "}
             <Icon size="md" isInline>
               <RhUiCheckCircleIcon color={globalSuccessColor100.var} />
             </Icon>{" "}

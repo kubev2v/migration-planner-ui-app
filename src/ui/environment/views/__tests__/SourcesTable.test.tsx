@@ -283,7 +283,7 @@ describe("SourcesTable — all status states", () => {
     expect(rows).toHaveLength(1 + ALL_STATUS_SOURCES.length);
   });
 
-  // --- Discovery VM Status column -----------------------------------------
+  // --- Appliance status column --------------------------------------------
 
   it('shows "Not connected" for sources with no agent', () => {
     render(<SourcesTable onAddEnvironment={vi.fn()} />);
@@ -309,16 +309,16 @@ describe("SourcesTable — all status states", () => {
     expect(screen.getByText("Gathering inventory")).toBeInTheDocument();
   });
 
-  it('shows "Error" status', () => {
+  it('shows "Sharing error" status', () => {
     render(<SourcesTable onAddEnvironment={vi.fn()} />);
-    expect(screen.getByText("Error")).toBeInTheDocument();
+    expect(screen.getByText("Sharing error")).toBeInTheDocument();
   });
 
-  it('shows "Ready" for up-to-date sources', () => {
+  it('shows "Sharing with Red Hat" for up-to-date sources', () => {
     render(<SourcesTable onAddEnvironment={vi.fn()} />);
-    const readyLabels = screen.getAllByText("Ready");
+    const sharingLabels = screen.getAllByText("Sharing with Red Hat");
     // Two sources with up-to-date status (current + outdated agent)
-    expect(readyLabels).toHaveLength(2);
+    expect(sharingLabels).toHaveLength(2);
   });
 
   // --- Agent version column -----------------------------------------------
@@ -508,7 +508,7 @@ describe("SourcesTable — all status states", () => {
     expect(within(rows[3]).getByText("Up to date")).toBeInTheDocument();
   });
 
-  it("sorts Discovery VM status by the displayed label, not the API status key", async () => {
+  it("sorts Appliance status by the displayed label, not the API status key", async () => {
     const user = userEvent.setup();
     mockVm = makeBaseVm({
       sources: [
@@ -532,15 +532,18 @@ describe("SourcesTable — all status states", () => {
 
     render(<SourcesTable onAddEnvironment={vi.fn()} />);
     const statusHeader = screen.getByRole("columnheader", {
-      name: /Discovery VM Status/i,
+      name: /Appliance status/i,
     });
     await user.click(within(statusHeader).getByRole("button"));
 
     const table = screen.getByRole("grid", { name: "Sources table" });
     const rows = within(table).getAllByRole("row");
 
+    // Ascending by display label: Not connected → Sharing with Red Hat → Uploaded manually
     expect(within(rows[1]).getByText("Not connected")).toBeInTheDocument();
-    expect(within(rows[2]).getByText("Ready")).toBeInTheDocument();
+    expect(
+      within(rows[2]).getByText("Sharing with Red Hat"),
+    ).toBeInTheDocument();
     expect(within(rows[3]).getByText("Uploaded manually")).toBeInTheDocument();
   });
 
@@ -576,15 +579,15 @@ describe("SourcesTable filters", () => {
     ).not.toBeInTheDocument();
   });
 
-  it("filters sources by discovery VM status", async () => {
+  it("filters sources by appliance status", async () => {
     const user = userEvent.setup();
     render(<SourcesTable onAddEnvironment={vi.fn()} />);
 
-    await selectAttribute(user, "Discovery VM status");
+    await selectAttribute(user, "Appliance status");
     await user.click(
-      screen.getByRole("button", { name: "Filter by discovery vm status" }),
+      screen.getByRole("button", { name: "Filter by appliance status" }),
     );
-    await selectCheckboxOption(user, "Ready");
+    await selectCheckboxOption(user, "Sharing with Red Hat");
 
     expect(
       screen.getByText("Production vCenter (up to date)"),
@@ -601,16 +604,18 @@ describe("SourcesTable filters", () => {
     const user = userEvent.setup();
     render(<SourcesTable onAddEnvironment={vi.fn()} />);
 
-    await selectAttribute(user, "Discovery VM status");
+    await selectAttribute(user, "Appliance status");
     await user.click(
-      screen.getByRole("button", { name: "Filter by discovery vm status" }),
+      screen.getByRole("button", { name: "Filter by appliance status" }),
     );
-    await selectCheckboxOption(user, "Ready");
+    await selectCheckboxOption(user, "Sharing with Red Hat");
     expect(
       screen.queryByText("Lab vCenter (OVA downloading)"),
     ).not.toBeInTheDocument();
 
-    await user.click(screen.getByRole("button", { name: "Close Ready" }));
+    await user.click(
+      screen.getByRole("button", { name: "Close Sharing with Red Hat" }),
+    );
 
     expect(
       screen.getByText("Lab vCenter (OVA downloading)"),
@@ -625,11 +630,11 @@ describe("SourcesTable filters", () => {
       screen.getByRole("textbox", { name: "Filter by name" }),
       "Production",
     );
-    await selectAttribute(user, "Discovery VM status");
+    await selectAttribute(user, "Appliance status");
     await user.click(
-      screen.getByRole("button", { name: "Filter by discovery vm status" }),
+      screen.getByRole("button", { name: "Filter by appliance status" }),
     );
-    await selectCheckboxOption(user, "Ready");
+    await selectCheckboxOption(user, "Sharing with Red Hat");
 
     await user.click(screen.getByRole("button", { name: "Clear all filters" }));
 
@@ -649,10 +654,10 @@ describe("SourcesTable filters", () => {
       screen.getByRole("textbox", { name: "Filter by name" }),
     ).toBeInTheDocument();
 
-    await selectAttribute(user, "Discovery VM status");
+    await selectAttribute(user, "Appliance status");
 
     expect(
-      screen.getByRole("button", { name: "Filter by discovery vm status" }),
+      screen.getByRole("button", { name: "Filter by appliance status" }),
     ).toBeInTheDocument();
     expect(
       screen.queryByRole("textbox", { name: "Filter by name" }),

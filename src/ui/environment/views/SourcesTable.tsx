@@ -255,7 +255,7 @@ export const SourcesTable: React.FC<SourceTableProps> = ({
       },
       {
         id: "status",
-        label: "Discovery VM status",
+        label: "Appliance status",
         type: "checkbox",
         options: statusOptions.map((option) => ({
           value: option.key,

@@ -20,6 +20,10 @@ import {
 } from "../../core/components/attribute-value-filter";
 import { ConfirmationModal } from "../../core/components/ConfirmationModal";
 import CreateAssessmentDropdown from "../../core/components/CreateAssessmentDropdown";
+import {
+  ASSESSMENT_SOURCE_FILTER_OPTIONS,
+  type AssessmentSourceFilterKey,
+} from "../helpers/assessmentSource";
 import { useAssessmentPageViewModel } from "../view-models/useAssessmentPageViewModel";
 import AssessmentEmptyState from "./AssessmentEmptyState";
 import {
@@ -109,12 +113,14 @@ export const AssessmentsPage: React.FC<AssessmentsPageProps> = ({
     useState<AssessmentModel | null>(null);
 
   // Multi-select filters (checkbox)
-  const [selectedSourceTypes, setSelectedSourceTypes] = useState<string[]>([]);
+  const [selectedSources, setSelectedSources] = useState<
+    AssessmentSourceFilterKey[]
+  >([]);
   const [selectedOwners, setSelectedOwners] = useState<string[]>([]);
 
   const clearAllFilters = (): void => {
     setSearch("");
-    setSelectedSourceTypes([]);
+    setSelectedSources([]);
     setSelectedOwners([]);
   };
 
@@ -184,15 +190,16 @@ export const AssessmentsPage: React.FC<AssessmentsPageProps> = ({
         ariaLabel: "Filter by name",
       },
       {
-        id: "source-type",
-        label: "Source type",
+        id: "source",
+        label: "Source",
         type: "checkbox",
-        options: [
-          { value: "discovery", label: "Discovery OVA" },
-          { value: "rvtools", label: "RVTools (XLS/X)" },
-        ],
-        selections: selectedSourceTypes,
-        onSelectionsChange: setSelectedSourceTypes,
+        options: ASSESSMENT_SOURCE_FILTER_OPTIONS.map((option) => ({
+          value: option.key,
+          label: option.label,
+        })),
+        selections: selectedSources,
+        onSelectionsChange: (selections) =>
+          setSelectedSources(selections as AssessmentSourceFilterKey[]),
       },
       {
         id: "owner",
@@ -203,7 +210,7 @@ export const AssessmentsPage: React.FC<AssessmentsPageProps> = ({
         onSelectionsChange: setSelectedOwners,
       },
     ],
-    [owners, search, selectedOwners, selectedSourceTypes],
+    [owners, search, selectedOwners, selectedSources],
   );
 
   const handleUpdateAssessment = (assessmentId: string): void => {
@@ -318,7 +325,7 @@ export const AssessmentsPage: React.FC<AssessmentsPageProps> = ({
             onDelete={handleDeleteAssessment}
             onUpdate={handleUpdateAssessment}
             onShareAssessment={handleShareAssessment}
-            selectedSourceTypes={selectedSourceTypes}
+            selectedSources={selectedSources}
             selectedOwners={selectedOwners}
             visibleColumns={visibleColumns}
           />

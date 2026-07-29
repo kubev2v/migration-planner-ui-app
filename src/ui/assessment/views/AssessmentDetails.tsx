@@ -115,7 +115,7 @@ const AssessmentDetails: React.FC = () => {
         >
           <div>
             <Content>
-              <Content component="small">Discovery VM status</Content>
+              <Content component="small">Discovery appliance status</Content>
               <AgentStatusView
                 status={vm.source?.displayStatus ?? "not-connected"}
                 statusInfo={
