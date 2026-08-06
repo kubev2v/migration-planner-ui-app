@@ -40,7 +40,7 @@ BUILD_ARGS := $(foreach var,$(BUILD_VAR_NAMES),--build-arg $(var)=$($(var)))
 ESLINT_CMD := npx eslint --cache --cache-location node_modules/.cache/eslintcache --cache-strategy content .
 PRETTIER_CMD := npx prettier --cache --cache-location node_modules/.cache/prettiercache --cache-strategy content .
 
-.PHONY: help oc install ci-install clean build-standalone run-standalone preview-standalone patch-hosts start start-polling start-dev-proxy start-federated build lint format type-check test coverage security-scan security-fix security-fix-force validate-all podman-build podman-run podman-stop podman-logs podman-status podman-clean podman-tag-latest podman-deploy podman-dev quay-login podman-push deploy-on-openshift delete-from-openshift version test-watch
+.PHONY: help oc install ci-install clean build-standalone run-standalone preview-standalone patch-hosts start start-polling start-dev-proxy start-federated build lint format type-check test coverage security-scan security-fix security-fix-force validate-all podman-build podman-run podman-stop podman-logs podman-status podman-clean podman-tag-latest podman-deploy podman-dev quay-login podman-push deploy-on-openshift delete-from-openshift version test-watch build-local run-local stop-local
 
 # Default target
 .DEFAULT_GOAL := help
@@ -155,6 +155,18 @@ run-standalone: install
 		--mode dev \
 		--host 0.0.0.0
 	@echo "✅ Standalone run completed"
+
+build-local:
+	@$(MAKE) install
+
+run-local:
+	@echo ""
+	@echo "Planner UI: http://0.0.0.0:3000"
+	@echo ""
+	@$(MAKE) run-standalone
+
+stop-local:
+	@echo "Planner UI runs in foreground - stopped when process is terminated"
 
 # Preview standalone build
 preview-standalone: build-standalone
