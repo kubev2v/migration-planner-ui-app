@@ -87,6 +87,12 @@ export const routes = {
   get tools() {
     return `${getAppBasename()}/tools`;
   },
+  get clusterSizing() {
+    return `${getAppBasename()}/tools/cluster-sizing`;
+  },
+  get costEstimation() {
+    return `${getAppBasename()}/tools/cost-estimation`;
+  },
   get partners() {
     return `${getAppBasename()}/partners`;
   },
