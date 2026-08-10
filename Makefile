@@ -143,7 +143,7 @@ clean:
 build-standalone: install
 	@echo "🔨 Building standalone application..."
 	@rm -rf dev/dist
-	@$(BUILD_ENV) npx vite build ./dev -c ./dev/vite.config.ts
+	@$(BUILD_ENV) npx vite build ./dev -c ./dev/vite.config.mts
 	@echo "✅ Standalone build completed in dev/dist/"
 
 # Run the standalone application locally
@@ -151,7 +151,7 @@ run-standalone: install
 	@echo "🚀 Running standalone application..."
 	@rm -rf dev/dist
 	@$(BUILD_ENV) npx vite ./dev \
-		-c ./dev/vite.config.ts \
+		-c ./dev/vite.config.mts \
 		--mode dev \
 		--host 0.0.0.0
 	@echo "✅ Standalone run completed"
@@ -172,7 +172,7 @@ stop-local:
 preview-standalone: build-standalone
 	@echo "👀 Previewing standalone build..."
 	@npx vite preview ./dev \
-		-c ./dev/vite.config.ts \
+		-c ./dev/vite.config.mts \
 		--mode dev \
 		--open http://localhost:3000/ \
 		--host 0.0.0.0 \
