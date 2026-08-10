@@ -37,6 +37,7 @@
     "@redhat-cloud-services/frontend-components-notifications": "^6.6.2",
     "@redhat-cloud-services/frontend-components-utilities": "^7.2.1",
     "@y0n1/react-ioc": "npm:@jsr/y0n1__react-ioc@^0.2.1",
+    "dompurify": "^3.4.13",
     "github-markdown-css": "^5.9.0",
     "html2canvas-pro": "^2.0.2",
     "humanize-plus": "^1.8.2",
@@ -66,7 +67,7 @@
     "@types/react": "^18.3.28",
     "@types/react-dom": "^18.3.7",
     "@types/react-syntax-highlighter": "^15.5.13",
-    "@vitejs/plugin-react-swc": "^4.3.1",
+    "@vitejs/plugin-react": "^6.0.5",
     "@vitest/coverage-v8": "^4.0.18",
     "css-loader": "^7.1.4",
     "eslint": "^9.39.4",
@@ -93,7 +94,7 @@
     "@redhat-cloud-services/tsc-transform-imports": {
       "glob": ">=10.4.6"
     },
-    "brace-expansion": "5.0.8",
+    "brace-expansion": ">=5.0.9",
     "fast-uri": ">=3.1.4",
     "joi": ">=17.13.4",
     "js-cookie": ">=3.0.7",

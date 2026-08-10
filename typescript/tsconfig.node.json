@@ -6,5 +6,5 @@
     "types": ["node"],
     "noEmit": true
   },
-  "include": ["../dev/vite.config.ts", "../vitest.config.ts"]
+  "include": ["../dev/vite.config.mts", "../vitest.config.mts"]
 }

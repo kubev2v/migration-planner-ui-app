@@ -1,7 +1,7 @@
 import assert from "node:assert";
 import path from "node:path";
 
-import react from "@vitejs/plugin-react-swc";
+import react from "@vitejs/plugin-react";
 import { defineConfig, loadEnv, type UserConfig } from "vite";
 
 const DEFAULT_TARGET_HOST = "http://localhost:3443";
@@ -47,13 +47,13 @@ export default defineConfig(({ mode }) => {
     resolve: {
       alias: {
         "@redhat-cloud-services/frontend-components/useChrome": path.resolve(
-          __dirname,
+          import.meta.dirname,
           "src/mocks/useChrome.ts",
         ),
         "@redhat-cloud-services/frontend-components-notifications":
-          path.resolve(__dirname, "src/mocks/notifications.tsx"),
+          path.resolve(import.meta.dirname, "src/mocks/notifications.tsx"),
         "@redhat-cloud-services/frontend-components-utilities": path.resolve(
-          __dirname,
+          import.meta.dirname,
           "src/mocks/utilities.ts",
         ),
       },

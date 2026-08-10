@@ -7,5 +7,5 @@
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "types": ["vitest/globals", "@testing-library/jest-dom", "node"]
   },
-  "exclude": ["./dev", "./vitest.config.ts"]
+  "exclude": ["./dev", "./vitest.config.mts"]
 }
