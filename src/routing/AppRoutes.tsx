@@ -10,6 +10,8 @@ import { MyPartnerScreen } from "../ui/partner/customer/views/MyPartnerScreen";
 import { CustomersScreen } from "../ui/partner/partner/views/CustomersScreen";
 import { PartnersScreen } from "../ui/partner/regularUser/views/PartnersScreen";
 import { PartnerViewRequireRole } from "../ui/partner/views/PartnerViewRequireRole";
+import ClusterSizingToolScreen from "../ui/tools/ClusterSizingTool/views/ClusterSizingToolScreen";
+import StandaloneCostEstimationScreen from "../ui/tools/StandaloneCostEstimation/views/StandaloneCostEstimationScreen";
 import { ToolsScreen } from "../ui/tools/views/ToolsScreen";
 import { IdentityWrapper } from "./IdentityWrapper";
 import { routes } from "./Routes";
@@ -64,6 +66,16 @@ export const AppRoutes: React.FC = () => (
         <Route path="assessments" element={<AssessmentsScreen />} />
         <Route path="environments" element={<EnvironmentsScreen />} />
         <Route path="tools" element={<ToolsScreen />} />
+        <Route
+          path="tools/cluster-sizing"
+          element={<ClusterSizingToolScreen />}
+        />
+        <Route
+          path="tools/cost-estimation"
+          element={<PartnerViewRequireRole role="partner" />}
+        >
+          <Route index element={<StandaloneCostEstimationScreen />} />
+        </Route>
 
         {/* Partner feature */}
         <Route

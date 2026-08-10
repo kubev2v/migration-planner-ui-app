@@ -219,7 +219,7 @@ export const CostEstimationResult: React.FC<CostEstimationResultProps> = ({
         <Card className={heroCardStyle}>
           <CardBody>
             <Title headingLevel="h3" className={heroTitleStyle}>
-              Total OpenShift 3-Year cost estimation
+              Total OpenShift 3-year cost estimation
             </Title>
             <div className={heroPriceStyle}>
               {formatCurrency(redhat.totalThreeYearCostEstimation)}
@@ -356,7 +356,7 @@ export const CostEstimationResultSkeleton: React.FC = () => {
         <Card className={heroCardStyle}>
           <CardBody>
             <Title headingLevel="h3" className={heroTitleStyle}>
-              Total OpenShift 3-Year cost estimation
+              Total OpenShift 3-year cost estimation
             </Title>
             <div className={heroPriceSkeletonStyle}>
               <Skeleton

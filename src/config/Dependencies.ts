@@ -24,6 +24,7 @@ import { PartnersStore } from "../data/stores/PartnersStore";
 import { ReportStore } from "../data/stores/ReportStore";
 import { SizingStore } from "../data/stores/SizingStore";
 import { SourcesStore } from "../data/stores/SourcesStore";
+import { StandaloneCostEstimationStore } from "../data/stores/StandaloneCostEstimationStore";
 import { VersionsStore } from "../data/stores/VersionsStore";
 import { createAuthMiddleware } from "../lib/middleware/Auth";
 import { HtmlExportService } from "../services/html-export/HtmlExportService";
@@ -45,6 +46,7 @@ export const Symbols = Object.freeze({
   PartnerRequestsStore: Symbol.for("PartnerRequestsStore"),
   CustomersStore: Symbol.for("CustomersStore"),
   SizingStore: Symbol.for("SizingStore"),
+  StandaloneCostEstimationStore: Symbol.for("StandaloneCostEstimationStore"),
 });
 
 export const createContainer = (auth: ChromeAPI["auth"]): Container => {
@@ -80,6 +82,10 @@ export const createContainer = (auth: ChromeAPI["auth"]): Container => {
   );
   c.register(Symbols.CustomersStore, new CustomersStore(partnerApi));
   c.register(Symbols.SizingStore, new SizingStore(sizingApi));
+  c.register(
+    Symbols.StandaloneCostEstimationStore,
+    new StandaloneCostEstimationStore(plannerApiConfig),
+  );
 
   // Report export
   c.register(

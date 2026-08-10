@@ -11,12 +11,14 @@ import {
   StackItem,
   Title,
 } from "@patternfly/react-core";
-import { RhUiCopyIcon } from "@patternfly/react-icons";
+import { AngleLeftIcon, RhUiCopyIcon } from "@patternfly/react-icons";
 import React, { useCallback, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 
-import { generatePlainTextRecommendation } from "../../report/view-models/ClusterSizingHelpers";
-import { SizingInputForm } from "../../report/views/cluster-sizer/SizingInputForm";
-import { SizingResult } from "../../report/views/cluster-sizer/SizingResult";
+import { routes } from "../../../../routing/Routes";
+import { generatePlainTextRecommendation } from "../../../report/view-models/ClusterSizingHelpers";
+import { SizingInputForm } from "../../../report/views/cluster-sizer/SizingInputForm";
+import { SizingResult } from "../../../report/views/cluster-sizer/SizingResult";
 import { useClusterSizingToolViewModel } from "../view-models/useClusterSizingToolViewModel";
 
 const toolCardStyle = css`
@@ -42,7 +44,8 @@ const resultsHeaderStyle = css`
 
 const CLUSTER_NAME = "Cluster";
 
-export const ClusterSizingToolPage: React.FC = () => {
+export const ClusterSizingToolScreen: React.FC = () => {
+  const navigate = useNavigate();
   const vm = useClusterSizingToolViewModel();
   const showForm = vm.view === "form" || vm.view === "edit";
   const showCancel = vm.view === "edit";
@@ -75,6 +78,17 @@ export const ClusterSizingToolPage: React.FC = () => {
 
   return (
     <Stack hasGutter>
+      <StackItem>
+        <Button
+          variant="link"
+          isInline
+          icon={<AngleLeftIcon />}
+          onClick={() => void navigate(routes.tools)}
+        >
+          Back to all tools
+        </Button>
+      </StackItem>
+
       <StackItem>
         <div className={toolCardStyle}>
           <Title headingLevel="h1">Cluster sizing tool</Title>
@@ -192,6 +206,6 @@ export const ClusterSizingToolPage: React.FC = () => {
   );
 };
 
-ClusterSizingToolPage.displayName = "ClusterSizingToolPage";
+ClusterSizingToolScreen.displayName = "ClusterSizingToolScreen";
 
-export default ClusterSizingToolPage;
+export default ClusterSizingToolScreen;
