@@ -3,24 +3,24 @@ import { useInjection } from "@y0n1/react-ioc";
 import { useCallback, useState } from "react";
 import { useAsyncFn } from "react-use";
 
-import { Symbols } from "../../../config/Dependencies";
-import type { ISizingStore } from "../../../data/stores/interfaces/ISizingStore";
+import { Symbols } from "../../../../config/Dependencies";
+import type { ISizingStore } from "../../../../data/stores/interfaces/ISizingStore";
 import {
   DEFAULT_FORM_VALUES,
   DEFAULT_WORKLOAD_FORM_VALUES,
   SMT_THREADS_MAX,
   SMT_THREADS_MIN,
   WORKER_NODE_PRESETS,
-} from "../../report/views/cluster-sizer/constants";
+} from "../../../report/views/cluster-sizer/constants";
 import type {
   ClusterRequirementsResponse,
   SizingFormValues,
   WorkloadFormValues,
-} from "../../report/views/cluster-sizer/types";
+} from "../../../report/views/cluster-sizer/types";
 import {
   standaloneResponseToClusterRequirementsResponse,
   workloadAndFormValuesToStandaloneRequest,
-} from "../../report/views/cluster-sizer/types";
+} from "../../../report/views/cluster-sizer/types";
 
 export type ClusterSizingToolView = "form" | "results" | "edit";
 
