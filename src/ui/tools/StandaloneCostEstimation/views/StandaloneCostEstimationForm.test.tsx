@@ -57,23 +57,18 @@ describe("StandaloneCostEstimationForm", () => {
     });
     await user.click(aapCheckbox);
 
-    // Uncheck swing hardware (checked by default)
-    const swingCheckbox = screen.getByRole("checkbox", {
-      name: /Include swing hardware/i,
-    });
-    await user.click(swingCheckbox);
+    // --- Cost & infrastructure assumptions ---
+    const swingHwCostInput = screen.getByLabelText("Swing hardware cost ($)");
+    await user.clear(swingHwCostInput);
+    await user.type(swingHwCostInput, "5000");
 
-    // Check additional storage
-    const storageCheckbox = screen.getByRole("checkbox", {
-      name: /Include additional storage costs/i,
-    });
-    await user.click(storageCheckbox);
+    const storageCostInput = screen.getByLabelText("Annual storage cost ($)");
+    await user.clear(storageCostInput);
+    await user.type(storageCostInput, "12000");
 
-    // Check ISV
-    const isvCheckbox = screen.getByRole("checkbox", {
-      name: /Include ISV/i,
-    });
-    await user.click(isvCheckbox);
+    const isvCostInput = screen.getByLabelText("Annual 3rd party ISV cost ($)");
+    await user.clear(isvCostInput);
+    await user.type(isvCostInput, "8000");
 
     // --- VMware plans ---
     // Uncheck VVF (checked by default)
@@ -176,9 +171,9 @@ describe("StandaloneCostEstimationForm", () => {
       expect(data.rhEdition).toBe("OCP");
       expect(data.includeACM).toBe(false);
       expect(data.withAap).toBe(true);
-      expect(data.includeSwingHardware).toBe(false);
-      expect(data.includeAdditionalStorage).toBe(true);
-      expect(data.includeISV).toBe(true);
+      expect(data.swingHardwareCost).toBe(5000);
+      expect(data.additionalStorageCost).toBe(12000);
+      expect(data.thirdPartyISVCost).toBe(8000);
 
       // VMware plans
       expect(data.showVcf).toBe(true);
