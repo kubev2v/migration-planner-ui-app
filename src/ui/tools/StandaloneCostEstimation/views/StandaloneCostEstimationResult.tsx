@@ -56,6 +56,12 @@ const sectionDescriptionStyle = css`
   margin-bottom: var(--pf-t--global--spacer--md);
 `;
 
+const breakdownTableStyle = css`
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+`;
+
 const metricLabelStyle = css`
   font-size: var(--pf-t--global--font--size--body--md);
   color: var(--pf-t--global--text--color--subtle);
@@ -68,10 +74,17 @@ const metricValueStyle = css`
   color: var(--pf-t--global--text--color--regular);
 `;
 
-const savingsValueStyle = css`
+const savingsValueBaseStyle = css`
   font-size: var(--pf-t--global--font--size--2xl);
   font-weight: var(--pf-t--global--font--weight--heading--default);
+`;
+
+const savingsPositiveStyle = css`
   color: var(--pf-t--global--color--status--success--default);
+`;
+
+const savingsNegativeStyle = css`
+  color: var(--pf-t--global--color--status--danger--default);
 `;
 
 // ---------------------------------------------------------------------------
@@ -94,7 +107,7 @@ const BREAKDOWN_ROWS: { label: string; key: keyof CostEstimationBreakdown }[] =
   [
     { label: "Software subscriptions", key: "softwareSubscriptions" },
     { label: "Ansible Automation Platform", key: "ansibleAutomationPlatform" },
-    { label: "Migration consulting", key: "migrationConsultingServices" },
+    { label: "Migration cost", key: "migrationConsultingServices" },
     { label: "Swing hardware", key: "swingHardwareUpgrades" },
     { label: "Additional storage", key: "additionalStorageCosts" },
     { label: "ISV / other", key: "thirdPartyIsvCosts" },
@@ -181,7 +194,9 @@ export const StandaloneCostEstimationResult: React.FC<
                         <p className={metricLabelStyle}>
                           vs {VMWARE_PLAN_FULL_LABELS[vm.vmwareSolution]}
                         </p>
-                        <p className={savingsValueStyle}>
+                        <p
+                          className={`${savingsValueBaseStyle} ${vm.savingsVsRedhat.absoluteThreeYearUsd >= 0 ? savingsPositiveStyle : savingsNegativeStyle}`}
+                        >
                           {formatCompactCurrency(
                             vm.savingsVsRedhat.absoluteThreeYearUsd,
                           )}
@@ -286,41 +301,45 @@ export const StandaloneCostEstimationResult: React.FC<
           Figures are estimates for comparison. VMware columns show software
           license cost only; Red Hat includes migration and selected add-ons.
         </Content>
-        <Table aria-label="Three-year TCO breakdown" variant="compact">
-          <Thead>
-            <Tr>
-              <Th>Cost category</Th>
-              {vmwareResults.map((vm) => (
-                <Th key={vm.vmwareSolution}>
-                  {VMWARE_PLAN_LABELS[vm.vmwareSolution]}
-                </Th>
+        <div className={breakdownTableStyle}>
+          <Table aria-label="Three-year TCO breakdown" variant="compact">
+            <Thead>
+              <Tr>
+                <Th>Cost category</Th>
+                {vmwareResults.map((vm) => (
+                  <Th key={vm.vmwareSolution}>
+                    {VMWARE_PLAN_LABELS[vm.vmwareSolution]}
+                  </Th>
+                ))}
+                <Th>Red Hat ({redhat.rhEdition})</Th>
+              </Tr>
+            </Thead>
+            <Tbody>
+              {BREAKDOWN_ROWS.map((row) => (
+                <Tr key={row.key}>
+                  <Td>{row.label}</Td>
+                  {vmwareResults.map((vm) => (
+                    <Td key={vm.vmwareSolution}>
+                      {formatCell(vm.breakdown[row.key])}
+                    </Td>
+                  ))}
+                  <Td>{formatCell(redhat.breakdown[row.key])}</Td>
+                </Tr>
               ))}
-              <Th>Red Hat ({redhat.rhEdition})</Th>
-            </Tr>
-          </Thead>
-          <Tbody>
-            {BREAKDOWN_ROWS.map((row) => (
-              <Tr key={row.key}>
-                <Td>{row.label}</Td>
+              <Tr>
+                <Td>Total 3-year TCO</Td>
                 {vmwareResults.map((vm) => (
                   <Td key={vm.vmwareSolution}>
-                    {formatCell(vm.breakdown[row.key])}
+                    {formatFullCurrency(vm.totalThreeYearCostEstimation)}
                   </Td>
                 ))}
-                <Td>{formatCell(redhat.breakdown[row.key])}</Td>
-              </Tr>
-            ))}
-            <Tr>
-              <Td>Total 3-year TCO</Td>
-              {vmwareResults.map((vm) => (
-                <Td key={vm.vmwareSolution}>
-                  {formatFullCurrency(vm.totalThreeYearCostEstimation)}
+                <Td>
+                  {formatFullCurrency(redhat.totalThreeYearCostEstimation)}
                 </Td>
-              ))}
-              <Td>{formatFullCurrency(redhat.totalThreeYearCostEstimation)}</Td>
-            </Tr>
-          </Tbody>
-        </Table>
+              </Tr>
+            </Tbody>
+          </Table>
+        </div>
       </StackItem>
     </Stack>
   );

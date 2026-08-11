@@ -12,6 +12,10 @@ import {
 import { RhUiCopyIcon } from "@patternfly/react-icons";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 
+import {
+  canCopyToClipboard,
+  copyToClipboard,
+} from "../../../../lib/common/Clipboard";
 import { generatePlainTextRecommendation } from "../../view-models/ClusterSizingHelpers";
 import {
   type UseClusterSizingWizardOptions,
@@ -180,14 +184,8 @@ export const ClusterSizingWizard: React.FC<ClusterSizingWizardProps> = ({
   }, [clusterName, vm.formValues, vm.sizerOutput]);
 
   const handleCopyRecommendations = useCallback(() => {
-    if (
-      !navigator.clipboard ||
-      !navigator.clipboard.writeText ||
-      (typeof window !== "undefined" && !window.isSecureContext)
-    ) {
-      return;
-    }
-    void navigator.clipboard.writeText(plainTextRecommendation);
+    if (!canCopyToClipboard()) return;
+    copyToClipboard(plainTextRecommendation);
   }, [plainTextRecommendation]);
 
   useEffect(() => {
