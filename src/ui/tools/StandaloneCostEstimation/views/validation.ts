@@ -5,10 +5,7 @@ import type { StandaloneCostEstimationFormValues } from "../../../../models/Stan
 export const standaloneCostEstimationValidationSchema: yup.ObjectSchema<StandaloneCostEstimationFormValues> =
   yup.object().shape({
     // Customer
-    customerName: yup
-      .string()
-      .required("Customer name is required")
-      .default(""),
+    customerName: yup.string().default(""),
 
     // Customer environment
     hosts: yup
@@ -29,7 +26,7 @@ export const standaloneCostEstimationValidationSchema: yup.ObjectSchema<Standalo
       .number()
       .typeError("Cores per socket is required")
       .required("Cores per socket is required")
-      .min(16, "Must be at least 16")
+      .min(1, "Must be at least 1")
       .default(64),
 
     vms: yup
@@ -56,9 +53,6 @@ export const standaloneCostEstimationValidationSchema: yup.ObjectSchema<Standalo
 
     includeACM: yup.boolean().required().default(true),
     withAap: yup.boolean().required().default(false),
-    includeSwingHardware: yup.boolean().required().default(true),
-    includeAdditionalStorage: yup.boolean().required().default(false),
-    includeISV: yup.boolean().required().default(false),
 
     // VMware plans to compare
     showVcf: yup.boolean().required().default(true),
@@ -168,6 +162,27 @@ export const standaloneCostEstimationValidationSchema: yup.ObjectSchema<Standalo
       .required("Red Hat discount is required")
       .min(0, "Discount cannot be negative")
       .max(100, "Discount cannot exceed 100%")
+      .default(0),
+
+    swingHardwareCost: yup
+      .number()
+      .typeError("Swing hardware cost is required")
+      .required("Swing hardware cost is required")
+      .min(0, "Cannot be negative")
+      .default(0),
+
+    additionalStorageCost: yup
+      .number()
+      .typeError("Storage cost is required")
+      .required("Storage cost is required")
+      .min(0, "Cannot be negative")
+      .default(0),
+
+    thirdPartyISVCost: yup
+      .number()
+      .typeError("ISV cost is required")
+      .required("ISV cost is required")
+      .min(0, "Cannot be negative")
       .default(0),
 
     overrideMigrationCost: yup.boolean().required().default(false),

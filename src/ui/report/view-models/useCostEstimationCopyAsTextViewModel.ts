@@ -1,5 +1,9 @@
 import { useCallback } from "react";
 
+import {
+  canCopyToClipboard,
+  copyToClipboard,
+} from "../../../lib/common/Clipboard";
 import type { CostEstimationResponse } from "../../../models/CostEstimationModel";
 import { GenerateCostEstimationPlainTextOutput } from "./GenerateCostEstimationPlainTextOutput";
 
@@ -15,20 +19,13 @@ export interface CostEstimationCopyAsTextViewModel {
 export function useCostEstimationCopyAsTextViewModel({
   costEstimation,
 }: UseCostEstimationCopyAsTextViewModelArgs): CostEstimationCopyAsTextViewModel {
-  const canCopy =
-    typeof navigator !== "undefined" &&
-    typeof navigator.clipboard?.writeText === "function" &&
-    (typeof window === "undefined" || window.isSecureContext);
+  const canCopy = canCopyToClipboard();
 
   const handleCopy = useCallback(() => {
     if (!canCopy || costEstimation === null) {
       return;
     }
-    navigator.clipboard
-      .writeText(GenerateCostEstimationPlainTextOutput(costEstimation))
-      .catch((err: unknown) => {
-        console.error("Failed to copy cost estimation to clipboard", err);
-      });
+    copyToClipboard(GenerateCostEstimationPlainTextOutput(costEstimation));
   }, [canCopy, costEstimation]);
 
   return { canCopy, handleCopy };
