@@ -15,6 +15,10 @@ import { AngleLeftIcon, RhUiCopyIcon } from "@patternfly/react-icons";
 import React, { useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 
+import {
+  canCopyToClipboard,
+  copyToClipboard,
+} from "../../../../lib/common/Clipboard";
 import { routes } from "../../../../routing/Routes";
 import { generatePlainTextRecommendation } from "../../../report/view-models/ClusterSizingHelpers";
 import { SizingInputForm } from "../../../report/views/cluster-sizer/SizingInputForm";
@@ -66,14 +70,8 @@ export const ClusterSizingToolScreen: React.FC = () => {
   }, [vm.formValues, vm.sizerOutput]);
 
   const handleCopyRecommendations = useCallback((): void => {
-    if (
-      !navigator.clipboard ||
-      !navigator.clipboard.writeText ||
-      (typeof window !== "undefined" && !window.isSecureContext)
-    ) {
-      return;
-    }
-    void navigator.clipboard.writeText(plainTextRecommendation);
+    if (!canCopyToClipboard()) return;
+    copyToClipboard(plainTextRecommendation);
   }, [plainTextRecommendation]);
 
   return (

@@ -21,9 +21,9 @@ export interface StandaloneCostEstimationFormValues {
   rhEdition: RhEdition;
   includeACM: boolean;
   withAap: boolean;
-  includeSwingHardware: boolean;
-  includeAdditionalStorage: boolean;
-  includeISV: boolean;
+  swingHardwareCost: number;
+  additionalStorageCost: number;
+  thirdPartyISVCost: number;
 
   // VMware plans to compare
   showVcf: boolean;
