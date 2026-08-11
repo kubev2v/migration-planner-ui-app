@@ -1,9 +1,11 @@
 import { useInjection } from "@y0n1/react-ioc";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { useAsyncFn } from "react-use";
 
 import { Symbols } from "../../../../config/Dependencies";
 import type { IStandaloneCostEstimationStore } from "../../../../data/stores/interfaces/IStandaloneCostEstimationStore";
+import { copyToClipboard } from "../../../../lib/common/Clipboard";
+import { downloadFile } from "../../../../lib/common/Download";
 import { parseApiError } from "../../../../lib/common/ErrorParser";
 import type {
   StandaloneCostEstimateRequest,
@@ -11,6 +13,7 @@ import type {
   StandaloneCostEstimationFormValues,
   StandaloneVMwarePlan,
 } from "../../../../models/StandaloneCostEstimationModel";
+import { GenerateStandaloneCostEstimationPlainTextOutput } from "./GenerateStandaloneCostEstimationPlainTextOutput";
 
 function buildRequest(
   form: StandaloneCostEstimationFormValues,
@@ -61,17 +64,11 @@ function buildRequest(
       rhAcmVirtPerNode: form.priceAcmVirt,
       rhAcmK8sPerNode: form.priceAcmK8s,
     },
+    swingHardwareCost: form.swingHardwareCost,
+    additionalStorageCost: form.additionalStorageCost,
+    thirdPartyISVCost: form.thirdPartyISVCost,
   };
 
-  if (!form.includeSwingHardware) {
-    request.swingHardwareCost = 0;
-  }
-  if (!form.includeAdditionalStorage) {
-    request.additionalStorageCost = 0;
-  }
-  if (!form.includeISV) {
-    request.thirdPartyISVCost = 0;
-  }
   if (form.overrideMigrationCost) {
     request.migrationCostOverride = form.migrationCostOverride;
   }
@@ -84,6 +81,10 @@ export interface StandaloneCostEstimationViewModel {
   calculateError: Error | undefined;
   result: StandaloneCostEstimateResponse | null;
   onSubmit: (formValues: StandaloneCostEstimationFormValues) => void;
+  canExport: boolean;
+  handleCopyAsPlainText: () => void;
+  handleDownloadJson: () => void;
+  handleDownloadTxt: () => void;
 }
 
 export const useStandaloneCostEstimationViewModel =
@@ -120,6 +121,32 @@ export const useStandaloneCostEstimationViewModel =
       [store],
     );
 
+    const handleCopyAsPlainText = useCallback(() => {
+      if (!result) return;
+      copyToClipboard(GenerateStandaloneCostEstimationPlainTextOutput(result));
+    }, [result]);
+
+    const handleDownloadJson = useCallback(() => {
+      if (!result) return;
+      const filename = result.customerName
+        ? `cost-estimation-${result.customerName.replace(/\s+/g, "-").toLowerCase()}.json`
+        : "cost-estimation.json";
+      downloadFile(
+        filename,
+        JSON.stringify(result, null, 2),
+        "application/json",
+      );
+    }, [result]);
+
+    const handleDownloadTxt = useCallback(() => {
+      if (!result) return;
+      const text = GenerateStandaloneCostEstimationPlainTextOutput(result);
+      const filename = result.customerName
+        ? `cost-estimation-${result.customerName.replace(/\s+/g, "-").toLowerCase()}.txt`
+        : "cost-estimation.txt";
+      downloadFile(filename, text, "text/plain");
+    }, [result]);
+
     return {
       isCalculating: asyncState.loading,
       calculateError: manualError ?? asyncState.error,
@@ -127,5 +154,9 @@ export const useStandaloneCostEstimationViewModel =
       onSubmit: (formValues: StandaloneCostEstimationFormValues) => {
         void doCalculate(formValues);
       },
+      canExport: result !== null,
+      handleCopyAsPlainText,
+      handleDownloadJson,
+      handleDownloadTxt,
     };
   };

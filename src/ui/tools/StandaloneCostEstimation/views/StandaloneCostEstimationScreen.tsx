@@ -7,18 +7,23 @@ import {
   CardTitle,
   Content,
   ContentVariants,
+  Dropdown,
+  DropdownItem,
+  DropdownList,
   EmptyState,
   EmptyStateBody,
   Flex,
   FlexItem,
   Grid,
   GridItem,
+  MenuToggle,
+  type MenuToggleElement,
   Stack,
   StackItem,
   Title,
 } from "@patternfly/react-core";
 import { AngleLeftIcon, RhUiScaleBalancedIcon } from "@patternfly/react-icons";
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { routes } from "../../../../routing/Routes";
@@ -33,6 +38,7 @@ const cardStyle = css`
 export const StandaloneCostEstimationScreen: React.FC = () => {
   const navigate = useNavigate();
   const vm = useStandaloneCostEstimationViewModel();
+  const [isExportOpen, setIsExportOpen] = useState(false);
 
   return (
     <Stack hasGutter>
@@ -62,6 +68,58 @@ export const StandaloneCostEstimationScreen: React.FC = () => {
                 years. Adjust inputs, then calculate to see results.
               </Content>
             </Content>
+          </FlexItem>
+          <FlexItem>
+            <Dropdown
+              isOpen={isExportOpen}
+              onOpenChange={setIsExportOpen}
+              popperProps={{ position: "end" }}
+              toggle={(toggleRef: React.Ref<MenuToggleElement>) => (
+                <MenuToggle
+                  ref={toggleRef}
+                  variant="secondary"
+                  onClick={() => setIsExportOpen((prev) => !prev)}
+                  isExpanded={isExportOpen}
+                  isDisabled={!vm.canExport}
+                >
+                  Export
+                </MenuToggle>
+              )}
+              shouldFocusToggleOnSelect
+            >
+              <DropdownList>
+                <DropdownItem
+                  key="copy-text"
+                  component="button"
+                  onClick={() => {
+                    vm.handleCopyAsPlainText();
+                    setIsExportOpen(false);
+                  }}
+                >
+                  Copy as plain text
+                </DropdownItem>
+                <DropdownItem
+                  key="download-json"
+                  component="button"
+                  onClick={() => {
+                    vm.handleDownloadJson();
+                    setIsExportOpen(false);
+                  }}
+                >
+                  Download JSON
+                </DropdownItem>
+                <DropdownItem
+                  key="download-txt"
+                  component="button"
+                  onClick={() => {
+                    vm.handleDownloadTxt();
+                    setIsExportOpen(false);
+                  }}
+                >
+                  Download TXT
+                </DropdownItem>
+              </DropdownList>
+            </Dropdown>
           </FlexItem>
         </Flex>
       </StackItem>

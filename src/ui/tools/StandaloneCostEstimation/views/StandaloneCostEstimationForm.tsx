@@ -42,9 +42,9 @@ const DEFAULT_VALUES: StandaloneCostEstimationFormValues = {
   rhEdition: "OVE",
   includeACM: true,
   withAap: false,
-  includeSwingHardware: true,
-  includeAdditionalStorage: false,
-  includeISV: false,
+  swingHardwareCost: 0,
+  additionalStorageCost: 0,
+  thirdPartyISVCost: 0,
   showVcf: true,
   showVvf: true,
   showVvs: false,
@@ -226,24 +226,6 @@ export default function StandaloneCostEstimationForm({
             label="Include Ansible Automation Platform (AAP)"
             className={styles.formGroupCheckbox}
           />
-          <CheckboxFormGroup
-            id="ce-hw"
-            name="includeSwingHardware"
-            label="Include swing hardware"
-            className={styles.formGroupCheckbox}
-          />
-          <CheckboxFormGroup
-            id="ce-storage"
-            name="includeAdditionalStorage"
-            label="Include additional storage costs"
-            className={styles.formGroupCheckbox}
-          />
-          <CheckboxFormGroup
-            id="ce-isv"
-            name="includeISV"
-            label="Include ISV / other annual costs"
-            className={styles.formGroupCheckbox}
-          />
         </FormSection>
 
         <FormSection title="VMware plans to compare">
@@ -383,6 +365,36 @@ export default function StandaloneCostEstimationForm({
                 id="ce-disc-rh"
                 name="discountRh"
                 label="Assumed Red Hat discount (%)"
+                type="number"
+              />
+            </GridItem>
+          </Grid>
+        </FormSection>
+
+        <FormSection title="Cost assumptions">
+          <Grid hasGutter md={6}>
+            <GridItem>
+              <TextInputFormGroup
+                id="ce-swing-hw-cost"
+                name="swingHardwareCost"
+                label="Swing hardware cost ($)"
+                type="number"
+                helpText="Net Cost per New Server minus residual recovery value"
+              />
+            </GridItem>
+            <GridItem>
+              <TextInputFormGroup
+                id="ce-storage-cost"
+                name="additionalStorageCost"
+                label="Annual storage cost ($)"
+                type="number"
+              />
+            </GridItem>
+            <GridItem>
+              <TextInputFormGroup
+                id="ce-isv-cost"
+                name="thirdPartyISVCost"
+                label="Annual 3rd party ISV cost ($)"
                 type="number"
               />
             </GridItem>

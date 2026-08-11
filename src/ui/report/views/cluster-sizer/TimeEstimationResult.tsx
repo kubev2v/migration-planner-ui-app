@@ -22,6 +22,10 @@ import { RhUiCopyIcon } from "@patternfly/react-icons";
 import { Table, Tbody, Td, Th, Thead, Tr } from "@patternfly/react-table";
 import React, { useCallback, useMemo } from "react";
 
+import {
+  canCopyToClipboard,
+  copyToClipboard,
+} from "../../../../lib/common/Clipboard";
 import PopoverIcon from "./PopoverIcon";
 import {
   type ParsedAssumption,
@@ -228,10 +232,7 @@ export const TimeEstimationResult: React.FC<TimeEstimationResultProps> = ({
   error,
 }) => {
   const canCopy = useMemo(
-    () =>
-      !!estimationOutput &&
-      typeof navigator.clipboard?.writeText === "function" &&
-      (typeof window === "undefined" || window.isSecureContext),
+    () => !!estimationOutput && canCopyToClipboard(),
     [estimationOutput],
   );
 
@@ -239,11 +240,7 @@ export const TimeEstimationResult: React.FC<TimeEstimationResultProps> = ({
     if (!canCopy || !estimationOutput) {
       return;
     }
-    navigator.clipboard
-      .writeText(generatePlainText(estimationOutput))
-      .catch((err: unknown) => {
-        console.error("Failed to copy estimation to clipboard", err);
-      });
+    copyToClipboard(generatePlainText(estimationOutput));
   }, [canCopy, estimationOutput]);
 
   if (isLoading) {
