@@ -12,6 +12,9 @@ on:
       - master
       - stable
 
+permissions:
+  contents: read
+
 env:
   NODE_OPTIONS: "--max-old-space-size=8192"
 
