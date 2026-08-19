@@ -24,6 +24,11 @@ export class CustomersStore
     return this.customers;
   }
 
+  async remove(username: string): Promise<void> {
+    await this.api.removeCustomer({ username });
+    await this.list();
+  }
+
   override getSnapshot(): Customer[] {
     return this.customers;
   }
