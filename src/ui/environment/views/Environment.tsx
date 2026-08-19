@@ -3,6 +3,7 @@ import {
   AlertActionCloseButton,
   AlertActionLink,
   Content,
+  Stack,
   StackItem,
 } from "@patternfly/react-core";
 import React, { useEffect, useState } from "react";
@@ -61,27 +62,36 @@ const EnvironmentContent: React.FC<EnvironmentContentProps> = ({ vm }) => {
   }, [isOvaDownloading]);
 
   return (
-    <>
-      {/* Critical error alerts at the top for visibility */}
-      {uploadMessage && isUploadError && (
-        <div style={{ marginBottom: "16px" }}>
+    <Stack hasGutter>
+      {uploadMessage && (
+        <StackItem>
           <Alert
             isInline
-            variant="danger"
-            title="Upload error"
+            variant={isUploadError ? "danger" : "success"}
+            title={isUploadError ? "Upload error" : "Upload success"}
             actionClose={
-              <AlertActionCloseButton
-                onClose={() => vm.clearInventoryUploadResult()}
-              />
+              isUploadError ? (
+                <AlertActionCloseButton
+                  onClose={() => vm.clearInventoryUploadResult()}
+                />
+              ) : undefined
             }
           >
             {uploadMessage}
           </Alert>
-        </div>
+        </StackItem>
+      )}
+
+      {isOvaDownloading && (
+        <StackItem>
+          <Alert isInline variant="info" title="Download OVA image">
+            The OVA image is downloading
+          </Alert>
+        </StackItem>
       )}
 
       {vm.errorDownloadingSource && (
-        <div style={{ marginBottom: "16px" }}>
+        <StackItem>
           <Alert
             isInline
             variant="danger"
@@ -95,29 +105,6 @@ const EnvironmentContent: React.FC<EnvironmentContentProps> = ({ vm }) => {
             }
           >
             {vm.errorDownloadingSource.message}
-          </Alert>
-        </div>
-      )}
-
-      <SourcesTable
-        onEditEnvironment={(sourceId) => {
-          setEditSourceId(sourceId);
-          vm.selectSourceById?.(sourceId);
-          setShouldShowEditModal(true);
-        }}
-        onAddEnvironment={() => {
-          setShouldShowCreateModal(true);
-        }}
-        onDownloadOva={(sourceId) => {
-          setDownloadSourceId(sourceId);
-          setShouldShowDownloadModal(true);
-        }}
-      />
-
-      {isOvaDownloading && (
-        <StackItem>
-          <Alert isInline variant="info" title="Download OVA image">
-            The OVA image is downloading
           </Alert>
         </StackItem>
       )}
@@ -152,13 +139,20 @@ const EnvironmentContent: React.FC<EnvironmentContentProps> = ({ vm }) => {
           </StackItem>
         )}
 
-      {uploadMessage && !isUploadError && (
-        <StackItem>
-          <Alert isInline variant="success" title="Upload success">
-            {uploadMessage}
-          </Alert>
-        </StackItem>
-      )}
+      <SourcesTable
+        onEditEnvironment={(sourceId) => {
+          setEditSourceId(sourceId);
+          vm.selectSourceById?.(sourceId);
+          setShouldShowEditModal(true);
+        }}
+        onAddEnvironment={() => {
+          setShouldShowCreateModal(true);
+        }}
+        onDownloadOva={(sourceId) => {
+          setDownloadSourceId(sourceId);
+          setShouldShowDownloadModal(true);
+        }}
+      />
 
       {shouldShowCreateModal && (
         <EnvironmentModal
@@ -217,7 +211,7 @@ const EnvironmentContent: React.FC<EnvironmentContentProps> = ({ vm }) => {
           }}
         />
       )}
-    </>
+    </Stack>
   );
 };
 

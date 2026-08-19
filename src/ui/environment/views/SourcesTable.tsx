@@ -75,7 +75,6 @@ const getSourceAgentVersionLabel = (source: SourceModel): string =>
   });
 
 const tableContainerStyle = css`
-  margin-top: 1em;
   max-width: 100%;
   overflow: auto;
 `;
