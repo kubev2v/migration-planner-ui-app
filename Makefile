@@ -156,6 +156,9 @@ run-standalone: install
 		--host 0.0.0.0
 	@echo "✅ Standalone run completed"
 
+### migration-planner-workspace management targets start ###
+### See https://github.com/kubev2v/migration-planner-workspace for more info
+
 build-local:
 	@$(MAKE) install
 
@@ -167,6 +170,8 @@ run-local:
 
 stop-local:
 	@echo "Planner UI runs in foreground - stopped when process is terminated"
+
+### migration-planner-workspace management targets end ###
 
 # Preview standalone build
 preview-standalone: build-standalone
