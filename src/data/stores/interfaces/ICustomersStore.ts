@@ -4,4 +4,5 @@ import type { ExternalStore } from "../../../lib/mvvm/ExternalStore";
 
 export interface ICustomersStore extends ExternalStore<Customer[]> {
   list(): Promise<Customer[]>;
+  remove(username: string): Promise<void>;
 }

@@ -1,16 +1,31 @@
 import type { Customer } from "@openshift-migration-advisor/planner-sdk";
-import { EmptyState, EmptyStateBody } from "@patternfly/react-core";
-import { RhUiProfileIcon } from "@patternfly/react-icons";
+import {
+  Dropdown,
+  DropdownItem,
+  DropdownList,
+  EmptyState,
+  EmptyStateBody,
+  MenuToggle,
+  type MenuToggleElement,
+} from "@patternfly/react-core";
+import {
+  RhUiEllipsisVerticalIcon,
+  RhUiProfileIcon,
+} from "@patternfly/react-icons";
 import { Table, Tbody, Td, Th, Thead, Tr } from "@patternfly/react-table";
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 
 interface CustomersTableProps {
   customers: Customer[];
+  onRemoveCustomer: (customer: Customer) => void;
 }
 
 export const CustomersTable: React.FC<CustomersTableProps> = ({
   customers,
+  onRemoveCustomer,
 }) => {
+  const [openRowId, setOpenRowId] = useState<string | null>(null);
+
   const sortedCustomers = useMemo(() => {
     return [...customers].sort((a, b) => a.name.localeCompare(b.name));
   }, [customers]);
@@ -39,6 +54,7 @@ export const CustomersTable: React.FC<CustomersTableProps> = ({
           <Th>Username</Th>
           <Th>Email</Th>
           <Th>Location</Th>
+          <Th screenReaderText="Actions" />
         </Tr>
       </Thead>
       <Tbody>
@@ -50,6 +66,43 @@ export const CustomersTable: React.FC<CustomersTableProps> = ({
             <Td dataLabel="Email">{customer.email}</Td>
             <Td dataLabel="Location">
               {customer.location ? customer.location : "N/A"}
+            </Td>
+            <Td dataLabel="Actions" isActionCell>
+              <Dropdown
+                isOpen={openRowId === customer.username}
+                popperProps={{
+                  appendTo: () => document.body,
+                  position: "end",
+                }}
+                onOpenChange={(isOpen) =>
+                  setOpenRowId(isOpen ? customer.username : null)
+                }
+                toggle={(toggleRef: React.Ref<MenuToggleElement>) => (
+                  <MenuToggle
+                    ref={toggleRef}
+                    aria-label="Actions"
+                    variant="plain"
+                    onClick={() =>
+                      setOpenRowId((prev) =>
+                        prev === customer.username ? null : customer.username,
+                      )
+                    }
+                  >
+                    <RhUiEllipsisVerticalIcon />
+                  </MenuToggle>
+                )}
+              >
+                <DropdownList>
+                  <DropdownItem
+                    onClick={() => {
+                      onRemoveCustomer(customer);
+                      setOpenRowId(null);
+                    }}
+                  >
+                    Remove customer
+                  </DropdownItem>
+                </DropdownList>
+              </Dropdown>
             </Td>
           </Tr>
         ))}
