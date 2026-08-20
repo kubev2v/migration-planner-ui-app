@@ -17,7 +17,7 @@ let mockVersionsStore: {
   getApiVersionInfo: ReturnType<typeof vi.fn>;
 };
 
-vi.mock("@y0n1/react-ioc", () => ({
+vi.mock("@openshift-migration-advisor/ioc", () => ({
   useInjection: (symbol: symbol) => {
     const key = symbol.description;
     if (key === "VersionsStore") return mockVersionsStore;

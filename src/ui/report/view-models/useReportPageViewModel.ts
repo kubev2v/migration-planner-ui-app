@@ -1,3 +1,4 @@
+import { useInjection } from "@openshift-migration-advisor/ioc";
 import type {
   AssessmentSubsetInventory,
   ClusterRequirementsResponse,
@@ -7,7 +8,6 @@ import type {
   VMs,
 } from "@openshift-migration-advisor/planner-sdk";
 import { JobStatus } from "@openshift-migration-advisor/planner-sdk";
-import { useInjection } from "@y0n1/react-ioc";
 import {
   useCallback,
   useEffect,

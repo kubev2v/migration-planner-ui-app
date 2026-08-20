@@ -1,4 +1,4 @@
-import { Container } from "@y0n1/react-ioc";
+import { Container } from "@openshift-migration-advisor/ioc";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { createContainer, Symbols } from "../Dependencies";

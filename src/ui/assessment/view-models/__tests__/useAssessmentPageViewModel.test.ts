@@ -46,7 +46,7 @@ let jobsStoreState: JobsStoreState;
 let jobsListeners: Set<() => void>;
 let accountStoreState: Identity | null;
 
-vi.mock("@y0n1/react-ioc", () => ({
+vi.mock("@openshift-migration-advisor/ioc", () => ({
   useInjection: (symbol: symbol) => {
     const key = symbol.description;
     if (key === "AccountStore") return mockAccountStore;

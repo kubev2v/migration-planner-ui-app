@@ -48,7 +48,7 @@ vi.mock("../../../environment/view-models/EnvironmentPageContext", () => ({
   useEnvironmentPage: () => mockEnvVm,
 }));
 
-vi.mock("@y0n1/react-ioc", () => ({
+vi.mock("@openshift-migration-advisor/ioc", () => ({
   useInjection: (symbol: symbol) => {
     const key = symbol.description;
     if (key === "AssessmentsStore") return mockAssessmentsStore;

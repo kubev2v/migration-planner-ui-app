@@ -25,7 +25,8 @@
   "dependencies": {
     "@emotion/css": "^11.13.5",
     "@hookform/resolvers": "^5.2.2",
-    "@openshift-migration-advisor/planner-sdk": "0.18.0",
+    "@openshift-migration-advisor/ioc": "0.21.0-a2b3990c29aa",
+    "@openshift-migration-advisor/planner-sdk": "0.21.0-dd2aa7ede360",
     "@patternfly/react-charts": "7.4.9",
     "@patternfly/react-component-groups": "^6.5.0",
     "@patternfly/react-core": "^6.5.1",
@@ -36,7 +37,6 @@
     "@redhat-cloud-services/frontend-components": "^7.4.2",
     "@redhat-cloud-services/frontend-components-notifications": "^6.6.2",
     "@redhat-cloud-services/frontend-components-utilities": "^7.2.1",
-    "@y0n1/react-ioc": "npm:@jsr/y0n1__react-ioc@^0.2.1",
     "dompurify": "^3.4.13",
     "github-markdown-css": "^5.9.0",
     "html2canvas-pro": "^2.0.2",
