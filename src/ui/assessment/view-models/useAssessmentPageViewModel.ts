@@ -1,6 +1,6 @@
+import { useInjection } from "@openshift-migration-advisor/ioc";
 import type { Identity, Job } from "@openshift-migration-advisor/planner-sdk";
 import { JobStatus } from "@openshift-migration-advisor/planner-sdk";
-import { useInjection } from "@y0n1/react-ioc";
 import {
   useCallback,
   useEffect,

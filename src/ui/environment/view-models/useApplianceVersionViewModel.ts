@@ -1,4 +1,4 @@
-import { useInjection } from "@y0n1/react-ioc";
+import { useInjection } from "@openshift-migration-advisor/ioc";
 import { useSyncExternalStore } from "react";
 import { useAsync } from "react-use";
 

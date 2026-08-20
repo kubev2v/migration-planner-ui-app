@@ -1,9 +1,9 @@
+import { useInjection } from "@openshift-migration-advisor/ioc";
 import type {
   MigrationComplexityResponse,
   MigrationEstimationByComplexityResponse,
 } from "@openshift-migration-advisor/planner-sdk";
 import { ResponseError } from "@openshift-migration-advisor/planner-sdk";
-import { useInjection } from "@y0n1/react-ioc";
 import {
   useCallback,
   useMemo,

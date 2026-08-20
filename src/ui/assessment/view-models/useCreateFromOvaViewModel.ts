@@ -1,4 +1,4 @@
-import { useInjection } from "@y0n1/react-ioc";
+import { useInjection } from "@openshift-migration-advisor/ioc";
 import React, { useCallback, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAsyncFn } from "react-use";

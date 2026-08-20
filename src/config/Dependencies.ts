@@ -1,3 +1,4 @@
+import { Container } from "@openshift-migration-advisor/ioc";
 import {
   AccountApi,
   AssessmentApi,
@@ -10,7 +11,6 @@ import {
 } from "@openshift-migration-advisor/planner-sdk";
 import { Configuration } from "@openshift-migration-advisor/planner-sdk";
 import type { ChromeAPI } from "@redhat-cloud-services/types";
-import { Container } from "@y0n1/react-ioc";
 
 import { AccountStore } from "../data/stores/AccountStore";
 import { AssessmentsStore } from "../data/stores/AssessmentsStore";

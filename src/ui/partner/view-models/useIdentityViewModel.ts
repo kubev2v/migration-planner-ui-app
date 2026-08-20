@@ -1,5 +1,5 @@
+import { useInjection } from "@openshift-migration-advisor/ioc";
 import type { Identity } from "@openshift-migration-advisor/planner-sdk";
-import { useInjection } from "@y0n1/react-ioc";
 import { useSyncExternalStore } from "react";
 
 import { Symbols } from "../../../config/Dependencies";

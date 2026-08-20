@@ -1,5 +1,5 @@
+import { useInjection } from "@openshift-migration-advisor/ioc";
 import type { Group } from "@openshift-migration-advisor/planner-sdk";
-import { useInjection } from "@y0n1/react-ioc";
 import { useEffect, useSyncExternalStore } from "react";
 import { useAsyncFn } from "react-use";
 

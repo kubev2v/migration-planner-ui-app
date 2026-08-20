@@ -101,7 +101,7 @@ const mockJobsStore = {
   stopPolling: vi.fn(),
 };
 
-vi.mock("@y0n1/react-ioc", () => ({
+vi.mock("@openshift-migration-advisor/ioc", () => ({
   useInjection: vi.fn((symbol: symbol) => {
     const key = symbol.description;
     if (key === "AssessmentsStore") return mockAssessmentsStore;

@@ -1,8 +1,8 @@
+import { useInjection } from "@openshift-migration-advisor/ioc";
 import type {
   Member,
   MemberCreate,
 } from "@openshift-migration-advisor/planner-sdk";
-import { useInjection } from "@y0n1/react-ioc";
 import { useEffect, useMemo, useSyncExternalStore } from "react";
 import { useParams } from "react-router-dom";
 import { useAsyncFn } from "react-use";

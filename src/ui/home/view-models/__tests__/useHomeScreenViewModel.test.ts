@@ -35,7 +35,7 @@ vi.mock("react-router-dom", () => ({
   useNavigate: () => mockNavigate,
 }));
 
-vi.mock("@y0n1/react-ioc", () => ({
+vi.mock("@openshift-migration-advisor/ioc", () => ({
   useInjection: (symbol: symbol) => {
     const key = symbol.description;
     if (key === "AccountStore") return mockAccountStore;
