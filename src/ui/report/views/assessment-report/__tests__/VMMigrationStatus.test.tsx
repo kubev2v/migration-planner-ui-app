@@ -8,26 +8,34 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { VMMigrationStatus } from "../VMMigrationStatus";
 
-vi.mock("../../../../core/components/MigrationDonutChart", () => ({
-  default: ({
-    title,
-    subTitle,
-  }: {
-    title: string;
-    subTitle: string;
-  }): JSX.Element => (
-    <div data-testid="donut-chart">
-      <div data-testid="chart-title">{title}</div>
-      <div data-testid="chart-subtitle">{subTitle}</div>
-    </div>
-  ),
-}));
+vi.mock(
+  "@openshift-migration-advisor/shared-components",
+  async (importOriginal) => {
+    const actual =
+      await importOriginal<
+        typeof import("@openshift-migration-advisor/shared-components")
+      >();
 
-vi.mock("../../../../core/components/CardEmptyState", () => ({
-  CardEmptyState: ({ title }: { title: string }): JSX.Element => (
-    <div data-testid="empty-state">{title}</div>
-  ),
-}));
+    return {
+      ...actual,
+      MigrationDonutChart: ({
+        title,
+        subTitle,
+      }: {
+        title: string;
+        subTitle: string;
+      }): JSX.Element => (
+        <div data-testid="donut-chart">
+          <div data-testid="chart-title">{title}</div>
+          <div data-testid="chart-subtitle">{subTitle}</div>
+        </div>
+      ),
+      CardEmptyState: ({ title }: { title: string }): JSX.Element => (
+        <div data-testid="empty-state">{title}</div>
+      ),
+    };
+  },
+);
 
 vi.mock("@patternfly/react-core", async (importOriginal) => {
   const actual =

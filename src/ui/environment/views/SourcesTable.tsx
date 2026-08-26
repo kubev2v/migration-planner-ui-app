@@ -1,4 +1,5 @@
 import { css } from "@emotion/css";
+import { EmptySearchResults } from "@openshift-migration-advisor/shared-components";
 import {
   Button,
   Dropdown,
@@ -30,7 +31,6 @@ import {
   attributeValueFilterToolbarStyle,
 } from "../../core/components/attribute-value-filter";
 import { ConfirmationModal } from "../../core/components/ConfirmationModal";
-import { EmptySearchResults } from "../../core/components/EmptySearchResults";
 import {
   DISCOVERY_VM_STATUS_FILTER_OPTIONS,
   type DiscoveryVmStatusFilterKey,

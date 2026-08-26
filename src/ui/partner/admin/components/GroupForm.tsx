@@ -6,6 +6,11 @@ import type {
   GroupCreateKindEnum,
 } from "@openshift-migration-advisor/planner-sdk";
 import {
+  SelectFormGroup,
+  TextAreaFormGroup,
+  TextInputFormGroup,
+} from "@openshift-migration-advisor/shared-components";
+import {
   Alert,
   Button,
   Card,
@@ -30,11 +35,6 @@ import { FormProvider, useForm, useWatch } from "react-hook-form";
 import * as yup from "yup";
 
 import type { Partner } from "../../../../models/PartnerModel";
-import {
-  SelectFormGroup,
-  TextAreaFormGroup,
-  TextInputFormGroup,
-} from "../../../core/components/form";
 import { PartnersGallery } from "../../regularUser/components/PartnersGallery";
 
 export type CreateGroupFormValues = GroupCreate;

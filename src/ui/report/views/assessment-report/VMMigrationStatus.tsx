@@ -1,5 +1,12 @@
 import type { IssuesBreakdown } from "@openshift-migration-advisor/planner-sdk";
 import {
+  CardEmptyState,
+  chartColorFailure,
+  chartColorSuccess,
+  MigrationDonutChart,
+  REPORT_CARD_EMPTY_STATE_TITLES,
+} from "@openshift-migration-advisor/shared-components";
+import {
   Card,
   CardBody,
   CardTitle,
@@ -14,14 +21,7 @@ import {
 import RhUiVirtualMachineIcon from "@patternfly/react-icons/dist/esm/icons/virtual-machine-icon";
 import React, { useState } from "react";
 
-import { CardEmptyState } from "../../../core/components/CardEmptyState";
 import IssuesBreakdownChart from "../../../core/components/IssuesBreakdownChart";
-import MigrationDonutChart from "../../../core/components/MigrationDonutChart";
-import {
-  chartColorFailure,
-  chartColorSuccess,
-  REPORT_CARD_EMPTY_STATE_TITLES,
-} from "./constants";
 import { DashboardExportSection } from "./DashboardExportSection";
 import {
   dashboardCard,
@@ -91,24 +91,27 @@ export const VMMigrationStatus: React.FC<VmMigrationStatusProps> = ({
 
   const totalVMs = data.migratable + data.nonMigratable;
 
-  const renderDonutChart = (): React.ReactNode => (
-    <MigrationDonutChart
-      data={donutData}
-      legend={legend}
-      height={300}
-      width={420}
-      donutThickness={18}
-      padAngle={1}
-      title={`${totalVMs}`}
-      subTitle="VMs"
-      subTitleColor="var(--pf-t--global--text--color--subtle)"
-      titleFontSize={34}
-      labelFontSize={18}
-      itemsPerRow={2}
-      marginLeft="40%"
-      emptyStateTitle={REPORT_CARD_EMPTY_STATE_TITLES.migrationStatus}
-    />
-  );
+  const renderDonutChart = (): React.ReactNode =>
+    donutData.length === 0 ? (
+      <CardEmptyState title={REPORT_CARD_EMPTY_STATE_TITLES.migrationStatus} />
+    ) : (
+      <MigrationDonutChart
+        legendVariant="chart"
+        data={donutData}
+        legend={legend}
+        height={300}
+        width={420}
+        donutThickness={18}
+        padAngle={1}
+        title={`${totalVMs}`}
+        subTitle="VMs"
+        subTitleColor="var(--pf-t--global--text--color--subtle)"
+        titleFontSize={34}
+        labelFontSize={18}
+        itemsPerRow={2}
+        marginLeft="40%"
+      />
+    );
 
   const renderBreakdownChart = (showTotalsNote: boolean): React.ReactNode =>
     issuesBreakdown ? (

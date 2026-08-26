@@ -1,4 +1,9 @@
 import {
+  CardEmptyState,
+  MigrationDonutChart,
+  REPORT_CARD_EMPTY_STATE_TITLES,
+} from "@openshift-migration-advisor/shared-components";
+import {
   Card,
   CardBody,
   CardTitle,
@@ -12,8 +17,6 @@ import {
 } from "@patternfly/react-core";
 import React, { useMemo, useState } from "react";
 
-import MigrationDonutChart from "../../../core/components/MigrationDonutChart";
-import { REPORT_CARD_EMPTY_STATE_TITLES } from "./constants";
 import { DashboardExportSection } from "./DashboardExportSection";
 import { dashboardCard } from "./styles";
 
@@ -222,62 +225,79 @@ export const CpuAndMemoryOverview: React.FC<CpuAndMemoryOverviewProps> = ({
               title={VIEW_MODE_LABELS.memoryTiers}
               withMargin
             >
-              <MigrationDonutChart
-                data={memorySlices}
-                height={300}
-                width={420}
-                donutThickness={18}
-                titleFontSize={34}
-                legend={memoryLegend}
-                title={`${memorySlices.reduce(
-                  (acc, s) => acc + (Number(s.count) || 0),
-                  0,
-                )} VMs`}
-                subTitle={
-                  typeof memoryTotalGB === "number"
-                    ? `${memoryTotalGB} GB`
-                    : undefined
-                }
-                subTitleColor="var(--pf-t--global--text--color--subtle)"
-                itemsPerRow={Math.ceil(memorySlices.length / 2)}
-                labelFontSize={18}
-                marginLeft="0%"
-                emptyStateTitle={REPORT_CARD_EMPTY_STATE_TITLES.memory}
-                tooltipLabelFormatter={({ datum, percent }) =>
-                  `${datum.countDisplay}\n${percent.toFixed(1)}%`
-                }
-              />
+              {memorySlices.length === 0 ? (
+                <CardEmptyState title={REPORT_CARD_EMPTY_STATE_TITLES.memory} />
+              ) : (
+                <MigrationDonutChart
+                  legendVariant="chart"
+                  data={memorySlices}
+                  height={300}
+                  width={420}
+                  donutThickness={18}
+                  titleFontSize={34}
+                  legend={memoryLegend}
+                  title={`${memorySlices.reduce(
+                    (acc, s) => acc + (Number(s.count) || 0),
+                    0,
+                  )} VMs`}
+                  subTitle={
+                    typeof memoryTotalGB === "number"
+                      ? `${memoryTotalGB} GB`
+                      : undefined
+                  }
+                  subTitleColor="var(--pf-t--global--text--color--subtle)"
+                  itemsPerRow={Math.ceil(memorySlices.length / 2)}
+                  labelFontSize={18}
+                  marginLeft="0%"
+                  tooltipLabelFormatter={({ datum, percent }) =>
+                    `${datum.countDisplay}\n${percent.toFixed(1)}%`
+                  }
+                />
+              )}
             </DashboardExportSection>
             <DashboardExportSection title={VIEW_MODE_LABELS.vcpuTiers}>
-              <MigrationDonutChart
-                data={vcpuSlices}
-                height={300}
-                width={420}
-                donutThickness={18}
-                titleFontSize={34}
-                legend={vcpuLegend}
-                title={`${vcpuSlices.reduce(
-                  (acc, s) => acc + (Number(s.count) || 0),
-                  0,
-                )} VMs`}
-                subTitle={
-                  typeof cpuTotalCores === "number"
-                    ? `${cpuTotalCores.toLocaleString()} Cores`
-                    : undefined
-                }
-                subTitleColor="var(--pf-t--global--text--color--subtle)"
-                itemsPerRow={Math.ceil(vcpuSlices.length / 2)}
-                labelFontSize={18}
-                marginLeft="52%"
-                emptyStateTitle={REPORT_CARD_EMPTY_STATE_TITLES.cpu}
-                tooltipLabelFormatter={({ datum, percent }) =>
-                  `${datum.countDisplay}\n${percent.toFixed(1)}%`
-                }
-              />
+              {vcpuSlices.length === 0 ? (
+                <CardEmptyState title={REPORT_CARD_EMPTY_STATE_TITLES.cpu} />
+              ) : (
+                <MigrationDonutChart
+                  legendVariant="chart"
+                  data={vcpuSlices}
+                  height={300}
+                  width={420}
+                  donutThickness={18}
+                  titleFontSize={34}
+                  legend={vcpuLegend}
+                  title={`${vcpuSlices.reduce(
+                    (acc, s) => acc + (Number(s.count) || 0),
+                    0,
+                  )} VMs`}
+                  subTitle={
+                    typeof cpuTotalCores === "number"
+                      ? `${cpuTotalCores.toLocaleString()} Cores`
+                      : undefined
+                  }
+                  subTitleColor="var(--pf-t--global--text--color--subtle)"
+                  itemsPerRow={Math.ceil(vcpuSlices.length / 2)}
+                  labelFontSize={18}
+                  marginLeft="52%"
+                  tooltipLabelFormatter={({ datum, percent }) =>
+                    `${datum.countDisplay}\n${percent.toFixed(1)}%`
+                  }
+                />
+              )}
             </DashboardExportSection>
           </>
+        ) : activeSlices.length === 0 ? (
+          <CardEmptyState
+            title={
+              viewMode === "memoryTiers"
+                ? REPORT_CARD_EMPTY_STATE_TITLES.memory
+                : REPORT_CARD_EMPTY_STATE_TITLES.cpu
+            }
+          />
         ) : (
           <MigrationDonutChart
+            legendVariant="chart"
             data={activeSlices}
             height={300}
             width={420}
@@ -298,11 +318,6 @@ export const CpuAndMemoryOverview: React.FC<CpuAndMemoryOverviewProps> = ({
             itemsPerRow={Math.ceil(activeSlices.length / 2)}
             labelFontSize={18}
             marginLeft="52%"
-            emptyStateTitle={
-              viewMode === "memoryTiers"
-                ? REPORT_CARD_EMPTY_STATE_TITLES.memory
-                : REPORT_CARD_EMPTY_STATE_TITLES.cpu
-            }
             tooltipLabelFormatter={({ datum, percent }) =>
               `${datum.countDisplay}\n${percent.toFixed(1)}%`
             }

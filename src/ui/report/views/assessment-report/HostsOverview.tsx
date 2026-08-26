@@ -1,5 +1,10 @@
 import type { Host } from "@openshift-migration-advisor/planner-sdk";
 import {
+  CardEmptyState,
+  MigrationDonutChart,
+  REPORT_CARD_EMPTY_STATE_TITLES,
+} from "@openshift-migration-advisor/shared-components";
+import {
   Card,
   CardBody,
   CardTitle,
@@ -8,8 +13,6 @@ import {
 } from "@patternfly/react-core";
 import React, { useMemo } from "react";
 
-import MigrationDonutChart from "../../../core/components/MigrationDonutChart";
-import { REPORT_CARD_EMPTY_STATE_TITLES } from "./constants";
 import { dashboardCard } from "./styles";
 
 type HostLike = {
@@ -125,25 +128,29 @@ export const HostsOverview: React.FC<HostsOverviewProps> = ({
         </Flex>
       </CardTitle>
       <CardBody>
-        <MigrationDonutChart
-          data={slices}
-          height={300}
-          width={420}
-          donutThickness={18}
-          titleFontSize={34}
-          legend={legend}
-          legendWidth={680}
-          title={`${totalHosts}`}
-          subTitle="Hosts"
-          subTitleColor="var(--pf-t--global--text--color--subtle)"
-          itemsPerRow={2}
-          labelFontSize={16}
-          marginLeft="0%"
-          emptyStateTitle={REPORT_CARD_EMPTY_STATE_TITLES.hosts}
-          tooltipLabelFormatter={({ datum, percent }) =>
-            `${datum.countDisplay}\n${percent.toFixed(1)}%`
-          }
-        />
+        {slices.length === 0 ? (
+          <CardEmptyState title={REPORT_CARD_EMPTY_STATE_TITLES.hosts} />
+        ) : (
+          <MigrationDonutChart
+            legendVariant="chart"
+            data={slices}
+            height={300}
+            width={420}
+            donutThickness={18}
+            titleFontSize={34}
+            legend={legend}
+            legendWidth={680}
+            title={`${totalHosts}`}
+            subTitle="Hosts"
+            subTitleColor="var(--pf-t--global--text--color--subtle)"
+            itemsPerRow={2}
+            labelFontSize={16}
+            marginLeft="0%"
+            tooltipLabelFormatter={({ datum, percent }) =>
+              `${datum.countDisplay}\n${percent.toFixed(1)}%`
+            }
+          />
+        )}
       </CardBody>
     </Card>
   );

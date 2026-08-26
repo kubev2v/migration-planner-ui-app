@@ -27,6 +27,7 @@
     "@hookform/resolvers": "^5.4.0",
     "@openshift-migration-advisor/ioc": "0.21.0-a2b3990c29aa",
     "@openshift-migration-advisor/planner-sdk": "0.21.0-dd2aa7ede360",
+    "@openshift-migration-advisor/shared-components": "0.22.0-5dc08904d608",
     "@patternfly/react-charts": "^8.6.1",
     "@patternfly/react-component-groups": "^6.5.0",
     "@patternfly/react-core": "^6.6.1",

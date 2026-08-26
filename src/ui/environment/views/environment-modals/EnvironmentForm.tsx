@@ -1,15 +1,15 @@
 import { yupResolver } from "@hookform/resolvers/yup";
-import { Alert, Form, FormAlert, FormGroup } from "@patternfly/react-core";
-import React, { useEffect } from "react";
-import { FormProvider, useForm, useWatch } from "react-hook-form";
-import * as yup from "yup";
-
 import {
   CheckboxFormGroup,
   RadioButtonFormGroup,
   TextAreaFormGroup,
   TextInputFormGroup,
-} from "../../../core/components/form";
+} from "@openshift-migration-advisor/shared-components";
+import { Alert, Form, FormAlert, FormGroup } from "@patternfly/react-core";
+import React, { useEffect } from "react";
+import { FormProvider, useForm, useWatch } from "react-hook-form";
+import * as yup from "yup";
+
 import { validateSshKey } from "../../helpers/sshKey";
 import {
   validateHttpProxy,

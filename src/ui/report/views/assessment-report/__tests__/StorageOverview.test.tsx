@@ -10,24 +10,34 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { StorageOverview } from "../StorageOverview";
 
-// Mock MigrationDonutChart
-vi.mock("../../../../core/components/MigrationDonutChart", () => ({
-  default: ({
-    data,
-    title,
-    subTitle,
-  }: {
-    data: Array<{ name: string; count: number }>;
-    title: string;
-    subTitle: string;
-  }): JSX.Element => (
-    <div data-testid="donut-chart">
-      <div data-testid="chart-title">{title}</div>
-      <div data-testid="chart-subtitle">{subTitle}</div>
-      <div data-testid="chart-data">{JSON.stringify(data)}</div>
-    </div>
-  ),
-}));
+vi.mock(
+  "@openshift-migration-advisor/shared-components",
+  async (importOriginal) => {
+    const actual =
+      await importOriginal<
+        typeof import("@openshift-migration-advisor/shared-components")
+      >();
+
+    return {
+      ...actual,
+      MigrationDonutChart: ({
+        data,
+        title,
+        subTitle,
+      }: {
+        data: Array<{ name: string; count: number }>;
+        title: string;
+        subTitle: string;
+      }): JSX.Element => (
+        <div data-testid="donut-chart">
+          <div data-testid="chart-title">{title}</div>
+          <div data-testid="chart-subtitle">{subTitle}</div>
+          <div data-testid="chart-data">{JSON.stringify(data)}</div>
+        </div>
+      ),
+    };
+  },
+);
 
 // Mock PatternFly Chart components
 vi.mock("@patternfly/react-charts/victory", () => ({
@@ -502,7 +512,9 @@ describe("StorageOverview", () => {
         />,
       );
 
-      expect(screen.getByTestId("donut-chart")).toBeInTheDocument();
+      expect(
+        screen.getByText("Storage data not collected"),
+      ).toBeInTheDocument();
     });
 
     it("handles missing optional props with defaults", () => {

@@ -3,6 +3,11 @@ import type {
   DiskTypeSummary,
 } from "@openshift-migration-advisor/planner-sdk";
 import {
+  CardEmptyState,
+  MigrationDonutChart,
+  REPORT_CARD_EMPTY_STATE_TITLES,
+} from "@openshift-migration-advisor/shared-components";
+import {
   Chart,
   ChartAxis,
   ChartBar,
@@ -31,9 +36,6 @@ import {
   themedChartTooltipFlyoutStyle,
   themedChartTooltipStyle,
 } from "../../../../lib/patternfly/flyoutAppendTo";
-import { CardEmptyState } from "../../../core/components/CardEmptyState";
-import MigrationDonutChart from "../../../core/components/MigrationDonutChart";
-import { REPORT_CARD_EMPTY_STATE_TITLES } from "./constants";
 import { DashboardExportSection } from "./DashboardExportSection";
 import {
   dashboardCard,
@@ -492,25 +494,32 @@ export const StorageOverview: React.FC<StorageOverviewProps> = ({
               </>
             )
           ) : viewMode === "sharedDisks" ? (
-            <MigrationDonutChart
-              data={sharedDisksChartData}
-              height={300}
-              width={420}
-              donutThickness={18}
-              titleFontSize={34}
-              title={`${totalVMs} VMs`}
-              subTitle={`${normalizedWithShared} with shared disks`}
-              subTitleColor="var(--pf-t--global--text--color--subtle)"
-              itemsPerRow={Math.ceil(sharedDisksChartData.length / 2)}
-              labelFontSize={18}
-              marginLeft="52%"
-              emptyStateTitle={REPORT_CARD_EMPTY_STATE_TITLES.storage}
-              tooltipLabelFormatter={({ datum, percent }) =>
-                `${datum.countDisplay}\n${percent.toFixed(1)}%`
-              }
-            />
+            sharedDisksChartData.length === 0 ? (
+              <CardEmptyState title={REPORT_CARD_EMPTY_STATE_TITLES.storage} />
+            ) : (
+              <MigrationDonutChart
+                legendVariant="chart"
+                data={sharedDisksChartData}
+                height={300}
+                width={420}
+                donutThickness={18}
+                titleFontSize={34}
+                title={`${totalVMs} VMs`}
+                subTitle={`${normalizedWithShared} with shared disks`}
+                subTitleColor="var(--pf-t--global--text--color--subtle)"
+                itemsPerRow={Math.ceil(sharedDisksChartData.length / 2)}
+                labelFontSize={18}
+                marginLeft="52%"
+                tooltipLabelFormatter={({ datum, percent }) =>
+                  `${datum.countDisplay}\n${percent.toFixed(1)}%`
+                }
+              />
+            )
+          ) : chartData.length === 0 ? (
+            <CardEmptyState title={REPORT_CARD_EMPTY_STATE_TITLES.storage} />
           ) : (
             <MigrationDonutChart
+              legendVariant="chart"
               data={chartData}
               height={300}
               width={420}
@@ -530,7 +539,6 @@ export const StorageOverview: React.FC<StorageOverviewProps> = ({
               itemsPerRow={Math.min(Math.ceil(chartData.length / 2), 2)}
               legendWidth={420}
               labelFontSize={14}
-              emptyStateTitle={REPORT_CARD_EMPTY_STATE_TITLES.storage}
               tooltipLabelFormatter={({ datum, percent }) =>
                 `${datum.countDisplay}\n${percent.toFixed(1)}%`
               }
@@ -612,68 +620,86 @@ export const StorageOverview: React.FC<StorageOverviewProps> = ({
               </div>
             </DashboardExportSection>
             <DashboardExportSection title={VIEW_MODE_LABELS.vmCount} withMargin>
-              <MigrationDonutChart
-                data={chartDataForVmCount}
-                height={300}
-                width={420}
-                donutThickness={18}
-                titleFontSize={34}
-                title={`${totals.totalVMs} VMs`}
-                subTitle={`${totals.totalSize.toFixed(2)} TB`}
-                subTitleColor="var(--pf-t--global--text--color--subtle)"
-                itemsPerRow={Math.min(
-                  Math.ceil(chartDataForVmCount.length / 2),
-                  2,
-                )}
-                legendWidth={420}
-                labelFontSize={14}
-                emptyStateTitle={REPORT_CARD_EMPTY_STATE_TITLES.storage}
-                tooltipLabelFormatter={({ datum, percent }) =>
-                  `${datum.countDisplay}\n${percent.toFixed(1)}%`
-                }
-              />
-            </DashboardExportSection>
-            <DashboardExportSection title={VIEW_MODE_LABELS.totalSize}>
-              <MigrationDonutChart
-                data={chartDataForTotalSize}
-                height={300}
-                width={420}
-                donutThickness={18}
-                titleFontSize={34}
-                title={`${totals.totalSize.toFixed(2)} TB`}
-                subTitle={`${totals.totalVMs} VMs`}
-                subTitleColor="var(--pf-t--global--text--color--subtle)"
-                itemsPerRow={Math.min(
-                  Math.ceil(chartDataForTotalSize.length / 2),
-                  2,
-                )}
-                legendWidth={420}
-                labelFontSize={14}
-                emptyStateTitle={REPORT_CARD_EMPTY_STATE_TITLES.storage}
-                tooltipLabelFormatter={({ datum, percent }) =>
-                  `${datum.countDisplay}\n${percent.toFixed(1)}%`
-                }
-              />
-            </DashboardExportSection>
-            {isSharedDisksViewAvailable && (
-              <DashboardExportSection title={VIEW_MODE_LABELS.sharedDisks}>
+              {chartDataForVmCount.length === 0 ? (
+                <CardEmptyState
+                  title={REPORT_CARD_EMPTY_STATE_TITLES.storage}
+                />
+              ) : (
                 <MigrationDonutChart
-                  data={sharedDisksChartData}
+                  legendVariant="chart"
+                  data={chartDataForVmCount}
                   height={300}
                   width={420}
                   donutThickness={18}
                   titleFontSize={34}
-                  title={`${totalVMs} VMs`}
-                  subTitle={`${normalizedWithShared} with shared disks`}
+                  title={`${totals.totalVMs} VMs`}
+                  subTitle={`${totals.totalSize.toFixed(2)} TB`}
                   subTitleColor="var(--pf-t--global--text--color--subtle)"
-                  itemsPerRow={Math.ceil(sharedDisksChartData.length / 2)}
-                  labelFontSize={18}
-                  marginLeft="52%"
-                  emptyStateTitle={REPORT_CARD_EMPTY_STATE_TITLES.storage}
+                  itemsPerRow={Math.min(
+                    Math.ceil(chartDataForVmCount.length / 2),
+                    2,
+                  )}
+                  legendWidth={420}
+                  labelFontSize={14}
                   tooltipLabelFormatter={({ datum, percent }) =>
                     `${datum.countDisplay}\n${percent.toFixed(1)}%`
                   }
                 />
+              )}
+            </DashboardExportSection>
+            <DashboardExportSection title={VIEW_MODE_LABELS.totalSize}>
+              {chartDataForTotalSize.length === 0 ? (
+                <CardEmptyState
+                  title={REPORT_CARD_EMPTY_STATE_TITLES.storage}
+                />
+              ) : (
+                <MigrationDonutChart
+                  legendVariant="chart"
+                  data={chartDataForTotalSize}
+                  height={300}
+                  width={420}
+                  donutThickness={18}
+                  titleFontSize={34}
+                  title={`${totals.totalSize.toFixed(2)} TB`}
+                  subTitle={`${totals.totalVMs} VMs`}
+                  subTitleColor="var(--pf-t--global--text--color--subtle)"
+                  itemsPerRow={Math.min(
+                    Math.ceil(chartDataForTotalSize.length / 2),
+                    2,
+                  )}
+                  legendWidth={420}
+                  labelFontSize={14}
+                  tooltipLabelFormatter={({ datum, percent }) =>
+                    `${datum.countDisplay}\n${percent.toFixed(1)}%`
+                  }
+                />
+              )}
+            </DashboardExportSection>
+            {isSharedDisksViewAvailable && (
+              <DashboardExportSection title={VIEW_MODE_LABELS.sharedDisks}>
+                {sharedDisksChartData.length === 0 ? (
+                  <CardEmptyState
+                    title={REPORT_CARD_EMPTY_STATE_TITLES.storage}
+                  />
+                ) : (
+                  <MigrationDonutChart
+                    legendVariant="chart"
+                    data={sharedDisksChartData}
+                    height={300}
+                    width={420}
+                    donutThickness={18}
+                    titleFontSize={34}
+                    title={`${totalVMs} VMs`}
+                    subTitle={`${normalizedWithShared} with shared disks`}
+                    subTitleColor="var(--pf-t--global--text--color--subtle)"
+                    itemsPerRow={Math.ceil(sharedDisksChartData.length / 2)}
+                    labelFontSize={18}
+                    marginLeft="52%"
+                    tooltipLabelFormatter={({ datum, percent }) =>
+                      `${datum.countDisplay}\n${percent.toFixed(1)}%`
+                    }
+                  />
+                )}
               </DashboardExportSection>
             )}
           </>
