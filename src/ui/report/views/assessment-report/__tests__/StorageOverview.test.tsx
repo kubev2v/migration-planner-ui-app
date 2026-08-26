@@ -30,7 +30,7 @@ vi.mock("../../../../core/components/MigrationDonutChart", () => ({
 }));
 
 // Mock PatternFly Chart components
-vi.mock("@patternfly/react-charts", () => ({
+vi.mock("@patternfly/react-charts/victory", () => ({
   Chart: ({
     ariaTitle,
     children,

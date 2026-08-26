@@ -1,4 +1,4 @@
-import { ChartLegend, ChartPie } from "@patternfly/react-charts";
+import { ChartLegend, ChartPie } from "@patternfly/react-charts/victory";
 import { Content } from "@patternfly/react-core";
 import React from "react";
 

@@ -15,7 +15,7 @@ import {
   ChartThemeColor,
   ChartTooltip,
   ChartVoronoiContainer,
-} from "@patternfly/react-charts";
+} from "@patternfly/react-charts/victory";
 import {
   Alert,
   Badge,
