@@ -3,6 +3,10 @@ import type {
   DiskTypeSummary,
 } from "@openshift-migration-advisor/planner-sdk";
 import {
+  CardEmptyState,
+  REPORT_CARD_EMPTY_STATE_TITLES,
+} from "@openshift-migration-advisor/shared-components";
+import {
   Chart,
   ChartAxis,
   ChartBar,
@@ -31,9 +35,7 @@ import {
   themedChartTooltipFlyoutStyle,
   themedChartTooltipStyle,
 } from "../../../../lib/patternfly/flyoutAppendTo";
-import { CardEmptyState } from "../../../core/components/CardEmptyState";
 import MigrationDonutChart from "../../../core/components/MigrationDonutChart";
-import { REPORT_CARD_EMPTY_STATE_TITLES } from "./constants";
 import { DashboardExportSection } from "./DashboardExportSection";
 import {
   dashboardCard,

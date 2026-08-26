@@ -1,10 +1,9 @@
 import { yupResolver } from "@hookform/resolvers/yup";
+import { TextAreaFormGroup } from "@openshift-migration-advisor/shared-components";
 import { Form } from "@patternfly/react-core";
 import React, { useEffect } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import * as yup from "yup";
-
-import { TextAreaFormGroup } from "../../../core/components/form";
 
 export interface DenyPartnerRequestFormValues {
   reason: string;

@@ -10,6 +10,7 @@ import type {
 import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
+import { mockSharedComponents } from "../../../../../__tests__/mockSharedComponents";
 import { Dashboard } from "../Dashboard";
 
 // Mock heavy child components to keep tests lightweight
@@ -31,9 +32,11 @@ vi.mock("../HostsOverview", () => ({
 vi.mock("../VMMigrationStatus", () => ({
   VMMigrationStatus: (): JSX.Element => <div data-testid="vm-status" />,
 }));
-vi.mock("../OSDistribution", () => ({
-  OSDistribution: (): JSX.Element => <div data-testid="os-distribution" />,
-}));
+vi.mock("@openshift-migration-advisor/shared-components", (importOriginal) =>
+  mockSharedComponents(importOriginal, {
+    OSDistribution: (): JSX.Element => <div data-testid="os-distribution" />,
+  }),
+);
 vi.mock("../WarningsTable", () => ({
   WarningsTable: (): JSX.Element => <div data-testid="warnings" />,
 }));

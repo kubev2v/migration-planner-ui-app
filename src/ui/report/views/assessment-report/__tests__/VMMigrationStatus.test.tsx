@@ -6,6 +6,7 @@ import userEvent from "@testing-library/user-event";
 import React from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
+import { mockSharedComponents } from "../../../../../__tests__/mockSharedComponents";
 import { VMMigrationStatus } from "../VMMigrationStatus";
 
 vi.mock("../../../../core/components/MigrationDonutChart", () => ({
@@ -23,11 +24,13 @@ vi.mock("../../../../core/components/MigrationDonutChart", () => ({
   ),
 }));
 
-vi.mock("../../../../core/components/CardEmptyState", () => ({
-  CardEmptyState: ({ title }: { title: string }): JSX.Element => (
-    <div data-testid="empty-state">{title}</div>
-  ),
-}));
+vi.mock("@openshift-migration-advisor/shared-components", (importOriginal) =>
+  mockSharedComponents(importOriginal, {
+    CardEmptyState: ({ title }: { title: string }): JSX.Element => (
+      <div data-testid="empty-state">{title}</div>
+    ),
+  }),
+);
 
 vi.mock("@patternfly/react-core", async (importOriginal) => {
   const actual =

@@ -4,6 +4,10 @@ import type {
   VMResourceBreakdown,
   VMs,
 } from "@openshift-migration-advisor/planner-sdk";
+import {
+  OSDistribution,
+  type OSDistributionEntry,
+} from "@openshift-migration-advisor/shared-components";
 import { Gallery, GalleryItem, Grid, GridItem } from "@patternfly/react-core";
 import React from "react";
 
@@ -12,8 +16,6 @@ import { CpuAndMemoryOverview } from "./CpuAndMemoryOverview";
 import { ErrorTable } from "./ErrorTable";
 import { HostsOverview } from "./HostsOverview";
 import { NetworkOverview } from "./NetworkOverview";
-import { OSDistribution } from "./OSDistribution";
-import type { OSDistributionEntry } from "./osSupportTier";
 import { StorageOverview } from "./StorageOverview";
 import { VMMigrationStatus } from "./VMMigrationStatus";
 import { WarningsTable } from "./WarningsTable";

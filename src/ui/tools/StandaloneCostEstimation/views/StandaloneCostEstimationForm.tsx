@@ -1,6 +1,11 @@
 import { css } from "@emotion/css";
 import { yupResolver } from "@hookform/resolvers/yup";
 import {
+  CheckboxFormGroup,
+  SelectFormGroup,
+  TextInputFormGroup,
+} from "@openshift-migration-advisor/shared-components";
+import {
   ActionGroup,
   Button,
   Checkbox,
@@ -16,11 +21,6 @@ import { useEffect, useMemo } from "react";
 import { FormProvider, useForm, useWatch } from "react-hook-form";
 
 import type { StandaloneCostEstimationFormValues } from "../../../../models/StandaloneCostEstimationModel";
-import {
-  CheckboxFormGroup,
-  SelectFormGroup,
-  TextInputFormGroup,
-} from "../../../core/components/form";
 import { standaloneCostEstimationValidationSchema } from "./validation";
 
 const styles = {

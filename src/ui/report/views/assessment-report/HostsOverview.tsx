@@ -1,4 +1,5 @@
 import type { Host } from "@openshift-migration-advisor/planner-sdk";
+import { REPORT_CARD_EMPTY_STATE_TITLES } from "@openshift-migration-advisor/shared-components";
 import {
   Card,
   CardBody,
@@ -9,7 +10,6 @@ import {
 import React, { useMemo } from "react";
 
 import MigrationDonutChart from "../../../core/components/MigrationDonutChart";
-import { REPORT_CARD_EMPTY_STATE_TITLES } from "./constants";
 import { dashboardCard } from "./styles";
 
 type HostLike = {

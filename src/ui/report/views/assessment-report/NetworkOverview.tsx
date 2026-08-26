@@ -2,6 +2,7 @@ import type {
   Infra,
   VMResourceBreakdown,
 } from "@openshift-migration-advisor/planner-sdk";
+import { REPORT_CARD_EMPTY_STATE_TITLES } from "@openshift-migration-advisor/shared-components";
 import {
   Card,
   CardBody,
@@ -17,7 +18,6 @@ import {
 import React, { useMemo, useState } from "react";
 
 import MigrationDonutChart from "../../../core/components/MigrationDonutChart";
-import { REPORT_CARD_EMPTY_STATE_TITLES } from "./constants";
 import { DashboardExportSection } from "./DashboardExportSection";
 import { dashboardCard } from "./styles";
 

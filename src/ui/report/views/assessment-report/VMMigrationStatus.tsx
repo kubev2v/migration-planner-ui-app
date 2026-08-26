@@ -1,5 +1,11 @@
 import type { IssuesBreakdown } from "@openshift-migration-advisor/planner-sdk";
 import {
+  CardEmptyState,
+  chartColorFailure,
+  chartColorSuccess,
+  REPORT_CARD_EMPTY_STATE_TITLES,
+} from "@openshift-migration-advisor/shared-components";
+import {
   Card,
   CardBody,
   CardTitle,
@@ -14,14 +20,8 @@ import {
 import RhUiVirtualMachineIcon from "@patternfly/react-icons/dist/esm/icons/virtual-machine-icon";
 import React, { useState } from "react";
 
-import { CardEmptyState } from "../../../core/components/CardEmptyState";
 import IssuesBreakdownChart from "../../../core/components/IssuesBreakdownChart";
 import MigrationDonutChart from "../../../core/components/MigrationDonutChart";
-import {
-  chartColorFailure,
-  chartColorSuccess,
-  REPORT_CARD_EMPTY_STATE_TITLES,
-} from "./constants";
 import { DashboardExportSection } from "./DashboardExportSection";
 import {
   dashboardCard,

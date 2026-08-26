@@ -1,3 +1,4 @@
+import { CardEmptyState } from "@openshift-migration-advisor/shared-components";
 import {
   ChartDonut,
   ChartLabel,
@@ -12,7 +13,6 @@ import {
   themedChartTooltipFlyoutStyle,
   themedChartTooltipStyle,
 } from "../../../lib/patternfly/flyoutAppendTo";
-import { CardEmptyState } from "./CardEmptyState";
 
 interface OSData {
   name: string;

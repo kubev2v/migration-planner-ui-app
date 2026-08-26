@@ -1,6 +1,10 @@
 import { css } from "@emotion/css";
 import type { InventoryData } from "@openshift-migration-advisor/planner-sdk";
 import {
+  CardEmptyState,
+  REPORT_CARD_EMPTY_STATE_TITLES,
+} from "@openshift-migration-advisor/shared-components";
+import {
   Card,
   CardBody,
   CardTitle,
@@ -14,9 +18,7 @@ import {
 } from "@patternfly/react-core";
 import React, { useMemo, useState } from "react";
 
-import { CardEmptyState } from "../../../core/components/CardEmptyState";
 import MigrationDonutChart from "../../../core/components/MigrationDonutChart";
-import { REPORT_CARD_EMPTY_STATE_TITLES } from "./constants";
 import { DashboardExportSection } from "./DashboardExportSection";
 import { dashboardCard } from "./styles";
 

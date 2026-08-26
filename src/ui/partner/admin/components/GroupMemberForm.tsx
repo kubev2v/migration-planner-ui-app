@@ -3,12 +3,11 @@ import type {
   Member,
   MemberCreate,
 } from "@openshift-migration-advisor/planner-sdk";
+import { TextInputFormGroup } from "@openshift-migration-advisor/shared-components";
 import { Form } from "@patternfly/react-core";
 import React, { useEffect } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import * as yup from "yup";
-
-import { TextInputFormGroup } from "../../../core/components/form";
 
 export type CreateGroupMemberFormValues = MemberCreate;
 

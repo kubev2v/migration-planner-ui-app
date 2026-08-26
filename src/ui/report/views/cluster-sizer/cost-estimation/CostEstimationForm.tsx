@@ -1,6 +1,11 @@
 import { css } from "@emotion/css";
 import { yupResolver } from "@hookform/resolvers/yup";
 import {
+  CheckboxFormGroup,
+  SelectFormGroup,
+  TextInputFormGroup,
+} from "@openshift-migration-advisor/shared-components";
+import {
   ActionGroup,
   Button,
   Checkbox,
@@ -17,11 +22,6 @@ import type {
   ACMConfig,
   CostEstimationFormValues,
 } from "../../../../../models/CostEstimationModel";
-import {
-  CheckboxFormGroup,
-  SelectFormGroup,
-  TextInputFormGroup,
-} from "../../../../core/components/form";
 import { costEstimationValidationSchema } from "./validation";
 
 const styles = {

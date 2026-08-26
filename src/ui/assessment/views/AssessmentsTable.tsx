@@ -1,3 +1,4 @@
+import { EmptySearchResults } from "@openshift-migration-advisor/shared-components";
 import {
   Button,
   Dropdown,
@@ -32,7 +33,6 @@ import { formatRelativeTime } from "../../../lib/common/Time";
 import { themeTooltipFlyoutProps } from "../../../lib/patternfly/flyoutAppendTo";
 import type { AssessmentModel } from "../../../models/AssessmentModel";
 import { routes } from "../../../routing/Routes";
-import { EmptySearchResults } from "../../core/components/EmptySearchResults";
 import {
   type AssessmentSourceFilterKey,
   getAssessmentSourceLabel,
