@@ -31,9 +31,20 @@ vi.mock("../HostsOverview", () => ({
 vi.mock("../VMMigrationStatus", () => ({
   VMMigrationStatus: (): JSX.Element => <div data-testid="vm-status" />,
 }));
-vi.mock("../OSDistribution", () => ({
-  OSDistribution: (): JSX.Element => <div data-testid="os-distribution" />,
-}));
+vi.mock(
+  "@openshift-migration-advisor/shared-components",
+  async (importOriginal) => {
+    const actual =
+      await importOriginal<
+        typeof import("@openshift-migration-advisor/shared-components")
+      >();
+
+    return {
+      ...actual,
+      OSDistribution: (): JSX.Element => <div data-testid="os-distribution" />,
+    };
+  },
+);
 vi.mock("../WarningsTable", () => ({
   WarningsTable: (): JSX.Element => <div data-testid="warnings" />,
 }));

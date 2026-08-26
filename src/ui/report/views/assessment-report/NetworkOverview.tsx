@@ -3,6 +3,11 @@ import type {
   VMResourceBreakdown,
 } from "@openshift-migration-advisor/planner-sdk";
 import {
+  CardEmptyState,
+  MigrationDonutChart,
+  REPORT_CARD_EMPTY_STATE_TITLES,
+} from "@openshift-migration-advisor/shared-components";
+import {
   Card,
   CardBody,
   CardTitle,
@@ -16,8 +21,6 @@ import {
 } from "@patternfly/react-core";
 import React, { useMemo, useState } from "react";
 
-import MigrationDonutChart from "../../../core/components/MigrationDonutChart";
-import { REPORT_CARD_EMPTY_STATE_TITLES } from "./constants";
 import { DashboardExportSection } from "./DashboardExportSection";
 import { dashboardCard } from "./styles";
 
@@ -320,84 +323,106 @@ export const NetworkOverview: React.FC<NetworkOverviewProps> = ({
               title={VIEW_MODE_LABELS.networkDistribution}
               withMargin
             >
-              <MigrationDonutChart
-                data={chartData}
-                height={300}
-                width={420}
-                donutThickness={18}
-                titleFontSize={34}
-                legend={legend}
-                title={title}
-                subTitle={subTitle}
-                subTitleColor="var(--pf-t--global--text--color--subtle)"
-                itemsPerRow={Math.ceil(chartData.length / 2)}
-                labelFontSize={18}
-                emptyStateTitle={REPORT_CARD_EMPTY_STATE_TITLES.networks}
-                tooltipLabelFormatter={({ datum, percent }) =>
-                  `${datum.countDisplay}\n${percent.toFixed(1)}%\nVLAN: ${legendVlanMap[datum.legendCategory] ?? "-"}`
-                }
-              />
+              {chartData.length === 0 ? (
+                <CardEmptyState
+                  title={REPORT_CARD_EMPTY_STATE_TITLES.networks}
+                />
+              ) : (
+                <MigrationDonutChart
+                  legendVariant="chart"
+                  data={chartData}
+                  height={300}
+                  width={420}
+                  donutThickness={18}
+                  titleFontSize={34}
+                  legend={legend}
+                  title={title}
+                  subTitle={subTitle}
+                  subTitleColor="var(--pf-t--global--text--color--subtle)"
+                  itemsPerRow={Math.ceil(chartData.length / 2)}
+                  labelFontSize={18}
+                  tooltipLabelFormatter={({ datum, percent }) =>
+                    `${datum.countDisplay}\n${percent.toFixed(1)}%\nVLAN: ${legendVlanMap[datum.legendCategory] ?? "-"}`
+                  }
+                />
+              )}
             </DashboardExportSection>
             <DashboardExportSection title={VIEW_MODE_LABELS.nicCount}>
-              <MigrationDonutChart
-                data={nicChartData}
-                height={300}
-                width={420}
-                donutThickness={18}
-                titleFontSize={34}
-                legend={nicLegend}
-                title={nicTitle}
-                subTitle={nicSubTitle}
-                subTitleColor="var(--pf-t--global--text--color--subtle)"
-                itemsPerRow={Math.ceil((nicChartData?.length ?? 0) / 2)}
-                labelFontSize={18}
-                emptyStateTitle={REPORT_CARD_EMPTY_STATE_TITLES.nicCount}
-                tooltipLabelFormatter={({ datum, percent }) =>
-                  `${datum.countDisplay}\n${percent.toFixed(1)}%`
-                }
-              />
+              {!nicChartData?.length ? (
+                <CardEmptyState
+                  title={REPORT_CARD_EMPTY_STATE_TITLES.nicCount}
+                />
+              ) : (
+                <MigrationDonutChart
+                  legendVariant="chart"
+                  data={nicChartData}
+                  height={300}
+                  width={420}
+                  donutThickness={18}
+                  titleFontSize={34}
+                  legend={nicLegend}
+                  title={nicTitle}
+                  subTitle={nicSubTitle}
+                  subTitleColor="var(--pf-t--global--text--color--subtle)"
+                  itemsPerRow={Math.ceil(nicChartData.length / 2)}
+                  labelFontSize={18}
+                  tooltipLabelFormatter={({ datum, percent }) =>
+                    `${datum.countDisplay}\n${percent.toFixed(1)}%`
+                  }
+                />
+              )}
             </DashboardExportSection>
           </>
         ) : (
           <>
-            {viewMode === "networkDistribution" && (
-              <MigrationDonutChart
-                data={chartData}
-                height={300}
-                width={420}
-                donutThickness={18}
-                titleFontSize={34}
-                legend={legend}
-                title={title}
-                subTitle={subTitle}
-                subTitleColor="var(--pf-t--global--text--color--subtle)"
-                itemsPerRow={Math.ceil(chartData.length / 2)}
-                labelFontSize={18}
-                emptyStateTitle={REPORT_CARD_EMPTY_STATE_TITLES.networks}
-                tooltipLabelFormatter={({ datum, percent }) =>
-                  `${datum.countDisplay}\n${percent.toFixed(1)}%\nVLAN: ${legendVlanMap[datum.legendCategory] ?? "-"}`
-                }
-              />
-            )}
-            {viewMode === "nicCount" && (
-              <MigrationDonutChart
-                data={nicChartData}
-                height={300}
-                width={420}
-                donutThickness={18}
-                titleFontSize={34}
-                legend={nicLegend}
-                title={nicTitle}
-                subTitle={nicSubTitle}
-                subTitleColor="var(--pf-t--global--text--color--subtle)"
-                itemsPerRow={Math.ceil((nicChartData?.length ?? 0) / 2)}
-                labelFontSize={18}
-                emptyStateTitle={REPORT_CARD_EMPTY_STATE_TITLES.nicCount}
-                tooltipLabelFormatter={({ datum, percent }) =>
-                  `${datum.countDisplay}\n${percent.toFixed(1)}%`
-                }
-              />
-            )}
+            {viewMode === "networkDistribution" &&
+              (chartData.length === 0 ? (
+                <CardEmptyState
+                  title={REPORT_CARD_EMPTY_STATE_TITLES.networks}
+                />
+              ) : (
+                <MigrationDonutChart
+                  legendVariant="chart"
+                  data={chartData}
+                  height={300}
+                  width={420}
+                  donutThickness={18}
+                  titleFontSize={34}
+                  legend={legend}
+                  title={title}
+                  subTitle={subTitle}
+                  subTitleColor="var(--pf-t--global--text--color--subtle)"
+                  itemsPerRow={Math.ceil(chartData.length / 2)}
+                  labelFontSize={18}
+                  tooltipLabelFormatter={({ datum, percent }) =>
+                    `${datum.countDisplay}\n${percent.toFixed(1)}%\nVLAN: ${legendVlanMap[datum.legendCategory] ?? "-"}`
+                  }
+                />
+              ))}
+            {viewMode === "nicCount" &&
+              (!nicChartData?.length ? (
+                <CardEmptyState
+                  title={REPORT_CARD_EMPTY_STATE_TITLES.nicCount}
+                />
+              ) : (
+                <MigrationDonutChart
+                  legendVariant="chart"
+                  data={nicChartData}
+                  height={300}
+                  width={420}
+                  donutThickness={18}
+                  titleFontSize={34}
+                  legend={nicLegend}
+                  title={nicTitle}
+                  subTitle={nicSubTitle}
+                  subTitleColor="var(--pf-t--global--text--color--subtle)"
+                  itemsPerRow={Math.ceil(nicChartData.length / 2)}
+                  labelFontSize={18}
+                  tooltipLabelFormatter={({ datum, percent }) =>
+                    `${datum.countDisplay}\n${percent.toFixed(1)}%`
+                  }
+                />
+              ))}
           </>
         )}
       </CardBody>

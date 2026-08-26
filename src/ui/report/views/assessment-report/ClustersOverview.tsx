@@ -1,6 +1,11 @@
 import { css } from "@emotion/css";
 import type { InventoryData } from "@openshift-migration-advisor/planner-sdk";
 import {
+  CardEmptyState,
+  MigrationDonutChart,
+  REPORT_CARD_EMPTY_STATE_TITLES,
+} from "@openshift-migration-advisor/shared-components";
+import {
   Card,
   CardBody,
   CardTitle,
@@ -14,9 +19,6 @@ import {
 } from "@patternfly/react-core";
 import React, { useMemo, useState } from "react";
 
-import { CardEmptyState } from "../../../core/components/CardEmptyState";
-import MigrationDonutChart from "../../../core/components/MigrationDonutChart";
-import { REPORT_CARD_EMPTY_STATE_TITLES } from "./constants";
 import { DashboardExportSection } from "./DashboardExportSection";
 import { dashboardCard } from "./styles";
 
@@ -529,24 +531,32 @@ export const ClustersOverview: React.FC<ClustersOverviewProps> = ({
                 title={VIEW_MODE_LABELS.vmByCluster}
                 withMargin
               >
-                <MigrationDonutChart
-                  data={vmByClusterData.chartData}
-                  height={300}
-                  width={420}
-                  donutThickness={18}
-                  titleFontSize={34}
-                  legend={vmByClusterData.legend}
-                  title={vmByClusterData.title}
-                  subTitle={vmByClusterData.subTitle}
-                  subTitleColor="var(--pf-t--global--text--color--subtle)"
-                  itemsPerRow={Math.ceil(vmByClusterData.chartData.length / 2)}
-                  labelFontSize={18}
-                  marginLeft="12%"
-                  emptyStateTitle={REPORT_CARD_EMPTY_STATE_TITLES.clusters}
-                  tooltipLabelFormatter={({ datum, percent }) =>
-                    `${datum.countDisplay}\n${percent.toFixed(1)}%`
-                  }
-                />
+                {vmByClusterData.chartData.length === 0 ? (
+                  <CardEmptyState
+                    title={REPORT_CARD_EMPTY_STATE_TITLES.clusters}
+                  />
+                ) : (
+                  <MigrationDonutChart
+                    legendVariant="chart"
+                    data={vmByClusterData.chartData}
+                    height={300}
+                    width={420}
+                    donutThickness={18}
+                    titleFontSize={34}
+                    legend={vmByClusterData.legend}
+                    title={vmByClusterData.title}
+                    subTitle={vmByClusterData.subTitle}
+                    subTitleColor="var(--pf-t--global--text--color--subtle)"
+                    itemsPerRow={Math.ceil(
+                      vmByClusterData.chartData.length / 2,
+                    )}
+                    labelFontSize={18}
+                    marginLeft="12%"
+                    tooltipLabelFormatter={({ datum, percent }) =>
+                      `${datum.countDisplay}\n${percent.toFixed(1)}%`
+                    }
+                  />
+                )}
               </DashboardExportSection>
             )}
             {dataCenterDistributionData && (
@@ -554,26 +564,32 @@ export const ClustersOverview: React.FC<ClustersOverviewProps> = ({
                 title={VIEW_MODE_LABELS.dataCenterDistribution}
                 withMargin={!!cpuOverCommitmentData}
               >
-                <MigrationDonutChart
-                  data={dataCenterDistributionData.chartData}
-                  height={300}
-                  width={420}
-                  donutThickness={18}
-                  titleFontSize={34}
-                  legend={dataCenterDistributionData.legend}
-                  title={dataCenterDistributionData.title}
-                  subTitle={dataCenterDistributionData.subTitle}
-                  subTitleColor="var(--pf-t--global--text--color--subtle)"
-                  itemsPerRow={Math.ceil(
-                    dataCenterDistributionData.chartData.length / 2,
-                  )}
-                  labelFontSize={17}
-                  marginLeft="0%"
-                  emptyStateTitle={REPORT_CARD_EMPTY_STATE_TITLES.clusters}
-                  tooltipLabelFormatter={({ datum, percent }) =>
-                    `${datum.countDisplay}\n${percent.toFixed(1)}%`
-                  }
-                />
+                {dataCenterDistributionData.chartData.length === 0 ? (
+                  <CardEmptyState
+                    title={REPORT_CARD_EMPTY_STATE_TITLES.clusters}
+                  />
+                ) : (
+                  <MigrationDonutChart
+                    legendVariant="chart"
+                    data={dataCenterDistributionData.chartData}
+                    height={300}
+                    width={420}
+                    donutThickness={18}
+                    titleFontSize={34}
+                    legend={dataCenterDistributionData.legend}
+                    title={dataCenterDistributionData.title}
+                    subTitle={dataCenterDistributionData.subTitle}
+                    subTitleColor="var(--pf-t--global--text--color--subtle)"
+                    itemsPerRow={Math.ceil(
+                      dataCenterDistributionData.chartData.length / 2,
+                    )}
+                    labelFontSize={17}
+                    marginLeft="0%"
+                    tooltipLabelFormatter={({ datum, percent }) =>
+                      `${datum.countDisplay}\n${percent.toFixed(1)}%`
+                    }
+                  />
+                )}
               </DashboardExportSection>
             )}
             {cpuOverCommitmentData && (
@@ -664,8 +680,11 @@ export const ClustersOverview: React.FC<ClustersOverviewProps> = ({
               </>
             )}
           </>
+        ) : chartData.length === 0 ? (
+          <CardEmptyState title={REPORT_CARD_EMPTY_STATE_TITLES.clusters} />
         ) : (
           <MigrationDonutChart
+            legendVariant="chart"
             data={chartData}
             height={300}
             width={420}
@@ -678,7 +697,6 @@ export const ClustersOverview: React.FC<ClustersOverviewProps> = ({
             itemsPerRow={Math.ceil(chartData.length / 2)}
             labelFontSize={viewMode === "vmByCluster" ? 18 : 17}
             marginLeft={viewMode === "vmByCluster" ? "12%" : "0%"}
-            emptyStateTitle={REPORT_CARD_EMPTY_STATE_TITLES.clusters}
             tooltipLabelFormatter={({ datum, percent }) =>
               `${datum.countDisplay}\n${percent.toFixed(1)}%`
             }
