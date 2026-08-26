@@ -10,7 +10,7 @@ import {
   ChartTooltip,
   ChartVoronoiContainer,
   getCustomTheme,
-} from "@patternfly/react-charts";
+} from "@patternfly/react-charts/victory";
 import {
   Card,
   CardBody,

@@ -4,7 +4,7 @@ import {
   ChartBar,
   ChartGroup,
   ChartVoronoiContainer,
-} from "@patternfly/react-charts";
+} from "@patternfly/react-charts/victory";
 import { Content } from "@patternfly/react-core";
 import React from "react";
 

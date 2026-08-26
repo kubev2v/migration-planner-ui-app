@@ -3,7 +3,7 @@ import {
   ChartLabel,
   ChartLegend,
   ChartTooltip,
-} from "@patternfly/react-charts";
+} from "@patternfly/react-charts/victory";
 import { Flex, FlexItem } from "@patternfly/react-core";
 import React, { useCallback, useMemo } from "react";
 
