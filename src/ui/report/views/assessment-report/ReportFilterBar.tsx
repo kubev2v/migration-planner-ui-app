@@ -1,5 +1,6 @@
 import { css } from "@emotion/css";
 import {
+  Label,
   MenuToggle,
   type MenuToggleElement,
   Select,
@@ -18,6 +19,10 @@ const filterToggleStyle = css`
   min-width: 422px;
 `;
 
+const filterBarStyle = css`
+  align-items: center;
+`;
+
 export interface ReportFilterBarProps {
   clusterView: ClusterViewModel;
   clusterSelectDisabled: boolean;
@@ -34,6 +39,8 @@ export interface ReportFilterBarProps {
     event: React.MouseEvent<Element, MouseEvent> | undefined,
     value: string | number | undefined,
   ) => void;
+  /** Shows a preview badge when the group filter is not yet available in live reports. */
+  groupFilterComingSoon?: boolean;
 }
 
 export const ReportFilterBar: React.FC<ReportFilterBarProps> = ({
@@ -46,8 +53,9 @@ export const ReportFilterBar: React.FC<ReportFilterBarProps> = ({
   isGroupSelectOpen,
   onGroupSelectOpenChange,
   onGroupSelect,
+  groupFilterComingSoon = false,
 }) => (
-  <Split hasGutter>
+  <Split hasGutter className={filterBarStyle}>
     <SplitItem>
       <Select
         isScrollable
@@ -85,42 +93,51 @@ export const ReportFilterBar: React.FC<ReportFilterBarProps> = ({
       </Select>
     </SplitItem>
     {groupView.showGroupFilter ? (
-      <SplitItem>
-        <Select
-          isScrollable
-          isOpen={isGroupSelectOpen}
-          selected={groupView.selectionId}
-          onSelect={onGroupSelect}
-          onOpenChange={(isOpen: boolean) => {
-            if (!groupView.groupSelectDisabled) {
-              onGroupSelectOpenChange(isOpen);
-            }
-          }}
-          toggle={(toggleRef: React.Ref<MenuToggleElement>) => (
-            <MenuToggle
-              ref={toggleRef}
-              isExpanded={isGroupSelectOpen}
-              onClick={() => {
-                if (!groupView.groupSelectDisabled) {
-                  onGroupSelectOpenChange(!isGroupSelectOpen);
-                }
-              }}
-              isDisabled={groupView.groupSelectDisabled}
-              className={filterToggleStyle}
-            >
-              Filter by group: {groupView.selectionLabel}
-            </MenuToggle>
-          )}
-        >
-          <SelectList>
-            {groupView.groupOptions.map((option) => (
-              <SelectOption key={option.id} value={option.id}>
-                {option.label}
-              </SelectOption>
-            ))}
-          </SelectList>
-        </Select>
-      </SplitItem>
+      <>
+        <SplitItem>
+          <Select
+            isScrollable
+            isOpen={isGroupSelectOpen}
+            selected={groupView.selectionId}
+            onSelect={onGroupSelect}
+            onOpenChange={(isOpen: boolean) => {
+              if (!groupView.groupSelectDisabled) {
+                onGroupSelectOpenChange(isOpen);
+              }
+            }}
+            toggle={(toggleRef: React.Ref<MenuToggleElement>) => (
+              <MenuToggle
+                ref={toggleRef}
+                isExpanded={isGroupSelectOpen}
+                onClick={() => {
+                  if (!groupView.groupSelectDisabled) {
+                    onGroupSelectOpenChange(!isGroupSelectOpen);
+                  }
+                }}
+                isDisabled={groupView.groupSelectDisabled}
+                className={filterToggleStyle}
+              >
+                Filter by group: {groupView.selectionLabel}
+              </MenuToggle>
+            )}
+          >
+            <SelectList>
+              {groupView.groupOptions.map((option) => (
+                <SelectOption key={option.id} value={option.id}>
+                  {option.label}
+                </SelectOption>
+              ))}
+            </SelectList>
+          </Select>
+        </SplitItem>
+        {groupFilterComingSoon ? (
+          <SplitItem>
+            <Label isCompact color="grey">
+              Coming soon
+            </Label>
+          </SplitItem>
+        ) : null}
+      </>
     ) : null}
   </Split>
 );

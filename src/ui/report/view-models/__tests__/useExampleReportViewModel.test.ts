@@ -15,6 +15,24 @@ describe("useExampleReportViewModel", () => {
     expect(result.current.selectedGroupId).toBe(ALL_VMS_GROUP_ID);
   });
 
+  it("includes every OS support tier in the example inventory", () => {
+    const { result } = renderHook(() => useExampleReportViewModel());
+    const tiers = new Set(
+      Object.values(result.current.vms?.osInfo ?? {}).map(
+        (info) => info.supportTier,
+      ),
+    );
+
+    expect(tiers).toEqual(
+      new Set([
+        "certified",
+        "vendor_supported",
+        "community_supported",
+        "special_handling",
+      ]),
+    );
+  });
+
   it("scopes dashboard data when a group is selected", () => {
     const fullInventory = getExampleInventory();
     const subsets = getExampleSubsetInventories(fullInventory);
