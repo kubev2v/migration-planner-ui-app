@@ -2,14 +2,11 @@ import { css } from "@emotion/css";
 import {
   Button,
   Content,
-  Icon,
   Split,
   SplitItem,
   Stack,
   StackItem,
 } from "@patternfly/react-core";
-import { RhUiCheckCircleIcon } from "@patternfly/react-icons";
-import { t_global_color_status_success_default as globalSuccessColor100 } from "@patternfly/react-tokens/dist/js/t_global_color_status_success_default";
 import React from "react";
 
 import { routes } from "../../../routing/Routes";
@@ -17,6 +14,7 @@ import { AppPage } from "../../core/components/AppPage";
 import { useExampleReportViewModel } from "../view-models/useExampleReportViewModel";
 import { Dashboard } from "./assessment-report/Dashboard";
 import { ReportFilterBar } from "./assessment-report/ReportFilterBar";
+import { ReportSourceStatus } from "./assessment-report/ReportSourceStatus";
 import { ClusterSizingWizard } from "./cluster-sizer/ClusterSizingWizard";
 import { EXAMPLE_FORM_VALUES } from "./example-data/clusterSizingFixture";
 
@@ -33,15 +31,11 @@ const ExampleReport: React.FC = () => {
       breadcrumbs={[
         {
           key: 1,
+          to: routes.assessments,
           children: "Migration advisor",
         },
         {
           key: 2,
-          to: routes.assessments,
-          children: "assessments",
-        },
-        {
-          key: 3,
           children: "RVTools example report",
           isActive: true,
         },
@@ -67,12 +61,9 @@ const ExampleReport: React.FC = () => {
       caption={
         <Stack hasGutter>
           <StackItem>
-            Discovery appliance status :{" "}
-            <Icon size="md" isInline>
-              <RhUiCheckCircleIcon color={globalSuccessColor100.var} />
-            </Icon>{" "}
-            Ready
-            <br />
+            <ReportSourceStatus sourceType="rvtools" />
+          </StackItem>
+          <StackItem>
             This is an example report showcasing the migration advisor dashboard
             for RVTools file upload.
           </StackItem>
@@ -88,6 +79,7 @@ const ExampleReport: React.FC = () => {
               isGroupSelectOpen={vm.isGroupSelectOpen}
               onGroupSelectOpenChange={vm.setIsGroupSelectOpen}
               onGroupSelect={vm.handleGroupSelect}
+              groupFilterComingSoon
             />
           </StackItem>
         </Stack>

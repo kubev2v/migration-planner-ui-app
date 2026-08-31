@@ -23,10 +23,10 @@ import CreateAssessmentModal from "../../assessment/views/CreateAssessmentModal"
 import { AppPage } from "../../core/components/AppPage";
 import CreateAssessmentDropdown from "../../core/components/CreateAssessmentDropdown";
 import { OffScreenRenderer } from "../../core/components/OffScreenRenderer";
-import { AgentStatusView } from "../../environment/views/AgentStatusView";
 import { useReportPageViewModel } from "../view-models/useReportPageViewModel";
 import { Dashboard } from "./assessment-report/Dashboard";
 import { ReportFilterBar } from "./assessment-report/ReportFilterBar";
+import { ReportSourceStatus } from "./assessment-report/ReportSourceStatus";
 import { ClusterSizingWizard } from "./cluster-sizer/ClusterSizingWizard";
 import { DeployOvaBanner } from "./DeployOvaBanner";
 import { ExportReportButton } from "./ExportReportButton";
@@ -82,8 +82,6 @@ const ReportContent: React.FC = () => {
     );
   }
 
-  const agent = vm.source?.agent;
-
   const handleClusterSelect = (
     _event: React.MouseEvent<Element, MouseEvent> | undefined,
     value: string | number | undefined,
@@ -116,34 +114,15 @@ const ReportContent: React.FC = () => {
       caption={
         <Stack>
           <StackItem>
-            {vm.assessment.sourceType === "rvtools" ? (
-              "Source: RVTools file upload"
-            ) : (
-              <Split hasGutter>
-                <SplitItem isFilled={false}>
-                  Discovery appliance status:
-                </SplitItem>
-                <SplitItem isFilled={false}>
-                  <AgentStatusView
-                    status={vm.source?.displayStatus ?? "not-connected"}
-                    statusInfo={
-                      vm.source?.isReady
-                        ? undefined
-                        : agent
-                          ? agent.statusInfo
-                          : "Not connected"
-                    }
-                    credentialUrl={agent ? agent.credentialUrl : ""}
-                    uploadedManually={
-                      Boolean(vm.source?.onPremises) &&
-                      vm.source?.inventory !== undefined
-                    }
-                    updatedAt={vm.source?.updatedAt}
-                    disableInteractions
-                  />
-                </SplitItem>
-              </Split>
-            )}
+            <ReportSourceStatus
+              sourceType={vm.assessment.sourceType}
+              displayStatus={vm.source?.displayStatus}
+              isReady={vm.source?.isReady}
+              agent={vm.source?.agent}
+              onPremises={vm.source?.onPremises}
+              hasInventory={vm.source?.inventory !== undefined}
+              updatedAt={vm.source?.updatedAt}
+            />
           </StackItem>
           <StackItem>
             <p>

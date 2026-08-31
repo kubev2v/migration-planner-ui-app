@@ -3,6 +3,8 @@ import {
   InventoryFromJSON,
 } from "@openshift-migration-advisor/planner-sdk";
 
+import { annotateExampleInventoryOsSupportTiers } from "./exampleOsSupportTiers";
+
 const inventoryData = {
   clusters: {
     "domain-c146658": {
@@ -2024,5 +2026,7 @@ const inventoryData = {
 };
 
 export function getExampleInventory(): Inventory {
-  return InventoryFromJSON(inventoryData);
+  return annotateExampleInventoryOsSupportTiers(
+    InventoryFromJSON(inventoryData),
+  );
 }
