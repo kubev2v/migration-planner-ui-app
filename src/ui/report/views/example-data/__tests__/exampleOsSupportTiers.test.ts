@@ -12,16 +12,16 @@ describe("getExampleOsSupportTier", () => {
     expect(
       getExampleOsSupportTier("Microsoft Windows Server 2022 (64-bit)"),
     ).toBe(OsInfoSupportTierEnum.Certified);
+    expect(getExampleOsSupportTier("Microsoft Windows 10 (64-bit)")).toBe(
+      OsInfoSupportTierEnum.Certified,
+    );
+    expect(getExampleOsSupportTier("Microsoft Windows 11 (64-bit)")).toBe(
+      OsInfoSupportTierEnum.Certified,
+    );
   });
 
   it("maps commercial vendor supported guest operating systems", () => {
     expect(getExampleOsSupportTier("SUSE Linux Enterprise 15 (64-bit)")).toBe(
-      OsInfoSupportTierEnum.VendorSupported,
-    );
-    expect(getExampleOsSupportTier("Microsoft Windows 10 (64-bit)")).toBe(
-      OsInfoSupportTierEnum.VendorSupported,
-    );
-    expect(getExampleOsSupportTier("Microsoft Windows 11 (64-bit)")).toBe(
       OsInfoSupportTierEnum.VendorSupported,
     );
   });

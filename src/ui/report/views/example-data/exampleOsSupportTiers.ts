@@ -12,11 +12,16 @@ const OS_NAME_TIER_MATCHERS: Array<{
 }> = [
   {
     tier: OsInfoSupportTierEnum.Certified,
-    patterns: [/red hat enterprise linux/i, /windows server/i],
+    patterns: [
+      /red hat enterprise linux/i,
+      /windows server/i,
+      /windows 10/i,
+      /windows 11/i,
+    ],
   },
   {
     tier: OsInfoSupportTierEnum.VendorSupported,
-    patterns: [/suse linux/i, /windows 10/i, /windows 11/i],
+    patterns: [/suse linux/i],
   },
   {
     tier: OsInfoSupportTierEnum.CommunitySupported,
