@@ -31,6 +31,12 @@ objects:
             routes:
               - pathname: /openshift/migration-assessment
       feoConfigEnabled: true
+      navigationSegments:
+        - segmentId: openshift-migration-advisor
+          navItems:
+            - id: migration-advisor
+              title: Openshift Migration Advisor
+              href: /openshift/migration-advisor
       searchEntries:
         - id: migration-advisor-assessments
           title: Migration Advisor - Assessments
