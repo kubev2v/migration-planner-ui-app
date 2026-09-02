@@ -35,7 +35,7 @@ objects:
         - segmentId: openshift-migration-advisor
           navItems:
             - id: migration-advisor
-              title: Openshift Migration Advisor
+              title: Migration Advisor
               href: /openshift/migration-advisor
       searchEntries:
         - id: migration-advisor-assessments
