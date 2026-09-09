@@ -8,10 +8,11 @@ import {
   List,
   ListItem,
   Spinner,
-  Split,
-  SplitItem,
   Stack,
   StackItem,
+  Tab,
+  Tabs,
+  TabTitleText,
   Tooltip,
 } from "@patternfly/react-core";
 import React, { useRef } from "react";
@@ -27,9 +28,10 @@ import { useReportPageViewModel } from "../view-models/useReportPageViewModel";
 import { Dashboard } from "./assessment-report/Dashboard";
 import { ReportFilterBar } from "./assessment-report/ReportFilterBar";
 import { ReportSourceStatus } from "./assessment-report/ReportSourceStatus";
-import { ClusterSizingWizard } from "./cluster-sizer/ClusterSizingWizard";
 import { DeployOvaBanner } from "./DeployOvaBanner";
 import { ExportReportButton } from "./ExportReportButton";
+import { MigrationRecommendations } from "./migration-recommendations/MigrationRecommendations";
+import { reportTabsStyle } from "./migration-recommendations/styles";
 
 const alertSpacing = css`
   margin-top: var(--pf-t--global--spacer--md);
@@ -223,113 +225,102 @@ const ReportContent: React.FC = () => {
       }
       headerActions={
         vm.scopedClusterView ? (
-          <Split hasGutter>
-            <SplitItem>
-              {vm.canExportReport ? (
-                <ExportReportButton
-                  isLoading={vm.isExporting}
-                  loadingLabel={vm.exportLoadingLabel}
-                  onExportPdf={() => {
-                    if (offScreenRef.current) {
-                      vm.exportPdf(offScreenRef.current);
-                    }
-                  }}
-                  onExportHtml={() => vm.exportHtml()}
-                  isAggregateView={vm.clusterView.isAggregateView}
-                />
-              ) : (
-                <Tooltip
-                  {...themeTooltipFlyoutProps}
-                  content={
-                    <p>
-                      Export is unavailable because this cluster has no VMs.
-                    </p>
-                  }
-                >
-                  <ExportReportButton
-                    isLoading={vm.isExporting}
-                    loadingLabel={vm.exportLoadingLabel}
-                    onExportPdf={() => {}}
-                    onExportHtml={() => {}}
-                    isDisabled
-                  />
-                </Tooltip>
-              )}
-            </SplitItem>
-
-            {vm.selectedClusterId !== "all" ? (
-              <SplitItem>
-                {vm.canShowClusterRecommendations ? (
-                  <Button
-                    variant="primary"
-                    onClick={() => vm.setIsSizingWizardOpen(true)}
-                  >
-                    View Recommendation based on vCenter cluster
-                  </Button>
-                ) : (
-                  <Tooltip
-                    {...themeTooltipFlyoutProps}
-                    content={
-                      <p>
-                        This cluster has no VMs. Cluster recommendations are not
-                        available for empty clusters.
-                      </p>
-                    }
-                  >
-                    <Button
-                      variant="primary"
-                      onClick={() => vm.setIsSizingWizardOpen(true)}
-                      isAriaDisabled
-                    >
-                      View Recommendation based on vCenter cluster
-                    </Button>
-                  </Tooltip>
-                )}
-              </SplitItem>
-            ) : null}
-          </Split>
+          vm.canExportReport ? (
+            <ExportReportButton
+              isLoading={vm.isExporting}
+              loadingLabel={vm.exportLoadingLabel}
+              onExportPdf={() => {
+                if (offScreenRef.current) {
+                  vm.exportPdf(offScreenRef.current);
+                }
+              }}
+              onExportHtml={() => vm.exportHtml()}
+              isAggregateView={vm.clusterView.isAggregateView}
+            />
+          ) : (
+            <Tooltip
+              {...themeTooltipFlyoutProps}
+              content={
+                <p>Export is unavailable because this cluster has no VMs.</p>
+              }
+            >
+              <ExportReportButton
+                isLoading={vm.isExporting}
+                loadingLabel={vm.exportLoadingLabel}
+                onExportPdf={() => {}}
+                onExportHtml={() => {}}
+                isDisabled
+              />
+            </Tooltip>
+          )
         ) : undefined
       }
     >
       {vm.assessment.sourceType === "rvtools" && <DeployOvaBanner />}
 
-      {vm.scopedClusterView ? (
-        <Dashboard
-          infra={vm.scopedClusterView.viewInfra}
-          vms={vm.scopedClusterView.viewVms}
-          cpuCores={vm.scopedClusterView.cpuCores}
-          ramGB={vm.scopedClusterView.ramGB}
-          clusters={vm.scopedClusterView.viewClusters}
-          isAggregateView={vm.scopedClusterView.isAggregateView}
-          clusterFound={vm.scopedClusterView.clusterFound}
-        />
-      ) : (
-        <Bullseye>
-          <Content>
-            <Content component="p">
-              {vm.clusterView.isAggregateView
-                ? "This assessment does not have report data yet."
-                : "No data is available for the selected cluster."}
-            </Content>
-          </Content>
-        </Bullseye>
-      )}
-
-      <ClusterSizingWizard
-        isOpen={vm.isSizingWizardOpen}
-        onClose={() => vm.setIsSizingWizardOpen(false)}
-        clusterName={vm.clusterView.selectionLabel}
-        clusterId={vm.selectedClusterId}
-        assessmentId={vm.assessmentId || ""}
-        onCalculated={(result, formValues) => {
-          vm.onSizingCalculated({
-            result,
-            formValues,
-            clusterName: vm.clusterView.selectionLabel,
-            clusterId: vm.selectedClusterId,
-          });
+      <Tabs
+        activeKey={vm.activeReportTab}
+        onSelect={(_event, tabIndex) => {
+          if (tabIndex === "report" || tabIndex === "recommendations") {
+            vm.setActiveReportTab(tabIndex);
+          }
         }}
-      />
+        aria-label="Assessment report sections"
+        className={reportTabsStyle}
+      >
+        <Tab
+          eventKey="report"
+          title={<TabTitleText>Migration report</TabTitleText>}
+        />
+        <Tab
+          eventKey="recommendations"
+          title={<TabTitleText>Migration recommendations</TabTitleText>}
+        />
+      </Tabs>
+
+      {vm.activeReportTab === "report" ? (
+        vm.scopedClusterView ? (
+          <Dashboard
+            infra={vm.scopedClusterView.viewInfra}
+            vms={vm.scopedClusterView.viewVms}
+            cpuCores={vm.scopedClusterView.cpuCores}
+            ramGB={vm.scopedClusterView.ramGB}
+            clusters={vm.scopedClusterView.viewClusters}
+            isAggregateView={vm.scopedClusterView.isAggregateView}
+            clusterFound={vm.scopedClusterView.clusterFound}
+          />
+        ) : (
+          <Bullseye>
+            <Content>
+              <Content component="p">
+                {vm.clusterView.isAggregateView
+                  ? "This assessment does not have report data yet."
+                  : "No data is available for the selected cluster."}
+              </Content>
+            </Content>
+          </Bullseye>
+        )
+      ) : (
+        <MigrationRecommendations
+          selectedTool={vm.selectedRecommendationTool}
+          onSelectTool={vm.openRecommendationTool}
+          onBack={vm.closeRecommendationTool}
+          isAggregateView={vm.clusterView.isAggregateView}
+          areToolsDisabled={!vm.canUseRecommendationTools}
+          canOpenArchitecture={vm.canShowClusterRecommendations}
+          clusterName={vm.clusterView.selectionLabel}
+          clusterId={vm.selectedClusterId}
+          assessmentId={vm.assessmentId || ""}
+          onCalculated={(result, formValues) => {
+            vm.onSizingCalculated({
+              result,
+              formValues,
+              clusterName: vm.clusterView.selectionLabel,
+              clusterId: vm.selectedClusterId,
+            });
+          }}
+        />
+      )}
 
       {/* Off-screen render target for PDF export — React owns the rendering,
           PdfExportService only captures the already-painted DOM element. */}

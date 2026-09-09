@@ -6,9 +6,6 @@ import type {
 } from "@openshift-migration-advisor/planner-sdk";
 import {
   Alert,
-  Button,
-  Flex,
-  FlexItem,
   Grid,
   GridItem,
   List,
@@ -18,14 +15,9 @@ import {
   StackItem,
   Title,
 } from "@patternfly/react-core";
-import { RhUiCopyIcon } from "@patternfly/react-icons";
 import { Table, Tbody, Td, Th, Thead, Tr } from "@patternfly/react-table";
-import React, { useCallback, useMemo } from "react";
+import React from "react";
 
-import {
-  canCopyToClipboard,
-  copyToClipboard,
-} from "../../../../lib/common/Clipboard";
 import PopoverIcon from "./PopoverIcon";
 import {
   type ParsedAssumption,
@@ -55,10 +47,6 @@ const outerCardStyle = css`
   border: 1px solid var(--pf-t--global--border--color--default);
   border-radius: var(--pf-t--global--border--radius--medium);
   padding: var(--pf-t--global--spacer--400);
-`;
-
-const cardHeaderStyle = css`
-  margin-bottom: var(--pf-t--global--spacer--400);
 `;
 
 const equalHeightGridStyle = css`
@@ -203,7 +191,9 @@ const buildPopoverBody = (
   </div>
 );
 
-const generatePlainText = (output: MigrationEstimationResponse): string => {
+export const generateTimeEstimationPlainText = (
+  output: MigrationEstimationResponse,
+): string => {
   const lines: string[] = ["Migration time estimation", ""];
 
   for (const [schemaName, result] of Object.entries(output.estimation)) {
@@ -231,18 +221,6 @@ export const TimeEstimationResult: React.FC<TimeEstimationResultProps> = ({
   isLoading,
   error,
 }) => {
-  const canCopy = useMemo(
-    () => !!estimationOutput && canCopyToClipboard(),
-    [estimationOutput],
-  );
-
-  const handleCopy = useCallback(() => {
-    if (!canCopy || !estimationOutput) {
-      return;
-    }
-    copyToClipboard(generatePlainText(estimationOutput));
-  }, [canCopy, estimationOutput]);
-
   if (isLoading) {
     return (
       <Stack hasGutter>
@@ -279,26 +257,6 @@ export const TimeEstimationResult: React.FC<TimeEstimationResultProps> = ({
 
   return (
     <div className={outerCardStyle}>
-      <Flex
-        justifyContent={{ default: "justifyContentSpaceBetween" }}
-        alignItems={{ default: "alignItemsCenter" }}
-        className={cardHeaderStyle}
-      >
-        <FlexItem>
-          <Title headingLevel="h3">Migration time estimation</Title>
-        </FlexItem>
-        <FlexItem>
-          <Button
-            variant="link"
-            icon={<RhUiCopyIcon />}
-            iconPosition="end"
-            onClick={handleCopy}
-            isDisabled={!canCopy}
-          >
-            Copy as plain text
-          </Button>
-        </FlexItem>
-      </Flex>
       <Grid hasGutter className={equalHeightGridStyle}>
         {schemas.map(([schemaName, result]) => {
           const breakdownEntries: [string, EstimationDetail][] =

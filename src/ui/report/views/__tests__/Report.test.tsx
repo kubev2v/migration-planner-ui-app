@@ -74,6 +74,12 @@ vi.mock("../cluster-sizer/ClusterSizingWizard", () => ({
   ),
 }));
 
+vi.mock("../migration-recommendations/MigrationRecommendations", () => ({
+  MigrationRecommendations: (): React.ReactElement => (
+    <div data-testid="migration-recommendations" />
+  ),
+}));
+
 vi.mock("../../../assessment/views/CreateAssessmentModal", () => ({
   __esModule: true,
   default: (): React.ReactElement => (
@@ -197,6 +203,7 @@ function makeBaseVm(
     scopedClusterView: undefined,
     canExportReport: false,
     canShowClusterRecommendations: false,
+    canUseRecommendationTools: false,
     missingMetrics: [],
     hasMissingMetrics: false,
     isRvtoolsModalOpen: false,
@@ -217,8 +224,11 @@ function makeBaseVm(
     exportHtml: vi.fn(),
     exportError: null,
     clearExportError: vi.fn(),
-    isSizingWizardOpen: false,
-    setIsSizingWizardOpen: vi.fn(),
+    activeReportTab: "report",
+    setActiveReportTab: vi.fn(),
+    selectedRecommendationTool: null,
+    openRecommendationTool: vi.fn(),
+    closeRecommendationTool: vi.fn(),
     savedSizingDataMap: {},
     onSizingCalculated: vi.fn(),
     ...overrides,
@@ -253,18 +263,8 @@ describe("Report", () => {
     ).toBeInTheDocument();
   });
 
-  describe("Cluster recommendations button", () => {
-    it("hides recommendations button in aggregate view so export stays right-aligned", async () => {
-      const clusterData = {
-        "Cluster A": { infra: createInfra(2, 2), vms: createVMs(5) },
-      };
-      const clusterView = buildClusterViewModel({
-        infra: clusterData["Cluster A"].infra,
-        vms: clusterData["Cluster A"].vms,
-        clusters: clusterData,
-        selectedClusterId: "all",
-      });
-
+  describe("Report tabs", () => {
+    it("renders Migration report and Migration recommendations tabs", async () => {
       mockVm = makeBaseVm({
         assessment: {
           id: "assessment-1",
@@ -272,82 +272,32 @@ describe("Report", () => {
           sourceId: "source-1",
           sourceType: "vcenter",
         },
-        clusterView,
-        selectedClusterId: "all",
-        clusters: clusterData,
-        scopedClusterView: {
-          ...clusterView,
-          viewInfra: clusterData["Cluster A"].infra,
-          viewVms: clusterData["Cluster A"].vms,
-          cpuCores: clusterData["Cluster A"].vms.cpuCores,
-          ramGB: clusterData["Cluster A"].vms.ramGB,
-        },
-        canExportReport: true,
-      });
-
-      render(<Report />);
-
-      await waitFor(() => {
-        expect(screen.getByTestId("download-button")).toBeInTheDocument();
-      });
-
-      expect(
-        screen.queryByText("View Recommendation based on vCenter cluster"),
-      ).not.toBeInTheDocument();
-    });
-
-    it("auto-selects first cluster to show recommendations button", async () => {
-      const clusterData = {
-        "Cluster A": { infra: createInfra(2, 2), vms: createVMs(5) },
-        "Cluster B": { infra: createInfra(3, 3), vms: createVMs(7) },
-      };
-      const clusterView = buildClusterViewModel({
-        infra: clusterData["Cluster A"].infra,
-        vms: clusterData["Cluster A"].vms,
-        clusters: clusterData,
-        selectedClusterId: "Cluster A",
-      });
-
-      mockVm = makeBaseVm({
-        assessment: {
-          id: "assessment-1",
-          name: "Assessment 1",
-          sourceId: "source-1",
-          sourceType: "vcenter",
-        },
-        clusterView,
-        selectedClusterId: "Cluster A",
-        clusterCount: 2,
-        clusters: clusterData,
-        scopedClusterView: {
-          ...clusterView,
-          viewInfra: clusterData["Cluster A"].infra,
-          viewVms: clusterData["Cluster A"].vms,
-          cpuCores: clusterData["Cluster A"].vms.cpuCores,
-          ramGB: clusterData["Cluster A"].vms.ramGB,
-        },
-        canShowClusterRecommendations: true,
-        canExportReport: true,
       });
 
       render(<Report />);
 
       await waitFor(() => {
         expect(
-          screen.getByText("View Recommendation based on vCenter cluster"),
+          screen.getByRole("tab", { name: "Migration report" }),
         ).toBeInTheDocument();
       });
+      expect(
+        screen.getByRole("tab", { name: "Migration recommendations" }),
+      ).toBeInTheDocument();
+      expect(
+        screen.queryByText("View Recommendation based on vCenter cluster"),
+      ).not.toBeInTheDocument();
     });
 
-    it("shows disabled recommendations button when cluster has no VMs", async () => {
+    it("shows the dashboard on the Migration report tab", async () => {
       const clusterData = {
-        "Cluster A": { infra: createInfra(2, 2), vms: createVMs(0) },
+        "Cluster A": { infra: createInfra(2, 2), vms: createVMs(5) },
       };
       const clusterView = buildClusterViewModel({
         infra: clusterData["Cluster A"].infra,
         vms: clusterData["Cluster A"].vms,
         clusters: clusterData,
-        selectedClusterId: "Cluster A",
+        selectedClusterId: "all",
       });
 
       mockVm = makeBaseVm({
@@ -355,20 +305,72 @@ describe("Report", () => {
           id: "assessment-1",
           name: "Assessment 1",
           sourceId: "source-1",
+          sourceType: "vcenter",
         },
         clusterView,
-        selectedClusterId: "Cluster A",
+        selectedClusterId: "all",
         clusters: clusterData,
-        scopedClusterView: undefined,
-        canShowClusterRecommendations: false,
-        canExportReport: false,
+        scopedClusterView: {
+          ...clusterView,
+          viewInfra: clusterData["Cluster A"].infra,
+          viewVms: clusterData["Cluster A"].vms,
+          cpuCores: clusterData["Cluster A"].vms.cpuCores,
+          ramGB: clusterData["Cluster A"].vms.ramGB,
+        },
+        canExportReport: true,
+        activeReportTab: "report",
       });
 
       render(<Report />);
 
       await waitFor(() => {
-        expect(screen.getByTestId("app-page")).toBeInTheDocument();
+        expect(screen.getAllByTestId("dashboard").length).toBeGreaterThan(0);
       });
+      expect(
+        screen.queryByTestId("migration-recommendations"),
+      ).not.toBeInTheDocument();
+    });
+
+    it("shows recommendation tools on the Migration recommendations tab", async () => {
+      const clusterData = {
+        "Cluster A": { infra: createInfra(2, 2), vms: createVMs(5) },
+      };
+      const clusterView = buildClusterViewModel({
+        infra: clusterData["Cluster A"].infra,
+        vms: clusterData["Cluster A"].vms,
+        clusters: clusterData,
+        selectedClusterId: "all",
+      });
+
+      mockVm = makeBaseVm({
+        assessment: {
+          id: "assessment-1",
+          name: "Assessment 1",
+          sourceId: "source-1",
+          sourceType: "vcenter",
+        },
+        clusterView,
+        selectedClusterId: "all",
+        clusters: clusterData,
+        scopedClusterView: {
+          ...clusterView,
+          viewInfra: clusterData["Cluster A"].infra,
+          viewVms: clusterData["Cluster A"].vms,
+          cpuCores: clusterData["Cluster A"].vms.cpuCores,
+          ramGB: clusterData["Cluster A"].vms.ramGB,
+        },
+        canUseRecommendationTools: true,
+        activeReportTab: "recommendations",
+      });
+
+      render(<Report />);
+
+      await waitFor(() => {
+        expect(
+          screen.getByTestId("migration-recommendations"),
+        ).toBeInTheDocument();
+      });
+      expect(screen.queryByTestId("dashboard")).not.toBeInTheDocument();
     });
   });
 

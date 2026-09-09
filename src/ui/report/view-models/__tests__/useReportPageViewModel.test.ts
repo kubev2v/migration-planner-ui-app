@@ -428,8 +428,30 @@ describe("useReportPageViewModel", () => {
       mockAssessmentsStore.getSnapshot.mockReturnValue([assessment]);
 
       const { result } = renderHook(() => useReportPageViewModel());
-      // Default is "all" (aggregate)
       expect(result.current.canShowClusterRecommendations).toBe(false);
+    });
+
+    it("canUseRecommendationTools is true when the view has VMs", () => {
+      const assessment = createAssessment("assessment-1", {
+        "Cluster-A": { infra: createInfra(2, 2), vms: createVMs(5) },
+      });
+      mockAssessmentsStore.getSnapshot.mockReturnValue([assessment]);
+
+      const { result } = renderHook(() => useReportPageViewModel());
+      expect(result.current.canUseRecommendationTools).toBe(true);
+    });
+
+    it("canUseRecommendationTools is true on aggregate view when VMs exist", () => {
+      const assessment = createAssessment("assessment-1", {
+        "Cluster-A": { infra: createInfra(2, 2), vms: createVMs(5) },
+      });
+      mockAssessmentsStore.getSnapshot.mockReturnValue([assessment]);
+
+      const { result } = renderHook(() => useReportPageViewModel());
+      act(() => {
+        result.current.selectCluster("all");
+      });
+      expect(result.current.canUseRecommendationTools).toBe(true);
     });
 
     it("canExportReport is true when cluster has hosts and VMs", () => {
@@ -635,24 +657,57 @@ describe("useReportPageViewModel", () => {
     });
   });
 
-  describe("sizing wizard", () => {
-    it("starts with isSizingWizardOpen = false", () => {
+  describe("recommendation tools", () => {
+    it("starts on the Migration report tab with no tool selected", () => {
       const { result } = renderHook(() => useReportPageViewModel());
-      expect(result.current.isSizingWizardOpen).toBe(false);
+      expect(result.current.activeReportTab).toBe("report");
+      expect(result.current.selectedRecommendationTool).toBeNull();
     });
 
-    it("toggles sizing wizard open state", () => {
+    it("opens and closes a recommendation tool", () => {
       const { result } = renderHook(() => useReportPageViewModel());
 
       act(() => {
-        result.current.setIsSizingWizardOpen(true);
+        result.current.openRecommendationTool("time-estimation");
       });
-      expect(result.current.isSizingWizardOpen).toBe(true);
+      expect(result.current.selectedRecommendationTool).toBe("time-estimation");
 
       act(() => {
-        result.current.setIsSizingWizardOpen(false);
+        result.current.closeRecommendationTool();
       });
-      expect(result.current.isSizingWizardOpen).toBe(false);
+      expect(result.current.selectedRecommendationTool).toBeNull();
+    });
+
+    it("closes architecture when switching to the aggregate cluster view", () => {
+      const assessment = createAssessment("assessment-1", {
+        "Cluster-A": { infra: createInfra(2, 2), vms: createVMs(5) },
+      });
+      mockAssessmentsStore.getSnapshot.mockReturnValue([assessment]);
+
+      const { result } = renderHook(() => useReportPageViewModel());
+
+      act(() => {
+        result.current.openRecommendationTool("architecture");
+        result.current.selectCluster("all");
+      });
+
+      expect(result.current.selectedRecommendationTool).toBeNull();
+    });
+
+    it("keeps time estimation open when switching to the aggregate cluster view", () => {
+      const assessment = createAssessment("assessment-1", {
+        "Cluster-A": { infra: createInfra(2, 2), vms: createVMs(5) },
+      });
+      mockAssessmentsStore.getSnapshot.mockReturnValue([assessment]);
+
+      const { result } = renderHook(() => useReportPageViewModel());
+
+      act(() => {
+        result.current.openRecommendationTool("time-estimation");
+        result.current.selectCluster("all");
+      });
+
+      expect(result.current.selectedRecommendationTool).toBe("time-estimation");
     });
   });
 

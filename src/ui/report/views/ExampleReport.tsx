@@ -1,11 +1,10 @@
-import { css } from "@emotion/css";
 import {
-  Button,
   Content,
-  Split,
-  SplitItem,
   Stack,
   StackItem,
+  Tab,
+  Tabs,
+  TabTitleText,
 } from "@patternfly/react-core";
 import React from "react";
 
@@ -15,13 +14,9 @@ import { useExampleReportViewModel } from "../view-models/useExampleReportViewMo
 import { Dashboard } from "./assessment-report/Dashboard";
 import { ReportFilterBar } from "./assessment-report/ReportFilterBar";
 import { ReportSourceStatus } from "./assessment-report/ReportSourceStatus";
-import { ClusterSizingWizard } from "./cluster-sizer/ClusterSizingWizard";
 import { EXAMPLE_FORM_VALUES } from "./example-data/clusterSizingFixture";
-
-const reservedHeaderActionStyle = css`
-  visibility: hidden;
-  pointer-events: none;
-`;
+import { MigrationRecommendations } from "./migration-recommendations/MigrationRecommendations";
+import { reportTabsStyle } from "./migration-recommendations/styles";
 
 const ExampleReport: React.FC = () => {
   const vm = useExampleReportViewModel();
@@ -41,23 +36,6 @@ const ExampleReport: React.FC = () => {
         },
       ]}
       title="RVTools example report"
-      headerActions={
-        <Split hasGutter>
-          <SplitItem
-            className={vm.exampleSizing ? undefined : reservedHeaderActionStyle}
-            aria-hidden={!vm.exampleSizing}
-          >
-            <Button
-              variant="primary"
-              tabIndex={vm.exampleSizing ? undefined : -1}
-              onClick={() => vm.setIsSizingWizardOpen(true)}
-            >
-              View recommendation for{" "}
-              {vm.exampleSizing?.clusterName ?? "Cluster domain-c146658"}
-            </Button>
-          </SplitItem>
-        </Split>
-      }
       caption={
         <Stack hasGutter>
           <StackItem>
@@ -85,42 +63,69 @@ const ExampleReport: React.FC = () => {
         </Stack>
       }
     >
-      {vm.clusterView.viewInfra &&
-      vm.clusterView.viewVms &&
-      vm.clusterView.cpuCores &&
-      vm.clusterView.ramGB ? (
-        <Dashboard
-          infra={vm.clusterView.viewInfra}
-          cpuCores={vm.clusterView.cpuCores}
-          ramGB={vm.clusterView.ramGB}
-          vms={vm.clusterView.viewVms}
-          clusters={vm.clusterView.viewClusters}
-          isAggregateView={vm.clusterView.isAggregateView}
-          clusterFound={vm.clusterView.clusterFound}
+      <Tabs
+        activeKey={vm.activeReportTab}
+        onSelect={(_event, tabIndex) => {
+          if (tabIndex === "report" || tabIndex === "recommendations") {
+            vm.setActiveReportTab(tabIndex);
+          }
+        }}
+        aria-label="Assessment report sections"
+        className={reportTabsStyle}
+      >
+        <Tab
+          eventKey="report"
+          title={<TabTitleText>Migration report</TabTitleText>}
         />
-      ) : (
-        <Content component="p">
-          No data is available for the selected cluster.
-        </Content>
-      )}
+        <Tab
+          eventKey="recommendations"
+          title={<TabTitleText>Migration recommendations</TabTitleText>}
+        />
+      </Tabs>
 
-      {vm.exampleSizing && (
-        <ClusterSizingWizard
-          key={vm.selectedClusterId}
-          isOpen={vm.isSizingWizardOpen}
-          onClose={() => vm.setIsSizingWizardOpen(false)}
-          clusterName={vm.exampleSizing.clusterName}
+      {vm.activeReportTab === "report" ? (
+        vm.clusterView.viewInfra &&
+        vm.clusterView.viewVms &&
+        vm.clusterView.cpuCores &&
+        vm.clusterView.ramGB ? (
+          <Dashboard
+            infra={vm.clusterView.viewInfra}
+            cpuCores={vm.clusterView.cpuCores}
+            ramGB={vm.clusterView.ramGB}
+            vms={vm.clusterView.viewVms}
+            clusters={vm.clusterView.viewClusters}
+            isAggregateView={vm.clusterView.isAggregateView}
+            clusterFound={vm.clusterView.clusterFound}
+          />
+        ) : (
+          <Content component="p">
+            No data is available for the selected cluster.
+          </Content>
+        )
+      ) : (
+        <MigrationRecommendations
+          selectedTool={vm.selectedRecommendationTool}
+          onSelectTool={vm.openRecommendationTool}
+          onBack={vm.closeRecommendationTool}
+          isAggregateView={vm.clusterView.isAggregateView}
+          clusterName={vm.clusterView.selectionLabel}
           clusterId={vm.selectedClusterId}
           assessmentId="example"
-          options={{
-            initialSizerOutput: vm.exampleSizing.result,
-            initialFormValues: EXAMPLE_FORM_VALUES,
-            initialMigrationEstimation: vm.exampleSizing.migrationEstimation,
-            initialComplexityEstimation: vm.exampleSizing.complexityEstimation,
-            initialEstimationByComplexity:
-              vm.exampleSizing.estimationByComplexity,
-          }}
           isReadOnly
+          options={
+            vm.exampleSizing
+              ? {
+                  initialSizerOutput: vm.exampleSizing.result,
+                  initialFormValues: EXAMPLE_FORM_VALUES,
+                  initialMigrationEstimation:
+                    vm.exampleSizing.migrationEstimation,
+                  initialComplexityEstimation:
+                    vm.exampleSizing.complexityEstimation,
+                  initialEstimationByComplexity:
+                    vm.exampleSizing.estimationByComplexity,
+                }
+              : undefined
+          }
         />
       )}
     </AppPage>

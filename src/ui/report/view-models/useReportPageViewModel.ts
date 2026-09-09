@@ -51,6 +51,11 @@ import {
   isControlPlaneOnlyClusterMode,
   type SizingFormValues,
 } from "../views/cluster-sizer/types";
+import { isRecommendationToolAvailable } from "../views/migration-recommendations/constants";
+import type {
+  RecommendationToolId,
+  ReportContentTab,
+} from "../views/migration-recommendations/types";
 import {
   formatNumber,
   formatRatio,
@@ -218,6 +223,7 @@ export interface ReportPageViewModel {
   scopedClusterView: ClusterScopedView | undefined;
   canExportReport: boolean;
   canShowClusterRecommendations: boolean;
+  canUseRecommendationTools: boolean;
 
   // Missing metrics (old inventories lacking CPU/Memory data)
   missingMetrics: string[];
@@ -231,9 +237,12 @@ export interface ReportPageViewModel {
   exportError: ExportError | null;
   clearExportError: () => void;
 
-  // Sizing wizard
-  isSizingWizardOpen: boolean;
-  setIsSizingWizardOpen: (open: boolean) => void;
+  // Report tabs + recommendation tools
+  activeReportTab: ReportContentTab;
+  setActiveReportTab: (tab: ReportContentTab) => void;
+  selectedRecommendationTool: RecommendationToolId | null;
+  openRecommendationTool: (toolId: RecommendationToolId) => void;
+  closeRecommendationTool: () => void;
   /**
    * All sizing results calculated in this session, keyed by clusterId.
    * Used by exportPdf to include recommendations for every sized cluster.
@@ -396,7 +405,10 @@ export const useReportPageViewModel = (): ReportPageViewModel => {
     string | null
   >(null);
   const [isClusterSelectOpen, setIsClusterSelectOpen] = useState(false);
-  const [isSizingWizardOpen, setIsSizingWizardOpen] = useState(false);
+  const [activeReportTab, setActiveReportTab] =
+    useState<ReportContentTab>("report");
+  const [selectedRecommendationTool, setSelectedRecommendationTool] =
+    useState<RecommendationToolId | null>(null);
   const [savedSizingDataMap, setSavedSizingDataMap] = useState<
     Record<string, SizingPdfData>
   >({});
@@ -490,6 +502,22 @@ export const useReportPageViewModel = (): ReportPageViewModel => {
 
   const selectCluster = useCallback((clusterId: string) => {
     setUserSelectedClusterId(clusterId);
+    setSelectedRecommendationTool((current) => {
+      if (current == null) {
+        return current;
+      }
+      return isRecommendationToolAvailable(current, clusterId === "all")
+        ? current
+        : null;
+    });
+  }, []);
+
+  const openRecommendationTool = useCallback((toolId: RecommendationToolId) => {
+    setSelectedRecommendationTool(toolId);
+  }, []);
+
+  const closeRecommendationTool = useCallback(() => {
+    setSelectedRecommendationTool(null);
   }, []);
 
   // ---- Cluster view model --------------------------------------------------
@@ -532,6 +560,8 @@ export const useReportPageViewModel = (): ReportPageViewModel => {
   const canShowClusterRecommendations =
     selectedClusterId !== "all" &&
     hasClusterResources(clusterView.viewInfra, clusterView.viewVms);
+
+  const canUseRecommendationTools = (clusterView.viewVms?.total ?? 0) > 0;
 
   const canExportReport = hasClusterResources(
     clusterView.viewInfra,
@@ -805,6 +835,7 @@ export const useReportPageViewModel = (): ReportPageViewModel => {
     scopedClusterView,
     canExportReport,
     canShowClusterRecommendations,
+    canUseRecommendationTools,
 
     missingMetrics,
     hasMissingMetrics: missingMetrics.length > 0,
@@ -816,8 +847,11 @@ export const useReportPageViewModel = (): ReportPageViewModel => {
     exportError: exportState.error,
     clearExportError,
 
-    isSizingWizardOpen,
-    setIsSizingWizardOpen,
+    activeReportTab,
+    setActiveReportTab,
+    selectedRecommendationTool,
+    openRecommendationTool,
+    closeRecommendationTool,
     savedSizingDataMap,
     onSizingCalculated,
 
