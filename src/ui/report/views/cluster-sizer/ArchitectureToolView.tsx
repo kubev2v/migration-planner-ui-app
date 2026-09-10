@@ -136,16 +136,11 @@ export const ArchitectureToolView: React.FC<ArchitectureToolViewProps> = ({
         onGenerate={handleCalculate}
         isLoading={isCalculating}
         isGenerateDisabled={!isFormValid}
-        hasResults={Boolean(sizerOutput || isCalculating || calculateError)}
         generateButtonText="Generate recommendation"
-        resultsTitle=""
-        hasError={Boolean(calculateError)}
         showAlert={!hasUtilizationComparison(sizerOutput)}
         isPreferencesDisabled={isReadOnly}
-        initialShowResults={isReadOnly}
         phase={phase}
         onPhaseChange={setPhase}
-        hideResultsToolbar
       />
     </RecommendationToolLayout>
   );

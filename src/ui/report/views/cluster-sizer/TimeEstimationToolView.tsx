@@ -98,18 +98,11 @@ export const TimeEstimationToolView: React.FC<TimeEstimationToolViewProps> = ({
         }
         onGenerate={handleCalculate}
         isLoading={isCalculatingEstimation}
-        hasResults={Boolean(
-          migrationEstimation || isCalculatingEstimation || estimationError,
-        )}
         generateButtonText="Calculate"
-        resultsTitle=""
         showAlert={false}
-        hasError={Boolean(estimationError)}
         isPreferencesDisabled={isReadOnly}
-        initialShowResults={isReadOnly}
         phase={phase}
         onPhaseChange={setPhase}
-        hideResultsToolbar
       />
     </RecommendationToolLayout>
   );

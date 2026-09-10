@@ -6,6 +6,7 @@ import type {
 } from "@openshift-migration-advisor/planner-sdk";
 import React, { useCallback, useMemo, useState } from "react";
 
+import { ALL_CLUSTERS_ID } from "../helpers/clusterViewModel";
 import { extractScopedInventoryData } from "../helpers/groupInventoryFilter";
 import {
   buildClusterViewModel,
@@ -97,7 +98,7 @@ export function useExampleReportViewModel(): ExampleReportVM {
   );
 
   const selectedClusterId = useMemo(
-    () => userSelectedClusterId ?? "all",
+    () => userSelectedClusterId ?? ALL_CLUSTERS_ID,
     [userSelectedClusterId],
   );
 
@@ -112,7 +113,7 @@ export function useExampleReportViewModel(): ExampleReportVM {
   const clusterSelectDisabled = clusterView.clusterOptions.length <= 1;
 
   const exampleSizing = useMemo(() => {
-    if (selectedClusterId !== "all") {
+    if (selectedClusterId !== ALL_CLUSTERS_ID) {
       return EXAMPLE_SIZING_MAP[selectedClusterId] ?? null;
     }
     return Object.values(EXAMPLE_SIZING_MAP)[0] ?? null;
@@ -141,7 +142,10 @@ export function useExampleReportViewModel(): ExampleReportVM {
       if (current == null) {
         return current;
       }
-      return isRecommendationToolAvailable(current, clusterId === "all")
+      return isRecommendationToolAvailable(
+        current,
+        clusterId === ALL_CLUSTERS_ID,
+      )
         ? current
         : null;
     });

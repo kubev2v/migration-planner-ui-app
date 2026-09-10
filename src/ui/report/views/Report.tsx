@@ -11,6 +11,8 @@ import {
   Stack,
   StackItem,
   Tab,
+  TabContent,
+  TabContentBody,
   Tabs,
   TabTitleText,
   Tooltip,
@@ -271,56 +273,75 @@ const ReportContent: React.FC = () => {
         <Tab
           eventKey="report"
           title={<TabTitleText>Migration report</TabTitleText>}
+          tabContentId="assessment-report-panel"
         />
         <Tab
           eventKey="recommendations"
           title={<TabTitleText>Migration recommendations</TabTitleText>}
+          tabContentId="assessment-recommendations-panel"
         />
       </Tabs>
 
-      {vm.activeReportTab === "report" ? (
-        vm.scopedClusterView ? (
-          <Dashboard
-            infra={vm.scopedClusterView.viewInfra}
-            vms={vm.scopedClusterView.viewVms}
-            cpuCores={vm.scopedClusterView.cpuCores}
-            ramGB={vm.scopedClusterView.ramGB}
-            clusters={vm.scopedClusterView.viewClusters}
-            isAggregateView={vm.scopedClusterView.isAggregateView}
-            clusterFound={vm.scopedClusterView.clusterFound}
-          />
-        ) : (
-          <Bullseye>
-            <Content>
-              <Content component="p">
-                {vm.clusterView.isAggregateView
-                  ? "This assessment does not have report data yet."
-                  : "No data is available for the selected cluster."}
+      <TabContent
+        eventKey="report"
+        id="assessment-report-panel"
+        activeKey={vm.activeReportTab}
+        hidden={vm.activeReportTab !== "report"}
+        aria-label="Migration report"
+      >
+        <TabContentBody hasPadding>
+          {vm.scopedClusterView ? (
+            <Dashboard
+              infra={vm.scopedClusterView.viewInfra}
+              vms={vm.scopedClusterView.viewVms}
+              cpuCores={vm.scopedClusterView.cpuCores}
+              ramGB={vm.scopedClusterView.ramGB}
+              clusters={vm.scopedClusterView.viewClusters}
+              isAggregateView={vm.scopedClusterView.isAggregateView}
+              clusterFound={vm.scopedClusterView.clusterFound}
+            />
+          ) : (
+            <Bullseye>
+              <Content>
+                <Content component="p">
+                  {vm.clusterView.isAggregateView
+                    ? "This assessment does not have report data yet."
+                    : "No data is available for the selected cluster."}
+                </Content>
               </Content>
-            </Content>
-          </Bullseye>
-        )
-      ) : (
-        <MigrationRecommendations
-          selectedTool={vm.selectedRecommendationTool}
-          onSelectTool={vm.openRecommendationTool}
-          onBack={vm.closeRecommendationTool}
-          isAggregateView={vm.clusterView.isAggregateView}
-          areToolsDisabled={!vm.canUseRecommendationTools}
-          canOpenArchitecture={vm.canShowClusterRecommendations}
-          clusterName={vm.clusterView.selectionLabel}
-          clusterId={vm.selectedClusterId}
-          assessmentId={vm.assessmentId || ""}
-          onCalculated={(result, formValues) => {
-            vm.onSizingCalculated({
-              result,
-              formValues,
-              clusterName: vm.clusterView.selectionLabel,
-              clusterId: vm.selectedClusterId,
-            });
-          }}
-        />
-      )}
+            </Bullseye>
+          )}
+        </TabContentBody>
+      </TabContent>
+      <TabContent
+        eventKey="recommendations"
+        id="assessment-recommendations-panel"
+        activeKey={vm.activeReportTab}
+        hidden={vm.activeReportTab !== "recommendations"}
+        aria-label="Migration recommendations"
+      >
+        <TabContentBody hasPadding>
+          <MigrationRecommendations
+            selectedTool={vm.selectedRecommendationTool}
+            onSelectTool={vm.openRecommendationTool}
+            onBack={vm.closeRecommendationTool}
+            isAggregateView={vm.clusterView.isAggregateView}
+            areToolsDisabled={!vm.canUseRecommendationTools}
+            canOpenArchitecture={vm.canShowClusterRecommendations}
+            clusterName={vm.clusterView.selectionLabel}
+            clusterId={vm.selectedClusterId}
+            assessmentId={vm.assessmentId || ""}
+            onCalculated={(result, formValues) => {
+              vm.onSizingCalculated({
+                result,
+                formValues,
+                clusterName: vm.clusterView.selectionLabel,
+                clusterId: vm.selectedClusterId,
+              });
+            }}
+          />
+        </TabContentBody>
+      </TabContent>
 
       {/* Off-screen render target for PDF export — React owns the rendering,
           PdfExportService only captures the already-painted DOM element. */}

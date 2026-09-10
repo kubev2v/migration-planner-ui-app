@@ -15,6 +15,8 @@ import {
   createSourceModel,
   type SourceModel,
 } from "../../../../models/SourceModel";
+import { ALL_CLUSTERS_ID } from "../../helpers/clusterViewModel";
+import { ALL_VMS_GROUP_ID } from "../../helpers/groupViewModel";
 import { mockClusterRequirementsResponse } from "../../views/cluster-sizer/__tests__/mocks/ClusterRequirementsResponse.mock";
 import { EXAMPLE_FORM_VALUES } from "../../views/example-data/clusterSizingFixture";
 import type { SizingPdfData } from "../useReportPageViewModel";
@@ -348,7 +350,7 @@ describe("useReportPageViewModel", () => {
       mockAssessmentsStore.getSnapshot.mockReturnValue([assessment]);
 
       const { result } = renderHook(() => useReportPageViewModel());
-      expect(result.current.selectedClusterId).toBe("all");
+      expect(result.current.selectedClusterId).toBe(ALL_CLUSTERS_ID);
     });
 
     it("allows selecting a different cluster", () => {
@@ -376,7 +378,7 @@ describe("useReportPageViewModel", () => {
 
       const { result } = renderHook(() => useReportPageViewModel());
       expect(result.current.clusterView.isAggregateView).toBe(true);
-      expect(result.current.clusterView.selectionId).toBe("all");
+      expect(result.current.clusterView.selectionId).toBe(ALL_CLUSTERS_ID);
     });
 
     it("builds per-cluster view when a specific cluster is selected", () => {
@@ -449,7 +451,7 @@ describe("useReportPageViewModel", () => {
 
       const { result } = renderHook(() => useReportPageViewModel());
       act(() => {
-        result.current.selectCluster("all");
+        result.current.selectCluster(ALL_CLUSTERS_ID);
       });
       expect(result.current.canUseRecommendationTools).toBe(true);
     });
@@ -566,7 +568,7 @@ describe("useReportPageViewModel", () => {
           createSizingPdfData("Cluster-C", "Cluster C"),
         );
         result.current.selectGroup("group-1");
-        result.current.selectCluster("all");
+        result.current.selectCluster(ALL_CLUSTERS_ID);
       });
 
       act(() => {
@@ -688,7 +690,7 @@ describe("useReportPageViewModel", () => {
 
       act(() => {
         result.current.openRecommendationTool("architecture");
-        result.current.selectCluster("all");
+        result.current.selectCluster(ALL_CLUSTERS_ID);
       });
 
       expect(result.current.selectedRecommendationTool).toBeNull();
@@ -704,7 +706,7 @@ describe("useReportPageViewModel", () => {
 
       act(() => {
         result.current.openRecommendationTool("time-estimation");
-        result.current.selectCluster("all");
+        result.current.selectCluster(ALL_CLUSTERS_ID);
       });
 
       expect(result.current.selectedRecommendationTool).toBe("time-estimation");
@@ -729,7 +731,7 @@ describe("useReportPageViewModel", () => {
 
   describe("clusterSelectDisabled", () => {
     it("returns true when there is 1 or fewer cluster options", () => {
-      // No clusters → only "all" option → length 1
+      // No clusters → only the all-clusters option → length 1
       const assessment = createAssessment("assessment-1");
       mockAssessmentsStore.getSnapshot.mockReturnValue([assessment]);
 
@@ -758,7 +760,7 @@ describe("useReportPageViewModel", () => {
 
       const { result } = renderHook(() => useReportPageViewModel());
       expect(result.current.groupView.showGroupFilter).toBe(false);
-      expect(result.current.selectedGroupId).toBe("all");
+      expect(result.current.selectedGroupId).toBe(ALL_VMS_GROUP_ID);
     });
 
     it("shows group options from subset inventories and scopes dashboard data", () => {

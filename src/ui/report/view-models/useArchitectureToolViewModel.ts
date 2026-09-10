@@ -1,9 +1,6 @@
-import { useInjection } from "@openshift-migration-advisor/ioc";
-import { useMemo, useState, useSyncExternalStore } from "react";
+import { useState } from "react";
 import { useAsyncFn } from "react-use";
 
-import { Symbols } from "../../../config/Dependencies";
-import type { IAssessmentsStore } from "../../../data/stores/interfaces/IAssessmentsStore";
 import {
   DEFAULT_FORM_VALUES,
   SMT_THREADS_MAX,
@@ -15,8 +12,12 @@ import type {
   SizingFormValues,
 } from "../views/cluster-sizer/types";
 import { formValuesToRequest } from "../views/cluster-sizer/types";
-import { mapAssessmentApiError } from "./mapAssessmentApiError";
 import type { UseArchitectureToolOptions } from "./RecommendationToolOptions";
+import {
+  useAssessmentsStore,
+  useCapturedOnce,
+  useMappedAsyncError,
+} from "./useRecommendationToolRuntime";
 
 export interface ArchitectureToolViewModel {
   formValues: SizingFormValues;
@@ -37,31 +38,19 @@ export const useArchitectureToolViewModel = (
   clusterId: string,
   options?: UseArchitectureToolOptions,
 ): ArchitectureToolViewModel => {
-  const assessmentsStore = useInjection<IAssessmentsStore>(
-    Symbols.AssessmentsStore,
-  );
-  useSyncExternalStore(
-    assessmentsStore.subscribe.bind(assessmentsStore),
-    assessmentsStore.getSnapshot.bind(assessmentsStore),
-  );
+  const assessmentsStore = useAssessmentsStore();
+  const apiError = useMappedAsyncError();
 
-  const initialValues = useMemo(
-    () => ({
-      formValues: options?.initialFormValues ?? DEFAULT_FORM_VALUES,
-      sizerOutput: options?.initialSizerOutput ?? null,
-    }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [],
-  );
+  const initialValues = useCapturedOnce(() => ({
+    formValues: options?.initialFormValues ?? DEFAULT_FORM_VALUES,
+    sizerOutput: options?.initialSizerOutput ?? null,
+  }));
 
   const [formValues, setFormValues] = useState<SizingFormValues>(
     initialValues.formValues,
   );
   const [sizerOutput, setSizerOutput] =
     useState<ClusterRequirementsResponse | null>(initialValues.sizerOutput);
-  const [manualCalculateError, setManualCalculateError] = useState<
-    Error | undefined
-  >(undefined);
 
   const smtVisible =
     formValues.clusterMode === "full-ha" ||
@@ -78,7 +67,7 @@ export const useArchitectureToolViewModel = (
       return;
     }
 
-    setManualCalculateError(undefined);
+    apiError.clear();
     const workerCpu =
       formValues.workerNodePreset !== "custom"
         ? WORKER_NODE_PRESETS[formValues.workerNodePreset].cpu
@@ -88,6 +77,8 @@ export const useArchitectureToolViewModel = (
         ? WORKER_NODE_PRESETS[formValues.workerNodePreset].memoryGb
         : formValues.customMemoryGb;
 
+    // Cluster-requirements needs a real cluster id. Architecture is disabled
+    // for All vSphere clusters, so do not map through toApiClusterId.
     const clusterRequirementsRequest = formValuesToRequest(
       clusterId,
       formValues,
@@ -103,12 +94,7 @@ export const useArchitectureToolViewModel = (
         });
       setSizerOutput(result);
     } catch (err) {
-      const error = await mapAssessmentApiError(
-        err,
-        "Failed to calculate sizing",
-      );
-      setManualCalculateError(error);
-      throw error;
+      throw await apiError.capture(err, "Failed to calculate sizing");
     }
   }, [assessmentId, assessmentsStore, clusterId, formValues, hasSmtError]);
 
@@ -126,7 +112,7 @@ export const useArchitectureToolViewModel = (
     showSmt: smtVisible,
     sizerOutput,
     isCalculating: calculateState.loading,
-    calculateError: manualCalculateError ?? calculateState.error,
+    calculateError: apiError.resolve(calculateState.error),
     calculate: doCalculate,
     isFormValid: !hasSmtError,
   };

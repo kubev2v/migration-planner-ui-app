@@ -30,7 +30,6 @@ describe("RecommendationTemplate", () => {
         preferencesContent={<div>Form fields</div>}
         resultsContent={<div>Results panel</div>}
         onGenerate={onGenerate}
-        hasResults
       />,
     );
 
@@ -43,28 +42,6 @@ describe("RecommendationTemplate", () => {
     expect(screen.queryByText("Form fields")).not.toBeInTheDocument();
   });
 
-  it("restores the form from Edit migration preferences", () => {
-    render(
-      <RecommendationTemplate
-        id="architecture"
-        preferencesContent={<div>Form fields</div>}
-        resultsContent={<div>Results panel</div>}
-        onGenerate={vi.fn()}
-        hasResults
-      />,
-    );
-
-    fireEvent.click(
-      screen.getByRole("button", { name: "Generate recommendation" }),
-    );
-    fireEvent.click(
-      screen.getByRole("button", { name: "Edit migration preferences" }),
-    );
-
-    expect(screen.getByText("Form fields")).toBeInTheDocument();
-    expect(screen.queryByText("Results panel")).not.toBeInTheDocument();
-  });
-
   it("starts on results when initialShowResults is set", () => {
     render(
       <RecommendationTemplate
@@ -72,7 +49,6 @@ describe("RecommendationTemplate", () => {
         preferencesContent={<div>Form fields</div>}
         resultsContent={<div>Results panel</div>}
         onGenerate={vi.fn()}
-        hasResults
         initialShowResults
         isPreferencesDisabled
       />,
@@ -80,26 +56,25 @@ describe("RecommendationTemplate", () => {
 
     expect(screen.getByText("Results panel")).toBeInTheDocument();
     expect(screen.queryByText("Form fields")).not.toBeInTheDocument();
-    expect(
-      screen.queryByRole("button", { name: "Edit migration preferences" }),
-    ).not.toBeInTheDocument();
   });
 
-  it("hides the results toolbar when hideResultsToolbar is set", () => {
+  it("notifies the parent when the controlled phase should change", () => {
+    const onPhaseChange = vi.fn();
     render(
       <RecommendationTemplate
-        id="time-estimation"
+        id="architecture"
+        preferencesContent={<div>Form fields</div>}
         resultsContent={<div>Results panel</div>}
         onGenerate={vi.fn()}
-        hasResults
-        initialShowResults
-        hideResultsToolbar
+        phase="form"
+        onPhaseChange={onPhaseChange}
       />,
     );
 
-    expect(screen.getByText("Results panel")).toBeInTheDocument();
-    expect(
-      screen.queryByRole("button", { name: "Edit migration preferences" }),
-    ).not.toBeInTheDocument();
+    fireEvent.click(
+      screen.getByRole("button", { name: "Generate recommendation" }),
+    );
+
+    expect(onPhaseChange).toHaveBeenCalledWith("results");
   });
 });

@@ -1,22 +1,18 @@
-import { useInjection } from "@openshift-migration-advisor/ioc";
 import type {
   MigrationComplexityResponse,
   MigrationEstimationByComplexityResponse,
 } from "@openshift-migration-advisor/planner-sdk";
-import {
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  useSyncExternalStore,
-} from "react";
+import { useEffect, useState } from "react";
 import { useAsyncFn } from "react-use";
 
-import { Symbols } from "../../../config/Dependencies";
-import type { IAssessmentsStore } from "../../../data/stores/interfaces/IAssessmentsStore";
 import { toApiClusterId } from "../helpers/clusterViewModel";
-import { mapAssessmentApiError } from "./mapAssessmentApiError";
 import type { UseComplexityToolOptions } from "./RecommendationToolOptions";
+import {
+  useAssessmentsStore,
+  useCapturedOnce,
+  useLatestRequest,
+  useMappedAsyncError,
+} from "./useRecommendationToolRuntime";
 
 export interface ComplexityToolViewModel {
   complexityEstimation: MigrationComplexityResponse | null;
@@ -32,22 +28,16 @@ export const useComplexityToolViewModel = (
   clusterId: string,
   options?: UseComplexityToolOptions,
 ): ComplexityToolViewModel => {
-  const assessmentsStore = useInjection<IAssessmentsStore>(
-    Symbols.AssessmentsStore,
-  );
-  useSyncExternalStore(
-    assessmentsStore.subscribe.bind(assessmentsStore),
-    assessmentsStore.getSnapshot.bind(assessmentsStore),
-  );
+  const assessmentsStore = useAssessmentsStore();
+  const complexityErrorState = useMappedAsyncError();
+  const estimationErrorState = useMappedAsyncError();
+  const complexityRequest = useLatestRequest();
+  const estimationRequest = useLatestRequest();
 
-  const initialValues = useMemo(
-    () => ({
-      complexityEstimation: options?.initialComplexityEstimation ?? null,
-      estimationByComplexity: options?.initialEstimationByComplexity ?? null,
-    }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [],
-  );
+  const initialValues = useCapturedOnce(() => ({
+    complexityEstimation: options?.initialComplexityEstimation ?? null,
+    estimationByComplexity: options?.initialEstimationByComplexity ?? null,
+  }));
 
   const [complexityEstimation, setComplexityEstimation] =
     useState<MigrationComplexityResponse | null>(
@@ -57,18 +47,10 @@ export const useComplexityToolViewModel = (
     useState<MigrationEstimationByComplexityResponse | null>(
       initialValues.estimationByComplexity,
     );
-  const [manualComplexityError, setManualComplexityError] = useState<
-    Error | undefined
-  >(undefined);
-  const [manualEstByComplexityError, setManualEstByComplexityError] = useState<
-    Error | undefined
-  >(undefined);
-  const latestComplexityRequestIdRef = useRef<string>("");
 
   const [complexityState, doCalculateComplexity] = useAsyncFn(async () => {
-    setManualComplexityError(undefined);
-    const requestId = `${assessmentId}-${clusterId}-${Date.now()}`;
-    latestComplexityRequestIdRef.current = requestId;
+    complexityErrorState.clear();
+    const requestId = complexityRequest.begin(`${assessmentId}-${clusterId}`);
 
     try {
       const result = await assessmentsStore.calculateComplexityEstimation({
@@ -76,26 +58,26 @@ export const useComplexityToolViewModel = (
         migrationComplexityRequest: { clusterId: toApiClusterId(clusterId) },
       });
 
-      if (latestComplexityRequestIdRef.current === requestId) {
+      if (complexityRequest.isCurrent(requestId)) {
         setComplexityEstimation(result);
       }
     } catch (err) {
-      if (latestComplexityRequestIdRef.current !== requestId) {
+      if (!complexityRequest.isCurrent(requestId)) {
         return;
       }
 
-      const error = await mapAssessmentApiError(
+      throw await complexityErrorState.capture(
         err,
         "Failed to calculate complexity estimation",
       );
-      setManualComplexityError(error);
-      throw error;
     }
   }, [assessmentId, assessmentsStore, clusterId]);
 
   const [estByComplexityState, doCalculateEstimationByComplexity] =
     useAsyncFn(async () => {
-      setManualEstByComplexityError(undefined);
+      estimationErrorState.clear();
+      const requestId = estimationRequest.begin(`${assessmentId}-${clusterId}`);
+
       try {
         const result = await assessmentsStore.calculateEstimationByComplexity({
           id: assessmentId,
@@ -109,14 +91,18 @@ export const useComplexityToolViewModel = (
             },
           },
         });
-        setEstimationByComplexity(result);
+        if (estimationRequest.isCurrent(requestId)) {
+          setEstimationByComplexity(result);
+        }
       } catch (err) {
-        const error = await mapAssessmentApiError(
+        if (!estimationRequest.isCurrent(requestId)) {
+          return;
+        }
+
+        throw await estimationErrorState.capture(
           err,
           "Failed to calculate estimation by complexity",
         );
-        setManualEstByComplexityError(error);
-        throw error;
       }
     }, [assessmentId, assessmentsStore, clusterId]);
 
@@ -139,11 +125,12 @@ export const useComplexityToolViewModel = (
       complexityState.loading ||
       (Boolean(options?.autoLoad) &&
         complexityEstimation === null &&
-        (manualComplexityError ?? complexityState.error) === undefined),
-    complexityError: manualComplexityError ?? complexityState.error,
+        complexityErrorState.resolve(complexityState.error) === undefined),
+    complexityError: complexityErrorState.resolve(complexityState.error),
     estimationByComplexity,
     isCalculatingEstimationByComplexity: estByComplexityState.loading,
-    estimationByComplexityError:
-      manualEstByComplexityError ?? estByComplexityState.error,
+    estimationByComplexityError: estimationErrorState.resolve(
+      estByComplexityState.error,
+    ),
   };
 };

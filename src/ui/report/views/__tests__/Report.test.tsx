@@ -160,8 +160,14 @@ const mockSource = createSourceModel({
   },
 });
 
-import { buildGroupViewModel } from "../../helpers/groupViewModel";
-import { buildClusterViewModel } from "../assessment-report/ClusterView";
+import {
+  ALL_VMS_GROUP_ID,
+  buildGroupViewModel,
+} from "../../helpers/groupViewModel";
+import {
+  ALL_CLUSTERS_ID,
+  buildClusterViewModel,
+} from "../assessment-report/ClusterView";
 
 function makeBaseVm(
   overrides: Partial<ReportPageViewModel> = {},
@@ -173,7 +179,7 @@ function makeBaseVm(
     infra,
     vms,
     clusters,
-    selectedClusterId: "all",
+    selectedClusterId: ALL_CLUSTERS_ID,
   });
   const groupView = buildGroupViewModel({ subsetInventories: [] });
 
@@ -183,13 +189,13 @@ function makeBaseVm(
     source: mockSource,
     isLoadingData: false,
     clusterView,
-    selectedClusterId: "all",
+    selectedClusterId: ALL_CLUSTERS_ID,
     selectCluster: vi.fn(),
     isClusterSelectOpen: false,
     setClusterSelectOpen: vi.fn(),
     clusterSelectDisabled: true,
     groupView,
-    selectedGroupId: "all",
+    selectedGroupId: ALL_VMS_GROUP_ID,
     selectGroup: vi.fn(),
     isGroupSelectOpen: false,
     setGroupSelectOpen: vi.fn(),
@@ -297,7 +303,7 @@ describe("Report", () => {
         infra: clusterData["Cluster A"].infra,
         vms: clusterData["Cluster A"].vms,
         clusters: clusterData,
-        selectedClusterId: "all",
+        selectedClusterId: ALL_CLUSTERS_ID,
       });
 
       mockVm = makeBaseVm({
@@ -308,7 +314,7 @@ describe("Report", () => {
           sourceType: "vcenter",
         },
         clusterView,
-        selectedClusterId: "all",
+        selectedClusterId: ALL_CLUSTERS_ID,
         clusters: clusterData,
         scopedClusterView: {
           ...clusterView,
@@ -326,9 +332,7 @@ describe("Report", () => {
       await waitFor(() => {
         expect(screen.getAllByTestId("dashboard").length).toBeGreaterThan(0);
       });
-      expect(
-        screen.queryByTestId("migration-recommendations"),
-      ).not.toBeInTheDocument();
+      expect(screen.getByTestId("migration-recommendations")).not.toBeVisible();
     });
 
     it("shows recommendation tools on the Migration recommendations tab", async () => {
@@ -339,7 +343,7 @@ describe("Report", () => {
         infra: clusterData["Cluster A"].infra,
         vms: clusterData["Cluster A"].vms,
         clusters: clusterData,
-        selectedClusterId: "all",
+        selectedClusterId: ALL_CLUSTERS_ID,
       });
 
       mockVm = makeBaseVm({
@@ -350,7 +354,7 @@ describe("Report", () => {
           sourceType: "vcenter",
         },
         clusterView,
-        selectedClusterId: "all",
+        selectedClusterId: ALL_CLUSTERS_ID,
         clusters: clusterData,
         scopedClusterView: {
           ...clusterView,
@@ -366,11 +370,8 @@ describe("Report", () => {
       render(<Report />);
 
       await waitFor(() => {
-        expect(
-          screen.getByTestId("migration-recommendations"),
-        ).toBeInTheDocument();
+        expect(screen.getByTestId("migration-recommendations")).toBeVisible();
       });
-      expect(screen.queryByTestId("dashboard")).not.toBeInTheDocument();
     });
   });
 

@@ -18,6 +18,9 @@ export const ALL_CLUSTERS_ID = "all";
  * Migration estimation and complexity treat an omitted or empty `clusterId` as
  * the vCenter-level aggregate. The UI sentinel {@link ALL_CLUSTERS_ID} must not
  * be sent as a cluster id.
+ *
+ * Cluster-requirements (architecture) always needs a real cluster id — that
+ * tool is disabled on the aggregate view, so it must not use this helper.
  */
 export const toApiClusterId = (selectionId: string): string =>
   selectionId === ALL_CLUSTERS_ID ? "" : selectionId;

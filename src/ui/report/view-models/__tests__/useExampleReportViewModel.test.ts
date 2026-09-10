@@ -1,6 +1,7 @@
 import { act, renderHook } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 
+import { ALL_CLUSTERS_ID } from "../../helpers/clusterViewModel";
 import { ALL_VMS_GROUP_ID } from "../../helpers/groupViewModel";
 import { getExampleInventory } from "../../views/example-data/inventoryFixture";
 import { getExampleSubsetInventories } from "../../views/example-data/subsetInventoryFixture";
@@ -59,15 +60,15 @@ describe("useExampleReportViewModel", () => {
     const { result } = renderHook(() => useExampleReportViewModel());
 
     act(() => {
-      result.current.handleClusterSelect(undefined, "all");
+      result.current.handleClusterSelect(undefined, ALL_CLUSTERS_ID);
     });
-    expect(result.current.selectedClusterId).toBe("all");
+    expect(result.current.selectedClusterId).toBe(ALL_CLUSTERS_ID);
 
     const subsets = getExampleSubsetInventories(getExampleInventory());
     act(() => {
       result.current.handleGroupSelect(undefined, subsets[0].id);
     });
 
-    expect(result.current.selectedClusterId).toBe("all");
+    expect(result.current.selectedClusterId).toBe(ALL_CLUSTERS_ID);
   });
 });

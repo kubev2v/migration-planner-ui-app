@@ -38,6 +38,7 @@ import type {
   PdfExtraPageItem,
 } from "../../../services/pdf-export/PdfExportService";
 import {
+  ALL_CLUSTERS_ID,
   buildClusterViewModel,
   type ClusterViewModel,
   compareClustersByVmCount,
@@ -477,7 +478,7 @@ export const useReportPageViewModel = (): ReportPageViewModel => {
   const selectedClusterId = useMemo(() => {
     if (userSelectedClusterId !== null) {
       const isValidSelection =
-        userSelectedClusterId === "all" ||
+        userSelectedClusterId === ALL_CLUSTERS_ID ||
         Boolean(
           clusters &&
           Object.prototype.hasOwnProperty.call(clusters, userSelectedClusterId),
@@ -490,7 +491,7 @@ export const useReportPageViewModel = (): ReportPageViewModel => {
     const clusterKeys = clusters ? Object.keys(clusters) : [];
 
     if (clusterKeys.length === 0) {
-      return "all";
+      return ALL_CLUSTERS_ID;
     }
 
     const sortedKeys = [...clusterKeys].sort((a, b) =>
@@ -506,7 +507,10 @@ export const useReportPageViewModel = (): ReportPageViewModel => {
       if (current == null) {
         return current;
       }
-      return isRecommendationToolAvailable(current, clusterId === "all")
+      return isRecommendationToolAvailable(
+        current,
+        clusterId === ALL_CLUSTERS_ID,
+      )
         ? current
         : null;
     });
@@ -558,7 +562,7 @@ export const useReportPageViewModel = (): ReportPageViewModel => {
   );
 
   const canShowClusterRecommendations =
-    selectedClusterId !== "all" &&
+    selectedClusterId !== ALL_CLUSTERS_ID &&
     hasClusterResources(clusterView.viewInfra, clusterView.viewVms);
 
   const canUseRecommendationTools = (clusterView.viewVms?.total ?? 0) > 0;
@@ -649,7 +653,7 @@ export const useReportPageViewModel = (): ReportPageViewModel => {
       // - All-clusters view → sized clusters within the active group inventory
       const scopedClusterIds = new Set(clusters ? Object.keys(clusters) : []);
       const sizingEntries: SizingPdfData[] =
-        selectedClusterId === "all"
+        selectedClusterId === ALL_CLUSTERS_ID
           ? Object.values(savedSizingDataMap).filter((entry) =>
               scopedClusterIds.has(entry.clusterId),
             )

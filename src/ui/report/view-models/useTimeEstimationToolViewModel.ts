@@ -1,9 +1,6 @@
-import { useInjection } from "@openshift-migration-advisor/ioc";
-import { useMemo, useState, useSyncExternalStore } from "react";
+import { useState } from "react";
 import { useAsyncFn } from "react-use";
 
-import { Symbols } from "../../../config/Dependencies";
-import type { IAssessmentsStore } from "../../../data/stores/interfaces/IAssessmentsStore";
 import { toApiClusterId } from "../helpers/clusterViewModel";
 import { DEFAULT_ESTIMATION_FORM_VALUES } from "../views/cluster-sizer/constants";
 import type {
@@ -11,8 +8,12 @@ import type {
   MigrationEstimationResponse,
 } from "../views/cluster-sizer/types";
 import { estimationFormToParams } from "../views/cluster-sizer/types";
-import { mapAssessmentApiError } from "./mapAssessmentApiError";
 import type { UseTimeEstimationToolOptions } from "./RecommendationToolOptions";
+import {
+  useAssessmentsStore,
+  useCapturedOnce,
+  useMappedAsyncError,
+} from "./useRecommendationToolRuntime";
 
 export interface TimeEstimationToolViewModel {
   estimationFormValues: EstimationFormValues;
@@ -28,30 +29,20 @@ export const useTimeEstimationToolViewModel = (
   clusterId: string,
   options?: UseTimeEstimationToolOptions,
 ): TimeEstimationToolViewModel => {
-  const assessmentsStore = useInjection<IAssessmentsStore>(
-    Symbols.AssessmentsStore,
-  );
-  useSyncExternalStore(
-    assessmentsStore.subscribe.bind(assessmentsStore),
-    assessmentsStore.getSnapshot.bind(assessmentsStore),
-  );
+  const assessmentsStore = useAssessmentsStore();
+  const apiError = useMappedAsyncError();
 
-  const initialMigrationEstimation = useMemo(
+  const initialMigrationEstimation = useCapturedOnce(
     () => options?.initialMigrationEstimation ?? null,
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [],
   );
 
   const [estimationFormValues, setEstimationFormValues] =
     useState<EstimationFormValues>(DEFAULT_ESTIMATION_FORM_VALUES);
   const [migrationEstimation, setMigrationEstimation] =
     useState<MigrationEstimationResponse | null>(initialMigrationEstimation);
-  const [manualEstimationError, setManualEstimationError] = useState<
-    Error | undefined
-  >(undefined);
 
   const [estimationState, doCalculateEstimation] = useAsyncFn(async () => {
-    setManualEstimationError(undefined);
+    apiError.clear();
     try {
       const result = await assessmentsStore.calculateMigrationEstimation({
         id: assessmentId,
@@ -66,12 +57,10 @@ export const useTimeEstimationToolViewModel = (
         result?.estimation && Object.keys(result.estimation).length > 0;
       setMigrationEstimation(hasSchemas ? result : null);
     } catch (err) {
-      const error = await mapAssessmentApiError(
+      throw await apiError.capture(
         err,
         "Failed to calculate migration estimation",
       );
-      setManualEstimationError(error);
-      throw error;
     }
   }, [assessmentId, assessmentsStore, clusterId, estimationFormValues]);
 
@@ -80,7 +69,7 @@ export const useTimeEstimationToolViewModel = (
     setEstimationFormValues,
     migrationEstimation,
     isCalculatingEstimation: estimationState.loading,
-    estimationError: manualEstimationError ?? estimationState.error,
+    estimationError: apiError.resolve(estimationState.error),
     calculateEstimation: doCalculateEstimation,
   };
 };

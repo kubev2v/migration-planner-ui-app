@@ -7,6 +7,7 @@ import type {
 import React, { useMemo, useState } from "react";
 
 import {
+  ALL_CLUSTERS_ID,
   buildClusterViewModel,
   type ClusterViewModel,
 } from "../views/assessment-report/ClusterView";
@@ -54,7 +55,7 @@ export function useDiscoveryOvaExampleReportViewModel(): DiscoveryOvaExampleRepo
   const [activeTab, setActiveTab] = useState<string | number>(0);
 
   const selectedClusterId = useMemo(
-    () => userSelectedClusterId ?? "all",
+    () => userSelectedClusterId ?? ALL_CLUSTERS_ID,
     [userSelectedClusterId],
   );
 
@@ -67,7 +68,7 @@ export function useDiscoveryOvaExampleReportViewModel(): DiscoveryOvaExampleRepo
   const clusterSelectDisabled = clusterCount <= 0;
 
   const filteredVMs = useMemo(() => {
-    if (selectedClusterId === "all") return EXAMPLE_OVA_VMS;
+    if (selectedClusterId === ALL_CLUSTERS_ID) return EXAMPLE_OVA_VMS;
     return EXAMPLE_OVA_VMS.filter((vm) => vm.cluster === selectedClusterId);
   }, [selectedClusterId]);
 

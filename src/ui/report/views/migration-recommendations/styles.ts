@@ -31,11 +31,3 @@ export const toolViewHeaderStyle = css`
 export const toolViewTitleStyle = css`
   margin-top: var(--pf-t--global--spacer--200);
 `;
-
-export const formActionsStyle = css`
-  margin-top: var(--pf-t--global--spacer--300);
-`;
-
-export const resultsHeaderStyle = css`
-  margin-bottom: var(--pf-t--global--spacer--300);
-`;
