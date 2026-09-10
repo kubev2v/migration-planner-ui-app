@@ -289,7 +289,7 @@ const ReportContent: React.FC = () => {
         hidden={vm.activeReportTab !== "report"}
         aria-label="Migration report"
       >
-        <TabContentBody hasPadding>
+        <TabContentBody>
           {vm.scopedClusterView ? (
             <Dashboard
               infra={vm.scopedClusterView.viewInfra}
@@ -320,7 +320,7 @@ const ReportContent: React.FC = () => {
         hidden={vm.activeReportTab !== "recommendations"}
         aria-label="Migration recommendations"
       >
-        <TabContentBody hasPadding>
+        <TabContentBody>
           <MigrationRecommendations
             selectedTool={vm.selectedRecommendationTool}
             onSelectTool={vm.openRecommendationTool}

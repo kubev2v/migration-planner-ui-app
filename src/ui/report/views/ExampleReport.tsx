@@ -94,7 +94,7 @@ const ExampleReport: React.FC = () => {
         hidden={vm.activeReportTab !== "report"}
         aria-label="Migration report"
       >
-        <TabContentBody hasPadding>
+        <TabContentBody>
           {vm.clusterView.viewInfra &&
           vm.clusterView.viewVms &&
           vm.clusterView.cpuCores &&
@@ -122,7 +122,7 @@ const ExampleReport: React.FC = () => {
         hidden={vm.activeReportTab !== "recommendations"}
         aria-label="Migration recommendations"
       >
-        <TabContentBody hasPadding>
+        <TabContentBody>
           <MigrationRecommendations
             selectedTool={vm.selectedRecommendationTool}
             onSelectTool={vm.openRecommendationTool}

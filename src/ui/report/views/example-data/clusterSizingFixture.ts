@@ -3,6 +3,7 @@ import type {
   MigrationEstimationByComplexityResponse,
 } from "@openshift-migration-advisor/planner-sdk";
 
+import { ALL_CLUSTERS_ID } from "../../helpers/clusterViewModel";
 import type {
   ClusterRequirementsResponse,
   MigrationEstimationResponse,
@@ -32,7 +33,7 @@ export interface ExampleClusterData {
   estimationByComplexity: MigrationEstimationByComplexityResponse;
 }
 
-export const EXAMPLE_SIZING_MAP: Record<string, ExampleClusterData> = {
+const EXAMPLE_CLUSTER_SIZING: Record<string, ExampleClusterData> = {
   "domain-c34": {
     clusterName: "Cluster domain-c34",
     result: {
@@ -505,6 +506,29 @@ export const EXAMPLE_SIZING_MAP: Record<string, ExampleClusterData> = {
           },
         },
       ],
+    },
+  },
+};
+
+export const EXAMPLE_SIZING_MAP: Record<string, ExampleClusterData> = {
+  ...EXAMPLE_CLUSTER_SIZING,
+  [ALL_CLUSTERS_ID]: {
+    ...EXAMPLE_CLUSTER_SIZING["domain-c34"],
+    clusterName: "All vSphere clusters",
+    result: {
+      ...EXAMPLE_CLUSTER_SIZING["domain-c34"].result,
+      inventoryTotals: {
+        totalVMs: 630,
+        totalCPU:
+          EXAMPLE_CLUSTER_SIZING["domain-c34"].result.inventoryTotals.totalCPU +
+          EXAMPLE_CLUSTER_SIZING["domain-c146658"].result.inventoryTotals
+            .totalCPU,
+        totalMemory:
+          EXAMPLE_CLUSTER_SIZING["domain-c34"].result.inventoryTotals
+            .totalMemory +
+          EXAMPLE_CLUSTER_SIZING["domain-c146658"].result.inventoryTotals
+            .totalMemory,
+      },
     },
   },
 };

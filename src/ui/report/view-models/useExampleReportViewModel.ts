@@ -77,6 +77,7 @@ export function useExampleReportViewModel(): ExampleReportVM {
 
   const resetClusterSelection = useCallback(() => {
     setUserSelectedClusterId(null);
+    setSelectedRecommendationTool(null);
   }, []);
 
   const {
@@ -112,12 +113,10 @@ export function useExampleReportViewModel(): ExampleReportVM {
     : 0;
   const clusterSelectDisabled = clusterView.clusterOptions.length <= 1;
 
-  const exampleSizing = useMemo(() => {
-    if (selectedClusterId !== ALL_CLUSTERS_ID) {
-      return EXAMPLE_SIZING_MAP[selectedClusterId] ?? null;
-    }
-    return Object.values(EXAMPLE_SIZING_MAP)[0] ?? null;
-  }, [selectedClusterId]);
+  const exampleSizing = useMemo(
+    () => EXAMPLE_SIZING_MAP[selectedClusterId] ?? null,
+    [selectedClusterId],
+  );
 
   const detectedSummaryText = useMemo(() => {
     if (clusterCount <= 0) return "No clusters detected";

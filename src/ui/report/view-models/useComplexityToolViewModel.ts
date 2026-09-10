@@ -107,14 +107,19 @@ export const useComplexityToolViewModel = (
     }, [assessmentId, assessmentsStore, clusterId]);
 
   useEffect(() => {
-    if (!options?.autoLoad || initialValues.complexityEstimation) {
+    if (!options?.autoLoad) {
       return;
     }
-    void doCalculateComplexity();
-    void doCalculateEstimationByComplexity();
+    if (!initialValues.complexityEstimation) {
+      void doCalculateComplexity();
+    }
+    if (!initialValues.estimationByComplexity) {
+      void doCalculateEstimationByComplexity();
+    }
   }, [
     options?.autoLoad,
     initialValues.complexityEstimation,
+    initialValues.estimationByComplexity,
     doCalculateComplexity,
     doCalculateEstimationByComplexity,
   ]);
@@ -128,7 +133,11 @@ export const useComplexityToolViewModel = (
         complexityErrorState.resolve(complexityState.error) === undefined),
     complexityError: complexityErrorState.resolve(complexityState.error),
     estimationByComplexity,
-    isCalculatingEstimationByComplexity: estByComplexityState.loading,
+    isCalculatingEstimationByComplexity:
+      estByComplexityState.loading ||
+      (Boolean(options?.autoLoad) &&
+        estimationByComplexity === null &&
+        estimationErrorState.resolve(estByComplexityState.error) === undefined),
     estimationByComplexityError: estimationErrorState.resolve(
       estByComplexityState.error,
     ),

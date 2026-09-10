@@ -711,6 +711,111 @@ describe("useReportPageViewModel", () => {
 
       expect(result.current.selectedRecommendationTool).toBe("time-estimation");
     });
+
+    it("keeps time estimation open when switching to a cluster without hosts or VMs", () => {
+      const assessment = createAssessment("assessment-1", {
+        "Cluster-A": { infra: createInfra(2, 2), vms: createVMs(5) },
+        "Cluster-B": { infra: createInfra(0, 0), vms: createVMs(0) },
+      });
+      mockAssessmentsStore.getSnapshot.mockReturnValue([assessment]);
+
+      const { result } = renderHook(() => useReportPageViewModel());
+
+      act(() => {
+        result.current.selectCluster("Cluster-A");
+        result.current.openRecommendationTool("time-estimation");
+        result.current.selectCluster("Cluster-B");
+      });
+
+      expect(result.current.selectedRecommendationTool).toBe("time-estimation");
+    });
+
+    it("closes architecture when switching to a cluster without hosts or VMs", () => {
+      const assessment = createAssessment("assessment-1", {
+        "Cluster-A": { infra: createInfra(2, 2), vms: createVMs(5) },
+        "Cluster-B": { infra: createInfra(0, 0), vms: createVMs(0) },
+      });
+      mockAssessmentsStore.getSnapshot.mockReturnValue([assessment]);
+
+      const { result } = renderHook(() => useReportPageViewModel());
+
+      act(() => {
+        result.current.selectCluster("Cluster-A");
+        result.current.openRecommendationTool("architecture");
+      });
+      expect(result.current.selectedRecommendationTool).toBe("architecture");
+
+      act(() => {
+        result.current.selectCluster("Cluster-B");
+      });
+
+      expect(result.current.selectedRecommendationTool).toBeNull();
+    });
+
+    it("keeps architecture open when switching to a cluster with hosts and VMs", () => {
+      const assessment = createAssessment("assessment-1", {
+        "Cluster-A": { infra: createInfra(2, 2), vms: createVMs(5) },
+        "Cluster-B": { infra: createInfra(3, 3), vms: createVMs(7) },
+      });
+      mockAssessmentsStore.getSnapshot.mockReturnValue([assessment]);
+
+      const { result } = renderHook(() => useReportPageViewModel());
+
+      act(() => {
+        result.current.selectCluster("Cluster-A");
+        result.current.openRecommendationTool("architecture");
+        result.current.selectCluster("Cluster-B");
+      });
+
+      expect(result.current.selectedRecommendationTool).toBe("architecture");
+    });
+
+    it("clears the recommendation tool when group selection resets the cluster", () => {
+      const assessment = createAssessment("assessment-1", {
+        "Cluster-A": { infra: createInfra(2, 2), vms: createVMs(10) },
+      });
+      assessment.snapshots = [
+        {
+          createdAt: new Date(),
+          inventory: assessment.snapshots?.[0]?.inventory ?? {
+            vcenterId: "vcenter-1",
+            clusters: {},
+          },
+          subsetInventories: [
+            {
+              id: "group-1",
+              name: "Group 1",
+              vcenterId: "vcenter-1",
+              vmsCount: 3,
+              createdAt: new Date(),
+              inventory: {
+                vcenterId: "vcenter-1",
+                clusters: {
+                  "Cluster-A": {
+                    infra: createInfra(1, 1),
+                    vms: createVMs(3),
+                  },
+                },
+                vcenter: {
+                  infra: createInfra(1, 1),
+                  vms: createVMs(3),
+                },
+              },
+            },
+          ],
+        },
+      ];
+      mockAssessmentsStore.getSnapshot.mockReturnValue([assessment]);
+
+      const { result } = renderHook(() => useReportPageViewModel());
+
+      act(() => {
+        result.current.openRecommendationTool("architecture");
+        result.current.selectGroup("group-1");
+      });
+
+      expect(result.current.selectedRecommendationTool).toBeNull();
+    });
   });
 
   describe("cluster select open state", () => {

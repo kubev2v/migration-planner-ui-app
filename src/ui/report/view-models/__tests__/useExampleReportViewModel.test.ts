@@ -71,4 +71,47 @@ describe("useExampleReportViewModel", () => {
 
     expect(result.current.selectedClusterId).toBe(ALL_CLUSTERS_ID);
   });
+
+  it("uses the all-clusters sizing fixture for aggregate totals", () => {
+    const { result } = renderHook(() => useExampleReportViewModel());
+    const totalVMs = getExampleInventory().vcenter?.vms?.total;
+
+    expect(result.current.selectedClusterId).toBe(ALL_CLUSTERS_ID);
+    expect(result.current.exampleSizing?.result.inventoryTotals.totalVMs).toBe(
+      totalVMs,
+    );
+    expect(result.current.detectedSummaryText).toContain(String(totalVMs));
+  });
+
+  it("uses the selected cluster sizing fixture", () => {
+    const { result } = renderHook(() => useExampleReportViewModel());
+
+    act(() => {
+      result.current.handleClusterSelect(undefined, "domain-c34");
+    });
+
+    expect(result.current.exampleSizing?.clusterName).toBe(
+      "Cluster domain-c34",
+    );
+    expect(result.current.exampleSizing?.result.inventoryTotals.totalVMs).toBe(
+      350,
+    );
+  });
+
+  it("clears the recommendation tool when group changes", () => {
+    const { result } = renderHook(() => useExampleReportViewModel());
+
+    act(() => {
+      result.current.handleClusterSelect(undefined, "domain-c34");
+      result.current.openRecommendationTool("architecture");
+    });
+    expect(result.current.selectedRecommendationTool).toBe("architecture");
+
+    const subsets = getExampleSubsetInventories(getExampleInventory());
+    act(() => {
+      result.current.handleGroupSelect(undefined, subsets[0].id);
+    });
+
+    expect(result.current.selectedRecommendationTool).toBeNull();
+  });
 });

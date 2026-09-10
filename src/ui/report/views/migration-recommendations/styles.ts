@@ -21,7 +21,8 @@ export const disabledToolCardStyle = css`
 `;
 
 export const reportTabsStyle = css`
-  margin-bottom: var(--pf-t--global--spacer--400);
+  margin-top: calc(-1 * var(--pf-t--global--spacer--md));
+  margin-bottom: var(--pf-t--global--spacer--md);
 `;
 
 export const toolViewHeaderStyle = css`
@@ -29,5 +30,5 @@ export const toolViewHeaderStyle = css`
 `;
 
 export const toolViewTitleStyle = css`
-  margin-top: var(--pf-t--global--spacer--200);
+  margin-top: var(--pf-t--global--spacer--400);
 `;

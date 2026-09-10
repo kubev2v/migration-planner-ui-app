@@ -440,6 +440,7 @@ export const useReportPageViewModel = (): ReportPageViewModel => {
 
   const resetClusterSelection = useCallback(() => {
     setUserSelectedClusterId(null);
+    setSelectedRecommendationTool(null);
   }, []);
 
   const {
@@ -501,20 +502,39 @@ export const useReportPageViewModel = (): ReportPageViewModel => {
     return sortedKeys[0];
   }, [userSelectedClusterId, clusters]);
 
-  const selectCluster = useCallback((clusterId: string) => {
-    setUserSelectedClusterId(clusterId);
-    setSelectedRecommendationTool((current) => {
-      if (current == null) {
+  const hasClusterResources = useCallback(
+    (viewInfra?: Infra, viewVms?: VMs): boolean => {
+      const totalHosts = viewInfra?.totalHosts ?? 0;
+      const hostsCount = viewInfra?.hosts?.length ?? 0;
+      const hasHosts = totalHosts > 0 || hostsCount > 0;
+      const hasVms = (viewVms?.total ?? 0) > 0;
+      return hasHosts && hasVms;
+    },
+    [],
+  );
+
+  const selectCluster = useCallback(
+    (clusterId: string) => {
+      setUserSelectedClusterId(clusterId);
+      setSelectedRecommendationTool((current) => {
+        if (current == null) {
+          return current;
+        }
+        const isAggregate = clusterId === ALL_CLUSTERS_ID;
+        if (!isRecommendationToolAvailable(current, isAggregate)) {
+          return null;
+        }
+        if (current === "architecture" && !isAggregate) {
+          const cluster = clusters?.[clusterId];
+          return hasClusterResources(cluster?.infra, cluster?.vms)
+            ? current
+            : null;
+        }
         return current;
-      }
-      return isRecommendationToolAvailable(
-        current,
-        clusterId === ALL_CLUSTERS_ID,
-      )
-        ? current
-        : null;
-    });
-  }, []);
+      });
+    },
+    [clusters, hasClusterResources],
+  );
 
   const openRecommendationTool = useCallback((toolId: RecommendationToolId) => {
     setSelectedRecommendationTool(toolId);
@@ -550,17 +570,6 @@ export const useReportPageViewModel = (): ReportPageViewModel => {
     : undefined;
 
   // ---- Resource checks -----------------------------------------------------
-  const hasClusterResources = useCallback(
-    (viewInfra?: Infra, viewVms?: VMs): boolean => {
-      const totalHosts = viewInfra?.totalHosts ?? 0;
-      const hostsCount = viewInfra?.hosts?.length ?? 0;
-      const hasHosts = totalHosts > 0 || hostsCount > 0;
-      const hasVms = (viewVms?.total ?? 0) > 0;
-      return hasHosts && hasVms;
-    },
-    [],
-  );
-
   const canShowClusterRecommendations =
     selectedClusterId !== ALL_CLUSTERS_ID &&
     hasClusterResources(clusterView.viewInfra, clusterView.viewVms);
