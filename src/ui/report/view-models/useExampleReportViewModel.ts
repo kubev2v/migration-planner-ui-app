@@ -6,6 +6,7 @@ import type {
 } from "@openshift-migration-advisor/planner-sdk";
 import React, { useCallback, useMemo, useState } from "react";
 
+import { ALL_CLUSTERS_ID } from "../helpers/clusterViewModel";
 import { extractScopedInventoryData } from "../helpers/groupInventoryFilter";
 import {
   buildClusterViewModel,
@@ -15,6 +16,11 @@ import type { ExampleClusterData } from "../views/example-data/clusterSizingFixt
 import { EXAMPLE_SIZING_MAP } from "../views/example-data/clusterSizingFixture";
 import { getExampleInventory } from "../views/example-data/inventoryFixture";
 import { getExampleSubsetInventories } from "../views/example-data/subsetInventoryFixture";
+import { isRecommendationToolAvailable } from "../views/migration-recommendations/constants";
+import type {
+  RecommendationToolId,
+  ReportContentTab,
+} from "../views/migration-recommendations/types";
 import { useGroupInventoryFilter } from "./useGroupInventoryFilter";
 
 export interface ExampleReportVM {
@@ -45,8 +51,11 @@ export interface ExampleReportVM {
     value: string | number | undefined,
   ) => void;
 
-  isSizingWizardOpen: boolean;
-  setIsSizingWizardOpen: (open: boolean) => void;
+  activeReportTab: ReportContentTab;
+  setActiveReportTab: (tab: ReportContentTab) => void;
+  selectedRecommendationTool: RecommendationToolId | null;
+  openRecommendationTool: (toolId: RecommendationToolId) => void;
+  closeRecommendationTool: () => void;
   exampleSizing: ExampleClusterData | null;
 }
 
@@ -61,10 +70,14 @@ export function useExampleReportViewModel(): ExampleReportVM {
     string | null
   >(null);
   const [isClusterSelectOpen, setIsClusterSelectOpen] = useState(false);
-  const [isSizingWizardOpen, setIsSizingWizardOpen] = useState(false);
+  const [activeReportTab, setActiveReportTab] =
+    useState<ReportContentTab>("report");
+  const [selectedRecommendationTool, setSelectedRecommendationTool] =
+    useState<RecommendationToolId | null>(null);
 
   const resetClusterSelection = useCallback(() => {
     setUserSelectedClusterId(null);
+    setSelectedRecommendationTool(null);
   }, []);
 
   const {
@@ -86,7 +99,7 @@ export function useExampleReportViewModel(): ExampleReportVM {
   );
 
   const selectedClusterId = useMemo(
-    () => userSelectedClusterId ?? "all",
+    () => userSelectedClusterId ?? ALL_CLUSTERS_ID,
     [userSelectedClusterId],
   );
 
@@ -100,10 +113,10 @@ export function useExampleReportViewModel(): ExampleReportVM {
     : 0;
   const clusterSelectDisabled = clusterView.clusterOptions.length <= 1;
 
-  const exampleSizing =
-    selectedClusterId !== "all"
-      ? (EXAMPLE_SIZING_MAP[selectedClusterId] ?? null)
-      : null;
+  const exampleSizing = useMemo(
+    () => EXAMPLE_SIZING_MAP[selectedClusterId] ?? null,
+    [selectedClusterId],
+  );
 
   const detectedSummaryText = useMemo(() => {
     if (clusterCount <= 0) return "No clusters detected";
@@ -121,8 +134,20 @@ export function useExampleReportViewModel(): ExampleReportVM {
     value: string | number | undefined,
   ) => {
     if (value == null) return;
-    setUserSelectedClusterId(String(value));
+    const clusterId = String(value);
+    setUserSelectedClusterId(clusterId);
     setIsClusterSelectOpen(false);
+    setSelectedRecommendationTool((current) => {
+      if (current == null) {
+        return current;
+      }
+      return isRecommendationToolAvailable(
+        current,
+        clusterId === ALL_CLUSTERS_ID,
+      )
+        ? current
+        : null;
+    });
   };
 
   return {
@@ -142,8 +167,15 @@ export function useExampleReportViewModel(): ExampleReportVM {
     isGroupSelectOpen,
     setIsGroupSelectOpen,
     handleGroupSelect,
-    isSizingWizardOpen,
-    setIsSizingWizardOpen,
+    activeReportTab,
+    setActiveReportTab,
+    selectedRecommendationTool,
+    openRecommendationTool: (toolId: RecommendationToolId) => {
+      setSelectedRecommendationTool(toolId);
+    },
+    closeRecommendationTool: () => {
+      setSelectedRecommendationTool(null);
+    },
     exampleSizing,
   };
 }

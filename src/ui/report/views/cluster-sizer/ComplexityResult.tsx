@@ -7,15 +7,7 @@ import type {
   OsDiskEstimationEntry,
   SchemaEstimationResult,
 } from "@openshift-migration-advisor/planner-sdk";
-import {
-  Chart,
-  ChartAxis,
-  ChartBar,
-  ChartPie,
-  ChartThemeColor,
-  ChartTooltip,
-  ChartVoronoiContainer,
-} from "@patternfly/react-charts/victory";
+import { ChartPie, ChartTooltip } from "@patternfly/react-charts/victory";
 import {
   Alert,
   Badge,
@@ -31,7 +23,7 @@ import {
   ToggleGroupItem,
 } from "@patternfly/react-core";
 import { Table, Tbody, Td, Th, Thead, Tr } from "@patternfly/react-table";
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 
 import {
   themedChartTooltipFlyoutPadding,
@@ -39,7 +31,12 @@ import {
   themedChartTooltipStyle,
 } from "../../../../lib/patternfly/flyoutAppendTo";
 import { COMPLEXITY_COLORS, COMPLEXITY_LABELS } from "./constants";
-import MigrationComplexityHelpPopover from "./MigrationComplexityHelpPopover";
+import { OsComplexityChart } from "./OsComplexityChart";
+import {
+  limitOsChartData,
+  OS_CHART_MAX_BARS,
+  sortComplexityOsData,
+} from "./OsComplexityChartData";
 import { durationToHours } from "./timeUtils";
 
 interface ComplexityResultProps {
@@ -52,12 +49,6 @@ interface ComplexityResultProps {
   estimationByComplexityError: Error | null;
 }
 
-interface ChartDatumWithScore {
-  x: string;
-  y: number;
-  score: number;
-}
-
 interface ChartDatum {
   x: string;
   y: number;
@@ -65,12 +56,6 @@ interface ChartDatum {
 
 const headerStyle = css`
   margin-bottom: var(--pf-t--global--spacer--200);
-`;
-
-const titleWithHelpStyle = css`
-  display: flex;
-  align-items: center;
-  gap: var(--pf-t--global--spacer--100);
 `;
 
 const legendContainerStyle = css`
@@ -84,9 +69,10 @@ const toggleGroupStyle = css`
   margin-bottom: var(--pf-t--global--spacer--500);
 `;
 
-const chartContainerStyle = css`
-  overflow-x: auto;
-  overflow-y: hidden;
+const chartCaptionStyle = css`
+  color: var(--pf-t--global--text--color--subtle);
+  font-size: var(--pf-t--global--font--size--sm);
+  margin-bottom: var(--pf-t--global--spacer--200);
 `;
 
 const tableHeaderStyle = css`
@@ -138,6 +124,81 @@ const timeEstimationValueStyle = css`
   font-weight: var(--pf-t--global--font--weight--body--bold);
 `;
 
+const ComplexityOsTab: React.FC<{
+  osNameData: ComplexityOSNameEntry[];
+  totalVMs: number;
+}> = ({ osNameData, totalVMs }) => {
+  const sortedOSData = useMemo(
+    () => sortComplexityOsData(osNameData),
+    [osNameData],
+  );
+  const chartOsData = useMemo(
+    () => limitOsChartData(sortedOSData),
+    [sortedOSData],
+  );
+  const hiddenOsCount = sortedOSData.length - chartOsData.length;
+
+  return (
+    <Stack hasGutter>
+      <StackItem>
+        <Title headingLevel="h3">Migration complexity by OS</Title>
+      </StackItem>
+
+      {hiddenOsCount > 0 ? (
+        <StackItem>
+          <p className={chartCaptionStyle}>
+            Showing {OS_CHART_MAX_BARS} of {sortedOSData.length} operating
+            systems. The full list is in the table below.
+          </p>
+        </StackItem>
+      ) : null}
+
+      <StackItem>
+        <OsComplexityChart data={chartOsData} />
+      </StackItem>
+
+      <StackItem>
+        <div className={tableHeaderStyle}>Detailed breakdown</div>
+        <Table aria-label="Complexity by OS table" variant="compact">
+          <Thead>
+            <Tr>
+              <Th>Operating system</Th>
+              <Th>Complexity</Th>
+              <Th>Count</Th>
+              <Th>Percentage</Th>
+            </Tr>
+          </Thead>
+          <Tbody>
+            {sortedOSData.map((item: ComplexityOSNameEntry, idx: number) => (
+              <Tr key={`${item.osName}-${idx}`}>
+                <Td>{item.osName}</Td>
+                <Td>
+                  <Badge
+                    style={{
+                      backgroundColor: COMPLEXITY_COLORS[item.score],
+                      color: "white",
+                    }}
+                  >
+                    {COMPLEXITY_LABELS[item.score]}
+                  </Badge>
+                </Td>
+                <Td>{formatNumber(item.vmCount)}</Td>
+                <Td>
+                  {totalVMs > 0
+                    ? `${formatPercentage((item.vmCount / totalVMs) * 100)}%`
+                    : "0%"}
+                </Td>
+              </Tr>
+            ))}
+          </Tbody>
+        </Table>
+      </StackItem>
+    </Stack>
+  );
+};
+
+ComplexityOsTab.displayName = "ComplexityOsTab";
+
 export const ComplexityResult: React.FC<ComplexityResultProps> = ({
   clusterName,
   complexityOutput,
@@ -184,150 +245,6 @@ export const ComplexityResult: React.FC<ComplexityResultProps> = ({
     (sum: number, item: ComplexityOSNameEntry) => sum + item.vmCount,
     0,
   );
-
-  // Render By OS tab content
-  const renderByOSTab = () => {
-    const sortedOSData = ([...osNameData] as ComplexityOSNameEntry[]).sort(
-      (a: ComplexityOSNameEntry, b: ComplexityOSNameEntry) => {
-        // Primary sort: by complexity score (ascending: Easiest to Hardest)
-        // Put score 0 (Unknown) at the end
-        if (a.score === 0 && b.score !== 0) return 1;
-        if (b.score === 0 && a.score !== 0) return -1;
-        if (a.score !== b.score) {
-          return a.score - b.score;
-        }
-        // Secondary sort: by VM count (descending) for same complexity
-        return b.vmCount - a.vmCount;
-      },
-    );
-
-    return (
-      <Stack hasGutter>
-        <StackItem>
-          <Title headingLevel="h3">Migration complexity by OS</Title>
-        </StackItem>
-
-        <StackItem>
-          <div className={chartContainerStyle}>
-            <Chart
-              ariaDesc="Horizontal bar chart showing VM count per operating system colored by complexity"
-              horizontal
-              containerComponent={
-                <ChartVoronoiContainer
-                  labels={({ datum }) => {
-                    const d = datum as ChartDatumWithScore;
-                    const osName =
-                      String(d.x).length > 25
-                        ? `${String(d.x).substring(0, 25)}...`
-                        : String(d.x);
-                    return `${osName}\n${d.y} VMs - ${COMPLEXITY_LABELS[d.score]}`;
-                  }}
-                  labelComponent={
-                    <ChartTooltip
-                      style={themedChartTooltipStyle}
-                      flyoutStyle={themedChartTooltipFlyoutStyle}
-                      flyoutPadding={themedChartTooltipFlyoutPadding}
-                    />
-                  }
-                  constrainToVisibleArea
-                />
-              }
-              domain={{
-                y: [
-                  0,
-                  Math.max(
-                    ...sortedOSData.map(
-                      (d: ComplexityOSNameEntry) => d.vmCount,
-                    ),
-                  ) * 1.1,
-                ],
-              }}
-              domainPadding={{ x: [10, 10] }}
-              height={Math.max(200, sortedOSData.length * 25)}
-              padding={{ top: 10, bottom: 40, left: 220, right: 30 }}
-              themeColor={ChartThemeColor.multiUnordered}
-              width={600}
-            >
-              <ChartAxis
-                style={{
-                  tickLabels: {
-                    fontSize: 9,
-                    fill: "var(--pf-t--global--text--color--regular)",
-                  },
-                }}
-              />
-              <ChartAxis
-                dependentAxis
-                showGrid
-                style={{
-                  tickLabels: {
-                    fontSize: 9,
-                    fill: "var(--pf-t--global--text--color--regular)",
-                  },
-                  grid: {
-                    stroke: "var(--pf-t--global--border--color--default)",
-                  },
-                }}
-              />
-              <ChartBar
-                data={sortedOSData.map((item: ComplexityOSNameEntry) => ({
-                  x: item.osName,
-                  y: item.vmCount,
-                  score: item.score,
-                }))}
-                barWidth={12}
-                style={{
-                  data: {
-                    fill: ({ datum }) => {
-                      const d = datum as ChartDatumWithScore;
-                      return COMPLEXITY_COLORS[d.score] || "#8A8D90";
-                    },
-                  },
-                }}
-              />
-            </Chart>
-          </div>
-        </StackItem>
-
-        <StackItem>
-          <div className={tableHeaderStyle}>Detailed breakdown</div>
-          <Table aria-label="Complexity by OS table" variant="compact">
-            <Thead>
-              <Tr>
-                <Th>Operating system</Th>
-                <Th>Complexity</Th>
-                <Th>Count</Th>
-                <Th>Percentage</Th>
-              </Tr>
-            </Thead>
-            <Tbody>
-              {sortedOSData.map((item: ComplexityOSNameEntry, idx: number) => (
-                <Tr key={`${item.osName}-${idx}`}>
-                  <Td>{item.osName}</Td>
-                  <Td>
-                    <Badge
-                      style={{
-                        backgroundColor: COMPLEXITY_COLORS[item.score],
-                        color: "white",
-                      }}
-                    >
-                      {COMPLEXITY_LABELS[item.score]}
-                    </Badge>
-                  </Td>
-                  <Td>{formatNumber(item.vmCount)}</Td>
-                  <Td>
-                    {totalVMs > 0
-                      ? `${formatPercentage((item.vmCount / totalVMs) * 100)}%`
-                      : "0%"}
-                  </Td>
-                </Tr>
-              ))}
-            </Tbody>
-          </Table>
-        </StackItem>
-      </Stack>
-    );
-  };
 
   // Render By Disk tab content
   const renderByDiskTab = () => {
@@ -543,18 +460,10 @@ export const ComplexityResult: React.FC<ComplexityResultProps> = ({
         <Stack hasGutter>
           <StackItem>
             <Flex
-              justifyContent={{ default: "justifyContentSpaceBetween" }}
+              justifyContent={{ default: "justifyContentFlexEnd" }}
               alignItems={{ default: "alignItemsFlexStart" }}
               flexWrap={{ default: "wrap" }}
             >
-              <FlexItem>
-                <div className={headerStyle}>
-                  <div className={titleWithHelpStyle}>
-                    <Title headingLevel="h2">Migration complexity</Title>
-                    <MigrationComplexityHelpPopover />
-                  </div>
-                </div>
-              </FlexItem>
               <FlexItem>
                 <div className={legendContainerStyle}>
                   {[1, 2, 3, 4, 0].map((score) => (
@@ -599,7 +508,9 @@ export const ComplexityResult: React.FC<ComplexityResultProps> = ({
           </StackItem>
 
           <StackItem>
-            {activeTabKey === 0 && renderByOSTab()}
+            {activeTabKey === 0 && (
+              <ComplexityOsTab osNameData={osNameData} totalVMs={totalVMs} />
+            )}
             {activeTabKey === 1 && renderByDiskTab()}
             {activeTabKey === 2 && renderByDiskAndOSTab()}
           </StackItem>

@@ -9,6 +9,22 @@ export type ClusterSelection = string;
 
 export type ClusterOption = { id: string; label: string };
 
+/** Report filter value for the vCenter-wide aggregate (all clusters). */
+export const ALL_CLUSTERS_ID = "all";
+
+/**
+ * Map the report cluster filter to the API `clusterId`.
+ *
+ * Migration estimation and complexity treat an omitted or empty `clusterId` as
+ * the vCenter-level aggregate. The UI sentinel {@link ALL_CLUSTERS_ID} must not
+ * be sent as a cluster id.
+ *
+ * Cluster-requirements (architecture) always needs a real cluster id — that
+ * tool is disabled on the aggregate view, so it must not use this helper.
+ */
+export const toApiClusterId = (selectionId: string): string =>
+  selectionId === ALL_CLUSTERS_ID ? "" : selectionId;
+
 export type ClusterViewModel = {
   viewInfra?: Infra;
   viewVms?: VMs;
@@ -44,7 +60,7 @@ export const getClusterOptions = (clusters?: {
     compareClustersByVmCount(a, b, clusters),
   );
   return [
-    { id: "all", label: "All vSphere clusters" },
+    { id: ALL_CLUSTERS_ID, label: "All vSphere clusters" },
     ...sortedKeys.map((key) => ({ id: key, label: key })),
   ];
 };
@@ -61,7 +77,7 @@ export const buildClusterViewModel = ({
   infra,
   vms,
   clusters,
-  selectedClusterId = "all",
+  selectedClusterId = ALL_CLUSTERS_ID,
 }: {
   infra?: Infra;
   vms?: VMs;
@@ -70,16 +86,18 @@ export const buildClusterViewModel = ({
 }): ClusterViewModel => {
   const options = getClusterOptions(clusters);
   const clusterExists =
-    selectedClusterId === "all"
+    selectedClusterId === ALL_CLUSTERS_ID
       ? true
       : Boolean(
           clusters &&
           Object.prototype.hasOwnProperty.call(clusters, selectedClusterId),
         );
   const effectiveSelection =
-    selectedClusterId === "all" || clusterExists ? selectedClusterId : "all";
+    selectedClusterId === ALL_CLUSTERS_ID || clusterExists
+      ? selectedClusterId
+      : ALL_CLUSTERS_ID;
 
-  if (effectiveSelection === "all") {
+  if (effectiveSelection === ALL_CLUSTERS_ID) {
     return {
       viewInfra: infra,
       viewVms: vms,
@@ -88,7 +106,7 @@ export const buildClusterViewModel = ({
       nicCount: vms?.nicCount,
       viewClusters: clusters,
       isAggregateView: true,
-      selectionId: "all",
+      selectionId: ALL_CLUSTERS_ID,
       selectionLabel: "All vSphere clusters",
       clusterOptions: options,
       clusterFound: true,

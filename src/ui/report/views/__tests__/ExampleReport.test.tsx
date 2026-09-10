@@ -58,6 +58,12 @@ vi.mock("../cluster-sizer/ClusterSizingWizard", () => ({
   ),
 }));
 
+vi.mock("../migration-recommendations/MigrationRecommendations", () => ({
+  MigrationRecommendations: (): React.ReactElement => (
+    <div data-testid="migration-recommendations" />
+  ),
+}));
+
 afterEach(() => cleanup());
 
 describe("ExampleReport", () => {
@@ -90,5 +96,19 @@ describe("ExampleReport", () => {
 
     expect(screen.getByText(/Filter by group:/)).toBeInTheDocument();
     expect(screen.getByText("Coming soon")).toBeInTheDocument();
+  });
+
+  it("renders Migration report and Migration recommendations tabs", () => {
+    render(<ExampleReport />);
+
+    expect(
+      screen.getByRole("tab", { name: "Migration report" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("tab", { name: "Migration recommendations" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByText(/View recommendation for/),
+    ).not.toBeInTheDocument();
   });
 });

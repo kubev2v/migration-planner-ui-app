@@ -38,6 +38,7 @@ import type {
   PdfExtraPageItem,
 } from "../../../services/pdf-export/PdfExportService";
 import {
+  ALL_CLUSTERS_ID,
   buildClusterViewModel,
   type ClusterViewModel,
   compareClustersByVmCount,
@@ -51,6 +52,11 @@ import {
   isControlPlaneOnlyClusterMode,
   type SizingFormValues,
 } from "../views/cluster-sizer/types";
+import { isRecommendationToolAvailable } from "../views/migration-recommendations/constants";
+import type {
+  RecommendationToolId,
+  ReportContentTab,
+} from "../views/migration-recommendations/types";
 import {
   formatNumber,
   formatRatio,
@@ -218,6 +224,7 @@ export interface ReportPageViewModel {
   scopedClusterView: ClusterScopedView | undefined;
   canExportReport: boolean;
   canShowClusterRecommendations: boolean;
+  canUseRecommendationTools: boolean;
 
   // Missing metrics (old inventories lacking CPU/Memory data)
   missingMetrics: string[];
@@ -231,9 +238,12 @@ export interface ReportPageViewModel {
   exportError: ExportError | null;
   clearExportError: () => void;
 
-  // Sizing wizard
-  isSizingWizardOpen: boolean;
-  setIsSizingWizardOpen: (open: boolean) => void;
+  // Report tabs + recommendation tools
+  activeReportTab: ReportContentTab;
+  setActiveReportTab: (tab: ReportContentTab) => void;
+  selectedRecommendationTool: RecommendationToolId | null;
+  openRecommendationTool: (toolId: RecommendationToolId) => void;
+  closeRecommendationTool: () => void;
   /**
    * All sizing results calculated in this session, keyed by clusterId.
    * Used by exportPdf to include recommendations for every sized cluster.
@@ -396,7 +406,10 @@ export const useReportPageViewModel = (): ReportPageViewModel => {
     string | null
   >(null);
   const [isClusterSelectOpen, setIsClusterSelectOpen] = useState(false);
-  const [isSizingWizardOpen, setIsSizingWizardOpen] = useState(false);
+  const [activeReportTab, setActiveReportTab] =
+    useState<ReportContentTab>("report");
+  const [selectedRecommendationTool, setSelectedRecommendationTool] =
+    useState<RecommendationToolId | null>(null);
   const [savedSizingDataMap, setSavedSizingDataMap] = useState<
     Record<string, SizingPdfData>
   >({});
@@ -427,6 +440,7 @@ export const useReportPageViewModel = (): ReportPageViewModel => {
 
   const resetClusterSelection = useCallback(() => {
     setUserSelectedClusterId(null);
+    setSelectedRecommendationTool(null);
   }, []);
 
   const {
@@ -465,7 +479,7 @@ export const useReportPageViewModel = (): ReportPageViewModel => {
   const selectedClusterId = useMemo(() => {
     if (userSelectedClusterId !== null) {
       const isValidSelection =
-        userSelectedClusterId === "all" ||
+        userSelectedClusterId === ALL_CLUSTERS_ID ||
         Boolean(
           clusters &&
           Object.prototype.hasOwnProperty.call(clusters, userSelectedClusterId),
@@ -478,7 +492,7 @@ export const useReportPageViewModel = (): ReportPageViewModel => {
     const clusterKeys = clusters ? Object.keys(clusters) : [];
 
     if (clusterKeys.length === 0) {
-      return "all";
+      return ALL_CLUSTERS_ID;
     }
 
     const sortedKeys = [...clusterKeys].sort((a, b) =>
@@ -488,8 +502,46 @@ export const useReportPageViewModel = (): ReportPageViewModel => {
     return sortedKeys[0];
   }, [userSelectedClusterId, clusters]);
 
-  const selectCluster = useCallback((clusterId: string) => {
-    setUserSelectedClusterId(clusterId);
+  const hasClusterResources = useCallback(
+    (viewInfra?: Infra, viewVms?: VMs): boolean => {
+      const totalHosts = viewInfra?.totalHosts ?? 0;
+      const hostsCount = viewInfra?.hosts?.length ?? 0;
+      const hasHosts = totalHosts > 0 || hostsCount > 0;
+      const hasVms = (viewVms?.total ?? 0) > 0;
+      return hasHosts && hasVms;
+    },
+    [],
+  );
+
+  const selectCluster = useCallback(
+    (clusterId: string) => {
+      setUserSelectedClusterId(clusterId);
+      setSelectedRecommendationTool((current) => {
+        if (current == null) {
+          return current;
+        }
+        const isAggregate = clusterId === ALL_CLUSTERS_ID;
+        if (!isRecommendationToolAvailable(current, isAggregate)) {
+          return null;
+        }
+        if (current === "architecture" && !isAggregate) {
+          const cluster = clusters?.[clusterId];
+          return hasClusterResources(cluster?.infra, cluster?.vms)
+            ? current
+            : null;
+        }
+        return current;
+      });
+    },
+    [clusters, hasClusterResources],
+  );
+
+  const openRecommendationTool = useCallback((toolId: RecommendationToolId) => {
+    setSelectedRecommendationTool(toolId);
+  }, []);
+
+  const closeRecommendationTool = useCallback(() => {
+    setSelectedRecommendationTool(null);
   }, []);
 
   // ---- Cluster view model --------------------------------------------------
@@ -518,20 +570,11 @@ export const useReportPageViewModel = (): ReportPageViewModel => {
     : undefined;
 
   // ---- Resource checks -----------------------------------------------------
-  const hasClusterResources = useCallback(
-    (viewInfra?: Infra, viewVms?: VMs): boolean => {
-      const totalHosts = viewInfra?.totalHosts ?? 0;
-      const hostsCount = viewInfra?.hosts?.length ?? 0;
-      const hasHosts = totalHosts > 0 || hostsCount > 0;
-      const hasVms = (viewVms?.total ?? 0) > 0;
-      return hasHosts && hasVms;
-    },
-    [],
-  );
-
   const canShowClusterRecommendations =
-    selectedClusterId !== "all" &&
+    selectedClusterId !== ALL_CLUSTERS_ID &&
     hasClusterResources(clusterView.viewInfra, clusterView.viewVms);
+
+  const canUseRecommendationTools = (clusterView.viewVms?.total ?? 0) > 0;
 
   const canExportReport = hasClusterResources(
     clusterView.viewInfra,
@@ -619,7 +662,7 @@ export const useReportPageViewModel = (): ReportPageViewModel => {
       // - All-clusters view → sized clusters within the active group inventory
       const scopedClusterIds = new Set(clusters ? Object.keys(clusters) : []);
       const sizingEntries: SizingPdfData[] =
-        selectedClusterId === "all"
+        selectedClusterId === ALL_CLUSTERS_ID
           ? Object.values(savedSizingDataMap).filter((entry) =>
               scopedClusterIds.has(entry.clusterId),
             )
@@ -805,6 +848,7 @@ export const useReportPageViewModel = (): ReportPageViewModel => {
     scopedClusterView,
     canExportReport,
     canShowClusterRecommendations,
+    canUseRecommendationTools,
 
     missingMetrics,
     hasMissingMetrics: missingMetrics.length > 0,
@@ -816,8 +860,11 @@ export const useReportPageViewModel = (): ReportPageViewModel => {
     exportError: exportState.error,
     clearExportError,
 
-    isSizingWizardOpen,
-    setIsSizingWizardOpen,
+    activeReportTab,
+    setActiveReportTab,
+    selectedRecommendationTool,
+    openRecommendationTool,
+    closeRecommendationTool,
     savedSizingDataMap,
     onSizingCalculated,
 

@@ -15,6 +15,8 @@ import {
   createSourceModel,
   type SourceModel,
 } from "../../../../models/SourceModel";
+import { ALL_CLUSTERS_ID } from "../../helpers/clusterViewModel";
+import { ALL_VMS_GROUP_ID } from "../../helpers/groupViewModel";
 import { mockClusterRequirementsResponse } from "../../views/cluster-sizer/__tests__/mocks/ClusterRequirementsResponse.mock";
 import { EXAMPLE_FORM_VALUES } from "../../views/example-data/clusterSizingFixture";
 import type { SizingPdfData } from "../useReportPageViewModel";
@@ -348,7 +350,7 @@ describe("useReportPageViewModel", () => {
       mockAssessmentsStore.getSnapshot.mockReturnValue([assessment]);
 
       const { result } = renderHook(() => useReportPageViewModel());
-      expect(result.current.selectedClusterId).toBe("all");
+      expect(result.current.selectedClusterId).toBe(ALL_CLUSTERS_ID);
     });
 
     it("allows selecting a different cluster", () => {
@@ -376,7 +378,7 @@ describe("useReportPageViewModel", () => {
 
       const { result } = renderHook(() => useReportPageViewModel());
       expect(result.current.clusterView.isAggregateView).toBe(true);
-      expect(result.current.clusterView.selectionId).toBe("all");
+      expect(result.current.clusterView.selectionId).toBe(ALL_CLUSTERS_ID);
     });
 
     it("builds per-cluster view when a specific cluster is selected", () => {
@@ -428,8 +430,30 @@ describe("useReportPageViewModel", () => {
       mockAssessmentsStore.getSnapshot.mockReturnValue([assessment]);
 
       const { result } = renderHook(() => useReportPageViewModel());
-      // Default is "all" (aggregate)
       expect(result.current.canShowClusterRecommendations).toBe(false);
+    });
+
+    it("canUseRecommendationTools is true when the view has VMs", () => {
+      const assessment = createAssessment("assessment-1", {
+        "Cluster-A": { infra: createInfra(2, 2), vms: createVMs(5) },
+      });
+      mockAssessmentsStore.getSnapshot.mockReturnValue([assessment]);
+
+      const { result } = renderHook(() => useReportPageViewModel());
+      expect(result.current.canUseRecommendationTools).toBe(true);
+    });
+
+    it("canUseRecommendationTools is true on aggregate view when VMs exist", () => {
+      const assessment = createAssessment("assessment-1", {
+        "Cluster-A": { infra: createInfra(2, 2), vms: createVMs(5) },
+      });
+      mockAssessmentsStore.getSnapshot.mockReturnValue([assessment]);
+
+      const { result } = renderHook(() => useReportPageViewModel());
+      act(() => {
+        result.current.selectCluster(ALL_CLUSTERS_ID);
+      });
+      expect(result.current.canUseRecommendationTools).toBe(true);
     });
 
     it("canExportReport is true when cluster has hosts and VMs", () => {
@@ -544,7 +568,7 @@ describe("useReportPageViewModel", () => {
           createSizingPdfData("Cluster-C", "Cluster C"),
         );
         result.current.selectGroup("group-1");
-        result.current.selectCluster("all");
+        result.current.selectCluster(ALL_CLUSTERS_ID);
       });
 
       act(() => {
@@ -635,24 +659,162 @@ describe("useReportPageViewModel", () => {
     });
   });
 
-  describe("sizing wizard", () => {
-    it("starts with isSizingWizardOpen = false", () => {
+  describe("recommendation tools", () => {
+    it("starts on the Migration report tab with no tool selected", () => {
       const { result } = renderHook(() => useReportPageViewModel());
-      expect(result.current.isSizingWizardOpen).toBe(false);
+      expect(result.current.activeReportTab).toBe("report");
+      expect(result.current.selectedRecommendationTool).toBeNull();
     });
 
-    it("toggles sizing wizard open state", () => {
+    it("opens and closes a recommendation tool", () => {
       const { result } = renderHook(() => useReportPageViewModel());
 
       act(() => {
-        result.current.setIsSizingWizardOpen(true);
+        result.current.openRecommendationTool("time-estimation");
       });
-      expect(result.current.isSizingWizardOpen).toBe(true);
+      expect(result.current.selectedRecommendationTool).toBe("time-estimation");
 
       act(() => {
-        result.current.setIsSizingWizardOpen(false);
+        result.current.closeRecommendationTool();
       });
-      expect(result.current.isSizingWizardOpen).toBe(false);
+      expect(result.current.selectedRecommendationTool).toBeNull();
+    });
+
+    it("closes architecture when switching to the aggregate cluster view", () => {
+      const assessment = createAssessment("assessment-1", {
+        "Cluster-A": { infra: createInfra(2, 2), vms: createVMs(5) },
+      });
+      mockAssessmentsStore.getSnapshot.mockReturnValue([assessment]);
+
+      const { result } = renderHook(() => useReportPageViewModel());
+
+      act(() => {
+        result.current.openRecommendationTool("architecture");
+        result.current.selectCluster(ALL_CLUSTERS_ID);
+      });
+
+      expect(result.current.selectedRecommendationTool).toBeNull();
+    });
+
+    it("keeps time estimation open when switching to the aggregate cluster view", () => {
+      const assessment = createAssessment("assessment-1", {
+        "Cluster-A": { infra: createInfra(2, 2), vms: createVMs(5) },
+      });
+      mockAssessmentsStore.getSnapshot.mockReturnValue([assessment]);
+
+      const { result } = renderHook(() => useReportPageViewModel());
+
+      act(() => {
+        result.current.openRecommendationTool("time-estimation");
+        result.current.selectCluster(ALL_CLUSTERS_ID);
+      });
+
+      expect(result.current.selectedRecommendationTool).toBe("time-estimation");
+    });
+
+    it("keeps time estimation open when switching to a cluster without hosts or VMs", () => {
+      const assessment = createAssessment("assessment-1", {
+        "Cluster-A": { infra: createInfra(2, 2), vms: createVMs(5) },
+        "Cluster-B": { infra: createInfra(0, 0), vms: createVMs(0) },
+      });
+      mockAssessmentsStore.getSnapshot.mockReturnValue([assessment]);
+
+      const { result } = renderHook(() => useReportPageViewModel());
+
+      act(() => {
+        result.current.selectCluster("Cluster-A");
+        result.current.openRecommendationTool("time-estimation");
+        result.current.selectCluster("Cluster-B");
+      });
+
+      expect(result.current.selectedRecommendationTool).toBe("time-estimation");
+    });
+
+    it("closes architecture when switching to a cluster without hosts or VMs", () => {
+      const assessment = createAssessment("assessment-1", {
+        "Cluster-A": { infra: createInfra(2, 2), vms: createVMs(5) },
+        "Cluster-B": { infra: createInfra(0, 0), vms: createVMs(0) },
+      });
+      mockAssessmentsStore.getSnapshot.mockReturnValue([assessment]);
+
+      const { result } = renderHook(() => useReportPageViewModel());
+
+      act(() => {
+        result.current.selectCluster("Cluster-A");
+        result.current.openRecommendationTool("architecture");
+      });
+      expect(result.current.selectedRecommendationTool).toBe("architecture");
+
+      act(() => {
+        result.current.selectCluster("Cluster-B");
+      });
+
+      expect(result.current.selectedRecommendationTool).toBeNull();
+    });
+
+    it("keeps architecture open when switching to a cluster with hosts and VMs", () => {
+      const assessment = createAssessment("assessment-1", {
+        "Cluster-A": { infra: createInfra(2, 2), vms: createVMs(5) },
+        "Cluster-B": { infra: createInfra(3, 3), vms: createVMs(7) },
+      });
+      mockAssessmentsStore.getSnapshot.mockReturnValue([assessment]);
+
+      const { result } = renderHook(() => useReportPageViewModel());
+
+      act(() => {
+        result.current.selectCluster("Cluster-A");
+        result.current.openRecommendationTool("architecture");
+        result.current.selectCluster("Cluster-B");
+      });
+
+      expect(result.current.selectedRecommendationTool).toBe("architecture");
+    });
+
+    it("clears the recommendation tool when group selection resets the cluster", () => {
+      const assessment = createAssessment("assessment-1", {
+        "Cluster-A": { infra: createInfra(2, 2), vms: createVMs(10) },
+      });
+      assessment.snapshots = [
+        {
+          createdAt: new Date(),
+          inventory: assessment.snapshots?.[0]?.inventory ?? {
+            vcenterId: "vcenter-1",
+            clusters: {},
+          },
+          subsetInventories: [
+            {
+              id: "group-1",
+              name: "Group 1",
+              vcenterId: "vcenter-1",
+              vmsCount: 3,
+              createdAt: new Date(),
+              inventory: {
+                vcenterId: "vcenter-1",
+                clusters: {
+                  "Cluster-A": {
+                    infra: createInfra(1, 1),
+                    vms: createVMs(3),
+                  },
+                },
+                vcenter: {
+                  infra: createInfra(1, 1),
+                  vms: createVMs(3),
+                },
+              },
+            },
+          ],
+        },
+      ];
+      mockAssessmentsStore.getSnapshot.mockReturnValue([assessment]);
+
+      const { result } = renderHook(() => useReportPageViewModel());
+
+      act(() => {
+        result.current.openRecommendationTool("architecture");
+        result.current.selectGroup("group-1");
+      });
+
+      expect(result.current.selectedRecommendationTool).toBeNull();
     });
   });
 
@@ -674,7 +836,7 @@ describe("useReportPageViewModel", () => {
 
   describe("clusterSelectDisabled", () => {
     it("returns true when there is 1 or fewer cluster options", () => {
-      // No clusters → only "all" option → length 1
+      // No clusters → only the all-clusters option → length 1
       const assessment = createAssessment("assessment-1");
       mockAssessmentsStore.getSnapshot.mockReturnValue([assessment]);
 
@@ -703,7 +865,7 @@ describe("useReportPageViewModel", () => {
 
       const { result } = renderHook(() => useReportPageViewModel());
       expect(result.current.groupView.showGroupFilter).toBe(false);
-      expect(result.current.selectedGroupId).toBe("all");
+      expect(result.current.selectedGroupId).toBe(ALL_VMS_GROUP_ID);
     });
 
     it("shows group options from subset inventories and scopes dashboard data", () => {

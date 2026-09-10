@@ -1,209 +1,104 @@
-import { css } from "@emotion/css";
-import {
-  Alert,
-  Button,
-  ExpandableSection,
-  Flex,
-  FlexItem,
-  Stack,
-  StackItem,
-  TabContent,
-  TabContentBody,
-  Title,
-} from "@patternfly/react-core";
+import { Alert, Button, Stack, StackItem } from "@patternfly/react-core";
 import type { ReactNode } from "react";
 import React, { useState } from "react";
 
-const expandableSectionStyle = css`
-  background-color: var(
-    --pf-t--global--background--color--status--info--default
-  ) !important;
-`;
-
-const expandableSectionDisabledStyle = css`
-  background-color: var(
-    --pf-t--global--background--color--status--info--default
-  ) !important;
-  opacity: 0.6;
-  pointer-events: none;
-`;
-
-const preferencesContentStackStyle = css`
-  margin-top: var(--pf-t--global--spacer--300);
-`;
+export type RecommendationPhase = "form" | "results";
 
 interface RecommendationTemplateProps {
   id: string;
-  /** Title for the preferences section */
-  preferencesTitle?: string;
-  /** React component or element to render in the preferences section */
-  preferencesContent: ReactNode;
-  /** React component or element to render in the results section */
+  preferencesContent?: ReactNode;
   resultsContent: ReactNode;
-  /** Function to call when Generate recommendation is clicked */
   onGenerate: () => void | Promise<void>;
-  /** Whether the generate operation is currently loading */
   isLoading?: boolean;
-  /** Whether results are available to display */
-  hasResults?: boolean;
-  /** Custom button text (defaults to "Generate recommendation") */
   generateButtonText?: string;
-  /** Title for the results section (defaults to "Cluster recommendations") */
-  resultsTitle?: string;
-  /** Whether to show the info alert in the results section (defaults to true) */
   showAlert?: boolean;
-  /**
-   * Controlled expanded state for the preferences section.
-   * When provided together with `onPreferencesExpandedChange`, the component
-   * becomes controlled and `isPreferencesInitiallyExpanded` is ignored.
-   */
-  isPreferencesExpanded?: boolean;
-  /** Callback fired when the user toggles the preferences section (controlled mode). */
-  onPreferencesExpandedChange?: (expanded: boolean) => void;
-  /** Initial expanded state for preferences section (defaults to true). Ignored when controlled. */
-  isPreferencesInitiallyExpanded?: boolean;
-  /** Whether the preferences section is disabled (defaults to false) */
   isPreferencesDisabled?: boolean;
-  /** Whether the generate button is disabled due to validation errors */
   isGenerateDisabled?: boolean;
-  /** Whether to hide the preferences section entirely (defaults to false) */
-  hidePreferences?: boolean;
-  /** Optional action element rendered inline with the results title */
-  headerAction?: ReactNode;
-  /** When true, re-expands the preferences section so the user can adjust values */
-  hasError?: boolean;
+  /**
+   * When true, start on the results view (used by the example report's
+   * pre-populated, read-only tools when phase is uncontrolled).
+   */
+  initialShowResults?: boolean;
+  /** Controlled form/results phase. When set, the parent owns the phase. */
+  phase?: RecommendationPhase;
+  onPhaseChange?: (phase: RecommendationPhase) => void;
 }
 
 export const RecommendationTemplate: React.FC<RecommendationTemplateProps> = ({
   id,
-  preferencesTitle = "Migration preferences",
   preferencesContent,
   resultsContent,
   onGenerate,
   isLoading = false,
-  hasResults = false,
   generateButtonText = "Generate recommendation",
-  resultsTitle = "Cluster recommendations",
   showAlert = true,
-  isPreferencesExpanded: controlledExpanded,
-  onPreferencesExpandedChange,
-  isPreferencesInitiallyExpanded = true,
   isPreferencesDisabled = false,
   isGenerateDisabled = false,
-  hidePreferences = false,
-  headerAction,
-  hasError = false,
+  initialShowResults = false,
+  phase: phaseProp,
+  onPhaseChange,
 }) => {
-  const isControlled =
-    controlledExpanded !== undefined &&
-    onPreferencesExpandedChange !== undefined;
-
-  const [uncontrolledExpanded, setUncontrolledExpanded] = useState(
-    isPreferencesInitiallyExpanded,
+  const isControlled = phaseProp !== undefined;
+  const [internalPhase, setInternalPhase] = useState<"form" | "results">(() =>
+    initialShowResults ? "results" : "form",
   );
+  const phase = isControlled ? phaseProp : internalPhase;
 
-  const manualExpanded = isControlled
-    ? controlledExpanded
-    : uncontrolledExpanded;
-  const setManualExpanded = isControlled
-    ? onPreferencesExpandedChange
-    : setUncontrolledExpanded;
+  const setPhase = (next: RecommendationPhase): void => {
+    if (!isControlled) {
+      setInternalPhase(next);
+    }
+    onPhaseChange?.(next);
+  };
 
-  const isPreferencesExpanded = hasError || manualExpanded;
-
-  const handleGenerate = () => {
+  const handleGenerate = (): void => {
+    setPhase("results");
     const result = onGenerate();
     if (result instanceof Promise) {
-      void result
-        .catch((err) => {
-          console.error("Generate recommendation failed:", err);
-        })
-        .finally(() => {
-          setManualExpanded(false);
-        });
-    } else {
-      setManualExpanded(false);
+      void result.catch((err: unknown) => {
+        console.error("Generate recommendation failed:", err);
+      });
     }
   };
 
   return (
-    <TabContent id={id}>
-      <TabContentBody>
+    <div id={id}>
+      {phase === "form" ? (
         <Stack hasGutter>
-          {!hidePreferences && (
-            <StackItem>
-              <ExpandableSection
-                title={preferencesTitle}
-                toggleText={preferencesTitle}
-                isExpanded={isPreferencesExpanded}
-                onToggle={
-                  isPreferencesDisabled
-                    ? undefined
-                    : (_event, expanded) => setManualExpanded(expanded)
-                }
-                displaySize="lg"
-                className={
-                  isPreferencesDisabled
-                    ? expandableSectionDisabledStyle
-                    : expandableSectionStyle
-                }
-              >
-                <Stack hasGutter className={preferencesContentStackStyle}>
-                  <StackItem>{preferencesContent}</StackItem>
-                  <StackItem>
-                    <Button
-                      variant="primary"
-                      onClick={handleGenerate}
-                      isLoading={isLoading}
-                      isDisabled={
-                        isLoading || isPreferencesDisabled || isGenerateDisabled
-                      }
-                    >
-                      {generateButtonText}
-                    </Button>
-                  </StackItem>
-                </Stack>
-              </ExpandableSection>
-            </StackItem>
-          )}
-
-          {hasResults && (
-            <StackItem>
-              <div>
-                {(resultsTitle || headerAction) && (
-                  <Flex
-                    justifyContent={{ default: "justifyContentSpaceBetween" }}
-                    alignItems={{ default: "alignItemsCenter" }}
-                  >
-                    {resultsTitle && (
-                      <FlexItem>
-                        <Title headingLevel="h2">{resultsTitle}</Title>
-                      </FlexItem>
-                    )}
-                    {headerAction && <FlexItem>{headerAction}</FlexItem>}
-                  </Flex>
-                )}
-                <Stack hasGutter>
-                  {showAlert && (
-                    <StackItem>
-                      <Alert
-                        variant="info"
-                        isInline
-                        title="Resource requirements are estimates based on current workloads"
-                      >
-                        Confirm this architecture with your team to ensure
-                        optimal performance.
-                      </Alert>
-                    </StackItem>
-                  )}
-                  <StackItem>{resultsContent}</StackItem>
-                </Stack>
-              </div>
-            </StackItem>
-          )}
+          {preferencesContent ? (
+            <StackItem>{preferencesContent}</StackItem>
+          ) : null}
+          <StackItem>
+            <Button
+              variant="primary"
+              onClick={handleGenerate}
+              isLoading={isLoading}
+              isDisabled={
+                isLoading || isPreferencesDisabled || isGenerateDisabled
+              }
+            >
+              {generateButtonText}
+            </Button>
+          </StackItem>
         </Stack>
-      </TabContentBody>
-    </TabContent>
+      ) : (
+        <Stack hasGutter>
+          {showAlert ? (
+            <StackItem>
+              <Alert
+                variant="info"
+                isInline
+                title="Resource requirements are estimates based on current workloads"
+              >
+                Confirm this architecture with your team to ensure optimal
+                performance.
+              </Alert>
+            </StackItem>
+          ) : null}
+          <StackItem>{resultsContent}</StackItem>
+        </Stack>
+      )}
+    </div>
   );
 };
 

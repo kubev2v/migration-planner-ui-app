@@ -70,23 +70,19 @@ export const SizingResult: React.FC<SizingResultProps> = ({
   }
 
   if (error) {
-    const title = "Failed to calculate sizing recommendation";
-    let message = error.message;
-    if (error.cause && typeof error.cause === "string") {
-      try {
-        const parsedCause = JSON.parse(error.cause) as { message: string };
-        const m = parsedCause.message;
-        const firstChar = m.charAt(0);
-        message = firstChar ? firstChar.toUpperCase() + m.slice(1) : m;
-      } catch {
-        // Fall back to original message without crashing
-      }
-    }
+    const firstChar = error.message.charAt(0);
+    const message = firstChar
+      ? firstChar.toUpperCase() + error.message.slice(1)
+      : error.message;
 
     return (
       <Stack hasGutter>
         <StackItem>
-          <Alert isInline variant="danger" title={title}>
+          <Alert
+            isInline
+            variant="danger"
+            title="Failed to calculate sizing recommendation"
+          >
             {message}
           </Alert>
         </StackItem>

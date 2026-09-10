@@ -4,13 +4,13 @@ import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { buildGroupViewModel } from "../../../helpers/groupViewModel";
-import { buildClusterViewModel } from "../ClusterView";
+import { ALL_CLUSTERS_ID, buildClusterViewModel } from "../ClusterView";
 import { ReportFilterBar } from "../ReportFilterBar";
 
 afterEach(() => cleanup());
 
 const clusterView = buildClusterViewModel({
-  selectedClusterId: "all",
+  selectedClusterId: ALL_CLUSTERS_ID,
 });
 
 const groupView = buildGroupViewModel({

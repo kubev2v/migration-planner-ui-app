@@ -7,7 +7,7 @@ import type {
 } from "@openshift-migration-advisor/planner-sdk";
 import { describe, expect, it } from "vitest";
 
-import { buildClusterViewModel } from "../ClusterView";
+import { ALL_CLUSTERS_ID, buildClusterViewModel } from "../ClusterView";
 
 const emptyBreakdown: VMResourceBreakdown = {
   total: 0,
@@ -56,7 +56,7 @@ describe("buildClusterViewModel", () => {
     });
 
     expect(model.isAggregateView).toBe(true);
-    expect(model.selectionId).toBe("all");
+    expect(model.selectionId).toBe(ALL_CLUSTERS_ID);
     expect(model.selectionLabel).toBe("All vSphere clusters");
     expect(model.viewInfra).toBe(baseInfra);
     expect(model.viewVms).toBe(baseVms);
@@ -136,10 +136,10 @@ describe("buildClusterViewModel", () => {
       infra: baseInfra,
       vms: baseVms,
       clusters,
-      selectedClusterId: "all",
+      selectedClusterId: ALL_CLUSTERS_ID,
     });
 
-    expect(model.clusterOptions[0].id).toBe("all");
+    expect(model.clusterOptions[0].id).toBe(ALL_CLUSTERS_ID);
     expect(model.clusterOptions[0].label).toBe("All vSphere clusters");
     expect(model.clusterOptions[1].id).toBe("Cluster A");
     expect(model.clusterOptions[2].id).toBe("Cluster B");
