@@ -1,5 +1,7 @@
 import {
+  type ClusterFeatures,
   type Inventory,
+  type InventoryData,
   InventoryFromJSON,
 } from "@openshift-migration-advisor/planner-sdk";
 
@@ -2023,10 +2025,62 @@ const inventoryData = {
     },
   },
   vcenter_id: "502d878c-af91-4a6f-93e9-61c4a1986172",
+  vcenter_version: "7.0.3.0",
+};
+
+const EXAMPLE_CLUSTER_FEATURES: Record<string, ClusterFeatures> = {
+  "domain-c146658": {
+    drsEnabled: true,
+    drsMode: "Fully Automated",
+    haEnabled: true,
+  },
+  "domain-c34": {
+    drsEnabled: false,
+    drsMode: "None",
+    haEnabled: true,
+  },
+};
+
+const annotateExampleClusterCapabilities = (
+  inventory: Inventory,
+): Inventory => {
+  const annotateData = (key: string, data: InventoryData): InventoryData => ({
+    ...data,
+    clusterFeatures: data.clusterFeatures ?? EXAMPLE_CLUSTER_FEATURES[key],
+    infra: {
+      ...data.infra,
+      hosts: data.infra.hosts?.map((host) => ({
+        ...host,
+        vmotionSupported: host.vmotionSupported ?? true,
+      })),
+    },
+  });
+
+  return {
+    ...inventory,
+    clusters: Object.fromEntries(
+      Object.entries(inventory.clusters).map(([key, data]) => [
+        key,
+        annotateData(key, data),
+      ]),
+    ),
+    vcenter: inventory.vcenter
+      ? {
+          ...inventory.vcenter,
+          infra: {
+            ...inventory.vcenter.infra,
+            hosts: inventory.vcenter.infra.hosts?.map((host) => ({
+              ...host,
+              vmotionSupported: host.vmotionSupported ?? true,
+            })),
+          },
+        }
+      : inventory.vcenter,
+  };
 };
 
 export function getExampleInventory(): Inventory {
-  return annotateExampleInventoryOsSupportTiers(
-    InventoryFromJSON(inventoryData),
+  return annotateExampleClusterCapabilities(
+    annotateExampleInventoryOsSupportTiers(InventoryFromJSON(inventoryData)),
   );
 }

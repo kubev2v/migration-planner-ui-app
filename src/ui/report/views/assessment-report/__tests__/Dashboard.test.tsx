@@ -51,6 +51,20 @@ vi.mock("../WarningsTable", () => ({
 vi.mock("../ErrorTable", () => ({
   ErrorTable: (): JSX.Element => <div data-testid="errors" />,
 }));
+vi.mock("../InfrastructureSummary", () => ({
+  InfrastructureSummary: (): JSX.Element => <div data-testid="infra-summary" />,
+}));
+vi.mock("../VCenterClusterDetails", () => ({
+  VCenterClusterDetails: (): JSX.Element => (
+    <div data-testid="cluster-details" />
+  ),
+}));
+vi.mock("../HostPowerStates", () => ({
+  HostPowerStates: (): JSX.Element => <div data-testid="host-power-states" />,
+}));
+vi.mock("../VmPowerStates", () => ({
+  VmPowerStates: (): JSX.Element => <div data-testid="vm-power-states" />,
+}));
 
 const emptyBreakdown: VMResourceBreakdown = {
   total: 0,
@@ -114,6 +128,10 @@ describe("Dashboard", () => {
 
     expect(screen.getByTestId("vm-status")).toBeInTheDocument();
     expect(screen.getByTestId("os-distribution")).toBeInTheDocument();
+    expect(screen.getByTestId("infra-summary")).toBeInTheDocument();
+    expect(screen.getByTestId("cluster-details")).toBeInTheDocument();
+    expect(screen.getByTestId("host-power-states")).toBeInTheDocument();
+    expect(screen.getByTestId("vm-power-states")).toBeInTheDocument();
     expect(screen.getByTestId("cpu-memory")).toBeInTheDocument();
     expect(screen.getByTestId("storage")).toBeInTheDocument();
     expect(screen.getByTestId("clusters-overview")).toBeInTheDocument();
@@ -141,6 +159,10 @@ describe("Dashboard", () => {
     );
 
     expect(screen.queryByTestId("clusters-overview")).toBeNull();
+    expect(screen.getByTestId("infra-summary")).toBeInTheDocument();
+    expect(screen.getByTestId("cluster-details")).toBeInTheDocument();
+    expect(screen.getByTestId("host-power-states")).toBeInTheDocument();
+    expect(screen.getByTestId("vm-power-states")).toBeInTheDocument();
     expect(screen.getByTestId("cpu-memory")).toBeInTheDocument();
     expect(screen.getByTestId("storage")).toBeInTheDocument();
   });
@@ -161,5 +183,57 @@ describe("Dashboard", () => {
     expect(
       screen.getByText(/No data is available for the selected cluster/),
     ).toBeInTheDocument();
+  });
+
+  it("marks each report section for PDF pagination in export mode", () => {
+    const { container } = render(
+      <Dashboard
+        infra={baseInfra}
+        vms={baseVms}
+        cpuCores={baseVms.cpuCores}
+        ramGB={baseVms.ramGB}
+        clusters={
+          {
+            A: {
+              infra: baseInfra,
+              vms: { ...baseVms, total: 5 },
+            },
+          } satisfies Record<string, InventoryData>
+        }
+        isExportMode
+      />,
+    );
+
+    expect(container.querySelector('[data-export-block="1"]')).toBeTruthy();
+    expect(container.querySelector('[data-export-block="1b"]')).toBeTruthy();
+    expect(container.querySelector('[data-export-block="1c"]')).toBeTruthy();
+    expect(container.querySelector('[data-export-block="2"]')).toBeTruthy();
+    expect(container.querySelector('[data-export-block="4a"]')).toBeTruthy();
+    expect(container.querySelector('[data-export-block="5"]')).toBeTruthy();
+  });
+
+  it("omits the aggregate networks block when exporting a single cluster", () => {
+    const { container } = render(
+      <Dashboard
+        infra={baseInfra}
+        vms={baseVms}
+        cpuCores={baseVms.cpuCores}
+        ramGB={baseVms.ramGB}
+        clusters={
+          {
+            A: {
+              infra: baseInfra,
+              vms: { ...baseVms, total: 5 },
+            },
+          } satisfies Record<string, InventoryData>
+        }
+        isAggregateView={false}
+        isExportMode
+      />,
+    );
+
+    expect(container.querySelector('[data-export-block="1c"]')).toBeTruthy();
+    expect(container.querySelector('[data-export-block="4"]')).toBeTruthy();
+    expect(container.querySelector('[data-export-block="4a"]')).toBeNull();
   });
 });

@@ -102,3 +102,69 @@ export const storageExportSectionTitle = css`
   font-weight: 600;
   margin-bottom: 8px;
 `;
+
+// ---------------------------------------------------------------------------
+// Infrastructure summary + vCenter cluster details
+// ---------------------------------------------------------------------------
+
+export const summaryCard = css`
+  ${cardBase}
+  border: 1px solid var(--pf-t--global--border--color--default) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+`;
+
+export const summaryStatsRow = css`
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--pf-t--global--spacer--lg) var(--pf-t--global--spacer--2xl);
+`;
+
+export const summaryStat = css`
+  display: flex;
+  flex-direction: column;
+  gap: var(--pf-t--global--spacer--xs);
+  min-width: 8rem;
+`;
+
+export const summaryStatLabel = css`
+  color: var(--pf-t--global--text--color--subtle);
+  font-size: var(--pf-t--global--font--size--sm);
+`;
+
+export const summaryStatValue = css`
+  color: var(--pf-t--global--text--color--regular);
+  font-size: var(--pf-t--global--font--size--xl);
+  font-weight: var(--pf-t--global--font--weight--heading);
+  line-height: 1.3;
+`;
+
+export const clusterDetailsInnerCard = css`
+  height: 100%;
+  border: 1px solid var(--pf-t--global--border--color--default);
+  border-radius: 10px;
+  box-shadow: none;
+`;
+
+export const featureRow = css`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--pf-t--global--spacer--md);
+  padding: var(--pf-t--global--spacer--sm) 0;
+  border-bottom: 1px solid var(--pf-t--global--border--color--default);
+
+  &:last-child {
+    border-bottom: none;
+  }
+`;
+
+export const networkLabelsWrap = css`
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--pf-t--global--spacer--sm);
+`;
+
+export const clusterDetailsTableScroll = css`
+  max-height: 320px;
+  overflow: auto;
+`;

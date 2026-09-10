@@ -21,6 +21,8 @@ export interface ExampleReportVM {
   infra: Infra | undefined;
   vms: VMs | undefined;
   clusters: { [key: string]: InventoryData } | undefined;
+  vcenterId: string | undefined;
+  vcenterVersion: string | undefined;
   clusterCount: number;
   clusterSelectDisabled: boolean;
   detectedSummaryText: string;
@@ -129,6 +131,8 @@ export function useExampleReportViewModel(): ExampleReportVM {
     infra,
     vms,
     clusters,
+    vcenterId: fullInventory.vcenterId,
+    vcenterVersion: fullInventory.vcenterVersion,
     clusterCount,
     clusterSelectDisabled,
     detectedSummaryText,

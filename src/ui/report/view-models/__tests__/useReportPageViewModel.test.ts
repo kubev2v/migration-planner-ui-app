@@ -190,6 +190,7 @@ const createAssessment = (
         createdAt: new Date(),
         inventory: {
           vcenterId: "vcenter-1",
+          vcenterVersion: "7.0.3.0",
           clusters: clusterData ?? {},
           vcenter: {
             infra: aggregateInfra,
@@ -782,6 +783,17 @@ describe("useReportPageViewModel", () => {
 
       const { result } = renderHook(() => useReportPageViewModel());
       expect(result.current.clusterCount).toBe(2);
+    });
+
+    it("exposes vCenter version from the inventory", () => {
+      const assessment = createAssessment("assessment-1", {
+        "Cluster-A": { infra: createInfra(2, 2), vms: createVMs(5) },
+      });
+      mockAssessmentsStore.getSnapshot.mockReturnValue([assessment]);
+
+      const { result } = renderHook(() => useReportPageViewModel());
+      expect(result.current.vcenterId).toBe("vcenter-1");
+      expect(result.current.vcenterVersion).toBe("7.0.3.0");
     });
 
     it("returns clusterCount 0 when no clusters", () => {

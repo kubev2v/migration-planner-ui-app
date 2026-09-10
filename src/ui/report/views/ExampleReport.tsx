@@ -97,6 +97,8 @@ const ExampleReport: React.FC = () => {
           clusters={vm.clusterView.viewClusters}
           isAggregateView={vm.clusterView.isAggregateView}
           clusterFound={vm.clusterView.clusterFound}
+          vcenterVersion={vm.vcenterVersion}
+          vcenterId={vm.vcenterId}
         />
       ) : (
         <Content component="p">
