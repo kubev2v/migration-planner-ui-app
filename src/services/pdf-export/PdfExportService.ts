@@ -16,6 +16,10 @@ const PDF_CONFIG = {
 } as const;
 
 const TOC_ITEMS = [
+  "- Infrastructure summary",
+  "- vCenter cluster details",
+  "- ESXi host power states",
+  "- VM power states",
   "- VM migration status",
   "- Operating system distribution",
   "- CPU & memory (VM distribution by CPU & memory size tier)",
@@ -34,13 +38,83 @@ const TOC_ITEMS = [
 ] as const;
 
 /**
- * Expected number of custom segments for the PDF report layout.
- * The report is divided into 3 segments (one per page after the cover):
- *  - Segment 1: Blocks 1 & 2 combined (summary charts)
- *  - Segment 2: Block 3 (migration recommendations)
- *  - Segment 3: Block 4 (detailed analysis)
+ * Export blocks in dashboard order. Optional blocks (1 / 1b / 1c / 4a) are
+ * skipped when missing so older layouts still paginate.
  */
-const EXPECTED_CUSTOM_SEGMENTS = 3;
+export const PDF_EXPORT_BLOCK_ORDER = [
+  "1",
+  "1b",
+  "1c",
+  "2",
+  "3",
+  "4",
+  "4a",
+  "5",
+] as const;
+
+export interface PdfBlockBounds {
+  top: number;
+  bottom: number;
+}
+
+export interface PdfExportSegment {
+  top: number;
+  height: number;
+}
+
+/**
+ * Build one PDF page per captured export block. The last segment extends to
+ * the canvas bottom so trailing content is never clipped.
+ */
+export const buildPdfExportSegments = (
+  blocksById: Partial<Record<string, PdfBlockBounds>>,
+  imgHeight: number,
+  padding: number,
+): PdfExportSegment[] | null => {
+  const ordered = PDF_EXPORT_BLOCK_ORDER.map((id) => blocksById[id]).filter(
+    (block): block is PdfBlockBounds => Boolean(block),
+  );
+
+  if (ordered.length < 3) {
+    return null;
+  }
+
+  return ordered.map((block, index) => {
+    const isLast = index === ordered.length - 1;
+    const top = Math.max(0, block.top - padding);
+    const bottom = isLast
+      ? imgHeight
+      : Math.min(imgHeight, block.bottom + padding);
+    return {
+      top,
+      height: Math.max(1, bottom - top),
+    };
+  });
+};
+
+/**
+ * Split a capture segment across A4 pages so tall blocks (e.g. the full
+ * cluster-details table) stay readable instead of being scaled to one page.
+ */
+export const splitSegmentForPageHeight = (
+  segment: PdfExportSegment,
+  imgHeight: number,
+  pageHeightPx: number,
+): PdfExportSegment[] => {
+  const total = Math.max(1, Math.min(segment.height, imgHeight - segment.top));
+  if (pageHeightPx <= 0 || total <= pageHeightPx) {
+    return [{ top: segment.top, height: total }];
+  }
+
+  const slices: PdfExportSegment[] = [];
+  let offset = 0;
+  while (offset < total) {
+    const height = Math.min(pageHeightPx, total - offset);
+    slices.push({ top: segment.top + offset, height });
+    offset += height;
+  }
+  return slices;
+};
 
 export interface PdfExtraPageItem {
   label: string;
@@ -68,11 +142,6 @@ export interface PdfExportOptions {
 interface BlockBoundary {
   top: number;
   bottom: number;
-  height: number;
-}
-
-interface Segment {
-  top: number;
   height: number;
 }
 
@@ -224,16 +293,18 @@ export class PdfExportService {
 
     // Try custom segmentation based on data-export-block attributes
     const customSegments = this.buildCustomSegments(
-      canvas,
       imgHeight,
       domToCanvasScale,
     );
 
-    if (customSegments && customSegments.length === EXPECTED_CUSTOM_SEGMENTS) {
+    if (customSegments && customSegments.length > 0) {
+      const pagedSegments = customSegments.flatMap((segment) =>
+        splitSegmentForPageHeight(segment, imgHeight, pageHeightPx),
+      );
       this.renderCustomSegments(
         pdf,
         canvas,
-        customSegments,
+        pagedSegments,
         imgWidth,
         imgHeight,
         contentWidth,
@@ -329,10 +400,9 @@ export class PdfExportService {
   }
 
   private buildCustomSegments(
-    canvas: HTMLCanvasElement,
     imgHeight: number,
     domToCanvasScale: number,
-  ): Segment[] | null {
+  ): PdfExportSegment[] | null {
     // The container that was captured is the parent of the canvas source.
     // We need to find it from the canvas's source element. Since html2canvas
     // doesn't expose the source, we look up the container via the well-known ID.
@@ -341,56 +411,21 @@ export class PdfExportService {
 
     const containerRect = container.getBoundingClientRect();
     const SEGMENT_PADDING_PX = 12 * domToCanvasScale;
+    const blocksById: Partial<Record<string, PdfBlockBounds>> = {};
 
-    const getBlockByIndex = (
-      idx: number,
-    ): { top: number; bottom: number } | null => {
+    for (const id of PDF_EXPORT_BLOCK_ORDER) {
       const el = container.querySelector<HTMLElement>(
-        `[data-export-block="${idx}"]`,
+        `[data-export-block="${id}"]`,
       );
-      if (!el) return null;
+      if (!el) continue;
       const r = el.getBoundingClientRect();
       const top = Math.max(0, r.top - containerRect.top) * domToCanvasScale;
       const bottom =
         Math.max(top, r.bottom - containerRect.top) * domToCanvasScale;
-      return { top, bottom };
-    };
+      blocksById[id] = { top, bottom };
+    }
 
-    const b1 = getBlockByIndex(1);
-    const b2 = getBlockByIndex(2);
-    const b3 = getBlockByIndex(3);
-    const b4 = getBlockByIndex(4);
-
-    if (!b1 || !b2 || !b3 || !b4) return null;
-
-    const firstTop = Math.max(0, Math.min(b1.top, b2.top) - SEGMENT_PADDING_PX);
-    const firstBottom = Math.min(
-      imgHeight,
-      Math.max(b1.bottom, b2.bottom) + SEGMENT_PADDING_PX,
-    );
-
-    return [
-      {
-        top: firstTop,
-        height: Math.max(1, firstBottom - firstTop),
-      },
-      {
-        top: Math.max(0, b3.top - SEGMENT_PADDING_PX),
-        height: Math.max(
-          1,
-          Math.min(imgHeight, b3.bottom + SEGMENT_PADDING_PX) -
-            Math.max(0, b3.top - SEGMENT_PADDING_PX),
-        ),
-      },
-      {
-        top: Math.max(0, b4.top - SEGMENT_PADDING_PX),
-        height: Math.max(
-          1,
-          Math.min(imgHeight, b4.bottom + SEGMENT_PADDING_PX) -
-            Math.max(0, b4.top - SEGMENT_PADDING_PX),
-        ),
-      },
-    ];
+    return buildPdfExportSegments(blocksById, imgHeight, SEGMENT_PADDING_PX);
   }
 
   private calculateSliceHeights(
@@ -453,7 +488,7 @@ export class PdfExportService {
   private renderCustomSegments(
     pdf: jsPDF,
     canvas: HTMLCanvasElement,
-    segments: Segment[],
+    segments: PdfExportSegment[],
     imgWidth: number,
     imgHeight: number,
     contentWidth: number,

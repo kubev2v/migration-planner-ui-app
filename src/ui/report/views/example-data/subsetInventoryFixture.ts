@@ -52,6 +52,7 @@ const buildSubsetInventory = ({
   id,
   name,
   vcenterId,
+  vcenterVersion,
   clusterKey,
   clusterData,
   vmsCount,
@@ -59,6 +60,7 @@ const buildSubsetInventory = ({
   id: string;
   name: string;
   vcenterId: string;
+  vcenterVersion?: string;
   clusterKey: string;
   clusterData: InventoryData;
   vmsCount: number;
@@ -79,6 +81,7 @@ const buildSubsetInventory = ({
     createdAt: EXAMPLE_SUBSET_CREATED_AT,
     inventory: {
       vcenterId,
+      vcenterVersion,
       clusters: { [clusterKey]: scaledCluster },
       vcenter: scaledCluster,
     },
@@ -93,6 +96,7 @@ export const getExampleSubsetInventories = (
   inventory: Inventory,
 ): AssessmentSubsetInventory[] => {
   const vcenterId = inventory.vcenterId;
+  const vcenterVersion = inventory.vcenterVersion;
   const clusters = inventory.clusters;
   const domainC34 = clusters["domain-c34"];
   const domainC146658 = clusters["domain-c146658"];
@@ -106,6 +110,7 @@ export const getExampleSubsetInventories = (
       id: "11111111-1111-4111-8111-111111111101",
       name: "Group 1",
       vcenterId,
+      vcenterVersion,
       clusterKey: "domain-c34",
       clusterData: domainC34,
       vmsCount: 350,
@@ -114,6 +119,7 @@ export const getExampleSubsetInventories = (
       id: "11111111-1111-4111-8111-111111111102",
       name: "Group 2",
       vcenterId,
+      vcenterVersion,
       clusterKey: "domain-c146658",
       clusterData: domainC146658,
       vmsCount: 180,
@@ -122,6 +128,7 @@ export const getExampleSubsetInventories = (
       id: "11111111-1111-4111-8111-111111111103",
       name: "Group 3",
       vcenterId,
+      vcenterVersion,
       clusterKey: "domain-c146658",
       clusterData: domainC146658,
       vmsCount: 100,

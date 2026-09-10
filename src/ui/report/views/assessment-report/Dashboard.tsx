@@ -9,15 +9,24 @@ import {
   type OSDistributionEntry,
 } from "@openshift-migration-advisor/shared-components";
 import { Gallery, GalleryItem, Grid, GridItem } from "@patternfly/react-core";
-import React from "react";
+import React, { useMemo } from "react";
 
+import {
+  buildClusterDetailRows,
+  buildClusterDetails,
+  buildInfrastructureSummary,
+} from "../../helpers/infrastructureSummary";
 import { ClustersOverview } from "./ClustersOverview";
 import { CpuAndMemoryOverview } from "./CpuAndMemoryOverview";
 import { ErrorTable } from "./ErrorTable";
+import { HostPowerStates } from "./HostPowerStates";
 import { HostsOverview } from "./HostsOverview";
+import { InfrastructureSummary } from "./InfrastructureSummary";
 import { NetworkOverview } from "./NetworkOverview";
 import { StorageOverview } from "./StorageOverview";
+import { VCenterClusterDetails } from "./VCenterClusterDetails";
 import { VMMigrationStatus } from "./VMMigrationStatus";
+import { VmPowerStates } from "./VmPowerStates";
 import { WarningsTable } from "./WarningsTable";
 
 interface Props {
@@ -30,6 +39,8 @@ interface Props {
   clusters?: { [key: string]: InventoryData };
   isAggregateView?: boolean;
   clusterFound?: boolean;
+  vcenterVersion?: string;
+  vcenterId?: string;
 }
 
 export const Dashboard: React.FC<Props> = ({
@@ -42,6 +53,8 @@ export const Dashboard: React.FC<Props> = ({
   clusters,
   isAggregateView = true,
   clusterFound = true,
+  vcenterVersion,
+  vcenterId,
 }) => {
   // Transform osInfo to include both count and supported fields, fallback to os with supported=true if osInfo is undefined
   const osData = vms.osInfo
@@ -69,6 +82,32 @@ export const Dashboard: React.FC<Props> = ({
         {} as Record<string, OSDistributionEntry>,
       );
 
+  const infrastructureSummary = useMemo(
+    () =>
+      buildInfrastructureSummary({
+        infra,
+        vcenterVersion,
+        vcenterId,
+        clusters,
+      }),
+    [infra, vcenterVersion, vcenterId, clusters],
+  );
+
+  const clusterDetailRows = useMemo(
+    () => buildClusterDetailRows(clusters),
+    [clusters],
+  );
+
+  const selectedClusterDetails = useMemo(() => {
+    if (isAggregateView || !clusters) {
+      return undefined;
+    }
+    const selectedClusterId = Object.keys(clusters)[0];
+    return selectedClusterId
+      ? buildClusterDetails(clusters[selectedClusterId])
+      : undefined;
+  }, [isAggregateView, clusters]);
+
   // If a cluster was selected but not found, show a lightweight empty view.
   if (!clusterFound && !isAggregateView) {
     return (
@@ -84,6 +123,27 @@ export const Dashboard: React.FC<Props> = ({
 
   return (
     <Grid hasGutter>
+      <GridItem span={12} data-export-block={isExportMode ? "1" : undefined}>
+        <InfrastructureSummary summary={infrastructureSummary} />
+      </GridItem>
+      <GridItem span={12} data-export-block={isExportMode ? "1b" : undefined}>
+        <VCenterClusterDetails
+          isAggregateView={isAggregateView}
+          rows={clusterDetailRows}
+          details={selectedClusterDetails}
+          isExportMode={isExportMode}
+        />
+      </GridItem>
+      <GridItem span={12} data-export-block={isExportMode ? "1c" : undefined}>
+        <Gallery hasGutter minWidths={{ default: "40%" }}>
+          <GalleryItem>
+            <HostPowerStates infra={infra} isExportMode={isExportMode} />
+          </GalleryItem>
+          <GalleryItem>
+            <VmPowerStates vms={vms} isExportMode={isExportMode} />
+          </GalleryItem>
+        </Gallery>
+      </GridItem>
       <GridItem span={12} data-export-block={isExportMode ? "2" : undefined}>
         <Gallery hasGutter minWidths={{ default: "40%" }}>
           <GalleryItem>

@@ -14,6 +14,8 @@ export type ReportInventorySource = {
   vms?: VMs;
   vcenter?: { infra?: Infra; vms?: VMs };
   clusters?: { [key: string]: InventoryData };
+  vcenterId?: string;
+  vcenterVersion?: string;
 };
 
 export const resolveEffectiveGroupId = (
@@ -54,6 +56,8 @@ export const extractScopedInventoryData = (
   infra: Infra | undefined;
   vms: VMs | undefined;
   clusters: { [key: string]: InventoryData } | undefined;
+  vcenterId: string | undefined;
+  vcenterVersion: string | undefined;
 } => ({
   infra: (activeInventory?.infra ||
     activeInventory?.vcenter?.infra ||
@@ -66,4 +70,10 @@ export const extractScopedInventoryData = (
     latestSnapshot.inventory?.vms ||
     latestSnapshot.inventory?.vcenter?.vms) as VMs | undefined,
   clusters: activeInventory?.clusters,
+  vcenterId:
+    activeInventory?.vcenterId ||
+    latestSnapshot.vcenterId ||
+    latestSnapshot.inventory?.vcenterId,
+  vcenterVersion:
+    activeInventory?.vcenterVersion || latestSnapshot.inventory?.vcenterVersion,
 });

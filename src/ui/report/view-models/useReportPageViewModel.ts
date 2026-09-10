@@ -209,6 +209,8 @@ export interface ReportPageViewModel {
   infra: Infra | undefined;
   vms: VMs | undefined;
   clusters: { [key: string]: InventoryData } | undefined;
+  vcenterId: string | undefined;
+  vcenterVersion: string | undefined;
   latestSnapshot: SnapshotLike;
   lastUpdatedText: string;
   clusterCount: number;
@@ -442,7 +444,7 @@ export const useReportPageViewModel = (): ReportPageViewModel => {
     onGroupChange: resetClusterSelection,
   });
 
-  const { infra, vms, clusters } = useMemo(
+  const { infra, vms, clusters, vcenterId, vcenterVersion } = useMemo(
     () => extractScopedInventoryData(activeInventory, latestSnapshot),
     [activeInventory, latestSnapshot],
   );
@@ -797,6 +799,8 @@ export const useReportPageViewModel = (): ReportPageViewModel => {
     infra,
     vms,
     clusters,
+    vcenterId,
+    vcenterVersion,
     latestSnapshot,
     lastUpdatedText,
     clusterCount: reportSummaryClusterCount,

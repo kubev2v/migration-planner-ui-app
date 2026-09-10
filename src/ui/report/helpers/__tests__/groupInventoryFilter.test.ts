@@ -147,6 +147,8 @@ describe("groupInventoryFilter", () => {
       expect(result.infra?.totalHosts).toBe(2);
       expect(result.vms?.total).toBe(3);
       expect(result.clusters).toEqual(activeInventory.clusters);
+      expect(result.vcenterId).toBeUndefined();
+      expect(result.vcenterVersion).toBeUndefined();
     });
 
     it("falls back to snapshot inventory when active inventory is empty", () => {
@@ -162,6 +164,25 @@ describe("groupInventoryFilter", () => {
       const result = extractScopedInventoryData(undefined, latestSnapshot);
       expect(result.infra?.totalHosts).toBe(4);
       expect(result.vms?.total).toBe(8);
+    });
+
+    it("extracts vCenter identity from the active inventory", () => {
+      const result = extractScopedInventoryData(
+        {
+          vcenterId: "vc-from-inventory",
+          vcenterVersion: "7.0.3.0",
+          infra: createInfra(2),
+          vms: createVMs(3),
+          clusters: {},
+        },
+        {
+          vcenterId: "vc-from-snapshot",
+          inventory: { vcenterVersion: "8.0.0.0" },
+        },
+      );
+
+      expect(result.vcenterId).toBe("vc-from-inventory");
+      expect(result.vcenterVersion).toBe("7.0.3.0");
     });
   });
 });

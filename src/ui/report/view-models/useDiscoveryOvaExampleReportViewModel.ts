@@ -18,6 +18,8 @@ export interface DiscoveryOvaExampleReportVM {
   infra: Infra | undefined;
   vms: VMs | undefined;
   clusters: { [key: string]: InventoryData } | undefined;
+  vcenterId: string | undefined;
+  vcenterVersion: string | undefined;
   clusterCount: number;
   clusterSelectDisabled: boolean;
 
@@ -92,6 +94,8 @@ export function useDiscoveryOvaExampleReportViewModel(): DiscoveryOvaExampleRepo
     infra,
     vms,
     clusters,
+    vcenterId: inventory.vcenterId,
+    vcenterVersion: inventory.vcenterVersion,
     clusterCount,
     clusterSelectDisabled,
     selectedClusterId,
