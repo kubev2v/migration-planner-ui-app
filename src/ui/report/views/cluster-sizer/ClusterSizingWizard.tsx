@@ -4,6 +4,7 @@ import type { UseClusterSizingWizardOptions } from "../../view-models/Recommenda
 import type { RecommendationToolId } from "../migration-recommendations/types";
 import { ArchitectureToolView } from "./ArchitectureToolView";
 import { ComplexityToolView } from "./ComplexityToolView";
+import { CostEstimationToolView } from "./CostEstimationToolView";
 import { TimeEstimationToolView } from "./TimeEstimationToolView";
 import type { ClusterRequirementsResponse, SizingFormValues } from "./types";
 
@@ -41,6 +42,15 @@ export const ClusterSizingWizard: React.FC<ClusterSizingWizardProps> = ({
           assessmentId={assessmentId}
           onCalculated={onCalculated}
           options={options}
+          isReadOnly={isReadOnly}
+        />
+      );
+    case "cost-estimation":
+      return (
+        <CostEstimationToolView
+          onBack={onBack}
+          clusterId={clusterId}
+          assessmentId={assessmentId}
           isReadOnly={isReadOnly}
         />
       );

@@ -1,6 +1,7 @@
 import type {
   Assessment,
   Host,
+  Identity,
   Infra,
   InventoryData,
   Source,
@@ -103,6 +104,11 @@ const mockJobsStore = {
   stopPolling: vi.fn(),
 };
 
+const mockAccountStore = {
+  subscribe: vi.fn(() => () => {}),
+  getSnapshot: vi.fn((): Identity | null => null),
+};
+
 vi.mock("@openshift-migration-advisor/ioc", () => ({
   useInjection: vi.fn((symbol: symbol) => {
     const key = symbol.description;
@@ -110,6 +116,7 @@ vi.mock("@openshift-migration-advisor/ioc", () => ({
     if (key === "SourcesStore") return mockSourcesStore;
     if (key === "ReportStore") return mockReportStore;
     if (key === "JobsStore") return mockJobsStore;
+    if (key === "AccountStore") return mockAccountStore;
     throw new Error(`Unknown symbol: ${String(symbol)}`);
   }),
 }));
@@ -242,6 +249,7 @@ describe("useReportPageViewModel", () => {
     mockAssessmentsStore.getSnapshot.mockReturnValue([]);
     mockSourcesStore.getSnapshot.mockReturnValue([]);
     mockSourcesStore.getById.mockReturnValue(undefined);
+    mockAccountStore.getSnapshot.mockReturnValue(null);
   });
 
   it("exposes the route assessment ID", () => {
@@ -710,6 +718,35 @@ describe("useReportPageViewModel", () => {
       });
 
       expect(result.current.selectedRecommendationTool).toBe("time-estimation");
+    });
+
+    it("isPartner is false when the account is not a partner", () => {
+      const { result } = renderHook(() => useReportPageViewModel());
+      expect(result.current.isPartner).toBe(false);
+    });
+
+    it("keeps cost estimation open for partners when switching to the aggregate view", () => {
+      mockAccountStore.getSnapshot.mockReturnValue({
+        username: "partner-user",
+        kind: "partner",
+        groupId: "group-1",
+        partnerId: null,
+      });
+      const assessment = createAssessment("assessment-1", {
+        "Cluster-A": { infra: createInfra(2, 2), vms: createVMs(5) },
+      });
+      mockAssessmentsStore.getSnapshot.mockReturnValue([assessment]);
+
+      const { result } = renderHook(() => useReportPageViewModel());
+      expect(result.current.isPartner).toBe(true);
+
+      act(() => {
+        result.current.selectCluster("Cluster-A");
+        result.current.openRecommendationTool("cost-estimation");
+        result.current.selectCluster(ALL_CLUSTERS_ID);
+      });
+
+      expect(result.current.selectedRecommendationTool).toBe("cost-estimation");
     });
 
     it("keeps time estimation open when switching to a cluster without hosts or VMs", () => {

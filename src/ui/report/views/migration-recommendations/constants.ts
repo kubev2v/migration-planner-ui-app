@@ -1,4 +1,8 @@
-import type { RecommendationToolCard, RecommendationToolId } from "./types";
+import type {
+  RecommendationToolCard,
+  RecommendationToolCatalogOptions,
+  RecommendationToolId,
+} from "./types";
 
 export const RECOMMENDATION_TOOL_CARDS: RecommendationToolCard[] = [
   {
@@ -6,6 +10,13 @@ export const RECOMMENDATION_TOOL_CARDS: RecommendationToolCard[] = [
     title: "OpenShift cluster architecture",
     description:
       "Define architecture inputs and target cluster profile recommendations.",
+    isDisabled: false,
+  },
+  {
+    id: "cost-estimation",
+    title: "Cost estimation",
+    description:
+      "Compare VMware plans against a Red Hat solution over three years (TCO).",
     isDisabled: false,
   },
   {
@@ -31,35 +42,55 @@ export const RECOMMENDATION_TOOL_CARDS: RecommendationToolCard[] = [
 ];
 
 const ENVIRONMENT_WIDE_TOOL_IDS: RecommendationToolId[] = [
+  "cost-estimation",
   "time-estimation",
   "complexity",
 ];
 
 const CLUSTER_TOOL_IDS: RecommendationToolId[] = [
   "architecture",
+  "cost-estimation",
   "time-estimation",
   "complexity",
   "plan",
 ];
 
+const isCatalogToolVisible = (
+  toolId: RecommendationToolId,
+  isPartner: boolean,
+): boolean => {
+  if (toolId === "plan") {
+    return false;
+  }
+  if (toolId === "cost-estimation" && !isPartner) {
+    return false;
+  }
+  return true;
+};
+
 export const isRecommendationToolAvailable = (
   toolId: RecommendationToolId,
-  isAggregateView: boolean,
+  { isAggregateView, isPartner = false }: RecommendationToolCatalogOptions,
 ): boolean => {
   const availableIds = isAggregateView
     ? ENVIRONMENT_WIDE_TOOL_IDS
     : CLUSTER_TOOL_IDS;
-  return availableIds.includes(toolId) && toolId !== "plan";
+  return (
+    availableIds.includes(toolId) && isCatalogToolVisible(toolId, isPartner)
+  );
 };
 
-export const getRecommendationToolCards = (
-  isAggregateView: boolean,
-): RecommendationToolCard[] => {
+export const getRecommendationToolCards = ({
+  isAggregateView,
+  isPartner = false,
+}: RecommendationToolCatalogOptions): RecommendationToolCard[] => {
   const availableIds = isAggregateView
     ? ENVIRONMENT_WIDE_TOOL_IDS
     : CLUSTER_TOOL_IDS;
-  return RECOMMENDATION_TOOL_CARDS.filter((card) =>
-    availableIds.includes(card.id),
+  return RECOMMENDATION_TOOL_CARDS.filter(
+    (card) =>
+      availableIds.includes(card.id) &&
+      (card.id === "plan" || isCatalogToolVisible(card.id, isPartner)),
   );
 };
 
