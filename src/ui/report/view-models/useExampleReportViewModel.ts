@@ -141,10 +141,9 @@ export function useExampleReportViewModel(): ExampleReportVM {
       if (current == null) {
         return current;
       }
-      return isRecommendationToolAvailable(
-        current,
-        clusterId === ALL_CLUSTERS_ID,
-      )
+      return isRecommendationToolAvailable(current, {
+        isAggregateView: clusterId === ALL_CLUSTERS_ID,
+      })
         ? current
         : null;
     });

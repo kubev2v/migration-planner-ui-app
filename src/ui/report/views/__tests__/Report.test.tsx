@@ -210,6 +210,7 @@ function makeBaseVm(
     canExportReport: false,
     canShowClusterRecommendations: false,
     canUseRecommendationTools: false,
+    isPartner: false,
     missingMetrics: [],
     hasMissingMetrics: false,
     isRvtoolsModalOpen: false,

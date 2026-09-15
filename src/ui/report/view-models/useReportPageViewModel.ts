@@ -20,6 +20,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useAsyncFn, useMount } from "react-use";
 
 import { Symbols } from "../../../config/Dependencies";
+import type { IAccountStore } from "../../../data/stores/interfaces/IAccountStore";
 import type { IAssessmentsStore } from "../../../data/stores/interfaces/IAssessmentsStore";
 import type { IJobsStore } from "../../../data/stores/interfaces/IJobsStore";
 import type { IReportStore } from "../../../data/stores/interfaces/IReportStore";
@@ -225,6 +226,7 @@ export interface ReportPageViewModel {
   canExportReport: boolean;
   canShowClusterRecommendations: boolean;
   canUseRecommendationTools: boolean;
+  isPartner: boolean;
 
   // Missing metrics (old inventories lacking CPU/Memory data)
   missingMetrics: string[];
@@ -341,6 +343,7 @@ export const useReportPageViewModel = (): ReportPageViewModel => {
   const assessmentsStore = useInjection<IAssessmentsStore>(
     Symbols.AssessmentsStore,
   );
+  const accountStore = useInjection<IAccountStore>(Symbols.AccountStore);
   const sourcesStore = useInjection<ISourcesStore>(Symbols.SourcesStore);
   const reportStore = useInjection<IReportStore>(Symbols.ReportStore);
   const jobsStore = useInjection<IJobsStore>(Symbols.JobsStore);
@@ -365,6 +368,12 @@ export const useReportPageViewModel = (): ReportPageViewModel => {
     jobsStore.subscribe.bind(jobsStore),
     jobsStore.getSnapshot.bind(jobsStore),
   );
+
+  const identity = useSyncExternalStore(
+    accountStore.subscribe.bind(accountStore),
+    accountStore.getSnapshot.bind(accountStore),
+  );
+  const isPartner = identity?.kind === "partner";
 
   // ---- Initial data fetch (always GET assessment for subset inventory data) --
   const [fetchState, doFetchData] = useAsyncFn(async () => {
@@ -521,7 +530,12 @@ export const useReportPageViewModel = (): ReportPageViewModel => {
           return current;
         }
         const isAggregate = clusterId === ALL_CLUSTERS_ID;
-        if (!isRecommendationToolAvailable(current, isAggregate)) {
+        if (
+          !isRecommendationToolAvailable(current, {
+            isAggregateView: isAggregate,
+            isPartner,
+          })
+        ) {
           return null;
         }
         if (current === "architecture" && !isAggregate) {
@@ -533,7 +547,7 @@ export const useReportPageViewModel = (): ReportPageViewModel => {
         return current;
       });
     },
-    [clusters, hasClusterResources],
+    [clusters, hasClusterResources, isPartner],
   );
 
   const openRecommendationTool = useCallback((toolId: RecommendationToolId) => {
@@ -849,6 +863,7 @@ export const useReportPageViewModel = (): ReportPageViewModel => {
     canExportReport,
     canShowClusterRecommendations,
     canUseRecommendationTools,
+    isPartner,
 
     missingMetrics,
     hasMissingMetrics: missingMetrics.length > 0,

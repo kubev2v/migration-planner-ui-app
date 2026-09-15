@@ -26,6 +26,7 @@ export interface MigrationRecommendationsProps {
   ) => void;
   options?: UseClusterSizingWizardOptions;
   isReadOnly?: boolean;
+  isPartner?: boolean;
 }
 
 export const MigrationRecommendations: React.FC<
@@ -43,9 +44,13 @@ export const MigrationRecommendations: React.FC<
   onCalculated,
   options,
   isReadOnly = false,
+  isPartner = false,
 }) => {
   if (!selectedTool) {
-    const tools = getRecommendationToolCards(isAggregateView).map((card) =>
+    const tools = getRecommendationToolCards({
+      isAggregateView,
+      isPartner,
+    }).map((card) =>
       card.id === "architecture" && !canOpenArchitecture
         ? { ...card, isDisabled: true }
         : card,
