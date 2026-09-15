@@ -1,6 +1,5 @@
 import { EmptySearchResults } from "@openshift-migration-advisor/shared-components";
 import {
-  Button,
   Dropdown,
   DropdownItem,
   DropdownList,
@@ -14,7 +13,6 @@ import {
   RhUiConnectedIcon,
   RhUiDocumentIcon,
   RhUiEllipsisVerticalIcon,
-  RhUiMonitoringIcon,
   RhUiWarningFillIcon,
 } from "@patternfly/react-icons";
 import {
@@ -83,7 +81,6 @@ export const Columns = {
   VMs: "VMs",
   Networks: "Networks",
   Datastores: "Datastores",
-  AssessmentReport: "Assessment report",
   SharingStatus: "Sharing status",
   Actions: "",
 } as const;
@@ -140,11 +137,6 @@ export const COLUMN_MANAGEMENT_METADATA: Record<
     isShownByDefault: true,
     isUntoggleable: false,
   },
-  AssessmentReport: {
-    title: Columns.AssessmentReport,
-    isShownByDefault: true,
-    isUntoggleable: false,
-  },
   SharingStatus: {
     title: Columns.SharingStatus,
     isShownByDefault: true,
@@ -157,10 +149,7 @@ export const COLUMN_MANAGEMENT_METADATA: Record<
   },
 };
 
-export type SortableColumn = Exclude<
-  ColumnKey,
-  "AssessmentReport" | "SharingStatus" | "Actions"
->;
+export type SortableColumn = Exclude<ColumnKey, "SharingStatus" | "Actions">;
 export const SORTABLE_COLUMNS: SortableColumn[] = [
   "Name",
   "Source",
@@ -501,9 +490,6 @@ export const AssessmentsTable: React.FC<AssessmentsTableProps> = ({
               {Columns.Datastores}
             </Th>
           )}
-          {isColumnVisible("AssessmentReport") && (
-            <Th modifier="nowrap">{Columns.AssessmentReport}</Th>
-          )}
           {isColumnVisible("SharingStatus") && (
             <Th modifier="nowrap">{Columns.SharingStatus}</Th>
           )}
@@ -525,11 +511,11 @@ export const AssessmentsTable: React.FC<AssessmentsTableProps> = ({
         {rows.map((row) => (
           <Tr key={row.key}>
             {isColumnVisible("Name") && (
-              <Td dataLabel={Columns.Name} modifier="truncate">
+              <Td dataLabel={Columns.Name}>
                 {row.hasData ? (
-                  <Tooltip {...themeTooltipFlyoutProps} content={row.name}>
-                    <Link to={routes.assessmentById(row.id)}>{row.name}</Link>
-                  </Tooltip>
+                  <TableText wrapModifier="breakWord">
+                    <Link to={routes.assessmentReport(row.id)}>{row.name}</Link>
+                  </TableText>
                 ) : (
                   <span>
                     <Tooltip
@@ -599,41 +585,6 @@ export const AssessmentsTable: React.FC<AssessmentsTableProps> = ({
             )}
             {isColumnVisible("Datastores") && (
               <Td dataLabel={Columns.Datastores}>{row.datastores}</Td>
-            )}
-            {isColumnVisible("AssessmentReport") && (
-              <Td dataLabel={Columns.AssessmentReport}>
-                <TableText>
-                  <Tooltip
-                    {...themeTooltipFlyoutProps}
-                    content={
-                      row.hasData
-                        ? "View assessment report"
-                        : row.sourceType.toLowerCase().includes("rvtools")
-                          ? "No inventory data found. The uploaded file may be corrupted. Please verify and re-upload."
-                          : "No inventory data yet. Data collection may be in progress or the source connection failed."
-                    }
-                  >
-                    <Button
-                      variant="link"
-                      isAriaDisabled={
-                        !row.hasData || !row.permissions.includes("read")
-                      }
-                      onClick={
-                        row.hasData && row.permissions.includes("read")
-                          ? () => {
-                              void navigate(routes.assessmentReport(row.id));
-                            }
-                          : undefined
-                      }
-                      icon={<RhUiMonitoringIcon />}
-                      aria-label="View assessment report"
-                      style={{ padding: 0 }}
-                    >
-                      View report
-                    </Button>
-                  </Tooltip>
-                </TableText>
-              </Td>
             )}
             {isColumnVisible("SharingStatus") && (
               <Td dataLabel={Columns.SharingStatus}>

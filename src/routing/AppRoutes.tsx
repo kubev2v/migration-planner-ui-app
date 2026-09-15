@@ -41,13 +41,6 @@ const CreateFromOva = lazy(
     ),
 );
 
-const AssessmentDetails = lazy(
-  () =>
-    import(
-      /* webpackChunkName: "AssessmentDetails" */ "../ui/assessment/views/AssessmentDetails"
-    ),
-);
-
 const GroupDetailScreen = lazy(
   () =>
     import(
@@ -112,7 +105,6 @@ export const AppRoutes: React.FC = () => (
         element={<DiscoveryOvaExampleReport />}
       />
       <Route path="assessments/create" element={<CreateFromOva />} />
-      <Route path="assessments/:id" element={<AssessmentDetails />} />
     </Route>
     <Route path="*" element={<InvalidObject />} />
   </Routes>

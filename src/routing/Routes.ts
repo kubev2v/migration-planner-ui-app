@@ -69,7 +69,6 @@ export const routes = {
   get assessments() {
     return `${getAppBasename()}/assessments`;
   },
-  assessmentById: (id: string) => `${getAppBasename()}/assessments/${id}`,
   assessmentReport: (id: string) =>
     `${getAppBasename()}/assessments/${id}/report`,
   get assessmentCreate() {
