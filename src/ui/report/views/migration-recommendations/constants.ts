@@ -59,13 +59,20 @@ const isCatalogToolVisible = (
   toolId: RecommendationToolId,
   isPartner: boolean,
 ): boolean => {
-  if (toolId === "plan") {
-    return false;
-  }
   if (toolId === "cost-estimation" && !isPartner) {
     return false;
   }
   return true;
+};
+
+const isCatalogToolAvailable = (
+  toolId: RecommendationToolId,
+  isPartner: boolean,
+): boolean => {
+  if (toolId === "plan") {
+    return false;
+  }
+  return isCatalogToolVisible(toolId, isPartner);
 };
 
 export const isRecommendationToolAvailable = (
@@ -76,7 +83,7 @@ export const isRecommendationToolAvailable = (
     ? ENVIRONMENT_WIDE_TOOL_IDS
     : CLUSTER_TOOL_IDS;
   return (
-    availableIds.includes(toolId) && isCatalogToolVisible(toolId, isPartner)
+    availableIds.includes(toolId) && isCatalogToolAvailable(toolId, isPartner)
   );
 };
 
@@ -90,7 +97,7 @@ export const getRecommendationToolCards = ({
   return RECOMMENDATION_TOOL_CARDS.filter(
     (card) =>
       availableIds.includes(card.id) &&
-      (card.id === "plan" || isCatalogToolVisible(card.id, isPartner)),
+      isCatalogToolVisible(card.id, isPartner),
   );
 };
 
