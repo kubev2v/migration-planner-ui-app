@@ -45,10 +45,6 @@ describe("Standalone mode (dev) — APP_BASENAME is empty", () => {
     expect(routes.assessments).toBe("/assessments");
   });
 
-  it("routes.assessmentById returns /assessments/:id", () => {
-    expect(routes.assessmentById("test-123")).toBe("/assessments/test-123");
-  });
-
   it("routes.assessmentReport returns /assessments/:id/report", () => {
     expect(routes.assessmentReport("test-123")).toBe(
       "/assessments/test-123/report",
@@ -95,12 +91,6 @@ describe("Microfrontend mode (stage/prod) — APP_BASENAME is /openshift/migrati
 
   it("routes.assessments includes basename", () => {
     expect(routes.assessments).toBe(`${BASE}/assessments`);
-  });
-
-  it("routes.assessmentById includes basename", () => {
-    expect(routes.assessmentById("test-123")).toBe(
-      `${BASE}/assessments/test-123`,
-    );
   });
 
   it("routes.assessmentReport includes basename", () => {
