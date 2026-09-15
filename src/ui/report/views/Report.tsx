@@ -328,6 +328,7 @@ const ReportContent: React.FC = () => {
             isAggregateView={vm.clusterView.isAggregateView}
             areToolsDisabled={!vm.canUseRecommendationTools}
             canOpenArchitecture={vm.canShowClusterRecommendations}
+            isPartner={vm.isPartner}
             clusterName={vm.clusterView.selectionLabel}
             clusterId={vm.selectedClusterId}
             assessmentId={vm.assessmentId || ""}

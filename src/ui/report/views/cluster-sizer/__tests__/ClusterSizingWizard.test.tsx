@@ -21,6 +21,7 @@ const mockCalculate = vi.fn();
 const mockSetFormValues = vi.fn();
 const mockCalculateEstimation = vi.fn();
 const mockSetEstimationFormValues = vi.fn();
+const mockCalculateCostEstimation = vi.fn();
 
 const mockArchitectureViewModel = {
   formValues: {
@@ -63,6 +64,13 @@ const mockTimeEstimationViewModel = {
   calculateEstimation: mockCalculateEstimation,
 };
 
+const mockCostEstimationViewModel = {
+  costEstimation: null as { calculatorVersion: string } | null,
+  isLoadingCostEstimation: false,
+  costEstimationError: undefined as Error | undefined,
+  calculateCostEstimation: mockCalculateCostEstimation,
+};
+
 const mockComplexityViewModel = {
   complexityEstimation: null,
   isCalculatingComplexity: false,
@@ -78,6 +86,10 @@ vi.mock("../../../view-models/useArchitectureToolViewModel", () => ({
 
 vi.mock("../../../view-models/useTimeEstimationToolViewModel", () => ({
   useTimeEstimationToolViewModel: vi.fn(() => mockTimeEstimationViewModel),
+}));
+
+vi.mock("../../../view-models/useCostEstimationToolViewModel", () => ({
+  useCostEstimationToolViewModel: vi.fn(() => mockCostEstimationViewModel),
 }));
 
 vi.mock("../../../view-models/useComplexityToolViewModel", () => ({
@@ -99,6 +111,34 @@ vi.mock("../SizingResult", () => ({
 vi.mock("../TimeEstimationForm", () => ({
   TimeEstimationForm: (): React.ReactElement => (
     <div data-testid="time-estimation-form">Time Estimation Form</div>
+  ),
+}));
+
+vi.mock("../cost-estimation/CostEstimationForm", () => ({
+  __esModule: true,
+  default: ({
+    onSubmit,
+  }: {
+    onSubmit: (values: Record<string, unknown>) => void;
+  }): React.ReactElement => (
+    <div data-testid="cost-estimation-form">
+      <button type="button" onClick={() => onSubmit({})}>
+        Calculate
+      </button>
+    </div>
+  ),
+}));
+
+vi.mock("../cost-estimation/CostEstimationResult", () => ({
+  __esModule: true,
+  CostEstimationResult: (): React.ReactElement => (
+    <div data-testid="cost-estimation-result">Cost Estimation Results</div>
+  ),
+  default: (): React.ReactElement => (
+    <div data-testid="cost-estimation-result">Cost Estimation Results</div>
+  ),
+  CostEstimationResultSkeleton: (): React.ReactElement => (
+    <div data-testid="cost-estimation-skeleton">Loading...</div>
   ),
 }));
 
@@ -139,6 +179,7 @@ describe("ClusterSizingWizard", () => {
   beforeEach(() => {
     mockCalculate.mockResolvedValue(undefined);
     mockCalculateEstimation.mockResolvedValue(undefined);
+    mockCalculateCostEstimation.mockResolvedValue(undefined);
   });
 
   afterEach(() => {
@@ -150,6 +191,9 @@ describe("ClusterSizingWizard", () => {
     mockTimeEstimationViewModel.isCalculatingEstimation = false;
     mockTimeEstimationViewModel.migrationEstimation = null;
     mockTimeEstimationViewModel.estimationError = undefined;
+    mockCostEstimationViewModel.isLoadingCostEstimation = false;
+    mockCostEstimationViewModel.costEstimation = null;
+    mockCostEstimationViewModel.costEstimationError = undefined;
     mockComplexityViewModel.isCalculatingComplexity = false;
     mockComplexityViewModel.complexityEstimation = null;
   });
@@ -259,6 +303,46 @@ describe("ClusterSizingWizard", () => {
 
       expect(
         screen.getByRole("heading", { name: "Migration time estimation" }),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByRole("button", { name: "Edit migration preferences" }),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByRole("button", { name: "Copy as plain text" }),
+      ).toBeInTheDocument();
+    });
+  });
+
+  describe("cost estimation", () => {
+    it("shows the cost estimation form and Calculate action", () => {
+      render(<ClusterSizingWizard {...defaultProps} tool="cost-estimation" />);
+
+      expect(
+        screen.getByRole("heading", { name: "Cost estimation" }),
+      ).toBeInTheDocument();
+      expect(screen.getByTestId("cost-estimation-form")).toBeInTheDocument();
+      expect(
+        screen.getByRole("button", { name: "Calculate" }),
+      ).toBeInTheDocument();
+    });
+
+    it("submits cost estimation and shows results beside the page title", async () => {
+      mockCostEstimationViewModel.costEstimation = {
+        calculatorVersion: "1.0.0",
+      };
+      render(<ClusterSizingWizard {...defaultProps} tool="cost-estimation" />);
+
+      fireEvent.click(screen.getByRole("button", { name: "Calculate" }));
+
+      await waitFor(() => {
+        expect(mockCalculateCostEstimation).toHaveBeenCalledTimes(1);
+        expect(
+          screen.getByTestId("cost-estimation-result"),
+        ).toBeInTheDocument();
+      });
+
+      expect(
+        screen.getByRole("heading", { name: "Cost estimation" }),
       ).toBeInTheDocument();
       expect(
         screen.getByRole("button", { name: "Edit migration preferences" }),

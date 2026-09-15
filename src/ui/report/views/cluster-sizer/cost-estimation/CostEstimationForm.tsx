@@ -50,17 +50,20 @@ const DEFAULT_COST_ESTIMATION_FORM_VALUES: CostEstimationFormValues = {
 export interface CostEstimationFormProps {
   isLoading?: boolean;
   onSubmit: (values: CostEstimationFormValues) => void;
+  defaultValues?: CostEstimationFormValues;
 }
 
 export default function CostEstimationForm({
   isLoading = false,
   onSubmit,
+  defaultValues,
 }: CostEstimationFormProps) {
   const methods = useForm<CostEstimationFormValues>({
     resolver: yupResolver(costEstimationValidationSchema),
     mode: "onTouched",
     defaultValues: {
       ...DEFAULT_COST_ESTIMATION_FORM_VALUES,
+      ...defaultValues,
     },
   });
 
