@@ -1,16 +1,22 @@
-import type {
-  AccountApiInterface,
-  Identity,
+import {
+  type AccountApiInterface,
+  type Identity,
+  IdentityKindEnum,
 } from "@openshift-migration-advisor/planner-sdk";
 
 import { ExternalStoreBase } from "../../lib/mvvm/ExternalStore";
-import type { IAccountStore } from "./interfaces/IAccountStore";
+import type { IAccountStore, IdentityView } from "./interfaces/IAccountStore";
+
+const toIdentityView = (identity: Identity): IdentityView => ({
+  ...identity,
+  isPartner: identity.kind === IdentityKindEnum.Partner,
+});
 
 export class AccountStore
-  extends ExternalStoreBase<Identity | null>
+  extends ExternalStoreBase<IdentityView | null>
   implements IAccountStore
 {
-  private identity: Identity | null = null;
+  private identity: IdentityView | null = null;
   private api: AccountApiInterface;
 
   constructor(api: AccountApiInterface) {
@@ -18,13 +24,13 @@ export class AccountStore
     this.api = api;
   }
 
-  async getIdentity(): Promise<Identity> {
-    this.identity = await this.api.getIdentity();
+  async getIdentity(): Promise<IdentityView> {
+    this.identity = toIdentityView(await this.api.getIdentity());
     this.notify();
     return this.identity;
   }
 
-  override getSnapshot(): Identity | null {
+  override getSnapshot(): IdentityView | null {
     return this.identity;
   }
 }
