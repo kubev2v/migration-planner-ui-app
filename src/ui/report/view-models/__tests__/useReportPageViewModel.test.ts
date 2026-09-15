@@ -1,7 +1,6 @@
 import type {
   Assessment,
   Host,
-  Identity,
   Infra,
   InventoryData,
   Source,
@@ -12,6 +11,7 @@ import { act, renderHook } from "@testing-library/react";
 import React from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import type { IdentityView } from "../../../../data/stores/interfaces/IAccountStore";
 import {
   createSourceModel,
   type SourceModel,
@@ -106,7 +106,7 @@ const mockJobsStore = {
 
 const mockAccountStore = {
   subscribe: vi.fn(() => () => {}),
-  getSnapshot: vi.fn((): Identity | null => null),
+  getSnapshot: vi.fn((): IdentityView | null => null),
 };
 
 vi.mock("@openshift-migration-advisor/ioc", () => ({
@@ -731,6 +731,7 @@ describe("useReportPageViewModel", () => {
         kind: "partner",
         groupId: "group-1",
         partnerId: null,
+        isPartner: true,
       });
       const assessment = createAssessment("assessment-1", {
         "Cluster-A": { infra: createInfra(2, 2), vms: createVMs(5) },

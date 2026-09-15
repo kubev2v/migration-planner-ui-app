@@ -4,8 +4,8 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { useAsync } from "react-use";
 
 import { Symbols } from "../../../config/Dependencies";
-import type { IAccountStore } from "../../../data/stores/interfaces/IAccountStore";
 import type { IPartnerRequestsStore } from "../../../data/stores/interfaces/IPartnerRequestsStore";
+import { useIdentity } from "../../../hooks/useIdentity";
 import { routes } from "../../../routing/Routes";
 
 export type HomeScreenOutletContext = {
@@ -40,11 +40,7 @@ export const useHomeScreenViewModel = (): HomeScreenViewModel => {
   const navigate = useNavigate();
 
   // User store injection
-  const accountStore = useInjection<IAccountStore>(Symbols.AccountStore);
-  const identity = useSyncExternalStore(
-    accountStore.subscribe.bind(accountStore),
-    accountStore.getSnapshot.bind(accountStore),
-  );
+  const identity = useIdentity();
 
   // Partner requests store subscription
   const partnerRequestsStore = useInjection<IPartnerRequestsStore>(
@@ -56,7 +52,7 @@ export const useHomeScreenViewModel = (): HomeScreenViewModel => {
     partnerRequestsStore.getSnapshot.bind(partnerRequestsStore),
   );
 
-  const shouldShowBadge = identity?.kind === "partner";
+  const shouldShowBadge = identity?.isPartner ?? false;
 
   const { loading: isLoadingPartnerRequestsRaw } = useAsync(async () => {
     if (!shouldShowBadge) return [];

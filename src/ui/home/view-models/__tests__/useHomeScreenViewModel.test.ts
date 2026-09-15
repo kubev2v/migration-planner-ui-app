@@ -1,10 +1,8 @@
-import type {
-  Identity,
-  PartnerRequest,
-} from "@openshift-migration-advisor/planner-sdk";
+import type { PartnerRequest } from "@openshift-migration-advisor/planner-sdk";
 import { act, renderHook } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import type { IdentityView } from "../../../../data/stores/interfaces/IAccountStore";
 import { routes } from "../../../../routing/Routes";
 import { useHomeScreenViewModel } from "../useHomeScreenViewModel";
 
@@ -48,11 +46,12 @@ vi.mock("@openshift-migration-advisor/ioc", () => ({
 // Test helpers
 // ---------------------------------------------------------------------------
 
-const createMockIdentity = (kind: Identity["kind"]): Identity => ({
+const createMockIdentity = (kind: IdentityView["kind"]): IdentityView => ({
   username: "test-user",
   kind,
   groupId: "group-1",
   partnerId: null,
+  isPartner: kind === "partner",
 });
 
 const createMockPartnerRequest = (

@@ -20,7 +20,6 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useAsyncFn, useMount } from "react-use";
 
 import { Symbols } from "../../../config/Dependencies";
-import type { IAccountStore } from "../../../data/stores/interfaces/IAccountStore";
 import type { IAssessmentsStore } from "../../../data/stores/interfaces/IAssessmentsStore";
 import type { IJobsStore } from "../../../data/stores/interfaces/IJobsStore";
 import type { IReportStore } from "../../../data/stores/interfaces/IReportStore";
@@ -30,6 +29,7 @@ import {
   JOB_POLLING_INTERVAL,
   TERMINAL_JOB_STATUSES,
 } from "../../../data/stores/JobsStore";
+import { useIsPartner } from "../../../hooks/useIdentity";
 import type { AssessmentModel } from "../../../models/AssessmentModel";
 import type { SourceModel } from "../../../models/SourceModel";
 import { routes } from "../../../routing/Routes";
@@ -343,7 +343,6 @@ export const useReportPageViewModel = (): ReportPageViewModel => {
   const assessmentsStore = useInjection<IAssessmentsStore>(
     Symbols.AssessmentsStore,
   );
-  const accountStore = useInjection<IAccountStore>(Symbols.AccountStore);
   const sourcesStore = useInjection<ISourcesStore>(Symbols.SourcesStore);
   const reportStore = useInjection<IReportStore>(Symbols.ReportStore);
   const jobsStore = useInjection<IJobsStore>(Symbols.JobsStore);
@@ -369,11 +368,7 @@ export const useReportPageViewModel = (): ReportPageViewModel => {
     jobsStore.getSnapshot.bind(jobsStore),
   );
 
-  const identity = useSyncExternalStore(
-    accountStore.subscribe.bind(accountStore),
-    accountStore.getSnapshot.bind(accountStore),
-  );
-  const isPartner = identity?.kind === "partner";
+  const isPartner = useIsPartner();
 
   // ---- Initial data fetch (always GET assessment for subset inventory data) --
   const [fetchState, doFetchData] = useAsyncFn(async () => {
