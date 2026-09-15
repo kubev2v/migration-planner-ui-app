@@ -13,7 +13,7 @@ describe("RecommendationToolsLanding", () => {
     const onSelectTool = vi.fn();
     render(
       <RecommendationToolsLanding
-        tools={getRecommendationToolCards(true)}
+        tools={getRecommendationToolCards({ isAggregateView: true })}
         onSelectTool={onSelectTool}
       />,
     );
@@ -37,7 +37,7 @@ describe("RecommendationToolsLanding", () => {
   it("renders cluster-scoped cards including the disabled plan placeholder", () => {
     render(
       <RecommendationToolsLanding
-        tools={getRecommendationToolCards(false)}
+        tools={getRecommendationToolCards({ isAggregateView: false })}
         onSelectTool={vi.fn()}
       />,
     );
@@ -60,7 +60,7 @@ describe("RecommendationToolsLanding", () => {
     const onSelectTool = vi.fn();
     render(
       <RecommendationToolsLanding
-        tools={getRecommendationToolCards(true)}
+        tools={getRecommendationToolCards({ isAggregateView: true })}
         onSelectTool={onSelectTool}
       />,
     );
@@ -72,5 +72,22 @@ describe("RecommendationToolsLanding", () => {
     );
 
     expect(onSelectTool).toHaveBeenCalledWith("time-estimation");
+  });
+
+  it("renders cost estimation for partners", () => {
+    render(
+      <RecommendationToolsLanding
+        tools={getRecommendationToolCards({
+          isAggregateView: false,
+          isPartner: true,
+        })}
+        onSelectTool={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByText("Cost estimation")).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Open Cost estimation tool" }),
+    ).toBeInTheDocument();
   });
 });
