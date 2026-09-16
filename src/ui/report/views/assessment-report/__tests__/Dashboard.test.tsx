@@ -42,6 +42,29 @@ vi.mock(
     return {
       ...actual,
       OSDistribution: (): JSX.Element => <div data-testid="os-distribution" />,
+      InfrastructureSummary: (): JSX.Element => (
+        <div data-testid="infra-summary" />
+      ),
+      VCenterClusterDetails: (): JSX.Element => (
+        <div data-testid="cluster-details" />
+      ),
+      HostPowerStates: (): JSX.Element => (
+        <div data-testid="host-power-states" />
+      ),
+      VmPowerStates: (): JSX.Element => <div data-testid="vm-power-states" />,
+      buildInfrastructureSummary: (): {
+        vmwareVersion: string;
+        datacenters: undefined;
+        vCenters: undefined;
+        esxiHosts: undefined;
+      } => ({
+        vmwareVersion: "—",
+        datacenters: undefined,
+        vCenters: undefined,
+        esxiHosts: undefined,
+      }),
+      buildClusterDetailRows: (): [] => [],
+      buildClusterDetails: (): undefined => undefined,
     };
   },
 );
@@ -114,6 +137,10 @@ describe("Dashboard", () => {
 
     expect(screen.getByTestId("vm-status")).toBeInTheDocument();
     expect(screen.getByTestId("os-distribution")).toBeInTheDocument();
+    expect(screen.getByTestId("infra-summary")).toBeInTheDocument();
+    expect(screen.getByTestId("cluster-details")).toBeInTheDocument();
+    expect(screen.getByTestId("host-power-states")).toBeInTheDocument();
+    expect(screen.getByTestId("vm-power-states")).toBeInTheDocument();
     expect(screen.getByTestId("cpu-memory")).toBeInTheDocument();
     expect(screen.getByTestId("storage")).toBeInTheDocument();
     expect(screen.getByTestId("clusters-overview")).toBeInTheDocument();
@@ -141,6 +168,10 @@ describe("Dashboard", () => {
     );
 
     expect(screen.queryByTestId("clusters-overview")).toBeNull();
+    expect(screen.getByTestId("infra-summary")).toBeInTheDocument();
+    expect(screen.getByTestId("cluster-details")).toBeInTheDocument();
+    expect(screen.getByTestId("host-power-states")).toBeInTheDocument();
+    expect(screen.getByTestId("vm-power-states")).toBeInTheDocument();
     expect(screen.getByTestId("cpu-memory")).toBeInTheDocument();
     expect(screen.getByTestId("storage")).toBeInTheDocument();
   });

@@ -21,6 +21,8 @@ export interface DiscoveryOvaExampleReportVM {
   clusters: { [key: string]: InventoryData } | undefined;
   clusterCount: number;
   clusterSelectDisabled: boolean;
+  vcenterId: string | undefined;
+  vcenterVersion: string | undefined;
 
   selectedClusterId: string;
   clusterView: ClusterViewModel;
@@ -103,5 +105,7 @@ export function useDiscoveryOvaExampleReportViewModel(): DiscoveryOvaExampleRepo
     handleTabSelect,
     handleClusterSelect,
     filteredVMs,
+    vcenterId: inventory.vcenterId,
+    vcenterVersion: inventory.vcenterVersion,
   };
 }

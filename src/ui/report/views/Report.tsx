@@ -299,6 +299,8 @@ const ReportContent: React.FC = () => {
               clusters={vm.scopedClusterView.viewClusters}
               isAggregateView={vm.scopedClusterView.isAggregateView}
               clusterFound={vm.scopedClusterView.clusterFound}
+              vcenterVersion={vm.vcenterVersion}
+              vcenterId={vm.vcenterId}
             />
           ) : (
             <Bullseye>
@@ -358,6 +360,8 @@ const ReportContent: React.FC = () => {
             clusters={vm.scopedClusterView.viewClusters}
             isAggregateView={vm.scopedClusterView.isAggregateView}
             clusterFound={vm.scopedClusterView.clusterFound}
+            vcenterVersion={vm.vcenterVersion}
+            vcenterId={vm.vcenterId}
           />
         </OffScreenRenderer>
       ) : null}
