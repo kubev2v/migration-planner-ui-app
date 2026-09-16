@@ -1,9 +1,6 @@
-import { useInjection } from "@openshift-migration-advisor/ioc";
-import { useSyncExternalStore } from "react";
 import { useNavigate } from "react-router-dom";
 
-import { Symbols } from "../../../config/Dependencies";
-import type { IAccountStore } from "../../../data/stores/interfaces/IAccountStore";
+import { useIsPartner } from "../../../hooks/useIdentity";
 import { routes } from "../../../routing/Routes";
 
 export interface ToolsScreenViewModel {
@@ -15,13 +12,7 @@ export interface ToolsScreenViewModel {
 export const useToolsScreenViewModel = (): ToolsScreenViewModel => {
   const navigate = useNavigate();
 
-  const accountStore = useInjection<IAccountStore>(Symbols.AccountStore);
-  const identity = useSyncExternalStore(
-    accountStore.subscribe.bind(accountStore),
-    accountStore.getSnapshot.bind(accountStore),
-  );
-
-  const isPartner = identity?.kind === "partner";
+  const isPartner = useIsPartner();
 
   return {
     isPartner,
