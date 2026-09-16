@@ -76,7 +76,7 @@ export const routes = {
 
 - All existing code continues to work unchanged
 - The `routes` object API is identical (getters are transparent)
-- Function-based routes (`assessmentById`, `assessmentReport`) already called the function at invocation time
+- Function-based routes (`assessmentReport`) already called the function at invocation time
 
 ## Verification
 
