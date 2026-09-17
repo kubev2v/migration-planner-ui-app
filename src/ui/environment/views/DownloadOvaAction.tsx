@@ -1,0 +1,59 @@
+import { Button, Icon, Tooltip } from "@patternfly/react-core";
+import { RhUiDownloadIcon } from "@patternfly/react-icons";
+import { useCallback, useState } from "react";
+
+import { themeTooltipFlyoutProps } from "../../../lib/patternfly/flyoutAppendTo";
+import { useEnvironmentPage } from "../view-models/EnvironmentPageContext";
+
+type DownloadOvaActionProps = {
+  sourceId: string;
+  sourceName?: string;
+  isDisabled?: boolean;
+};
+
+export function DownloadOvaAction({
+  sourceId,
+  sourceName,
+  isDisabled = false,
+}: DownloadOvaActionProps) {
+  const vm = useEnvironmentPage();
+  const [isDownloading, setIsDownloading] = useState(false);
+  const url = vm.getDownloadUrlForSource(sourceId);
+
+  const handleDownload = useCallback(() => {
+    try {
+      if (!url) {
+        return;
+      }
+      setIsDownloading(true);
+
+      const anchor = document.createElement("a");
+      anchor.download = `${sourceName || sourceId}.ova`;
+      anchor.href = url;
+      anchor.click();
+      anchor.remove();
+    } catch (error) {
+      console.error("Download failed:", error);
+    } finally {
+      setIsDownloading(false);
+    }
+  }, [sourceId, sourceName, url]);
+
+  return (
+    <Tooltip {...themeTooltipFlyoutProps} content="Download OVA File">
+      <Button
+        icon={
+          <Icon size="md" isInline>
+            <RhUiDownloadIcon />
+          </Icon>
+        }
+        data-source-id={sourceId}
+        variant="plain"
+        isDisabled={isDisabled || isDownloading || !url}
+        onClick={handleDownload}
+      />
+    </Tooltip>
+  );
+}
+
+DownloadOvaAction.displayName = "DownloadOvaAction";
