@@ -5,27 +5,26 @@ import React, { useCallback, useState } from "react";
 import { themeTooltipFlyoutProps } from "../../../lib/patternfly/flyoutAppendTo";
 import { ConfirmationModal } from "../../core/components/ConfirmationModal";
 
-// eslint-disable-next-line @typescript-eslint/no-namespace
-export namespace RemoveSourceAction {
-  export type ConfirmEventHandler = (
-    event: React.MouseEvent<HTMLButtonElement, MouseEvent> & {
-      dismissConfirmationModal: () => void;
-      showConfirmationModal: () => void;
-    },
-  ) => void;
-  export type Props = {
-    sourceId: string;
-    isDisabled: boolean;
-    onConfirm?: ConfirmEventHandler;
-    sourceName?: string;
-  };
-}
+type ConfirmEventHandler = (
+  event: React.MouseEvent<HTMLButtonElement, MouseEvent> & {
+    dismissConfirmationModal: () => void;
+    showConfirmationModal: () => void;
+  },
+) => void;
 
-export const RemoveSourceAction: React.FC<RemoveSourceAction.Props> = (
-  props,
-) => {
-  const { sourceId, isDisabled = false, onConfirm, sourceName } = props;
+type RemoveSourceActionProps = {
+  sourceId: string;
+  isDisabled: boolean;
+  onConfirm?: ConfirmEventHandler;
+  sourceName?: string;
+};
 
+export function RemoveSourceAction({
+  sourceId,
+  isDisabled = false,
+  onConfirm,
+  sourceName,
+}: RemoveSourceActionProps) {
   const [shouldShowConfirmationModal, setShouldShowConfirmationModal] =
     useState(false);
   const dismissConfirmationModal = useCallback((): void => {
@@ -35,7 +34,7 @@ export const RemoveSourceAction: React.FC<RemoveSourceAction.Props> = (
     setShouldShowConfirmationModal(true);
   }, []);
 
-  const handleConfirm = useCallback<RemoveSourceAction.ConfirmEventHandler>(
+  const handleConfirm = useCallback<ConfirmEventHandler>(
     (event) => {
       if (onConfirm) {
         event.dismissConfirmationModal = dismissConfirmationModal;
@@ -82,6 +81,6 @@ export const RemoveSourceAction: React.FC<RemoveSourceAction.Props> = (
       )}
     </>
   );
-};
+}
 
 RemoveSourceAction.displayName = "RemoveSourceAction";

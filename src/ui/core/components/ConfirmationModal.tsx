@@ -8,49 +8,43 @@ import {
 } from "@patternfly/react-core";
 import React from "react";
 
-// eslint-disable-next-line @typescript-eslint/no-namespace
-export namespace ConfirmationModal {
-  export type Props = {
-    onClose?: (event: KeyboardEvent | React.MouseEvent) => void;
-    onCancel?: React.MouseEventHandler<HTMLButtonElement> | undefined;
-    onConfirm?: React.MouseEventHandler<HTMLButtonElement> | undefined;
-    isOpen?: boolean;
-    isDisabled?: boolean;
-    titleIconVariant?: "warning" | "success" | "danger" | "info" | "custom";
-    variant?: "default" | "small" | "medium" | "large";
-    primaryButtonVariant?:
-      | "warning"
-      | "danger"
-      | "link"
-      | "primary"
-      | "secondary"
-      | "tertiary"
-      | "plain"
-      | "control";
-    title: string;
-    confirmButtonText?: string;
-    cancelButtonText?: string;
-  };
-}
+type ConfirmationModalProps = {
+  onClose?: (event: KeyboardEvent | React.MouseEvent) => void;
+  onCancel?: React.MouseEventHandler<HTMLButtonElement> | undefined;
+  onConfirm?: React.MouseEventHandler<HTMLButtonElement> | undefined;
+  isOpen?: boolean;
+  isDisabled?: boolean;
+  titleIconVariant?: "warning" | "success" | "danger" | "info" | "custom";
+  variant?: "default" | "small" | "medium" | "large";
+  primaryButtonVariant?:
+    | "warning"
+    | "danger"
+    | "link"
+    | "primary"
+    | "secondary"
+    | "tertiary"
+    | "plain"
+    | "control";
+  title: string;
+  confirmButtonText?: string;
+  cancelButtonText?: string;
+  children?: React.ReactNode;
+};
 
-export const ConfirmationModal: React.FC<
-  React.PropsWithChildren<ConfirmationModal.Props>
-> = (props) => {
-  const {
-    isOpen = false,
-    isDisabled = false,
-    onClose,
-    onConfirm,
-    onCancel,
-    variant = "small",
-    titleIconVariant,
-    primaryButtonVariant = "danger",
-    confirmButtonText = "Delete",
-    cancelButtonText = "Cancel",
-    title,
-    children,
-  } = props;
-
+export function ConfirmationModal({
+  isOpen = false,
+  isDisabled = false,
+  onClose,
+  onConfirm,
+  onCancel,
+  variant = "small",
+  titleIconVariant,
+  primaryButtonVariant = "danger",
+  confirmButtonText = "Delete",
+  cancelButtonText = "Cancel",
+  title,
+  children,
+}: ConfirmationModalProps) {
   return (
     <Modal
       width="44rem"
@@ -85,6 +79,6 @@ export const ConfirmationModal: React.FC<
       </ModalFooter>
     </Modal>
   );
-};
+}
 
 ConfirmationModal.displayName = "ConfirmationModal";

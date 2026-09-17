@@ -1,22 +1,21 @@
 import { Button, Icon, Tooltip } from "@patternfly/react-core";
 import { RhUiDownloadIcon } from "@patternfly/react-icons";
-import React, { useCallback, useState } from "react";
+import { useCallback, useState } from "react";
 
 import { themeTooltipFlyoutProps } from "../../../lib/patternfly/flyoutAppendTo";
 import { useEnvironmentPage } from "../view-models/EnvironmentPageContext";
 
-// eslint-disable-next-line @typescript-eslint/no-namespace
-export namespace DownloadOvaAction {
-  export type Props = {
-    sourceId: string;
-    sourceName?: string;
-    isDisabled?: boolean;
-  };
-}
+type DownloadOvaActionProps = {
+  sourceId: string;
+  sourceName?: string;
+  isDisabled?: boolean;
+};
 
-export const DownloadOvaAction: React.FC<DownloadOvaAction.Props> = (props) => {
-  const { sourceId, sourceName, isDisabled = false } = props;
-
+export function DownloadOvaAction({
+  sourceId,
+  sourceName,
+  isDisabled = false,
+}: DownloadOvaActionProps) {
   const vm = useEnvironmentPage();
   const [isDownloading, setIsDownloading] = useState(false);
   const url = vm.getDownloadUrlForSource(sourceId);
@@ -55,6 +54,6 @@ export const DownloadOvaAction: React.FC<DownloadOvaAction.Props> = (props) => {
       />
     </Tooltip>
   );
-};
+}
 
 DownloadOvaAction.displayName = "DownloadOvaAction";

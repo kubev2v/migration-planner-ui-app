@@ -26,18 +26,6 @@ import { VCenterSetupInstructions } from "../../core/components/VCenterSetupInst
 import { safeExternalUrl } from "../../core/utils/urlValidation";
 import { getDiscoveryVmStatusLabel } from "../helpers/discoveryVmStatus";
 
-// eslint-disable-next-line @typescript-eslint/no-namespace
-export namespace AgentStatusView {
-  export type Props = {
-    status: Agent["status"];
-    statusInfo?: Agent["statusInfo"];
-    credentialUrl?: Agent["credentialUrl"];
-    uploadedManually?: boolean;
-    updatedAt?: string | Date;
-    disableInteractions?: boolean;
-  };
-}
-
 const StatusInfoWaitingForCredentials: React.FC<{
   credentialUrl?: Agent["credentialUrl"];
 }> = ({ credentialUrl }) => {
@@ -60,15 +48,23 @@ const StatusInfoWaitingForCredentials: React.FC<{
   );
 };
 
-export const AgentStatusView: React.FC<AgentStatusView.Props> = (props) => {
-  const {
-    status,
-    statusInfo,
-    credentialUrl,
-    uploadedManually,
-    updatedAt,
-    disableInteractions,
-  } = props;
+type AgentStatusViewProps = {
+  status: Agent["status"];
+  statusInfo?: Agent["statusInfo"];
+  credentialUrl?: Agent["credentialUrl"];
+  uploadedManually?: boolean;
+  updatedAt?: string | Date;
+  disableInteractions?: boolean;
+};
+
+export function AgentStatusView({
+  status,
+  statusInfo,
+  credentialUrl,
+  uploadedManually,
+  updatedAt,
+  disableInteractions,
+}: AgentStatusViewProps) {
   const statusView = useMemo(() => {
     const text = getDiscoveryVmStatusLabel(status, uploadedManually);
 
@@ -209,6 +205,6 @@ export const AgentStatusView: React.FC<AgentStatusView.Props> = (props) => {
       )}
     </Split>
   );
-};
+}
 
 AgentStatusView.displayName = "AgentStatusView";

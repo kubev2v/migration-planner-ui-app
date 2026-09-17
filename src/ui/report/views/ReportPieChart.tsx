@@ -8,8 +8,20 @@ type ChartBarDataEntry = {
   y: number;
 };
 
+type Histogram = {
+  data: number[];
+  minValue: number;
+  step: number;
+};
+
+type histogramToPieChartDataProps = {
+  histogram: Histogram;
+  title: string;
+  legendLabel: string;
+};
+
 function histogramToPieChartData(
-  histogram: ReportPieChart.Histogram,
+  histogram: Histogram,
   legendLabel: string,
 ): ChartBarDataEntry[] {
   const { data } = histogram;
@@ -24,7 +36,7 @@ function histogramToPieChartData(
 }
 
 function getLegendData(
-  histogram: ReportPieChart.Histogram,
+  histogram: Histogram,
   legendLabel: string,
 ): { name: string }[] {
   return histogramToPieChartData(histogram, "").map((d) => ({
@@ -32,23 +44,11 @@ function getLegendData(
   }));
 }
 
-// eslint-disable-next-line @typescript-eslint/no-namespace
-export namespace ReportPieChart {
-  export type Histogram = {
-    data: number[];
-    minValue: number;
-    step: number;
-  };
-
-  export type Props = {
-    histogram: Histogram;
-    title: string;
-    legendLabel: string;
-  };
-}
-
-export function ReportPieChart(props: ReportPieChart.Props): React.ReactNode {
-  const { title, histogram, legendLabel } = props;
+export function ReportPieChart({
+  title,
+  histogram,
+  legendLabel,
+}: histogramToPieChartDataProps): React.ReactNode {
   return (
     <>
       <Content style={{ textAlign: "center" }}>

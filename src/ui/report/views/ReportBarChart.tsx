@@ -14,8 +14,14 @@ type ChartBarDataEntry = {
   y: number;
 };
 
+type Histogram = {
+  data: number[];
+  minValue: number;
+  step: number;
+};
+
 function histogramToBarChartData(
-  histogram: ReportBarChart.Histogram,
+  histogram: Histogram,
   name: string,
   units: string = "",
 ): ChartBarDataEntry[] {
@@ -32,28 +38,19 @@ function histogramToBarChartData(
   });
 }
 
-function getMax(histogram: ReportBarChart.Histogram): number {
+function getMax(histogram: Histogram): number {
   const [head, ..._] = histogram.data;
   return histogram.data.reduce((prev, next) => Math.max(prev, next), head);
 }
 
-// eslint-disable-next-line @typescript-eslint/no-namespace
-export namespace ReportBarChart {
-  export type Histogram = {
-    data: number[];
-    minValue: number;
-    step: number;
-  };
-
-  export type Props = {
-    histogram: Histogram;
-    title: string;
-  };
-}
-
-export function ReportBarChart(props: ReportBarChart.Props): React.ReactNode {
-  const { title, histogram } = props;
-
+type ReportBarChartProps = {
+  histogram: Histogram;
+  title: string;
+};
+export function ReportBarChart({
+  title,
+  histogram,
+}: ReportBarChartProps): React.ReactNode {
   return (
     <>
       <Content style={{ textAlign: "center" }}>
