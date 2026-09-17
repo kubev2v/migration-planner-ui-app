@@ -8,7 +8,12 @@ import type {
   PdfExportService,
   PdfExtraPage,
 } from "../../services/pdf-export/PdfExportService";
-import type { IReportStore, ReportStoreState } from "./interfaces/IReportStore";
+import type { PngExportService } from "../../services/png-export/PngExportService";
+import type {
+  IReportStore,
+  PngZipSession,
+  ReportStoreState,
+} from "./interfaces/IReportStore";
 
 const IDLE_STATE: ReportStoreState = Object.freeze({
   loadingState: "idle" as const,
@@ -22,14 +27,17 @@ export class ReportStore
   private state: ReportStoreState = IDLE_STATE;
   private pdfExportService: PdfExportService;
   private htmlExportService: HtmlExportService;
+  private pngExportService: PngExportService;
 
   constructor(
     pdfExportService: PdfExportService,
     htmlExportService: HtmlExportService,
+    pngExportService: PngExportService,
   ) {
     super();
     this.pdfExportService = pdfExportService;
     this.htmlExportService = htmlExportService;
+    this.pngExportService = pngExportService;
   }
 
   override getSnapshot(): ReportStoreState {
@@ -82,6 +90,55 @@ export class ReportStore
               ? error.message
               : "Failed to generate HTML file",
           type: "html",
+        },
+      });
+    }
+  }
+
+  /**
+   * Snapshot a single on-screen chart card. Does not toggle the global
+   * export loading flag so the per-card button can show its own spinner.
+   */
+  async exportPng(element: HTMLElement, filename: string): Promise<void> {
+    try {
+      await this.pngExportService.downloadChart(element, filename);
+    } catch (error) {
+      this.setState({
+        loadingState: "error",
+        error: {
+          message:
+            error instanceof Error
+              ? error.message
+              : "Failed to download chart PNG",
+          type: "png",
+        },
+      });
+    }
+  }
+
+  async exportPngZip(
+    run: (session: PngZipSession) => Promise<void>,
+    options?: { documentTitle?: string },
+  ): Promise<void> {
+    this.setState({ loadingState: "generating-png", error: null });
+    const archive = this.pngExportService.createArchive();
+
+    try {
+      await run({
+        addChart: (element, filename) => archive.addChart(element, filename),
+      });
+      await this.pngExportService.downloadArchive(archive, options);
+      this.setState(IDLE_STATE);
+    } catch (error) {
+      archive.dispose();
+      this.setState({
+        loadingState: "error",
+        error: {
+          message:
+            error instanceof Error
+              ? error.message
+              : "Failed to download chart PNGs",
+          type: "png",
         },
       });
     }

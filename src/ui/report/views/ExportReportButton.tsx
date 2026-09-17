@@ -1,6 +1,5 @@
 import { css } from "@emotion/css";
 import {
-  Button,
   Dropdown,
   DropdownItem,
   DropdownList,
@@ -41,6 +40,7 @@ interface ExportReportButtonProps {
   loadingLabel: string | null;
   onExportPdf: () => void;
   onExportHtml: () => void;
+  onExportPng: () => void;
   isDisabled?: boolean;
   isAggregateView?: boolean;
 }
@@ -54,6 +54,7 @@ export const ExportReportButton: React.FC<ExportReportButtonProps> = ({
   loadingLabel,
   onExportPdf,
   onExportHtml,
+  onExportPng,
   isDisabled = false,
   isAggregateView = true,
 }): JSX.Element => {
@@ -63,14 +64,24 @@ export const ExportReportButton: React.FC<ExportReportButtonProps> = ({
     {
       key: "pdf",
       label: "PDF",
-      description: "Export the report as static charts",
+      description: "Export the report as a PDF",
       action: onExportPdf,
     },
+    ...(isAggregateView
+      ? [
+          {
+            key: "html-interactive",
+            label: "HTML",
+            description: "Export the report as interactive charts",
+            action: onExportHtml,
+          },
+        ]
+      : []),
     {
-      key: "html-interactive",
-      label: "HTML",
-      description: "Export the report as interactive charts",
-      action: onExportHtml,
+      key: "png",
+      label: "PNG",
+      description: "Download all charts as PNG files",
+      action: onExportPng,
     },
   ];
 
@@ -81,28 +92,6 @@ export const ExportReportButton: React.FC<ExportReportButtonProps> = ({
   const onSelect = (): void => {
     setIsDropdownOpen(false);
   };
-
-  if (!isAggregateView) {
-    return (
-      <Button
-        variant="secondary"
-        onClick={onExportPdf}
-        isDisabled={isLoading || isDisabled}
-        aria-label="Export to PDF"
-      >
-        {isLoading ? (
-          <>
-            <Spinner size="sm" aria-hidden="true" />
-            {loadingLabel ?? "Generating..."}
-          </>
-        ) : (
-          <>
-            <RhUiDownloadIcon aria-hidden="true" /> Export to PDF
-          </>
-        )}
-      </Button>
-    );
-  }
 
   return (
     <Dropdown

@@ -13,6 +13,8 @@ import {
 } from "@patternfly/react-core";
 import React, { useMemo } from "react";
 
+import { ChartCardHeaderActions } from "./ChartPngDownloadButton";
+import { ExportGraphFrame } from "./ExportGraphFrame";
 import { dashboardCard } from "./styles";
 
 type HostLike = {
@@ -23,6 +25,7 @@ interface HostsOverviewProps {
   hosts?: Array<Host>;
   isExportMode?: boolean;
   exportAllViews?: boolean;
+  graphOnly?: boolean;
 }
 
 // Keep the same extended palette style used by other overview widgets
@@ -42,6 +45,7 @@ const colorPalette = [
 export const HostsOverview: React.FC<HostsOverviewProps> = ({
   hosts,
   isExportMode = false,
+  graphOnly = false,
 }) => {
   const { slices, legend, totalHosts } = useMemo(() => {
     const asArray: HostLike[] = Array.isArray(hosts) ? hosts : [];
@@ -96,10 +100,44 @@ export const HostsOverview: React.FC<HostsOverviewProps> = ({
     return { slices, legend: legendMap, totalHosts };
   }, [hosts]);
 
+  const chart =
+    slices.length === 0 ? (
+      <CardEmptyState title={REPORT_CARD_EMPTY_STATE_TITLES.hosts} />
+    ) : (
+      <MigrationDonutChart
+        legendVariant="chart"
+        data={slices}
+        height={300}
+        width={420}
+        donutThickness={18}
+        titleFontSize={34}
+        legend={legend}
+        legendWidth={680}
+        title={`${totalHosts}`}
+        subTitle="Hosts"
+        subTitleColor="var(--pf-t--global--text--color--subtle)"
+        itemsPerRow={2}
+        labelFontSize={16}
+        marginLeft="0%"
+        tooltipLabelFormatter={({ datum, percent }) =>
+          `${datum.countDisplay}\n${percent.toFixed(1)}%`
+        }
+      />
+    );
+
+  if (graphOnly) {
+    return (
+      <ExportGraphFrame title="Host distribution by model">
+        {chart}
+      </ExportGraphFrame>
+    );
+  }
+
   return (
     <Card
       className={dashboardCard}
       id="hosts-overview"
+      data-chart-export="hosts"
       style={{ overflow: isExportMode ? "visible" : "hidden" }}
     >
       <CardTitle>
@@ -125,33 +163,10 @@ export const HostsOverview: React.FC<HostsOverviewProps> = ({
               )}
             </div>
           </FlexItem>
+          {!isExportMode && <ChartCardHeaderActions />}
         </Flex>
       </CardTitle>
-      <CardBody>
-        {slices.length === 0 ? (
-          <CardEmptyState title={REPORT_CARD_EMPTY_STATE_TITLES.hosts} />
-        ) : (
-          <MigrationDonutChart
-            legendVariant="chart"
-            data={slices}
-            height={300}
-            width={420}
-            donutThickness={18}
-            titleFontSize={34}
-            legend={legend}
-            legendWidth={680}
-            title={`${totalHosts}`}
-            subTitle="Hosts"
-            subTitleColor="var(--pf-t--global--text--color--subtle)"
-            itemsPerRow={2}
-            labelFontSize={16}
-            marginLeft="0%"
-            tooltipLabelFormatter={({ datum, percent }) =>
-              `${datum.countDisplay}\n${percent.toFixed(1)}%`
-            }
-          />
-        )}
-      </CardBody>
+      <CardBody>{chart}</CardBody>
     </Card>
   );
 };

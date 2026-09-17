@@ -33,6 +33,7 @@ describe("ExportReportButton", () => {
     loadingLabel: null as string | null,
     onExportPdf: vi.fn(),
     onExportHtml: vi.fn(),
+    onExportPng: vi.fn(),
   };
 
   beforeEach(() => {
@@ -50,7 +51,7 @@ describe("ExportReportButton", () => {
       ).toBeInTheDocument();
     });
 
-    it("shows PDF and HTML options", () => {
+    it("shows PDF, HTML, and PNG options", () => {
       render(<ExportReportButton {...baseProps} isAggregateView={true} />);
 
       act(() => {
@@ -62,6 +63,9 @@ describe("ExportReportButton", () => {
       ).toBeInTheDocument();
       expect(
         screen.getByRole("menuitem", { name: /html/i }),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByRole("menuitem", { name: /png/i }),
       ).toBeInTheDocument();
     });
 
@@ -91,6 +95,20 @@ describe("ExportReportButton", () => {
       });
 
       expect(baseProps.onExportHtml).toHaveBeenCalledTimes(1);
+    });
+
+    it("calls onExportPng when PNG option is clicked", () => {
+      render(<ExportReportButton {...baseProps} isAggregateView={true} />);
+
+      act(() => {
+        fireEvent.click(screen.getByRole("button", { name: /export report/i }));
+      });
+
+      act(() => {
+        fireEvent.click(screen.getByRole("menuitem", { name: /png/i }));
+      });
+
+      expect(baseProps.onExportPng).toHaveBeenCalledTimes(1);
     });
 
     it("shows loading state with label", () => {
@@ -134,30 +152,53 @@ describe("ExportReportButton", () => {
     });
   });
 
-  // -- Non-aggregate view (single button) -----------------------------------
+  // -- Non-aggregate view (PDF + PNG, no HTML) ------------------------------
 
-  describe("non-aggregate view (single button)", () => {
-    it("renders Export to PDF button", () => {
+  describe("non-aggregate view (dropdown without HTML)", () => {
+    it("renders dropdown with Export Report toggle", () => {
       render(<ExportReportButton {...baseProps} isAggregateView={false} />);
 
       expect(
-        screen.getByRole("button", { name: /export to pdf/i }),
+        screen.getByRole("button", { name: /export report/i }),
       ).toBeInTheDocument();
     });
 
     it("does not render HTML option", () => {
       render(<ExportReportButton {...baseProps} isAggregateView={false} />);
 
+      act(() => {
+        fireEvent.click(screen.getByRole("button", { name: /export report/i }));
+      });
+
       expect(
         screen.queryByRole("menuitem", { name: /html/i }),
       ).not.toBeInTheDocument();
     });
 
-    it("calls onExportPdf when button is clicked", () => {
+    it("shows PDF and PNG options", () => {
       render(<ExportReportButton {...baseProps} isAggregateView={false} />);
 
       act(() => {
-        fireEvent.click(screen.getByRole("button", { name: /export to pdf/i }));
+        fireEvent.click(screen.getByRole("button", { name: /export report/i }));
+      });
+
+      expect(
+        screen.getByRole("menuitem", { name: /pdf/i }),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByRole("menuitem", { name: /png/i }),
+      ).toBeInTheDocument();
+    });
+
+    it("calls onExportPdf when PDF option is clicked", () => {
+      render(<ExportReportButton {...baseProps} isAggregateView={false} />);
+
+      act(() => {
+        fireEvent.click(screen.getByRole("button", { name: /export report/i }));
+      });
+
+      act(() => {
+        fireEvent.click(screen.getByRole("menuitem", { name: /pdf/i }));
       });
 
       expect(baseProps.onExportPdf).toHaveBeenCalledTimes(1);
@@ -176,7 +217,7 @@ describe("ExportReportButton", () => {
       expect(screen.getByText("Generating PDF...")).toBeInTheDocument();
     });
 
-    it("disables button when loading", () => {
+    it("disables toggle when loading", () => {
       render(
         <ExportReportButton
           {...baseProps}
@@ -186,7 +227,7 @@ describe("ExportReportButton", () => {
         />,
       );
 
-      const button = screen.getByRole("button", { name: /export to pdf/i });
+      const button = screen.getByRole("button", { name: /export report/i });
       expect(button).toBeDisabled();
     });
   });

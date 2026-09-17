@@ -22,16 +22,18 @@ import RhUiVirtualMachineIcon from "@patternfly/react-icons/dist/esm/icons/virtu
 import React, { useState } from "react";
 
 import IssuesBreakdownChart from "../../../core/components/IssuesBreakdownChart";
+import { ChartCardHeaderActions } from "./ChartPngDownloadButton";
 import { DashboardExportSection } from "./DashboardExportSection";
+import { ExportGraphFrame } from "./ExportGraphFrame";
 import {
   dashboardCard,
   storageFlexFullWidth,
   storageMenuToggleMinWidth,
 } from "./styles";
 
-type ViewMode = "issuesVsNoIssues" | "issuesBreakdown";
+export type VMMigrationStatusView = "issuesVsNoIssues" | "issuesBreakdown";
 
-const VIEW_MODE_LABELS: Record<ViewMode, string> = {
+const VIEW_MODE_LABELS: Record<VMMigrationStatusView, string> = {
   issuesVsNoIssues: "No issues vs with issues",
   issuesBreakdown: "With issues breakdown",
 };
@@ -44,6 +46,8 @@ interface VmMigrationStatusProps {
   issuesBreakdown?: IssuesBreakdown;
   isExportMode?: boolean;
   exportAllViews?: boolean;
+  exportView?: VMMigrationStatusView;
+  graphOnly?: boolean;
 }
 
 export const VMMigrationStatus: React.FC<VmMigrationStatusProps> = ({
@@ -51,8 +55,12 @@ export const VMMigrationStatus: React.FC<VmMigrationStatusProps> = ({
   issuesBreakdown,
   isExportMode = false,
   exportAllViews = false,
+  exportView,
+  graphOnly = false,
 }) => {
-  const [viewMode, setViewMode] = useState<ViewMode>("issuesVsNoIssues");
+  const [internalViewMode, setViewMode] =
+    useState<VMMigrationStatusView>("issuesVsNoIssues");
+  const viewMode = exportView ?? internalViewMode;
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   const donutData = [
@@ -124,10 +132,21 @@ export const VMMigrationStatus: React.FC<VmMigrationStatusProps> = ({
       <CardEmptyState title={REPORT_CARD_EMPTY_STATE_TITLES.issuesBreakdown} />
     );
 
+  if (graphOnly) {
+    return (
+      <ExportGraphFrame title={VIEW_MODE_LABELS[viewMode]}>
+        {viewMode === "issuesVsNoIssues"
+          ? renderDonutChart()
+          : renderBreakdownChart(false)}
+      </ExportGraphFrame>
+    );
+  }
+
   return (
     <Card
       className={dashboardCard}
       id="vm-migration-status"
+      data-chart-export="vm-migration-status"
       style={{
         height: isExportMode ? "auto" : "340px !important",
         overflow: isExportMode ? "visible" : "hidden",
@@ -143,7 +162,7 @@ export const VMMigrationStatus: React.FC<VmMigrationStatusProps> = ({
             <RhUiVirtualMachineIcon /> VM Migration Status
           </FlexItem>
           {!isExportMode && (
-            <FlexItem>
+            <ChartCardHeaderActions>
               <Dropdown
                 isOpen={isDropdownOpen}
                 onSelect={onSelect}
@@ -168,7 +187,7 @@ export const VMMigrationStatus: React.FC<VmMigrationStatusProps> = ({
                   </DropdownItem>
                 </DropdownList>
               </Dropdown>
-            </FlexItem>
+            </ChartCardHeaderActions>
           )}
         </Flex>
       </CardTitle>
@@ -185,6 +204,12 @@ export const VMMigrationStatus: React.FC<VmMigrationStatusProps> = ({
               {renderBreakdownChart(false)}
             </DashboardExportSection>
           </>
+        ) : isExportMode ? (
+          <DashboardExportSection title={VIEW_MODE_LABELS[viewMode]}>
+            {viewMode === "issuesVsNoIssues"
+              ? renderDonutChart()
+              : renderBreakdownChart(false)}
+          </DashboardExportSection>
         ) : viewMode === "issuesVsNoIssues" ? (
           renderDonutChart()
         ) : (

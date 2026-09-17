@@ -102,3 +102,30 @@ export const storageExportSectionTitle = css`
   font-weight: 600;
   margin-bottom: 8px;
 `;
+
+/** Wrapper so a shared-component card can host the PNG download control. */
+export const chartExportWrap = css`
+  position: relative;
+  height: 100%;
+`;
+
+export const chartExportDownloadOverlay = css`
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 1;
+`;
+
+/** Lightweight graph-only surface used by PNG ZIP (and later PDF). */
+export const exportGraphFrame = css`
+  width: 720px;
+  padding: 16px;
+  background-color: var(--pf-t--global--background--color--primary--default);
+  color: var(--pf-t--global--text--color--regular);
+`;
+
+export const exportGraphTitle = css`
+  font-weight: 600;
+  font-size: 1rem;
+  margin-bottom: 12px;
+`;
