@@ -30,6 +30,8 @@ export interface ExampleReportVM {
   clusterCount: number;
   clusterSelectDisabled: boolean;
   detectedSummaryText: string;
+  vcenterId: string | undefined;
+  vcenterVersion: string | undefined;
 
   selectedClusterId: string;
   clusterView: ClusterViewModel;
@@ -93,7 +95,7 @@ export function useExampleReportViewModel(): ExampleReportVM {
     onGroupChange: resetClusterSelection,
   });
 
-  const { infra, vms, clusters } = useMemo(
+  const { infra, vms, clusters, vcenterId, vcenterVersion } = useMemo(
     () => extractScopedInventoryData(activeInventory, {}),
     [activeInventory],
   );
@@ -156,6 +158,8 @@ export function useExampleReportViewModel(): ExampleReportVM {
     clusterCount,
     clusterSelectDisabled,
     detectedSummaryText,
+    vcenterId,
+    vcenterVersion,
     selectedClusterId,
     clusterView,
     isClusterSelectOpen,

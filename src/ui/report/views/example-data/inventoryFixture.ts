@@ -2023,6 +2023,7 @@ const inventoryData = {
     },
   },
   vcenter_id: "502d878c-af91-4a6f-93e9-61c4a1986172",
+  vcenter_version: "7.0.3.0",
 };
 
 export function getExampleInventory(): Inventory {

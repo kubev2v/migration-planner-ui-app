@@ -206,6 +206,8 @@ function makeBaseVm(
     lastUpdatedText: "-",
     clusterCount: 0,
     reportSummaryVms: vms,
+    vcenterId: undefined,
+    vcenterVersion: undefined,
     scopedClusterView: undefined,
     canExportReport: false,
     canShowClusterRecommendations: false,

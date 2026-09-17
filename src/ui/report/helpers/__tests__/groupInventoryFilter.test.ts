@@ -147,6 +147,23 @@ describe("groupInventoryFilter", () => {
       expect(result.infra?.totalHosts).toBe(2);
       expect(result.vms?.total).toBe(3);
       expect(result.clusters).toEqual(activeInventory.clusters);
+      expect(result.vcenterId).toBeUndefined();
+      expect(result.vcenterVersion).toBeUndefined();
+    });
+
+    it("reads vCenter identity from the active inventory", () => {
+      const result = extractScopedInventoryData(
+        {
+          infra: createInfra(1),
+          vms: createVMs(1),
+          vcenterId: "vc-1",
+          vcenterVersion: "7.0.3.0",
+        },
+        {},
+      );
+
+      expect(result.vcenterId).toBe("vc-1");
+      expect(result.vcenterVersion).toBe("7.0.3.0");
     });
 
     it("falls back to snapshot inventory when active inventory is empty", () => {

@@ -111,6 +111,8 @@ export interface SnapshotLike {
   infra?: InfraData | Infra;
   vms?: VMsData | VMs;
   inventory?: {
+    vcenterId?: string;
+    vcenterVersion?: string;
     infra?: InfraData | Infra;
     vms?: VMsData | VMs;
     vcenter?: {
