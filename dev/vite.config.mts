@@ -50,12 +50,6 @@ export default defineConfig(({ mode }) => {
           import.meta.dirname,
           "src/mocks/useChrome.ts",
         ),
-        "@redhat-cloud-services/frontend-components-notifications":
-          path.resolve(import.meta.dirname, "src/mocks/notifications.tsx"),
-        "@redhat-cloud-services/frontend-components-utilities": path.resolve(
-          import.meta.dirname,
-          "src/mocks/utilities.ts",
-        ),
       },
     },
     server: {

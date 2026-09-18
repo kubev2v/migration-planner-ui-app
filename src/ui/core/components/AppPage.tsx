@@ -14,23 +14,23 @@ import {
 } from "@redhat-cloud-services/frontend-components/PageHeader";
 import React from "react";
 
-// eslint-disable-next-line @typescript-eslint/no-namespace
-export namespace AppPage {
-  export type Props = {
-    title: React.ReactNode;
-    caption?: React.ReactNode;
-    breadcrumbs?: Array<BreadcrumbItemProps>;
-    headerActions?: React.ReactNode;
-    alerts?: React.ReactNode;
-  };
-}
+type AppPageProps = {
+  title: React.ReactNode;
+  caption?: React.ReactNode;
+  breadcrumbs?: Array<BreadcrumbItemProps>;
+  headerActions?: React.ReactNode;
+  alerts?: React.ReactNode;
+  children?: React.ReactNode;
+};
 
-export const AppPage: React.FC<React.PropsWithChildren<AppPage.Props>> = (
-  props,
-) => {
-  const { title, caption, breadcrumbs, children, headerActions, alerts } =
-    props;
-
+export function AppPage({
+  title,
+  caption,
+  breadcrumbs,
+  headerActions,
+  alerts,
+  children,
+}: AppPageProps) {
   return (
     <div>
       <div id="base-page__header">
@@ -60,5 +60,5 @@ export const AppPage: React.FC<React.PropsWithChildren<AppPage.Props>> = (
       <PageSection hasBodyWrapper={false}>{children}</PageSection>
     </div>
   );
-};
+}
 AppPage.displayName = "AppPage";
