@@ -1,10 +1,10 @@
-import { css } from "@emotion/css";
 import {
   Alert,
   AlertActionCloseButton,
   Bullseye,
   Button,
   Content,
+  ContentVariants,
   List,
   ListItem,
   Spinner,
@@ -33,11 +33,6 @@ import { ReportSourceStatus } from "./assessment-report/ReportSourceStatus";
 import { DeployOvaBanner } from "./DeployOvaBanner";
 import { ExportReportButton } from "./ExportReportButton";
 import { MigrationRecommendations } from "./migration-recommendations/MigrationRecommendations";
-import { reportTabsStyle } from "./migration-recommendations/styles";
-
-const alertSpacing = css`
-  margin-top: var(--pf-t--global--spacer--md);
-`;
 
 const ReportContent: React.FC = () => {
   const vm = useReportPageViewModel();
@@ -70,10 +65,8 @@ const ReportContent: React.FC = () => {
       >
         <Stack hasGutter>
           <StackItem>
-            <Content>
-              <Content component="p">
-                The requested assessment was not found.
-              </Content>
+            <Content component={ContentVariants.p}>
+              The requested assessment was not found.
             </Content>
           </StackItem>
           <StackItem>
@@ -187,28 +180,32 @@ const ReportContent: React.FC = () => {
         </Stack>
       }
       alerts={
-        <div className={alertSpacing}>
+        <div>
           {vm.hasMissingMetrics && (
             <Alert
               variant="warning"
               isInline
               title="Limited recommendation: required metrics are missing."
             >
-              <p>
-                Add the following to improve accuracy and create a new
-                assessment:
-              </p>
-              <List>
-                {vm.missingMetrics.map((metric) => (
-                  <ListItem key={metric}>{metric}</ListItem>
-                ))}
-              </List>
-              <div className={alertSpacing}>
-                <CreateAssessmentDropdown
-                  toggleLabel="Create a new assessment"
-                  onSelectRvtools={() => vm.openRvtoolsModal()}
-                />
-              </div>
+              <Stack hasGutter>
+                <StackItem>
+                  <p>
+                    Add the following to improve accuracy and create a new
+                    assessment:
+                  </p>
+                  <List>
+                    {vm.missingMetrics.map((metric) => (
+                      <ListItem key={metric}>{metric}</ListItem>
+                    ))}
+                  </List>
+                </StackItem>
+                <StackItem>
+                  <CreateAssessmentDropdown
+                    toggleLabel="Create a new assessment"
+                    onSelectRvtools={() => vm.openRvtoolsModal()}
+                  />
+                </StackItem>
+              </Stack>
             </Alert>
           )}
           {vm.exportError && (
@@ -268,7 +265,6 @@ const ReportContent: React.FC = () => {
           }
         }}
         aria-label="Assessment report sections"
-        className={reportTabsStyle}
       >
         <Tab
           eventKey="report"
@@ -304,12 +300,10 @@ const ReportContent: React.FC = () => {
             />
           ) : (
             <Bullseye>
-              <Content>
-                <Content component="p">
-                  {vm.clusterView.isAggregateView
-                    ? "This assessment does not have report data yet."
-                    : "No data is available for the selected cluster."}
-                </Content>
+              <Content component={ContentVariants.p}>
+                {vm.clusterView.isAggregateView
+                  ? "This assessment does not have report data yet."
+                  : "No data is available for the selected cluster."}
               </Content>
             </Bullseye>
           )}

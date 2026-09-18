@@ -21,7 +21,16 @@ export const PartnersGallery: React.FC<PartnersGalleryProps> = ({
   onRequestAssignment,
 }) => {
   return (
-    <Gallery hasGutter minWidths={{ default: "300px" }}>
+    <Gallery
+      hasGutter
+      minWidths={{
+        default: "100%",
+        lg: "calc(50% - 1em)",
+        xl: "calc(33% - 1em)",
+        "2xl": "calc(20% - 1em)",
+      }}
+      maxWidths={{ default: "100%", md: "1fr" }}
+    >
       {partners.map((partner) => (
         <Card key={partner.id}>
           <CardHeader>

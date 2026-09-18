@@ -5,13 +5,14 @@ import {
   ActionListItem,
   Alert,
   Button,
+  Card,
+  CardBody,
   Flex,
   FlexItem,
   Stack,
   StackItem,
-  Title,
 } from "@patternfly/react-core";
-import { AngleLeftIcon, RhUiCopyIcon } from "@patternfly/react-icons";
+import { RhUiCopyIcon } from "@patternfly/react-icons";
 import React, { useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -20,23 +21,11 @@ import {
   copyToClipboard,
 } from "../../../../lib/common/Clipboard";
 import { routes } from "../../../../routing/Routes";
+import { ToolLayout } from "../../../core/components/ToolLayout";
 import { generatePlainTextRecommendation } from "../../../report/view-models/ClusterSizingHelpers";
 import { SizingInputForm } from "../../../report/views/cluster-sizer/SizingInputForm";
 import { SizingResult } from "../../../report/views/cluster-sizer/SizingResult";
 import { useClusterSizingToolViewModel } from "../view-models/useClusterSizingToolViewModel";
-
-const toolCardStyle = css`
-  background: var(--pf-t--global--background--color--primary--default);
-  border: 1px solid var(--pf-t--global--border--color--default);
-  border-radius: var(--pf-t--global--border--radius--large);
-  padding: var(--pf-t--global--spacer--400);
-`;
-
-const subtitleStyle = css`
-  color: var(--pf-t--global--text--color--subtle);
-  margin-top: var(--pf-t--global--spacer--100);
-  margin-bottom: var(--pf-t--global--spacer--400);
-`;
 
 const formActionsStyle = css`
   margin-top: var(--pf-t--global--spacer--300);
@@ -75,28 +64,14 @@ export const ClusterSizingToolScreen: React.FC = () => {
   }, [plainTextRecommendation]);
 
   return (
-    <Stack hasGutter>
-      <StackItem>
-        <Button
-          variant="link"
-          isInline
-          icon={<AngleLeftIcon />}
-          onClick={() => void navigate(routes.tools)}
-        >
-          Back to all tools
-        </Button>
-      </StackItem>
-
-      <StackItem>
-        <div className={toolCardStyle}>
-          <Title headingLevel="h1">Cluster sizing tool</Title>
-          {showForm && (
-            <p className={subtitleStyle}>
-              Generate cluster recommendations based on your infrastructure
-              inputs.
-            </p>
-          )}
-
+    <ToolLayout
+      title="Cluster sizing tool"
+      description="Generate cluster recommendations based on your infrastructure inputs."
+      onBack={() => void navigate(routes.tools)}
+      backLabel="Back to all tools"
+    >
+      <Card>
+        <CardBody>
           {showForm ? (
             <>
               <SizingInputForm
@@ -198,9 +173,9 @@ export const ClusterSizingToolScreen: React.FC = () => {
               </Stack>
             </>
           )}
-        </div>
-      </StackItem>
-    </Stack>
+        </CardBody>
+      </Card>
+    </ToolLayout>
   );
 };
 

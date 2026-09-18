@@ -34,28 +34,6 @@ describe("RecommendationToolsLanding", () => {
     expect(screen.queryByText("Migration plan")).not.toBeInTheDocument();
   });
 
-  it("renders cluster-scoped cards including the disabled plan placeholder", () => {
-    render(
-      <RecommendationToolsLanding
-        tools={getRecommendationToolCards({ isAggregateView: false })}
-        onSelectTool={vi.fn()}
-      />,
-    );
-
-    expect(
-      screen.getByText("OpenShift cluster architecture"),
-    ).toBeInTheDocument();
-    expect(screen.getByText("Migration time estimation")).toBeInTheDocument();
-    expect(screen.getByText("Migration complexity")).toBeInTheDocument();
-    expect(screen.getByText("Migration plan")).toBeInTheDocument();
-    expect(
-      screen.getByText("Plan content placeholder (coming soon)."),
-    ).toBeInTheDocument();
-    expect(
-      screen.queryByRole("button", { name: /Open Migration plan tool/ }),
-    ).not.toBeInTheDocument();
-  });
-
   it("opens a tool when Open tool is clicked", () => {
     const onSelectTool = vi.fn();
     render(

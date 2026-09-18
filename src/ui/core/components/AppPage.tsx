@@ -1,21 +1,16 @@
+import { PageHeader } from "@patternfly/react-component-groups";
 import {
   AlertGroup,
   Breadcrumb,
   BreadcrumbItem,
   type BreadcrumbItemProps,
-  Flex,
-  FlexItem,
-  PageBreadcrumb,
   PageSection,
 } from "@patternfly/react-core";
-import {
-  PageHeader,
-  PageHeaderTitle,
-} from "@redhat-cloud-services/frontend-components/PageHeader";
 import React from "react";
 
 type AppPageProps = {
   title: React.ReactNode;
+  subtitle?: React.ReactNode;
   caption?: React.ReactNode;
   breadcrumbs?: Array<BreadcrumbItemProps>;
   headerActions?: React.ReactNode;
@@ -25,6 +20,7 @@ type AppPageProps = {
 
 export function AppPage({
   title,
+  subtitle,
   caption,
   breadcrumbs,
   headerActions,
@@ -33,31 +29,27 @@ export function AppPage({
 }: AppPageProps) {
   return (
     <div>
-      <div id="base-page__header">
-        <PageBreadcrumb hasBodyWrapper={false}>
-          <Breadcrumb>
-            {breadcrumbs?.map(({ key, children, ...bcProps }) => (
-              <BreadcrumbItem key={key} {...bcProps}>
-                {children}
-              </BreadcrumbItem>
-            ))}
-          </Breadcrumb>
-        </PageBreadcrumb>
-        <PageHeader>
-          <Flex>
-            <FlexItem flex={{ default: "flex_1" }}>
-              <PageHeaderTitle title={title} />
-            </FlexItem>
-
-            {React.Children.map(headerActions, (action, index) => (
-              <FlexItem key={index}>{action}</FlexItem>
-            ))}
-          </Flex>
-          {caption}
-          {alerts && <AlertGroup>{alerts}</AlertGroup>}
-        </PageHeader>
-      </div>
-      <PageSection hasBodyWrapper={false}>{children}</PageSection>
+      <PageHeader
+        title={title}
+        subtitle={subtitle}
+        actionMenu={headerActions}
+        breadcrumbs={
+          breadcrumbs && (
+            <Breadcrumb>
+              {breadcrumbs.map(({ key, children, ...bcProps }) => (
+                <BreadcrumbItem key={key} {...bcProps}>
+                  {children}
+                </BreadcrumbItem>
+              ))}
+            </Breadcrumb>
+          )
+        }
+      />
+      <PageSection hasBodyWrapper={false}>
+        {caption}
+        {alerts && <AlertGroup>{alerts}</AlertGroup>}
+        {children}
+      </PageSection>
     </div>
   );
 }

@@ -8,7 +8,6 @@ import {
   MastheadMain,
   MastheadToggle,
   Page,
-  PageSection,
   PageSidebar,
   PageSidebarBody,
   PageToggleButton,
@@ -89,13 +88,11 @@ export const AppShell: React.FC = () => {
 
   return (
     <Page masthead={masthead} sidebar={sidebar} isContentFilled>
-      <PageSection aria-labelledby="section-1">
-        <BrowserRouter basename="/">
-          <Routes>
-            <Route path="/*" element={<MainApp />} />
-          </Routes>
-        </BrowserRouter>
-      </PageSection>
+      <BrowserRouter basename="/">
+        <Routes>
+          <Route path="/*" element={<MainApp />} />
+        </Routes>
+      </BrowserRouter>
     </Page>
   );
 };

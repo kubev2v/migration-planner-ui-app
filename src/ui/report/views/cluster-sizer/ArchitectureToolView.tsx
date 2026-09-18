@@ -4,6 +4,7 @@ import {
   canCopyToClipboard,
   copyToClipboard,
 } from "../../../../lib/common/Clipboard";
+import { ToolLayout } from "../../../core/components/ToolLayout";
 import { generatePlainTextRecommendation } from "../../view-models/ClusterSizingHelpers";
 import type { UseArchitectureToolOptions } from "../../view-models/RecommendationToolOptions";
 import { useArchitectureToolViewModel } from "../../view-models/useArchitectureToolViewModel";
@@ -12,10 +13,7 @@ import {
   type RecommendationPhase,
   RecommendationTemplate,
 } from "./RecommendationTemplate";
-import {
-  RecommendationToolLayout,
-  RecommendationToolResultsActions,
-} from "./RecommendationToolLayout";
+import RecommendationToolActions from "./RecommendationToolActions";
 import { SizingInputForm } from "./SizingInputForm";
 import { SizingResult } from "./SizingResult";
 import type { ClusterRequirementsResponse, SizingFormValues } from "./types";
@@ -97,12 +95,12 @@ export const ArchitectureToolView: React.FC<ArchitectureToolViewProps> = ({
       : getRecommendationToolTitle("architecture");
 
   return (
-    <RecommendationToolLayout
+    <ToolLayout
       title={title}
       onBack={onBack}
       actions={
         phase === "results" ? (
-          <RecommendationToolResultsActions
+          <RecommendationToolActions
             isReadOnly={isReadOnly}
             isEditDisabled={isCalculating}
             onEdit={handleEdit}
@@ -142,7 +140,7 @@ export const ArchitectureToolView: React.FC<ArchitectureToolViewProps> = ({
         phase={phase}
         onPhaseChange={setPhase}
       />
-    </RecommendationToolLayout>
+    </ToolLayout>
   );
 };
 

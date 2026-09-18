@@ -14,6 +14,7 @@ import {
   Stack,
   StackItem,
 } from "@patternfly/react-core";
+import { AngleRightIcon } from "@patternfly/react-icons";
 import React from "react";
 
 import { useToolsScreenViewModel } from "../view-models/useToolsScreenViewModel";
@@ -25,7 +26,7 @@ export const ToolsScreen: React.FC = () => {
   return (
     <Stack hasGutter>
       <StackItem>
-        <Content component={ContentVariants.h1}>Tools</Content>
+        <Content component={ContentVariants.h2}>Tools</Content>
         <Content component={ContentVariants.p}>
           Standalone utilities that do not require an assessment.
         </Content>
@@ -33,8 +34,13 @@ export const ToolsScreen: React.FC = () => {
       <StackItem>
         <Gallery
           hasGutter
-          minWidths={{ default: "280px", md: "320px" }}
-          maxWidths={{ default: "100%", md: "480px" }}
+          minWidths={{
+            default: "100%",
+            lg: "calc(50% - 1em)",
+            xl: "calc(33% - 1em)",
+            "2xl": "calc(20% - 1em)",
+          }}
+          maxWidths={{ default: "100%", md: "1fr" }}
         >
           <Card isFullHeight>
             <CardHeader>
@@ -57,7 +63,10 @@ export const ToolsScreen: React.FC = () => {
             </CardBody>
             <CardFooter>
               <Button
-                variant="primary"
+                variant="link"
+                isInline
+                icon={<AngleRightIcon />}
+                iconPosition="end"
                 aria-label="Open cluster sizing tool"
                 onClick={navigateToClusterSizing}
               >
@@ -91,7 +100,10 @@ export const ToolsScreen: React.FC = () => {
               </CardBody>
               <CardFooter>
                 <Button
-                  variant="primary"
+                  variant="link"
+                  isInline
+                  icon={<AngleRightIcon />}
+                  iconPosition="end"
                   aria-label="Open cost estimator tool"
                   onClick={navigateToCostEstimation}
                 >
