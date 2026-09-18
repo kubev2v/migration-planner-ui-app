@@ -21,7 +21,9 @@ import {
 } from "@patternfly/react-core";
 import React, { useMemo, useState } from "react";
 
+import { ChartCardHeaderActions } from "./ChartPngDownloadButton";
 import { DashboardExportSection } from "./DashboardExportSection";
+import { ExportGraphFrame } from "./ExportGraphFrame";
 import { dashboardCard } from "./styles";
 
 // Reuse an extended palette similar to ClustersOverview to provide stable colors
@@ -38,6 +40,8 @@ const colorPalette = [
   "#6a6e73",
 ];
 
+export type NetworkOverviewView = "networkDistribution" | "nicCount";
+
 interface NetworkOverviewProps {
   infra: Infra;
   nicCount?: VMResourceBreakdown;
@@ -46,11 +50,11 @@ interface NetworkOverviewProps {
   };
   isExportMode?: boolean;
   exportAllViews?: boolean;
+  exportView?: NetworkOverviewView;
+  graphOnly?: boolean;
 }
 
-type ViewMode = "networkDistribution" | "nicCount";
-
-const VIEW_MODE_LABELS: Record<ViewMode, string> = {
+const VIEW_MODE_LABELS: Record<NetworkOverviewView, string> = {
   networkDistribution: "VM distribution by network",
   nicCount: "VM distribution by NIC count",
 };
@@ -61,8 +65,13 @@ export const NetworkOverview: React.FC<NetworkOverviewProps> = ({
   distributionByNicCount,
   isExportMode = false,
   exportAllViews = false,
+  exportView,
+  graphOnly = false,
 }) => {
-  const [viewMode, setViewMode] = useState<ViewMode>("networkDistribution");
+  const [internalViewMode, setViewMode] = useState<NetworkOverviewView>(
+    "networkDistribution",
+  );
+  const viewMode = exportView ?? internalViewMode;
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   const { chartData, legend, title, subTitle, legendVlanMap } = useMemo(() => {
@@ -254,10 +263,77 @@ export const NetworkOverview: React.FC<NetworkOverviewProps> = ({
     setIsDropdownOpen(false);
   };
 
+  const labeledExportView = (content: React.ReactNode): React.ReactNode =>
+    graphOnly ? (
+      <ExportGraphFrame title={VIEW_MODE_LABELS[viewMode]}>
+        {content}
+      </ExportGraphFrame>
+    ) : isExportMode ? (
+      <DashboardExportSection title={VIEW_MODE_LABELS[viewMode]}>
+        {content}
+      </DashboardExportSection>
+    ) : (
+      content
+    );
+
+  const singleView = labeledExportView(
+    <>
+      {viewMode === "networkDistribution" &&
+        (chartData.length === 0 ? (
+          <CardEmptyState title={REPORT_CARD_EMPTY_STATE_TITLES.networks} />
+        ) : (
+          <MigrationDonutChart
+            legendVariant="chart"
+            data={chartData}
+            height={300}
+            width={420}
+            donutThickness={18}
+            titleFontSize={34}
+            legend={legend}
+            title={title}
+            subTitle={subTitle}
+            subTitleColor="var(--pf-t--global--text--color--subtle)"
+            itemsPerRow={Math.ceil(chartData.length / 2)}
+            labelFontSize={18}
+            tooltipLabelFormatter={({ datum, percent }) =>
+              `${datum.countDisplay}\n${percent.toFixed(1)}%\nVLAN: ${legendVlanMap[datum.legendCategory] ?? "-"}`
+            }
+          />
+        ))}
+      {viewMode === "nicCount" &&
+        (!nicChartData?.length ? (
+          <CardEmptyState title={REPORT_CARD_EMPTY_STATE_TITLES.nicCount} />
+        ) : (
+          <MigrationDonutChart
+            legendVariant="chart"
+            data={nicChartData}
+            height={300}
+            width={420}
+            donutThickness={18}
+            titleFontSize={34}
+            legend={nicLegend}
+            title={nicTitle}
+            subTitle={nicSubTitle}
+            subTitleColor="var(--pf-t--global--text--color--subtle)"
+            itemsPerRow={Math.ceil(nicChartData.length / 2)}
+            labelFontSize={18}
+            tooltipLabelFormatter={({ datum, percent }) =>
+              `${datum.countDisplay}\n${percent.toFixed(1)}%`
+            }
+          />
+        ))}
+    </>,
+  );
+
+  if (graphOnly) {
+    return singleView;
+  }
+
   return (
     <Card
       className={dashboardCard}
       id="network-overview"
+      data-chart-export="networks"
       style={{ overflow: isExportMode ? "visible" : "hidden" }}
     >
       <CardTitle>
@@ -284,7 +360,7 @@ export const NetworkOverview: React.FC<NetworkOverviewProps> = ({
             </div>
           </FlexItem>
           {!isExportMode && (
-            <FlexItem>
+            <ChartCardHeaderActions>
               <Dropdown
                 isOpen={isDropdownOpen}
                 onSelect={onSelect}
@@ -312,7 +388,7 @@ export const NetworkOverview: React.FC<NetworkOverviewProps> = ({
                   </DropdownItem>
                 </DropdownList>
               </Dropdown>
-            </FlexItem>
+            </ChartCardHeaderActions>
           )}
         </Flex>
       </CardTitle>
@@ -374,56 +450,7 @@ export const NetworkOverview: React.FC<NetworkOverviewProps> = ({
             </DashboardExportSection>
           </>
         ) : (
-          <>
-            {viewMode === "networkDistribution" &&
-              (chartData.length === 0 ? (
-                <CardEmptyState
-                  title={REPORT_CARD_EMPTY_STATE_TITLES.networks}
-                />
-              ) : (
-                <MigrationDonutChart
-                  legendVariant="chart"
-                  data={chartData}
-                  height={300}
-                  width={420}
-                  donutThickness={18}
-                  titleFontSize={34}
-                  legend={legend}
-                  title={title}
-                  subTitle={subTitle}
-                  subTitleColor="var(--pf-t--global--text--color--subtle)"
-                  itemsPerRow={Math.ceil(chartData.length / 2)}
-                  labelFontSize={18}
-                  tooltipLabelFormatter={({ datum, percent }) =>
-                    `${datum.countDisplay}\n${percent.toFixed(1)}%\nVLAN: ${legendVlanMap[datum.legendCategory] ?? "-"}`
-                  }
-                />
-              ))}
-            {viewMode === "nicCount" &&
-              (!nicChartData?.length ? (
-                <CardEmptyState
-                  title={REPORT_CARD_EMPTY_STATE_TITLES.nicCount}
-                />
-              ) : (
-                <MigrationDonutChart
-                  legendVariant="chart"
-                  data={nicChartData}
-                  height={300}
-                  width={420}
-                  donutThickness={18}
-                  titleFontSize={34}
-                  legend={nicLegend}
-                  title={nicTitle}
-                  subTitle={nicSubTitle}
-                  subTitleColor="var(--pf-t--global--text--color--subtle)"
-                  itemsPerRow={Math.ceil(nicChartData.length / 2)}
-                  labelFontSize={18}
-                  tooltipLabelFormatter={({ datum, percent }) =>
-                    `${datum.countDisplay}\n${percent.toFixed(1)}%`
-                  }
-                />
-              ))}
-          </>
+          singleView
         )}
       </CardBody>
     </Card>

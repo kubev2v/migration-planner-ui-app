@@ -95,14 +95,14 @@ server data. Each store wraps one API client.
 
 ### Existing stores
 
-| Store              | Base                | Snapshot type            | Notes                                                                             |
-| ------------------ | ------------------- | ------------------------ | --------------------------------------------------------------------------------- |
-| `AssessmentsStore` | `PollableStoreBase` | `AssessmentModel[]`      | CRUD + cluster sizing. Maps API `Assessment` → `AssessmentModel`.                 |
-| `SourcesStore`     | `PollableStoreBase` | `SourceModel[]`          | CRUD + inventory. Maps API `Source` → `SourceModel`.                              |
-| `JobsStore`        | `PollableStoreBase` | `JobsStoreState`         | RVTools job lifecycle, conditional polling. UI-unaware — no navigation callbacks. |
-| `ImagesStore`      | `ExternalStoreBase` | `Record<string, string>` | OVA download URLs                                                                 |
-| `VersionsStore`    | `ExternalStoreBase` | `VersionInfo`            | UI + API version info                                                             |
-| `ReportStore`      | `ExternalStoreBase` | `ReportStoreState`       | Export lifecycle, wraps `PdfExportService` + `HtmlExportService`                  |
+| Store              | Base                | Snapshot type            | Notes                                                                                 |
+| ------------------ | ------------------- | ------------------------ | ------------------------------------------------------------------------------------- |
+| `AssessmentsStore` | `PollableStoreBase` | `AssessmentModel[]`      | CRUD + cluster sizing. Maps API `Assessment` → `AssessmentModel`.                     |
+| `SourcesStore`     | `PollableStoreBase` | `SourceModel[]`          | CRUD + inventory. Maps API `Source` → `SourceModel`.                                  |
+| `JobsStore`        | `PollableStoreBase` | `JobsStoreState`         | RVTools job lifecycle, conditional polling. UI-unaware — no navigation callbacks.     |
+| `ImagesStore`      | `ExternalStoreBase` | `Record<string, string>` | OVA download URLs                                                                     |
+| `VersionsStore`    | `ExternalStoreBase` | `VersionInfo`            | UI + API version info                                                                 |
+| `ReportStore`      | `ExternalStoreBase` | `ReportStoreState`       | Export lifecycle, wraps `PdfExportService` + `HtmlExportService` + `PngExportService` |
 
 ---
 
@@ -508,17 +508,19 @@ module environments.
 Stateless service classes that provide capabilities unrelated to API data.
 Services are consumed by stores, **not** directly by view models or views.
 
-The `report-export` service is grouped by output format:
+Services live next to the output format they produce:
 
 ```
-src/services/report-export/
-├── pdf/
+src/services/pdf-export/
 │   └── PdfExportService.ts
-└── html/
-    ├── types.ts               ← HTML pipeline types + service input contract
-    ├── HtmlExportService.ts
-    ├── HtmlTemplateBuilder.ts
-    ├── ChartDataTransformer.ts
+src/services/html-export/
+│   ├── types.ts
+│   ├── HtmlExportService.ts
+│   ├── HtmlTemplateBuilder.ts
+│   ├── ChartDataTransformer.ts
+│   └── __tests__/
+src/services/png-export/
+    ├── PngExportService.ts
     └── __tests__/
 ```
 
@@ -526,10 +528,11 @@ External consumers import directly from the concrete file that defines each
 service or type (no barrel). Store-level types (`LoadingState`, `ExportError`)
 are defined in `src/data/stores/interfaces/IReportStore.ts`.
 
-| Service             | Subfolder | Purpose                                   |
-| ------------------- | --------- | ----------------------------------------- |
-| `PdfExportService`  | `pdf/`    | Generates PDF from React component        |
-| `HtmlExportService` | `html/`   | Generates HTML report from inventory data |
+| Service             | Subfolder      | Purpose                                                                                         |
+| ------------------- | -------------- | ----------------------------------------------------------------------------------------------- |
+| `PdfExportService`  | `pdf-export/`  | Generates PDF from an already-rendered dashboard                                                |
+| `HtmlExportService` | `html-export/` | Generates HTML report from inventory data                                                       |
+| `PngExportService`  | `png-export/`  | Snapshots chart cards to PNG (per-card download, or sequential ZIP from one hidden export tree) |
 
 ---
 

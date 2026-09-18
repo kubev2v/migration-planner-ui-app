@@ -20,14 +20,21 @@ import {
 import React, { useRef } from "react";
 import { Link } from "react-router-dom";
 
+import { yieldToBrowser } from "../../../lib/common/YieldToBrowser";
 import { themeTooltipFlyoutProps } from "../../../lib/patternfly/flyoutAppendTo";
 import { routes } from "../../../routing/Routes";
 import CreateAssessmentModal from "../../assessment/views/CreateAssessmentModal";
 import { AppPage } from "../../core/components/AppPage";
 import CreateAssessmentDropdown from "../../core/components/CreateAssessmentDropdown";
 import { OffScreenRenderer } from "../../core/components/OffScreenRenderer";
+import { ReportChartExportProvider } from "../view-models/ReportChartExportContext";
 import { useReportPageViewModel } from "../view-models/useReportPageViewModel";
 import { Dashboard } from "./assessment-report/Dashboard";
+import { buildPngChartExportJobs } from "./assessment-report/PngChartExportJobs";
+import {
+  PngChartExportRunner,
+  type PngChartExportRunnerHandle,
+} from "./assessment-report/PngChartExportRunner";
 import { ReportFilterBar } from "./assessment-report/ReportFilterBar";
 import { ReportSourceStatus } from "./assessment-report/ReportSourceStatus";
 import { DeployOvaBanner } from "./DeployOvaBanner";
@@ -37,6 +44,7 @@ import { MigrationRecommendations } from "./migration-recommendations/MigrationR
 const ReportContent: React.FC = () => {
   const vm = useReportPageViewModel();
   const offScreenRef = useRef<HTMLDivElement>(null);
+  const pngExportRunnerRef = useRef<PngChartExportRunnerHandle>(null);
 
   if (vm.isLoadingData && !vm.assessment) {
     return (
@@ -234,6 +242,23 @@ const ReportContent: React.FC = () => {
                 }
               }}
               onExportHtml={() => vm.exportHtml()}
+              onExportPng={() => {
+                if (!vm.scopedClusterView) {
+                  return;
+                }
+                pngExportRunnerRef.current?.run(
+                  buildPngChartExportJobs({
+                    infra: vm.scopedClusterView.viewInfra,
+                    vms: vm.scopedClusterView.viewVms,
+                    cpuCores: vm.scopedClusterView.cpuCores,
+                    ramGB: vm.scopedClusterView.ramGB,
+                    clusters: vm.scopedClusterView.viewClusters,
+                    isAggregateView: vm.scopedClusterView.isAggregateView,
+                    vcenterVersion: vm.vcenterVersion,
+                    vcenterId: vm.vcenterId,
+                  }),
+                );
+              }}
               isAggregateView={vm.clusterView.isAggregateView}
             />
           ) : (
@@ -248,6 +273,7 @@ const ReportContent: React.FC = () => {
                 loadingLabel={vm.exportLoadingLabel}
                 onExportPdf={() => {}}
                 onExportHtml={() => {}}
+                onExportPng={() => {}}
                 isDisabled
               />
             </Tooltip>
@@ -287,17 +313,22 @@ const ReportContent: React.FC = () => {
       >
         <TabContentBody>
           {vm.scopedClusterView ? (
-            <Dashboard
-              infra={vm.scopedClusterView.viewInfra}
-              vms={vm.scopedClusterView.viewVms}
-              cpuCores={vm.scopedClusterView.cpuCores}
-              ramGB={vm.scopedClusterView.ramGB}
-              clusters={vm.scopedClusterView.viewClusters}
-              isAggregateView={vm.scopedClusterView.isAggregateView}
-              clusterFound={vm.scopedClusterView.clusterFound}
-              vcenterVersion={vm.vcenterVersion}
-              vcenterId={vm.vcenterId}
-            />
+            <ReportChartExportProvider
+              exportPngChart={vm.exportPngChart}
+              isExporting={vm.isExporting}
+            >
+              <Dashboard
+                infra={vm.scopedClusterView.viewInfra}
+                vms={vm.scopedClusterView.viewVms}
+                cpuCores={vm.scopedClusterView.cpuCores}
+                ramGB={vm.scopedClusterView.ramGB}
+                clusters={vm.scopedClusterView.viewClusters}
+                isAggregateView={vm.scopedClusterView.isAggregateView}
+                clusterFound={vm.scopedClusterView.clusterFound}
+                vcenterVersion={vm.vcenterVersion}
+                vcenterId={vm.vcenterId}
+              />
+            </ReportChartExportProvider>
           ) : (
             <Bullseye>
               <Content component={ContentVariants.p}>
@@ -359,6 +390,13 @@ const ReportContent: React.FC = () => {
           />
         </OffScreenRenderer>
       ) : null}
+
+      <PngChartExportRunner
+        ref={pngExportRunnerRef}
+        enabled={Boolean(vm.scopedClusterView && vm.canExportReport)}
+        exportPngZip={vm.exportPngZip}
+        yieldToBrowser={yieldToBrowser}
+      />
 
       <CreateAssessmentModal
         isOpen={vm.isRvtoolsModalOpen}

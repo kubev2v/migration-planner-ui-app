@@ -205,4 +205,36 @@ describe("VMMigrationStatus", () => {
     expect(screen.getByText(/Critical/)).toBeInTheDocument();
     expect(screen.getByText(/\(12 VMs\)/)).toBeInTheDocument();
   });
+
+  it("renders only the selected view when exportView is set", () => {
+    const { rerender } = render(
+      <VMMigrationStatus
+        data={baseData}
+        issuesBreakdown={issuesBreakdown}
+        isExportMode
+        exportView="issuesVsNoIssues"
+      />,
+    );
+
+    expect(screen.getByTestId("donut-chart")).toBeInTheDocument();
+    expect(screen.getByText("No issues vs with issues")).toBeInTheDocument();
+    expect(screen.queryByText("With issues breakdown")).not.toBeInTheDocument();
+    expect(screen.queryByText(/Critical/)).not.toBeInTheDocument();
+
+    rerender(
+      <VMMigrationStatus
+        data={baseData}
+        issuesBreakdown={issuesBreakdown}
+        isExportMode
+        exportView="issuesBreakdown"
+      />,
+    );
+
+    expect(screen.queryByTestId("donut-chart")).not.toBeInTheDocument();
+    expect(
+      screen.queryByText("No issues vs with issues"),
+    ).not.toBeInTheDocument();
+    expect(screen.getByText("With issues breakdown")).toBeInTheDocument();
+    expect(screen.getByText(/Critical/)).toBeInTheDocument();
+  });
 });

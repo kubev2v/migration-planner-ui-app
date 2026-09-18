@@ -8,7 +8,6 @@ import {
   HostPowerStates,
   InfrastructureSummary,
   OSDistribution,
-  type OSDistributionEntry,
   VCenterClusterDetails,
   VmPowerStates,
 } from "@openshift-migration-advisor/shared-components";
@@ -16,11 +15,13 @@ import { Gallery, GalleryItem, Grid, GridItem } from "@patternfly/react-core";
 import React from "react";
 
 import { useDashboardViewModel } from "../../view-models/useDashboardViewModel";
+import { ChartExportCard } from "./ChartPngDownloadButton";
 import { ClustersOverview } from "./ClustersOverview";
 import { CpuAndMemoryOverview } from "./CpuAndMemoryOverview";
 import { ErrorTable } from "./ErrorTable";
 import { HostsOverview } from "./HostsOverview";
 import { NetworkOverview } from "./NetworkOverview";
+import { buildOsDistributionData } from "./OsDistributionData";
 import { StorageOverview } from "./StorageOverview";
 import { VMMigrationStatus } from "./VMMigrationStatus";
 import { WarningsTable } from "./WarningsTable";
@@ -61,31 +62,7 @@ export const Dashboard: React.FC<Props> = ({
       isAggregateView,
     });
 
-  // Transform osInfo to include both count and supported fields, fallback to os with supported=true if osInfo is undefined
-  const osData = vms.osInfo
-    ? Object.entries(vms.osInfo).reduce(
-        (acc, [osName, osInfo]) => {
-          acc[osName] = {
-            count: osInfo.count,
-            supported: osInfo.supported,
-            supportTier: osInfo.supportTier,
-            upgradeRecommendation: osInfo.upgradeRecommendation ?? "",
-          };
-          return acc;
-        },
-        {} as Record<string, OSDistributionEntry>,
-      )
-    : Object.entries(vms.os ?? {}).reduce(
-        (acc, [osName, count]) => {
-          acc[osName] = {
-            count: count,
-            supported: true, // Default to supported when using fallback data
-            upgradeRecommendation: "",
-          };
-          return acc;
-        },
-        {} as Record<string, OSDistributionEntry>,
-      );
+  const osData = buildOsDistributionData(vms);
 
   // If a cluster was selected but not found, show a lightweight empty view.
   if (!clusterFound && !isAggregateView) {
@@ -103,31 +80,51 @@ export const Dashboard: React.FC<Props> = ({
   return (
     <Grid hasGutter>
       <GridItem data-export-block={isExportMode ? "1" : undefined}>
-        <InfrastructureSummary summary={infrastructureSummary} />
+        <ChartExportCard
+          filename="infrastructure-summary"
+          showDownload={!isExportMode}
+        >
+          <InfrastructureSummary summary={infrastructureSummary} />
+        </ChartExportCard>
       </GridItem>
       <GridItem data-export-block={isExportMode ? "1a" : undefined}>
-        <VCenterClusterDetails
-          isAggregateView={isAggregateView}
-          rows={clusterDetailRows}
-          details={selectedClusterDetails}
-          isExportMode={isExportMode}
-        />
+        <ChartExportCard
+          filename="vcenter-cluster-details"
+          showDownload={!isExportMode}
+        >
+          <VCenterClusterDetails
+            isAggregateView={isAggregateView}
+            rows={clusterDetailRows}
+            details={selectedClusterDetails}
+            isExportMode={isExportMode}
+          />
+        </ChartExportCard>
       </GridItem>
       <GridItem data-export-block={isExportMode ? "1b" : undefined}>
         <Gallery hasGutter minWidths={{ default: "40%" }}>
           <GalleryItem>
-            <HostPowerStates
-              hostPowerStates={infra.hostPowerStates}
-              isExportMode={isExportMode}
-              legendVariant="chart"
-            />
+            <ChartExportCard
+              filename="host-power-states"
+              showDownload={!isExportMode}
+            >
+              <HostPowerStates
+                hostPowerStates={infra.hostPowerStates}
+                isExportMode={isExportMode}
+                legendVariant="chart"
+              />
+            </ChartExportCard>
           </GalleryItem>
           <GalleryItem>
-            <VmPowerStates
-              powerStates={vms.powerStates}
-              isExportMode={isExportMode}
-              legendVariant="chart"
-            />
+            <ChartExportCard
+              filename="vm-power-states"
+              showDownload={!isExportMode}
+            >
+              <VmPowerStates
+                powerStates={vms.powerStates}
+                isExportMode={isExportMode}
+                legendVariant="chart"
+              />
+            </ChartExportCard>
           </GalleryItem>
         </Gallery>
       </GridItem>
@@ -145,7 +142,12 @@ export const Dashboard: React.FC<Props> = ({
             />
           </GalleryItem>
           <GalleryItem>
-            <OSDistribution osData={osData} isExportMode={isExportMode} />
+            <ChartExportCard
+              filename="operating-systems"
+              showDownload={!isExportMode}
+            >
+              <OSDistribution osData={osData} isExportMode={isExportMode} />
+            </ChartExportCard>
           </GalleryItem>
         </Gallery>
       </GridItem>

@@ -22,8 +22,11 @@ import { useAsyncFn, useMount } from "react-use";
 import { Symbols } from "../../../config/Dependencies";
 import type { IAssessmentsStore } from "../../../data/stores/interfaces/IAssessmentsStore";
 import type { IJobsStore } from "../../../data/stores/interfaces/IJobsStore";
-import type { IReportStore } from "../../../data/stores/interfaces/IReportStore";
-import type { ExportError } from "../../../data/stores/interfaces/IReportStore";
+import type {
+  ExportError,
+  IReportStore,
+  PngZipSession,
+} from "../../../data/stores/interfaces/IReportStore";
 import type { ISourcesStore } from "../../../data/stores/interfaces/ISourcesStore";
 import {
   JOB_POLLING_INTERVAL,
@@ -239,6 +242,8 @@ export interface ReportPageViewModel {
   exportLoadingLabel: string | null;
   exportPdf: (container: HTMLElement) => void;
   exportHtml: () => void;
+  exportPngZip: (run: (session: PngZipSession) => Promise<void>) => void;
+  exportPngChart: (element: HTMLElement, filename: string) => Promise<void>;
   exportError: ExportError | null;
   clearExportError: () => void;
 
@@ -645,7 +650,8 @@ export const useReportPageViewModel = (): ReportPageViewModel => {
   // ---- Export (reactive from ReportStore) ----------------------------------
   const isExporting =
     exportState.loadingState === "generating-pdf" ||
-    exportState.loadingState === "generating-html";
+    exportState.loadingState === "generating-html" ||
+    exportState.loadingState === "generating-png";
 
   const exportLoadingLabel = useMemo((): string | null => {
     switch (exportState.loadingState) {
@@ -653,6 +659,8 @@ export const useReportPageViewModel = (): ReportPageViewModel => {
         return "Generating PDF...";
       case "generating-html":
         return "Generating HTML...";
+      case "generating-png":
+        return "Generating PNG...";
       default:
         return null;
     }
@@ -730,6 +738,30 @@ export const useReportPageViewModel = (): ReportPageViewModel => {
     selectedGroupId,
     groupView.selectionLabel,
   ]);
+
+  const exportDocumentTitle = useCallback((): string => {
+    const groupSuffix =
+      selectedGroupId !== ALL_VMS_GROUP_ID
+        ? ` - ${groupView.selectionLabel}`
+        : "";
+    return `${assessment?.name || `Assessment ${id}`} - vCenter report${groupSuffix}`;
+  }, [assessment?.name, id, selectedGroupId, groupView.selectionLabel]);
+
+  const exportPngZip = useCallback(
+    (run: (session: PngZipSession) => Promise<void>): void => {
+      void reportStore.exportPngZip(run, {
+        documentTitle: exportDocumentTitle(),
+      });
+    },
+    [reportStore, exportDocumentTitle],
+  );
+
+  const exportPngChart = useCallback(
+    (element: HTMLElement, filename: string): Promise<void> => {
+      return reportStore.exportPng(element, filename);
+    },
+    [reportStore],
+  );
 
   const clearExportError = useCallback((): void => {
     reportStore.clearError();
@@ -871,6 +903,8 @@ export const useReportPageViewModel = (): ReportPageViewModel => {
     exportLoadingLabel,
     exportPdf,
     exportHtml,
+    exportPngZip,
+    exportPngChart,
     exportError: exportState.error,
     clearExportError,
 

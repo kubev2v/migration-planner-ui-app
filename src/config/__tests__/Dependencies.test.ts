@@ -90,6 +90,9 @@ vi.mock("../../services/html-export/HtmlExportService", () => ({
 vi.mock("../../services/pdf-export/PdfExportService", () => ({
   PdfExportService: class {},
 }));
+vi.mock("../../services/png-export/PngExportService", () => ({
+  PngExportService: class {},
+}));
 vi.mock("../../lib/middleware/Auth", () => ({
   createAuthMiddleware: vi.fn().mockReturnValue({ pre: vi.fn() }),
 }));

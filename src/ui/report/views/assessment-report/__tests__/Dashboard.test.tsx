@@ -146,6 +146,18 @@ describe("Dashboard", () => {
     expect(screen.getByTestId("clusters-overview")).toBeInTheDocument();
     expect(screen.getByTestId("hosts")).toBeInTheDocument();
     expect(screen.getByTestId("network")).toBeInTheDocument();
+    expect(
+      document.querySelector('[data-chart-export="infrastructure-summary"]'),
+    ).toBeInTheDocument();
+    expect(
+      document.querySelector('[data-chart-export="vcenter-cluster-details"]'),
+    ).toBeInTheDocument();
+    expect(
+      document.querySelector('[data-chart-export="host-power-states"]'),
+    ).toBeInTheDocument();
+    expect(
+      document.querySelector('[data-chart-export="vm-power-states"]'),
+    ).toBeInTheDocument();
   });
 
   it("hides aggregate clusters overview when viewing a single cluster", () => {
