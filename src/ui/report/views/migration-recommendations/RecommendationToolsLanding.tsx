@@ -1,3 +1,4 @@
+import { css } from "@emotion/css";
 import {
   Button,
   Card,
@@ -10,18 +11,22 @@ import {
   Gallery,
   Stack,
   StackItem,
-  Title,
 } from "@patternfly/react-core";
 import { AngleRightIcon } from "@patternfly/react-icons";
 import React from "react";
 
-import {
-  disabledToolCardStyle,
-  landingDescriptionStyle,
-  landingHeaderStyle,
-  toolCardStyle,
-} from "./styles";
 import type { RecommendationToolCard, RecommendationToolId } from "./types";
+
+export const toolCardStyle = css`
+  height: 100%;
+`;
+
+export const disabledToolCardStyle = css`
+  height: 100%;
+  background-color: var(
+    --pf-t--global--background--color--secondary--default
+  ) !important;
+`;
 
 export interface RecommendationToolsLandingProps {
   tools: RecommendationToolCard[];
@@ -32,21 +37,25 @@ export interface RecommendationToolsLandingProps {
 export const RecommendationToolsLanding: React.FC<
   RecommendationToolsLandingProps
 > = ({ tools, onSelectTool, areToolsDisabled = false }) => (
-  <Stack>
-    <StackItem className={landingHeaderStyle}>
-      <Title headingLevel="h2">Migration recommendations</Title>
-      <Content
-        component={ContentVariants.p}
-        className={landingDescriptionStyle}
-      >
+  <Stack hasGutter>
+    <StackItem>
+      <Content component={ContentVariants.h2}>
+        Migration recommendations
+      </Content>
+      <Content component={ContentVariants.p}>
         Use recommendations tool for additional migration information.
       </Content>
     </StackItem>
     <StackItem>
       <Gallery
         hasGutter
-        minWidths={{ default: "280px", md: "300px" }}
-        maxWidths={{ default: "100%", md: "420px" }}
+        minWidths={{
+          default: "100%",
+          lg: "calc(50% - 1em)",
+          xl: "calc(33% - 1em)",
+          "2xl": "calc(20% - 1em)",
+        }}
+        maxWidths={{ default: "100%", md: "1fr" }}
       >
         {tools.map((tool) => {
           const isDisabled = tool.isDisabled || areToolsDisabled;

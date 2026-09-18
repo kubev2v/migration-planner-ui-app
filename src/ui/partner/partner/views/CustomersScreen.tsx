@@ -1,10 +1,13 @@
 import type { Customer } from "@openshift-migration-advisor/planner-sdk";
 import {
   Alert,
+  Card,
+  CardBody,
   Content,
+  ContentVariants,
   Flex,
-  PageSection,
-  Title,
+  Stack,
+  StackItem,
 } from "@patternfly/react-core";
 import React, { useState } from "react";
 
@@ -27,32 +30,44 @@ export const CustomersScreen: React.FC = () => {
   };
 
   return (
-    <Flex direction={{ default: "column" }} rowGap={{ default: "rowGapXl" }}>
+    <Flex direction={{ default: "column" }} rowGap={{ default: "rowGapLg" }}>
       <CustomerRequestsSection />
 
-      <PageSection>
-        <Content>
-          <Title headingLevel="h1">My customers</Title>
-          <Content component="p">
-            Customers you've approved and are partnered with.
-          </Content>
-        </Content>
+      <Card>
+        <CardBody>
+          <Stack hasGutter>
+            <StackItem>
+              <Content component={ContentVariants.h2}>My customers</Content>
+              <Content component={ContentVariants.p}>
+                Customers you've approved and are partnered with.
+              </Content>
+            </StackItem>
 
-        {vm.isLoading && <LoadingSpinner />}
+            {vm.isLoading && (
+              <StackItem>
+                <LoadingSpinner />
+              </StackItem>
+            )}
 
-        {vm.error && (
-          <Alert isInline variant="danger" title="Customers API error">
-            {vm.error.message}
-          </Alert>
-        )}
+            {vm.error && (
+              <StackItem>
+                <Alert isInline variant="danger" title="Customers API error">
+                  {vm.error.message}
+                </Alert>
+              </StackItem>
+            )}
 
-        {!vm.isLoading && !vm.error && (
-          <CustomersTable
-            customers={vm.customers}
-            onRemoveCustomer={setCustomerToRemove}
-          />
-        )}
-      </PageSection>
+            {!vm.isLoading && !vm.error && (
+              <StackItem>
+                <CustomersTable
+                  customers={vm.customers}
+                  onRemoveCustomer={setCustomerToRemove}
+                />
+              </StackItem>
+            )}
+          </Stack>
+        </CardBody>
+      </Card>
 
       <RemoveCustomerModal
         customer={customerToRemove}

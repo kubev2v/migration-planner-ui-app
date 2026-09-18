@@ -1,6 +1,7 @@
 import { css } from "@emotion/css";
 import {
   Content,
+  ContentVariants,
   Flex,
   FlexItem,
   Icon,
@@ -88,7 +89,7 @@ const DiscoveryOvaExampleReport: React.FC = () => {
               </FlexItem>
 
               <FlexItem>
-                <Content component="p">
+                <Content component={ContentVariants.p}>
                   Presenting the information we were able to fetch from the
                   discovery process
                 </Content>
@@ -102,7 +103,7 @@ const DiscoveryOvaExampleReport: React.FC = () => {
               </FlexItem>
 
               <FlexItem>
-                <Content component="p">
+                <Content component={ContentVariants.p}>
                   Detected <strong>{vm.vms?.total ?? 0} VMs</strong> in{" "}
                   <strong>
                     {vm.clusterCount}{" "}
@@ -155,34 +156,30 @@ const DiscoveryOvaExampleReport: React.FC = () => {
     >
       <Tabs activeKey={vm.activeTab} onSelect={vm.handleTabSelect}>
         <Tab eventKey={0} title={<TabTitleText>Overview</TabTitleText>}>
-          <div style={{ marginTop: "24px" }}>
-            {vm.clusterView.viewInfra &&
-            vm.clusterView.viewVms &&
-            vm.clusterView.cpuCores &&
-            vm.clusterView.ramGB ? (
-              <Dashboard
-                infra={vm.clusterView.viewInfra}
-                cpuCores={vm.clusterView.cpuCores}
-                ramGB={vm.clusterView.ramGB}
-                vms={vm.clusterView.viewVms}
-                clusters={vm.clusterView.viewClusters}
-                isAggregateView={vm.clusterView.isAggregateView}
-                clusterFound={vm.clusterView.clusterFound}
-                vcenterVersion={vm.vcenterVersion}
-                vcenterId={vm.vcenterId}
-              />
-            ) : (
-              <Content component="p">
-                No data is available for the selected cluster.
-              </Content>
-            )}
-          </div>
+          {vm.clusterView.viewInfra &&
+          vm.clusterView.viewVms &&
+          vm.clusterView.cpuCores &&
+          vm.clusterView.ramGB ? (
+            <Dashboard
+              infra={vm.clusterView.viewInfra}
+              cpuCores={vm.clusterView.cpuCores}
+              ramGB={vm.clusterView.ramGB}
+              vms={vm.clusterView.viewVms}
+              clusters={vm.clusterView.viewClusters}
+              isAggregateView={vm.clusterView.isAggregateView}
+              clusterFound={vm.clusterView.clusterFound}
+              vcenterVersion={vm.vcenterVersion}
+              vcenterId={vm.vcenterId}
+            />
+          ) : (
+            <Content component={ContentVariants.p}>
+              No data is available for the selected cluster.
+            </Content>
+          )}
         </Tab>
 
         <Tab eventKey={1} title={<TabTitleText>Virtual Machines</TabTitleText>}>
-          <div style={{ marginTop: "24px" }}>
-            <ExampleVMTable vms={vm.filteredVMs} />
-          </div>
+          <ExampleVMTable vms={vm.filteredVMs} />
         </Tab>
 
         <Tab

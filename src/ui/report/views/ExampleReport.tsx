@@ -1,5 +1,6 @@
 import {
   Content,
+  ContentVariants,
   Stack,
   StackItem,
   Tab,
@@ -18,7 +19,6 @@ import { ReportFilterBar } from "./assessment-report/ReportFilterBar";
 import { ReportSourceStatus } from "./assessment-report/ReportSourceStatus";
 import { EXAMPLE_FORM_VALUES } from "./example-data/clusterSizingFixture";
 import { MigrationRecommendations } from "./migration-recommendations/MigrationRecommendations";
-import { reportTabsStyle } from "./migration-recommendations/styles";
 
 const ExampleReport: React.FC = () => {
   const vm = useExampleReportViewModel();
@@ -73,7 +73,6 @@ const ExampleReport: React.FC = () => {
           }
         }}
         aria-label="Assessment report sections"
-        className={reportTabsStyle}
       >
         <Tab
           eventKey="report"
@@ -111,7 +110,7 @@ const ExampleReport: React.FC = () => {
               vcenterId={vm.vcenterId}
             />
           ) : (
-            <Content component="p">
+            <Content component={ContentVariants.p}>
               No data is available for the selected cluster.
             </Content>
           )}

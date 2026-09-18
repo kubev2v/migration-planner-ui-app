@@ -4,6 +4,7 @@ import {
   canCopyToClipboard,
   copyToClipboard,
 } from "../../../../lib/common/Clipboard";
+import { ToolLayout } from "../../../core/components/ToolLayout";
 import type { UseTimeEstimationToolOptions } from "../../view-models/RecommendationToolOptions";
 import { useTimeEstimationToolViewModel } from "../../view-models/useTimeEstimationToolViewModel";
 import { getRecommendationToolTitle } from "../migration-recommendations/constants";
@@ -11,10 +12,7 @@ import {
   type RecommendationPhase,
   RecommendationTemplate,
 } from "./RecommendationTemplate";
-import {
-  RecommendationToolLayout,
-  RecommendationToolResultsActions,
-} from "./RecommendationToolLayout";
+import RecommendationToolActions from "./RecommendationToolActions";
 import { TimeEstimationForm } from "./TimeEstimationForm";
 import {
   generateTimeEstimationPlainText,
@@ -65,12 +63,12 @@ export const TimeEstimationToolView: React.FC<TimeEstimationToolViewProps> = ({
   }, []);
 
   return (
-    <RecommendationToolLayout
+    <ToolLayout
       title={getRecommendationToolTitle("time-estimation")}
       onBack={onBack}
       actions={
         phase === "results" ? (
-          <RecommendationToolResultsActions
+          <RecommendationToolActions
             isReadOnly={isReadOnly}
             isEditDisabled={isCalculatingEstimation}
             onEdit={handleEdit}
@@ -104,7 +102,7 @@ export const TimeEstimationToolView: React.FC<TimeEstimationToolViewProps> = ({
         phase={phase}
         onPhaseChange={setPhase}
       />
-    </RecommendationToolLayout>
+    </ToolLayout>
   );
 };
 

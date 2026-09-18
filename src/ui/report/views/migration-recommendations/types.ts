@@ -1,11 +1,7 @@
 export type ReportContentTab = "report" | "recommendations";
 
 export type RecommendationToolId =
-  | "architecture"
-  | "cost-estimation"
-  | "time-estimation"
-  | "complexity"
-  | "plan";
+  "architecture" | "cost-estimation" | "time-estimation" | "complexity";
 
 export interface RecommendationToolCard {
   id: RecommendationToolId;

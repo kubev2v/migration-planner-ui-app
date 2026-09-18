@@ -33,12 +33,6 @@ export const RECOMMENDATION_TOOL_CARDS: RecommendationToolCard[] = [
       "View complexity signals to compare migration effort across clusters.",
     isDisabled: false,
   },
-  {
-    id: "plan",
-    title: "Migration plan",
-    description: "Plan content placeholder (coming soon).",
-    isDisabled: true,
-  },
 ];
 
 const ENVIRONMENT_WIDE_TOOL_IDS: RecommendationToolId[] = [
@@ -52,7 +46,6 @@ const CLUSTER_TOOL_IDS: RecommendationToolId[] = [
   "cost-estimation",
   "time-estimation",
   "complexity",
-  "plan",
 ];
 
 const isCatalogToolVisible = (
@@ -65,16 +58,6 @@ const isCatalogToolVisible = (
   return true;
 };
 
-const isCatalogToolAvailable = (
-  toolId: RecommendationToolId,
-  isPartner: boolean,
-): boolean => {
-  if (toolId === "plan") {
-    return false;
-  }
-  return isCatalogToolVisible(toolId, isPartner);
-};
-
 export const isRecommendationToolAvailable = (
   toolId: RecommendationToolId,
   { isAggregateView, isPartner = false }: RecommendationToolCatalogOptions,
@@ -83,7 +66,7 @@ export const isRecommendationToolAvailable = (
     ? ENVIRONMENT_WIDE_TOOL_IDS
     : CLUSTER_TOOL_IDS;
   return (
-    availableIds.includes(toolId) && isCatalogToolAvailable(toolId, isPartner)
+    availableIds.includes(toolId) && isCatalogToolVisible(toolId, isPartner)
   );
 };
 

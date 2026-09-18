@@ -1,4 +1,11 @@
-import { Alert, Button, Stack, StackItem } from "@patternfly/react-core";
+import {
+  Alert,
+  Button,
+  Card,
+  CardBody,
+  Stack,
+  StackItem,
+} from "@patternfly/react-core";
 import type { ReactNode } from "react";
 import React, { useState } from "react";
 
@@ -62,43 +69,45 @@ export const RecommendationTemplate: React.FC<RecommendationTemplateProps> = ({
   };
 
   return (
-    <div id={id}>
-      {phase === "form" ? (
-        <Stack hasGutter>
-          {preferencesContent ? (
-            <StackItem>{preferencesContent}</StackItem>
-          ) : null}
-          <StackItem>
-            <Button
-              variant="primary"
-              onClick={handleGenerate}
-              isLoading={isLoading}
-              isDisabled={
-                isLoading || isPreferencesDisabled || isGenerateDisabled
-              }
-            >
-              {generateButtonText}
-            </Button>
-          </StackItem>
-        </Stack>
-      ) : (
-        <Stack hasGutter>
-          {showAlert ? (
+    <Card id={id}>
+      <CardBody>
+        {phase === "form" ? (
+          <Stack hasGutter>
+            {preferencesContent ? (
+              <StackItem>{preferencesContent}</StackItem>
+            ) : null}
             <StackItem>
-              <Alert
-                variant="info"
-                isInline
-                title="Resource requirements are estimates based on current workloads"
+              <Button
+                variant="primary"
+                onClick={handleGenerate}
+                isLoading={isLoading}
+                isDisabled={
+                  isLoading || isPreferencesDisabled || isGenerateDisabled
+                }
               >
-                Confirm this architecture with your team to ensure optimal
-                performance.
-              </Alert>
+                {generateButtonText}
+              </Button>
             </StackItem>
-          ) : null}
-          <StackItem>{resultsContent}</StackItem>
-        </Stack>
-      )}
-    </div>
+          </Stack>
+        ) : (
+          <Stack hasGutter>
+            {showAlert ? (
+              <StackItem>
+                <Alert
+                  variant="info"
+                  isInline
+                  title="Resource requirements are estimates based on current workloads"
+                >
+                  Confirm this architecture with your team to ensure optimal
+                  performance.
+                </Alert>
+              </StackItem>
+            ) : null}
+            <StackItem>{resultsContent}</StackItem>
+          </Stack>
+        )}
+      </CardBody>
+    </Card>
   );
 };
 

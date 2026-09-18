@@ -29,9 +29,7 @@ describe("recommendation tool catalog", () => {
       "architecture",
       "time-estimation",
       "complexity",
-      "plan",
     ]);
-    expect(cards.find((card) => card.id === "plan")?.isDisabled).toBe(true);
   });
 
   it("includes cost estimation for partners on a single cluster", () => {
@@ -45,7 +43,6 @@ describe("recommendation tool catalog", () => {
       "cost-estimation",
       "time-estimation",
       "complexity",
-      "plan",
     ]);
   });
 
@@ -61,9 +58,6 @@ describe("recommendation tool catalog", () => {
         isAggregateView: true,
       }),
     ).toBe(true);
-    expect(
-      isRecommendationToolAvailable("plan", { isAggregateView: false }),
-    ).toBe(false);
   });
 
   it("treats cost estimation as partner-only", () => {

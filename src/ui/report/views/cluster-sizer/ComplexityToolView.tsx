@@ -1,11 +1,11 @@
 import React from "react";
 
+import { ToolLayout } from "../../../core/components/ToolLayout";
 import type { UseComplexityToolOptions } from "../../view-models/RecommendationToolOptions";
 import { useComplexityToolViewModel } from "../../view-models/useComplexityToolViewModel";
 import { getRecommendationToolTitle } from "../migration-recommendations/constants";
 import { ComplexityResult } from "./ComplexityResult";
 import MigrationComplexityHelpPopover from "./MigrationComplexityHelpPopover";
-import { RecommendationToolLayout } from "./RecommendationToolLayout";
 
 interface ComplexityToolViewProps {
   onBack: () => void;
@@ -37,10 +37,10 @@ export const ComplexityToolView: React.FC<ComplexityToolViewProps> = ({
   });
 
   return (
-    <RecommendationToolLayout
+    <ToolLayout
       title={getRecommendationToolTitle("complexity")}
-      onBack={onBack}
       help={<MigrationComplexityHelpPopover />}
+      onBack={onBack}
     >
       <ComplexityResult
         clusterName={clusterName}
@@ -51,7 +51,7 @@ export const ComplexityToolView: React.FC<ComplexityToolViewProps> = ({
         isLoadingEstimationByComplexity={isCalculatingEstimationByComplexity}
         estimationByComplexityError={estimationByComplexityError ?? null}
       />
-    </RecommendationToolLayout>
+    </ToolLayout>
   );
 };
 

@@ -1,4 +1,10 @@
-import { Alert, Stack, StackItem } from "@patternfly/react-core";
+import {
+  Alert,
+  Card,
+  CardBody,
+  Stack,
+  StackItem,
+} from "@patternfly/react-core";
 import React, { useCallback, useState } from "react";
 
 import {
@@ -6,6 +12,7 @@ import {
   copyToClipboard,
 } from "../../../../lib/common/Clipboard";
 import type { CostEstimationFormValues } from "../../../../models/CostEstimationModel";
+import { ToolLayout } from "../../../core/components/ToolLayout";
 import { GenerateCostEstimationPlainTextOutput } from "../../view-models/GenerateCostEstimationPlainTextOutput";
 import { useCostEstimationToolViewModel } from "../../view-models/useCostEstimationToolViewModel";
 import { getRecommendationToolTitle } from "../migration-recommendations/constants";
@@ -14,10 +21,7 @@ import CostEstimationResult, {
   CostEstimationResultSkeleton,
 } from "./cost-estimation/CostEstimationResult";
 import { type RecommendationPhase } from "./RecommendationTemplate";
-import {
-  RecommendationToolLayout,
-  RecommendationToolResultsActions,
-} from "./RecommendationToolLayout";
+import RecommendationToolActions from "./RecommendationToolActions";
 
 interface CostEstimationToolViewProps {
   onBack: () => void;
@@ -65,12 +69,12 @@ export const CostEstimationToolView: React.FC<CostEstimationToolViewProps> = ({
   }, []);
 
   return (
-    <RecommendationToolLayout
+    <ToolLayout
       title={getRecommendationToolTitle("cost-estimation")}
       onBack={onBack}
       actions={
         phase === "results" ? (
-          <RecommendationToolResultsActions
+          <RecommendationToolActions
             isReadOnly={isReadOnly}
             isEditDisabled={isLoadingCostEstimation}
             onEdit={handleEdit}
@@ -80,33 +84,41 @@ export const CostEstimationToolView: React.FC<CostEstimationToolViewProps> = ({
         ) : undefined
       }
     >
-      {phase === "form" ? (
-        <CostEstimationForm
-          isLoading={isLoadingCostEstimation}
-          onSubmit={handleSubmit}
-          defaultValues={submittedValues}
-        />
-      ) : (
-        <Stack hasGutter>
-          {costEstimationError ? (
-            <StackItem>
-              <Alert isInline variant="danger" title="Cost estimation error">
-                {costEstimationError.message}
-              </Alert>
-            </StackItem>
-          ) : null}
-          {isLoadingCostEstimation ? (
-            <StackItem>
-              <CostEstimationResultSkeleton />
-            </StackItem>
+      <Card>
+        <CardBody>
+          {phase === "form" ? (
+            <CostEstimationForm
+              isLoading={isLoadingCostEstimation}
+              onSubmit={handleSubmit}
+              defaultValues={submittedValues}
+            />
           ) : (
-            <StackItem>
-              <CostEstimationResult costEstimation={costEstimation} />
-            </StackItem>
+            <Stack hasGutter>
+              {costEstimationError ? (
+                <StackItem>
+                  <Alert
+                    isInline
+                    variant="danger"
+                    title="Cost estimation error"
+                  >
+                    {costEstimationError.message}
+                  </Alert>
+                </StackItem>
+              ) : null}
+              {isLoadingCostEstimation ? (
+                <StackItem>
+                  <CostEstimationResultSkeleton />
+                </StackItem>
+              ) : (
+                <StackItem>
+                  <CostEstimationResult costEstimation={costEstimation} />
+                </StackItem>
+              )}
+            </Stack>
           )}
-        </Stack>
-      )}
-    </RecommendationToolLayout>
+        </CardBody>
+      </Card>
+    </ToolLayout>
   );
 };
 
