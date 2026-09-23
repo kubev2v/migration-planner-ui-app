@@ -8,10 +8,11 @@ RUN microdnf install -y make git && microdnf clean all
 # Switch to container user
 USER 1001
 WORKDIR ${APP_ROOT}
-# Copy package files only
-COPY --chown=1001:0 package.json package-lock.json ./
+# Copy package files only (.npmrc carries legacy-peer-deps=true, required to
+# resolve the @redhat-cloud-services/frontend-components react-router-dom peer)
+COPY --chown=1001:0 package.json package-lock.json .npmrc ./
 # Install npm dependencies (cached unless package files change)
-RUN npm install --no-audit --no-fund
+RUN npm ci --legacy-peer-deps --no-audit --no-fund
 # Copy source code (invalidates on any source change)
 COPY --chown=1001:0 . .
 # Build argument - placed just before it's needed
