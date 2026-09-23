@@ -17,8 +17,12 @@ import {
 } from "@patternfly/react-core";
 import React, { useMemo, useState } from "react";
 
+import { ChartCardHeaderActions } from "./ChartPngDownloadButton";
 import { DashboardExportSection } from "./DashboardExportSection";
+import { ExportGraphFrame } from "./ExportGraphFrame";
 import { dashboardCard } from "./styles";
+
+export type CpuAndMemoryView = "memoryTiers" | "vcpuTiers";
 
 interface CpuAndMemoryOverviewProps {
   cpuTierDistribution?: Record<string, number>;
@@ -27,11 +31,11 @@ interface CpuAndMemoryOverviewProps {
   cpuTotalCores?: number;
   isExportMode?: boolean;
   exportAllViews?: boolean;
+  exportView?: CpuAndMemoryView;
+  graphOnly?: boolean;
 }
 
-type ViewMode = "memoryTiers" | "vcpuTiers";
-
-const VIEW_MODE_LABELS: Record<ViewMode, string> = {
+const VIEW_MODE_LABELS: Record<CpuAndMemoryView, string> = {
   memoryTiers: "VM distribution by memory size tier",
   vcpuTiers: "VM distribution by vCPU count tier",
 };
@@ -98,8 +102,12 @@ export const CpuAndMemoryOverview: React.FC<CpuAndMemoryOverviewProps> = ({
   cpuTotalCores,
   isExportMode = false,
   exportAllViews = false,
+  exportView,
+  graphOnly = false,
 }) => {
-  const [viewMode, setViewMode] = useState<ViewMode>("memoryTiers");
+  const [internalViewMode, setViewMode] =
+    useState<CpuAndMemoryView>("memoryTiers");
+  const viewMode = exportView ?? internalViewMode;
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   const memorySlices = useMemo(() => {
@@ -157,10 +165,67 @@ export const CpuAndMemoryOverview: React.FC<CpuAndMemoryOverviewProps> = ({
     setIsDropdownOpen(false);
   };
 
+  const labeledExportView = (content: React.ReactNode): React.ReactNode =>
+    graphOnly ? (
+      <ExportGraphFrame title={VIEW_MODE_LABELS[viewMode]}>
+        {content}
+      </ExportGraphFrame>
+    ) : isExportMode ? (
+      <DashboardExportSection title={VIEW_MODE_LABELS[viewMode]}>
+        {content}
+      </DashboardExportSection>
+    ) : (
+      content
+    );
+
+  const singleView = labeledExportView(
+    activeSlices.length === 0 ? (
+      <CardEmptyState
+        title={
+          viewMode === "memoryTiers"
+            ? REPORT_CARD_EMPTY_STATE_TITLES.memory
+            : REPORT_CARD_EMPTY_STATE_TITLES.cpu
+        }
+      />
+    ) : (
+      <MigrationDonutChart
+        legendVariant="chart"
+        data={activeSlices}
+        height={300}
+        width={420}
+        donutThickness={18}
+        titleFontSize={34}
+        legend={legend}
+        title={`${totals.totalVMs} VMs`}
+        subTitle={
+          viewMode === "memoryTiers"
+            ? typeof memoryTotalGB === "number"
+              ? `${memoryTotalGB} GB`
+              : undefined
+            : typeof cpuTotalCores === "number"
+              ? `${cpuTotalCores.toLocaleString()} Cores`
+              : undefined
+        }
+        subTitleColor="var(--pf-t--global--text--color--subtle)"
+        itemsPerRow={Math.ceil(activeSlices.length / 2)}
+        labelFontSize={18}
+        marginLeft="52%"
+        tooltipLabelFormatter={({ datum, percent }) =>
+          `${datum.countDisplay}\n${percent.toFixed(1)}%`
+        }
+      />
+    ),
+  );
+
+  if (graphOnly) {
+    return singleView;
+  }
+
   return (
     <Card
       className={dashboardCard}
       id="cpu-memory-overview"
+      data-chart-export="cpu-and-memory"
       style={{ overflow: isExportMode ? "visible" : "hidden" }}
     >
       <CardTitle>
@@ -189,7 +254,7 @@ export const CpuAndMemoryOverview: React.FC<CpuAndMemoryOverviewProps> = ({
             </div>
           </FlexItem>
           {!isExportMode && (
-            <FlexItem>
+            <ChartCardHeaderActions>
               <Dropdown
                 isOpen={isDropdownOpen}
                 onSelect={onSelect}
@@ -214,7 +279,7 @@ export const CpuAndMemoryOverview: React.FC<CpuAndMemoryOverviewProps> = ({
                   </DropdownItem>
                 </DropdownList>
               </Dropdown>
-            </FlexItem>
+            </ChartCardHeaderActions>
           )}
         </Flex>
       </CardTitle>
@@ -287,41 +352,8 @@ export const CpuAndMemoryOverview: React.FC<CpuAndMemoryOverviewProps> = ({
               )}
             </DashboardExportSection>
           </>
-        ) : activeSlices.length === 0 ? (
-          <CardEmptyState
-            title={
-              viewMode === "memoryTiers"
-                ? REPORT_CARD_EMPTY_STATE_TITLES.memory
-                : REPORT_CARD_EMPTY_STATE_TITLES.cpu
-            }
-          />
         ) : (
-          <MigrationDonutChart
-            legendVariant="chart"
-            data={activeSlices}
-            height={300}
-            width={420}
-            donutThickness={18}
-            titleFontSize={34}
-            legend={legend}
-            title={`${totals.totalVMs} VMs`}
-            subTitle={
-              viewMode === "memoryTiers"
-                ? typeof memoryTotalGB === "number"
-                  ? `${memoryTotalGB} GB`
-                  : undefined
-                : typeof cpuTotalCores === "number"
-                  ? `${cpuTotalCores.toLocaleString()} Cores`
-                  : undefined
-            }
-            subTitleColor="var(--pf-t--global--text--color--subtle)"
-            itemsPerRow={Math.ceil(activeSlices.length / 2)}
-            labelFontSize={18}
-            marginLeft="52%"
-            tooltipLabelFormatter={({ datum, percent }) =>
-              `${datum.countDisplay}\n${percent.toFixed(1)}%`
-            }
-          />
+          singleView
         )}
       </CardBody>
     </Card>

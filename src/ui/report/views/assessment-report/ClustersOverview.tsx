@@ -19,7 +19,9 @@ import {
 } from "@patternfly/react-core";
 import React, { useMemo, useState } from "react";
 
+import { ChartCardHeaderActions } from "./ChartPngDownloadButton";
 import { DashboardExportSection } from "./DashboardExportSection";
+import { ExportGraphFrame } from "./ExportGraphFrame";
 import { dashboardCard } from "./styles";
 
 // ---------------------------------------------------------------------------
@@ -117,17 +119,20 @@ const cpuOvercommitLegendText = css`
 // Component
 // ---------------------------------------------------------------------------
 
+export type ClustersOverviewView =
+  "dataCenterDistribution" | "vmByCluster" | "cpuOverCommitment";
+
 interface ClustersOverviewProps {
   vmsPerCluster: number[];
   clustersPerDatacenter: number[];
   isExportMode?: boolean;
   exportAllViews?: boolean;
+  exportView?: ClustersOverviewView;
+  graphOnly?: boolean;
   clusters?: { [key: string]: InventoryData };
 }
 
-type ViewMode = "dataCenterDistribution" | "vmByCluster" | "cpuOverCommitment";
-
-const VIEW_MODE_LABELS: Record<ViewMode, string> = {
+const VIEW_MODE_LABELS: Record<ClustersOverviewView, string> = {
   dataCenterDistribution: "Cluster distribution by data center",
   vmByCluster: "VM distribution by cluster",
   cpuOverCommitment: "Cluster CPU over commitment",
@@ -152,9 +157,13 @@ export const ClustersOverview: React.FC<ClustersOverviewProps> = ({
   clustersPerDatacenter,
   isExportMode = false,
   exportAllViews = false,
+  exportView,
+  graphOnly = false,
   clusters,
 }) => {
-  const [viewMode, setViewMode] = useState<ViewMode>("vmByCluster");
+  const [internalViewMode, setViewMode] =
+    useState<ClustersOverviewView>("vmByCluster");
+  const viewMode = exportView ?? internalViewMode;
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   const { chartData, legend, title, subTitle } = useMemo(() => {
@@ -452,10 +461,91 @@ export const ClustersOverview: React.FC<ClustersOverviewProps> = ({
     setIsDropdownOpen(false);
   };
 
+  const labeledExportView = (content: React.ReactNode): React.ReactNode =>
+    graphOnly ? (
+      <ExportGraphFrame title={VIEW_MODE_LABELS[viewMode]}>
+        {content}
+      </ExportGraphFrame>
+    ) : isExportMode ? (
+      <DashboardExportSection title={VIEW_MODE_LABELS[viewMode]}>
+        {content}
+      </DashboardExportSection>
+    ) : (
+      content
+    );
+
+  const singleView = labeledExportView(
+    viewMode === "cpuOverCommitment" ? (
+      <>
+        {chartData.length === 0 ? (
+          <CardEmptyState
+            title={REPORT_CARD_EMPTY_STATE_TITLES.cpuOvercommitment}
+          />
+        ) : (
+          <>
+            <div className={cpuOvercommitBoxes}>
+              {chartData.map((item, idx) => (
+                <div
+                  key={`cpu-box-${idx}`}
+                  className={cpuOvercommitBox}
+                  style={{ background: legend[item.legendCategory] }}
+                >
+                  {item.countDisplay}
+                </div>
+              ))}
+            </div>
+            <div className={cpuOvercommitLegend}>
+              {chartData.map((item, idx) => (
+                <div
+                  key={`cpu-legend-${idx}`}
+                  className={cpuOvercommitLegendItem}
+                >
+                  <span
+                    className={cpuOvercommitLegendSwatch}
+                    style={{ background: legend[item.legendCategory] }}
+                  />
+                  <span className={cpuOvercommitLegendText}>
+                    {item.legendCategory}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
+      </>
+    ) : chartData.length === 0 ? (
+      <CardEmptyState title={REPORT_CARD_EMPTY_STATE_TITLES.clusters} />
+    ) : (
+      <MigrationDonutChart
+        legendVariant="chart"
+        data={chartData}
+        height={300}
+        width={420}
+        donutThickness={18}
+        titleFontSize={34}
+        legend={legend}
+        title={title}
+        subTitle={subTitle}
+        subTitleColor="var(--pf-t--global--text--color--subtle)"
+        itemsPerRow={Math.ceil(chartData.length / 2)}
+        labelFontSize={viewMode === "vmByCluster" ? 18 : 17}
+        marginLeft={viewMode === "vmByCluster" ? "12%" : "0%"}
+        tooltipLabelFormatter={({ datum, percent }) =>
+          `${datum.countDisplay}\n${percent.toFixed(1)}%`
+        }
+      />
+    ),
+  );
+
+  if (graphOnly) {
+    return singleView;
+  }
+
   return (
     <Card
       className={dashboardCard}
       id="clusters-overview"
+      data-chart-export="clusters"
       data-export-block={isExportMode ? "3.1" : undefined}
       style={{ overflow: isExportMode ? "visible" : "hidden" }}
     >
@@ -485,7 +575,7 @@ export const ClustersOverview: React.FC<ClustersOverviewProps> = ({
             </div>
           </FlexItem>
           {!isExportMode && (
-            <FlexItem>
+            <ChartCardHeaderActions>
               <Dropdown
                 isOpen={isDropdownOpen}
                 onSelect={onSelect}
@@ -519,7 +609,7 @@ export const ClustersOverview: React.FC<ClustersOverviewProps> = ({
                   </DropdownItem>
                 </DropdownList>
               </Dropdown>
-            </FlexItem>
+            </ChartCardHeaderActions>
           )}
         </Flex>
       </CardTitle>
@@ -642,65 +732,8 @@ export const ClustersOverview: React.FC<ClustersOverviewProps> = ({
               </DashboardExportSection>
             )}
           </>
-        ) : viewMode === "cpuOverCommitment" ? (
-          <>
-            {chartData.length === 0 ? (
-              <CardEmptyState
-                title={REPORT_CARD_EMPTY_STATE_TITLES.cpuOvercommitment}
-              />
-            ) : (
-              <>
-                <div className={cpuOvercommitBoxes}>
-                  {chartData.map((item, idx) => (
-                    <div
-                      key={`cpu-box-${idx}`}
-                      className={cpuOvercommitBox}
-                      style={{ background: legend[item.legendCategory] }}
-                    >
-                      {item.countDisplay}
-                    </div>
-                  ))}
-                </div>
-                <div className={cpuOvercommitLegend}>
-                  {chartData.map((item, idx) => (
-                    <div
-                      key={`cpu-legend-${idx}`}
-                      className={cpuOvercommitLegendItem}
-                    >
-                      <span
-                        className={cpuOvercommitLegendSwatch}
-                        style={{ background: legend[item.legendCategory] }}
-                      />
-                      <span className={cpuOvercommitLegendText}>
-                        {item.legendCategory}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </>
-            )}
-          </>
-        ) : chartData.length === 0 ? (
-          <CardEmptyState title={REPORT_CARD_EMPTY_STATE_TITLES.clusters} />
         ) : (
-          <MigrationDonutChart
-            legendVariant="chart"
-            data={chartData}
-            height={300}
-            width={420}
-            donutThickness={18}
-            titleFontSize={34}
-            legend={legend}
-            title={title}
-            subTitle={subTitle}
-            subTitleColor="var(--pf-t--global--text--color--subtle)"
-            itemsPerRow={Math.ceil(chartData.length / 2)}
-            labelFontSize={viewMode === "vmByCluster" ? 18 : 17}
-            marginLeft={viewMode === "vmByCluster" ? "12%" : "0%"}
-            tooltipLabelFormatter={({ datum, percent }) =>
-              `${datum.countDisplay}\n${percent.toFixed(1)}%`
-            }
-          />
+          singleView
         )}
       </CardBody>
     </Card>

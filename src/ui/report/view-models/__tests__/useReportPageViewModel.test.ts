@@ -85,6 +85,8 @@ const mockReportStore = {
   getSnapshot: vi.fn(() => idleExportState),
   exportPdf: vi.fn().mockResolvedValue(undefined),
   exportHtml: vi.fn().mockResolvedValue(undefined),
+  exportPng: vi.fn().mockResolvedValue(undefined),
+  exportPngZip: vi.fn().mockResolvedValue(undefined),
   clearError: vi.fn(),
 };
 
@@ -664,6 +666,36 @@ describe("useReportPageViewModel", () => {
       >;
       expect(calls[0]?.[0]).toBe(subsetInventory);
       expect(calls[0]?.[1]?.documentTitle).toContain("Group 1");
+    });
+
+    it("exportPngZip delegates to store.exportPngZip()", () => {
+      const { result } = renderHook(() => useReportPageViewModel());
+      const run = vi.fn();
+
+      act(() => {
+        result.current.exportPngZip(run);
+      });
+
+      expect(mockReportStore.exportPngZip).toHaveBeenCalledTimes(1);
+      expect(mockReportStore.exportPngZip).toHaveBeenCalledWith(
+        run,
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        expect.objectContaining({ documentTitle: expect.any(String) }),
+      );
+    });
+
+    it("exportPngChart delegates to store.exportPng()", async () => {
+      const { result } = renderHook(() => useReportPageViewModel());
+      const mockCard = document.createElement("article");
+
+      await act(async () => {
+        await result.current.exportPngChart(mockCard, "vm-migration-status");
+      });
+
+      expect(mockReportStore.exportPng).toHaveBeenCalledWith(
+        mockCard,
+        "vm-migration-status",
+      );
     });
   });
 

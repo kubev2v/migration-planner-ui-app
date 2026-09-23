@@ -231,6 +231,8 @@ function makeBaseVm(
     exportLoadingLabel: null,
     exportPdf: vi.fn(),
     exportHtml: vi.fn(),
+    exportPngZip: vi.fn(),
+    exportPngChart: vi.fn().mockResolvedValue(undefined),
     exportError: null,
     clearExportError: vi.fn(),
     activeReportTab: "report",
