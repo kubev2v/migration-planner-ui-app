@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useAsyncFn } from "react-use";
 
+import { toApiClusterId } from "../helpers/clusterViewModel";
 import {
   DEFAULT_FORM_VALUES,
   SMT_THREADS_MAX,
@@ -77,10 +78,8 @@ export const useArchitectureToolViewModel = (
         ? WORKER_NODE_PRESETS[formValues.workerNodePreset].memoryGb
         : formValues.customMemoryGb;
 
-    // Cluster-requirements needs a real cluster id. Architecture is disabled
-    // for All vSphere clusters, so do not map through toApiClusterId.
     const clusterRequirementsRequest = formValuesToRequest(
-      clusterId,
+      toApiClusterId(clusterId),
       formValues,
       workerCpu,
       workerMemory,

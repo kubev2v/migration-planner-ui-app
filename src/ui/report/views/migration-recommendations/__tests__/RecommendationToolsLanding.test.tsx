@@ -29,8 +29,13 @@ describe("RecommendationToolsLanding", () => {
     expect(screen.getByText("Migration time estimation")).toBeInTheDocument();
     expect(screen.getByText("Migration complexity")).toBeInTheDocument();
     expect(
-      screen.queryByText("OpenShift cluster architecture"),
-    ).not.toBeInTheDocument();
+      screen.getByText("OpenShift cluster architecture"),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", {
+        name: "Open OpenShift cluster architecture tool",
+      }),
+    ).toBeInTheDocument();
     expect(screen.queryByText("Migration plan")).not.toBeInTheDocument();
   });
 
