@@ -1,11 +1,41 @@
+import { ChartExportProvider } from "@openshift-migration-advisor/shared-components";
 import { act, fireEvent, render, screen } from "@testing-library/react";
 import React from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { ExportReportButton } from "../ExportReportButton";
 
-// PatternFly Dropdown requires a Popper mock (provided in vitest.setup.ts).
-// For reliable toggle testing, mock the Dropdown to render children directly.
+const downloadPdf = vi.fn();
+const downloadAll = vi.fn();
+const downloadHtml = vi.fn();
+
+vi.mock(
+  "@openshift-migration-advisor/shared-components",
+  async (importOriginal) => {
+    const actual =
+      await importOriginal<
+        typeof import("@openshift-migration-advisor/shared-components")
+      >();
+
+    return {
+      ...actual,
+      useChartExport: () => ({
+        downloadPdf,
+        downloadAll,
+        downloadHtml,
+        isBusy: false,
+        exportLoadingLabel: null,
+        exportError: null,
+        clearExportError: vi.fn(),
+        downloadChart: vi.fn(),
+        downloadingChartId: null,
+        exportingFormat: null,
+        isExportingAll: false,
+      }),
+    };
+  },
+);
+
 vi.mock("@patternfly/react-core", async (importOriginal) => {
   const actual =
     await importOriginal<typeof import("@patternfly/react-core")>();
@@ -28,166 +58,73 @@ vi.mock("@patternfly/react-core", async (importOriginal) => {
 });
 
 describe("ExportReportButton", () => {
-  const baseProps = {
-    isLoading: false,
-    loadingLabel: null as string | null,
-    onExportPdf: vi.fn(),
-    onExportHtml: vi.fn(),
-  };
-
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  // -- Aggregate view (dropdown) --------------------------------------------
-
-  describe("aggregate view (dropdown)", () => {
-    it("renders dropdown with Export Report toggle", () => {
-      render(<ExportReportButton {...baseProps} isAggregateView={true} />);
-
-      expect(
-        screen.getByRole("button", { name: /export report/i }),
-      ).toBeInTheDocument();
-    });
-
-    it("shows PDF and HTML options", () => {
-      render(<ExportReportButton {...baseProps} isAggregateView={true} />);
-
-      act(() => {
-        fireEvent.click(screen.getByRole("button", { name: /export report/i }));
-      });
-
-      expect(
-        screen.getByRole("menuitem", { name: /pdf/i }),
-      ).toBeInTheDocument();
-      expect(
-        screen.getByRole("menuitem", { name: /html/i }),
-      ).toBeInTheDocument();
-    });
-
-    it("calls onExportPdf when PDF option is clicked", () => {
-      render(<ExportReportButton {...baseProps} isAggregateView={true} />);
-
-      act(() => {
-        fireEvent.click(screen.getByRole("button", { name: /export report/i }));
-      });
-
-      act(() => {
-        fireEvent.click(screen.getByRole("menuitem", { name: /pdf/i }));
-      });
-
-      expect(baseProps.onExportPdf).toHaveBeenCalledTimes(1);
-    });
-
-    it("calls onExportHtml when HTML option is clicked", () => {
-      render(<ExportReportButton {...baseProps} isAggregateView={true} />);
-
-      act(() => {
-        fireEvent.click(screen.getByRole("button", { name: /export report/i }));
-      });
-
-      act(() => {
-        fireEvent.click(screen.getByRole("menuitem", { name: /html/i }));
-      });
-
-      expect(baseProps.onExportHtml).toHaveBeenCalledTimes(1);
-    });
-
-    it("shows loading state with label", () => {
-      render(
+  const renderButton = (
+    props?: Partial<React.ComponentProps<typeof ExportReportButton>>,
+  ): void => {
+    render(
+      <ChartExportProvider>
         <ExportReportButton
-          {...baseProps}
-          isLoading={true}
-          loadingLabel="Generating PDF..."
-          isAggregateView={true}
-        />,
-      );
+          documentTitle="Assessment 1 - vCenter report"
+          {...props}
+        />
+      </ChartExportProvider>,
+    );
+  };
 
-      expect(screen.getByText("Generating PDF...")).toBeInTheDocument();
-    });
+  it("renders dropdown with Export Report toggle", () => {
+    renderButton();
 
-    it("disables toggle when loading", () => {
-      render(
-        <ExportReportButton
-          {...baseProps}
-          isLoading={true}
-          loadingLabel="Generating..."
-          isAggregateView={true}
-        />,
-      );
-
-      const toggle = screen.getByRole("button", { name: /export report/i });
-      expect(toggle).toBeDisabled();
-    });
-
-    it("disables toggle when isDisabled is true", () => {
-      render(
-        <ExportReportButton
-          {...baseProps}
-          isDisabled={true}
-          isAggregateView={true}
-        />,
-      );
-
-      const toggle = screen.getByRole("button", { name: /export report/i });
-      expect(toggle).toBeDisabled();
-    });
+    expect(
+      screen.getByRole("button", { name: /export report/i }),
+    ).toBeInTheDocument();
   });
 
-  // -- Non-aggregate view (single button) -----------------------------------
+  it("shows PDF, HTML, and PNG options", () => {
+    renderButton();
 
-  describe("non-aggregate view (single button)", () => {
-    it("renders Export to PDF button", () => {
-      render(<ExportReportButton {...baseProps} isAggregateView={false} />);
+    expect(screen.getByRole("menuitem", { name: /pdf/i })).toBeInTheDocument();
+    expect(screen.getByRole("menuitem", { name: /html/i })).toBeInTheDocument();
+    expect(screen.getByRole("menuitem", { name: /png/i })).toBeInTheDocument();
+  });
 
-      expect(
-        screen.getByRole("button", { name: /export to pdf/i }),
-      ).toBeInTheDocument();
+  it("calls downloadPdf when PDF option is clicked", () => {
+    renderButton();
+
+    act(() => {
+      fireEvent.click(screen.getByRole("menuitem", { name: /pdf/i }));
     });
 
-    it("does not render HTML option", () => {
-      render(<ExportReportButton {...baseProps} isAggregateView={false} />);
+    expect(downloadPdf).toHaveBeenCalledWith("Assessment 1 - vCenter report");
+  });
 
-      expect(
-        screen.queryByRole("menuitem", { name: /html/i }),
-      ).not.toBeInTheDocument();
+  it("calls downloadHtml when HTML option is clicked", () => {
+    renderButton();
+
+    act(() => {
+      fireEvent.click(screen.getByRole("menuitem", { name: /html/i }));
     });
 
-    it("calls onExportPdf when button is clicked", () => {
-      render(<ExportReportButton {...baseProps} isAggregateView={false} />);
+    expect(downloadHtml).toHaveBeenCalledWith("Assessment 1 - vCenter report");
+  });
 
-      act(() => {
-        fireEvent.click(screen.getByRole("button", { name: /export to pdf/i }));
-      });
+  it("calls downloadAll when PNG option is clicked", () => {
+    renderButton();
 
-      expect(baseProps.onExportPdf).toHaveBeenCalledTimes(1);
+    act(() => {
+      fireEvent.click(screen.getByRole("menuitem", { name: /png/i }));
     });
 
-    it("shows loading state", () => {
-      render(
-        <ExportReportButton
-          {...baseProps}
-          isLoading={true}
-          loadingLabel="Generating PDF..."
-          isAggregateView={false}
-        />,
-      );
+    expect(downloadAll).toHaveBeenCalledTimes(1);
+  });
 
-      expect(screen.getByText("Generating PDF...")).toBeInTheDocument();
-    });
+  it("disables toggle when isDisabled is true", () => {
+    renderButton({ isDisabled: true });
 
-    it("disables button when loading", () => {
-      render(
-        <ExportReportButton
-          {...baseProps}
-          isLoading={true}
-          loadingLabel="Generating..."
-          isAggregateView={false}
-        />,
-      );
-
-      const button = screen.getByRole("button", { name: /export to pdf/i });
-      expect(button).toBeDisabled();
-    });
+    const toggle = screen.getByRole("button", { name: /export report/i });
+    expect(toggle).toBeDisabled();
   });
 });

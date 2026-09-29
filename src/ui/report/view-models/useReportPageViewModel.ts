@@ -22,8 +22,6 @@ import { useAsyncFn, useMount } from "react-use";
 import { Symbols } from "../../../config/Dependencies";
 import type { IAssessmentsStore } from "../../../data/stores/interfaces/IAssessmentsStore";
 import type { IJobsStore } from "../../../data/stores/interfaces/IJobsStore";
-import type { IReportStore } from "../../../data/stores/interfaces/IReportStore";
-import type { ExportError } from "../../../data/stores/interfaces/IReportStore";
 import type { ISourcesStore } from "../../../data/stores/interfaces/ISourcesStore";
 import {
   JOB_POLLING_INTERVAL,
@@ -34,10 +32,6 @@ import type { AssessmentModel } from "../../../models/AssessmentModel";
 import type { SourceModel } from "../../../models/SourceModel";
 import { routes } from "../../../routing/Routes";
 import type { SnapshotLike } from "../../../services/html-export/types";
-import type {
-  PdfExtraPage,
-  PdfExtraPageItem,
-} from "../../../services/pdf-export/PdfExportService";
 import {
   ALL_CLUSTERS_ID,
   buildClusterViewModel,
@@ -49,132 +43,13 @@ import {
   type ReportInventorySource,
 } from "../helpers/groupInventoryFilter";
 import { ALL_VMS_GROUP_ID } from "../helpers/groupViewModel";
-import {
-  isControlPlaneOnlyClusterMode,
-  type SizingFormValues,
-} from "../views/cluster-sizer/types";
+import type { SizingFormValues } from "../views/cluster-sizer/types";
 import { isRecommendationToolAvailable } from "../views/migration-recommendations/constants";
 import type {
   RecommendationToolId,
   ReportContentTab,
 } from "../views/migration-recommendations/types";
-import {
-  formatNumber,
-  formatRatio,
-  getCpuOvercommitLabel,
-  getMemoryOvercommitLabel,
-} from "./ClusterSizingHelpers";
 import { useGroupInventoryFilter } from "./useGroupInventoryFilter";
-
-// ---------------------------------------------------------------------------
-// Sizing → PDF page builder
-// ---------------------------------------------------------------------------
-
-const buildSizingPdfExtraPage = (data: SizingPdfData): PdfExtraPage => {
-  const { result, formValues, clusterName } = data;
-  const isSNO = isControlPlaneOnlyClusterMode(formValues.clusterMode);
-  const hasControlPlane = result.clusterSizing.controlPlaneNodes > 0;
-
-  const cpuOverCommitRatio =
-    result.resourceConsumption.overCommitRatio?.cpu ?? 0;
-  const memoryOverCommitRatio =
-    result.resourceConsumption.overCommitRatio?.memory ?? 0;
-  const cpuLimits = result.resourceConsumption.limits?.cpu ?? 0;
-  const memoryLimits = result.resourceConsumption.limits?.memory ?? 0;
-
-  const items: PdfExtraPageItem[] = [
-    { label: "Cluster name", value: clusterName },
-    { label: "Target platform", value: "Bare metal" },
-  ];
-
-  if (isSNO) {
-    items.push(
-      {
-        label: "Total nodes",
-        value: String(result.clusterSizing.totalNodes),
-      },
-      {
-        label: "Node size",
-        value: `${formValues.controlPlaneCpu} CPU, ${formValues.controlPlaneMemoryGb} GB memory`,
-      },
-      {
-        label: "VMs to migrate",
-        value: formatNumber(result.inventoryTotals.totalVMs),
-      },
-      {
-        label: "VM resources (request)",
-        value: `${formatNumber(result.inventoryTotals.totalCPU)} CPU, ${formatNumber(result.inventoryTotals.totalMemory)} GB memory`,
-      },
-    );
-  } else {
-    items.push(
-      {
-        label: "Total nodes",
-        value: `${result.clusterSizing.totalNodes} (${result.clusterSizing.workerNodes} workers + ${result.clusterSizing.controlPlaneNodes} control plane)`,
-      },
-      {
-        label: "Failover capacity",
-        value: `${result.clusterSizing.failoverNodes} failover nodes`,
-      },
-    );
-
-    if (hasControlPlane) {
-      items.push(
-        {
-          label: "Worker node size",
-          value: `${formValues.customCpu} CPU, ${formValues.customMemoryGb} GB memory`,
-        },
-        {
-          label: "Control plane node size",
-          value: `${formValues.controlPlaneCpu} CPU, ${formValues.controlPlaneMemoryGb} GB memory`,
-        },
-      );
-    } else {
-      items.push({
-        label: "Node size",
-        value: `${formValues.customCpu} CPU, ${formValues.customMemoryGb} GB memory`,
-      });
-    }
-
-    items.push(
-      {
-        label: "Overcommitment",
-        value: `CPU ${getCpuOvercommitLabel(formValues.cpuOvercommitRatio)}, Memory ${getMemoryOvercommitLabel(formValues.memoryOvercommitRatio)}`,
-      },
-      {
-        label: "VMs to migrate",
-        value: formatNumber(result.inventoryTotals.totalVMs),
-      },
-      {
-        label: "CPU over-commit ratio",
-        value: formatRatio(cpuOverCommitRatio),
-      },
-      {
-        label: "Memory over-commit ratio",
-        value: formatRatio(memoryOverCommitRatio),
-      },
-      {
-        label: "VM resources (request)",
-        value: `${formatNumber(result.inventoryTotals.totalCPU)} CPU, ${formatNumber(result.inventoryTotals.totalMemory)} GB memory`,
-      },
-      {
-        label: "With over-commit (limits)",
-        value: `${formatNumber(cpuLimits)} CPU, ${formatNumber(memoryLimits)} GB memory`,
-      },
-      {
-        label: "Physical capacity",
-        value: `${formatNumber(result.clusterSizing.totalCPU)} CPU, ${formatNumber(result.clusterSizing.totalMemory)} GB memory`,
-      },
-    );
-  }
-
-  return {
-    title: "Cluster sizing recommendations",
-    items,
-    footer:
-      "Note: Resource requirements are estimates based on current workloads. Please verify this architecture with your SME team to ensure optimal performance.",
-  };
-};
 
 // ---------------------------------------------------------------------------
 // Public interface
@@ -235,12 +110,7 @@ export interface ReportPageViewModel {
   hasMissingMetrics: boolean;
 
   // Export
-  isExporting: boolean;
-  exportLoadingLabel: string | null;
-  exportPdf: (container: HTMLElement) => void;
-  exportHtml: () => void;
-  exportError: ExportError | null;
-  clearExportError: () => void;
+  exportDocumentTitle: string;
 
   // Report tabs + recommendation tools
   activeReportTab: ReportContentTab;
@@ -250,7 +120,6 @@ export interface ReportPageViewModel {
   closeRecommendationTool: () => void;
   /**
    * All sizing results calculated in this session, keyed by clusterId.
-   * Used by exportPdf to include recommendations for every sized cluster.
    */
   savedSizingDataMap: Record<string, SizingPdfData>;
   onSizingCalculated: (data: SizingPdfData) => void;
@@ -346,7 +215,6 @@ export const useReportPageViewModel = (): ReportPageViewModel => {
     Symbols.AssessmentsStore,
   );
   const sourcesStore = useInjection<ISourcesStore>(Symbols.SourcesStore);
-  const reportStore = useInjection<IReportStore>(Symbols.ReportStore);
   const jobsStore = useInjection<IJobsStore>(Symbols.JobsStore);
 
   // ---- Reactive store data -------------------------------------------------
@@ -358,11 +226,6 @@ export const useReportPageViewModel = (): ReportPageViewModel => {
   const sources = useSyncExternalStore(
     sourcesStore.subscribe.bind(sourcesStore),
     sourcesStore.getSnapshot.bind(sourcesStore),
-  );
-
-  const exportState = useSyncExternalStore(
-    reportStore.subscribe.bind(reportStore),
-    reportStore.getSnapshot.bind(reportStore),
   );
 
   const jobState = useSyncExternalStore(
@@ -644,98 +507,14 @@ export const useReportPageViewModel = (): ReportPageViewModel => {
     return missing;
   }, [scopedClusterView, vms, infra]);
 
-  // ---- Export (reactive from ReportStore) ----------------------------------
-  const isExporting =
-    exportState.loadingState === "generating-pdf" ||
-    exportState.loadingState === "generating-html";
-
-  const exportLoadingLabel = useMemo((): string | null => {
-    switch (exportState.loadingState) {
-      case "generating-pdf":
-        return "Generating PDF...";
-      case "generating-html":
-        return "Generating HTML...";
-      default:
-        return null;
-    }
-  }, [exportState.loadingState]);
-
-  const exportPdf = useCallback(
-    (container: HTMLElement): void => {
-      // PDF captures the already-rendered dashboard DOM, which reflects the
-      // active group + cluster filters shown on screen.
-      const groupSuffix =
-        selectedGroupId !== ALL_VMS_GROUP_ID
-          ? ` - ${groupView.selectionLabel}`
-          : "";
-      const title = `${assessment?.name || `Assessment ${id}`} - vCenter report${groupSuffix}`;
-
-      // Determine which sizing entries to include:
-      // - Single cluster view → only that cluster (if calculated)
-      // - All-clusters view → sized clusters within the active group inventory
-      const scopedClusterIds = new Set(clusters ? Object.keys(clusters) : []);
-      const sizingEntries: SizingPdfData[] =
-        selectedClusterId === ALL_CLUSTERS_ID
-          ? Object.values(savedSizingDataMap).filter((entry) =>
-              scopedClusterIds.has(entry.clusterId),
-            )
-          : savedSizingDataMap[selectedClusterId]
-            ? [savedSizingDataMap[selectedClusterId]]
-            : [];
-
-      const additionalTocItems = sizingEntries.map(
-        (entry) => `- Cluster sizing recommendations: ${entry.clusterName}`,
-      );
-
-      const extraPages = sizingEntries.map(buildSizingPdfExtraPage);
-
-      void reportStore.exportPdf(container, {
-        documentTitle: title,
-        additionalTocItems,
-        extraPages,
-      });
-    },
-    [
-      reportStore,
-      assessment?.name,
-      id,
-      savedSizingDataMap,
-      selectedClusterId,
-      clusters,
-      selectedGroupId,
-      groupView.selectionLabel,
-    ],
-  );
-
-  const exportHtml = useCallback((): void => {
-    const inventory =
-      activeInventory ??
-      source?.inventory ??
-      latestSnapshot?.inventory ??
-      latestSnapshot;
-    if (!inventory) {
-      return;
-    }
+  // ---- Export title (live chart capture is owned by ChartExportProvider) ---
+  const exportDocumentTitle = useMemo((): string => {
     const groupSuffix =
       selectedGroupId !== ALL_VMS_GROUP_ID
         ? ` - ${groupView.selectionLabel}`
         : "";
-    const title = `${assessment?.name || `Assessment ${id}`} - vCenter report${groupSuffix}`;
-    void reportStore.exportHtml(inventory, { documentTitle: title });
-  }, [
-    reportStore,
-    activeInventory,
-    source,
-    latestSnapshot,
-    assessment?.name,
-    id,
-    selectedGroupId,
-    groupView.selectionLabel,
-  ]);
-
-  const clearExportError = useCallback((): void => {
-    reportStore.clearError();
-  }, [reportStore]);
+    return `${assessment?.name || `Assessment ${id}`} - vCenter report${groupSuffix}`;
+  }, [assessment?.name, id, selectedGroupId, groupView.selectionLabel]);
 
   // ---- RVTools modal (create-new-assessment from report page) ---------------
   const [isRvtoolsModalOpen, setIsRvtoolsModalOpen] = useState(false);
@@ -869,12 +648,7 @@ export const useReportPageViewModel = (): ReportPageViewModel => {
     missingMetrics,
     hasMissingMetrics: missingMetrics.length > 0,
 
-    isExporting,
-    exportLoadingLabel,
-    exportPdf,
-    exportHtml,
-    exportError: exportState.error,
-    clearExportError,
+    exportDocumentTitle,
 
     activeReportTab,
     setActiveReportTab,

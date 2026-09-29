@@ -29,10 +29,6 @@ export const storageCardOverflowHidden = css`
   overflow: hidden;
 `;
 
-export const storageCardOverflowVisible = css`
-  overflow: visible;
-`;
-
 export const storageFlexFullWidth = css`
   width: 100%;
 `;
@@ -49,13 +45,4 @@ export const storageChartWrapper = css`
 export const storageTotalsNote = css`
   color: var(--pf-t--global--text--color--subtle);
   margin-left: 20px;
-`;
-
-export const storageExportSectionMargin = css`
-  margin-bottom: 24px;
-`;
-
-export const storageExportSectionTitle = css`
-  font-weight: 600;
-  margin-bottom: 8px;
 `;

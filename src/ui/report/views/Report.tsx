@@ -1,4 +1,8 @@
 import {
+  ChartExportProvider,
+  useChartExport,
+} from "@openshift-migration-advisor/shared-components";
+import {
   Alert,
   AlertActionCloseButton,
   Bullseye,
@@ -17,7 +21,7 @@ import {
   TabTitleText,
   Tooltip,
 } from "@patternfly/react-core";
-import React, { useRef } from "react";
+import React from "react";
 import { Link } from "react-router-dom";
 
 import { themeTooltipFlyoutProps } from "../../../lib/patternfly/flyoutAppendTo";
@@ -25,7 +29,6 @@ import { routes } from "../../../routing/Routes";
 import CreateAssessmentModal from "../../assessment/views/CreateAssessmentModal";
 import { AppPage } from "../../core/components/AppPage";
 import CreateAssessmentDropdown from "../../core/components/CreateAssessmentDropdown";
-import { OffScreenRenderer } from "../../core/components/OffScreenRenderer";
 import { useReportPageViewModel } from "../view-models/useReportPageViewModel";
 import { Dashboard } from "./assessment-report/Dashboard";
 import { ReportFilterBar } from "./assessment-report/ReportFilterBar";
@@ -36,7 +39,7 @@ import { MigrationRecommendations } from "./migration-recommendations/MigrationR
 
 const ReportContent: React.FC = () => {
   const vm = useReportPageViewModel();
-  const offScreenRef = useRef<HTMLDivElement>(null);
+  const charts = useChartExport();
 
   if (vm.isLoadingData && !vm.assessment) {
     return (
@@ -208,16 +211,16 @@ const ReportContent: React.FC = () => {
               </Stack>
             </Alert>
           )}
-          {vm.exportError && (
+          {charts?.exportError && (
             <Alert
               variant="danger"
               isInline
-              title="An error occurred"
+              title="Export failed"
               actionClose={
-                <AlertActionCloseButton onClose={() => vm.clearExportError()} />
+                <AlertActionCloseButton onClose={charts.clearExportError} />
               }
             >
-              <p>{vm.exportError?.message}</p>
+              <p>{charts.exportError}</p>
             </Alert>
           )}
         </div>
@@ -225,17 +228,7 @@ const ReportContent: React.FC = () => {
       headerActions={
         vm.scopedClusterView ? (
           vm.canExportReport ? (
-            <ExportReportButton
-              isLoading={vm.isExporting}
-              loadingLabel={vm.exportLoadingLabel}
-              onExportPdf={() => {
-                if (offScreenRef.current) {
-                  vm.exportPdf(offScreenRef.current);
-                }
-              }}
-              onExportHtml={() => vm.exportHtml()}
-              isAggregateView={vm.clusterView.isAggregateView}
-            />
+            <ExportReportButton documentTitle={vm.exportDocumentTitle} />
           ) : (
             <Tooltip
               {...themeTooltipFlyoutProps}
@@ -244,10 +237,7 @@ const ReportContent: React.FC = () => {
               }
             >
               <ExportReportButton
-                isLoading={vm.isExporting}
-                loadingLabel={vm.exportLoadingLabel}
-                onExportPdf={() => {}}
-                onExportHtml={() => {}}
+                documentTitle={vm.exportDocumentTitle}
                 isDisabled
               />
             </Tooltip>
@@ -340,26 +330,6 @@ const ReportContent: React.FC = () => {
         </TabContentBody>
       </TabContent>
 
-      {/* Off-screen render target for PDF export — React owns the rendering,
-          PdfExportService only captures the already-painted DOM element. */}
-      {vm.scopedClusterView ? (
-        <OffScreenRenderer ref={offScreenRef} enabled={vm.canExportReport}>
-          <Dashboard
-            infra={vm.scopedClusterView.viewInfra}
-            vms={vm.scopedClusterView.viewVms}
-            cpuCores={vm.scopedClusterView.cpuCores}
-            ramGB={vm.scopedClusterView.ramGB}
-            isExportMode={true}
-            exportAllViews={true}
-            clusters={vm.scopedClusterView.viewClusters}
-            isAggregateView={vm.scopedClusterView.isAggregateView}
-            clusterFound={vm.scopedClusterView.clusterFound}
-            vcenterVersion={vm.vcenterVersion}
-            vcenterId={vm.vcenterId}
-          />
-        </OffScreenRenderer>
-      ) : null}
-
       <CreateAssessmentModal
         isOpen={vm.isRvtoolsModalOpen}
         onClose={vm.closeRvtoolsModal}
@@ -381,7 +351,11 @@ const ReportContent: React.FC = () => {
   );
 };
 
-const Report: React.FC = () => <ReportContent />;
+const Report: React.FC = () => (
+  <ChartExportProvider>
+    <ReportContent />
+  </ChartExportProvider>
+);
 
 Report.displayName = "Report";
 

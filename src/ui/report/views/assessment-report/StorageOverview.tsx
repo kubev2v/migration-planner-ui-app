@@ -4,6 +4,9 @@ import type {
 } from "@openshift-migration-advisor/planner-sdk";
 import {
   CardEmptyState,
+  ChartExportSurface,
+  chartExportViewsFromLabels,
+  ChartHeaderActions,
   MigrationDonutChart,
   REPORT_CARD_EMPTY_STATE_TITLES,
 } from "@openshift-migration-advisor/shared-components";
@@ -36,11 +39,9 @@ import {
   themedChartTooltipFlyoutStyle,
   themedChartTooltipStyle,
 } from "../../../../lib/patternfly/flyoutAppendTo";
-import { DashboardExportSection } from "./DashboardExportSection";
 import {
   dashboardCard,
   storageCardOverflowHidden,
-  storageCardOverflowVisible,
   storageChartWrapper,
   storageFlexFullWidth,
   storageMenuToggleMinWidth,
@@ -49,8 +50,6 @@ import {
 
 interface StorageOverviewProps {
   DiskSizeTierSummary: { [key: string]: DiskSizeTierSummary };
-  isExportMode?: boolean;
-  exportAllViews?: boolean;
   diskTypeSummary?: { [key: string]: DiskTypeSummary };
   totalVMs?: number;
   totalWithSharedDisks?: number;
@@ -173,8 +172,6 @@ function buildTierChartData(
 
 export const StorageOverview: React.FC<StorageOverviewProps> = ({
   DiskSizeTierSummary,
-  isExportMode = false,
-  exportAllViews = false,
   diskTypeSummary,
   totalVMs = 0,
   totalWithSharedDisks = 0,
@@ -256,22 +253,6 @@ export const StorageOverview: React.FC<StorageOverviewProps> = ({
     ].filter((item) => item.count > 0);
   }, [totalVMs, normalizedWithShared]);
 
-  const chartDataForVmCount = useMemo(() => {
-    if (!exportAllViews || !DiskSizeTierSummary) return [];
-    return buildTierChartData(DiskSizeTierSummary, tierConfig, (tier) => {
-      const count = tier.vmCount;
-      return { count, countDisplay: `${count} VMs` };
-    });
-  }, [exportAllViews, DiskSizeTierSummary, tierConfig]);
-
-  const chartDataForTotalSize = useMemo(() => {
-    if (!exportAllViews || !DiskSizeTierSummary) return [];
-    return buildTierChartData(DiskSizeTierSummary, tierConfig, (tier) => {
-      const count = tier.totalSizeTB;
-      return { count, countDisplay: `${count} TB` };
-    });
-  }, [exportAllViews, DiskSizeTierSummary, tierConfig]);
-
   const onDropdownToggle = (): void => {
     setIsDropdownOpen(!isDropdownOpen);
   };
@@ -298,11 +279,11 @@ export const StorageOverview: React.FC<StorageOverviewProps> = ({
   const barChartWidth = useMemo(() => {
     const itemCount = Math.max(1, diskTypeChartData.length);
     const perItemWidth = 90; // bar + gap
-    const minWidth = isExportMode ? 220 : 260;
+    const minWidth = 260;
     const maxWidth = 500;
     const calculated = itemCount * perItemWidth;
     return Math.min(maxWidth, Math.max(minWidth, calculated));
-  }, [diskTypeChartData.length, isExportMode]);
+  }, [diskTypeChartData.length]);
 
   // Slightly thinner bars for very small datasets so they don't look oversized.
   const computedBarWidth = useMemo(() => {
@@ -353,22 +334,28 @@ export const StorageOverview: React.FC<StorageOverviewProps> = ({
     },
   });
 
+  const chartId = "storage-overview";
+  const chartTitle = `Storage — ${VIEW_MODE_LABELS[viewMode]}`;
+
   return (
-    <Card
-      className={`${dashboardCard} ${isExportMode ? storageCardOverflowVisible : storageCardOverflowHidden}`}
-      id="storage-overview"
+    <ChartExportSurface
+      id={chartId}
+      title={chartTitle}
+      exportViews={chartExportViewsFromLabels("Storage", VIEW_MODE_LABELS)}
+      activeExportViewId={viewMode}
+      onExportViewChange={(viewId) => setViewMode(viewId as ViewMode)}
     >
-      <CardTitle>
-        <Flex
-          justifyContent={{ default: "justifyContentSpaceBetween" }}
-          alignItems={{ default: "alignItemsCenter" }}
-          className={storageFlexFullWidth}
-        >
-          <FlexItem>
-            <i className="fas fa-database" /> Disks
-          </FlexItem>
-          {!isExportMode && (
+      <Card className={`${dashboardCard} ${storageCardOverflowHidden}`}>
+        <CardTitle>
+          <Flex
+            justifyContent={{ default: "justifyContentSpaceBetween" }}
+            alignItems={{ default: "alignItemsCenter" }}
+            className={storageFlexFullWidth}
+          >
             <FlexItem>
+              <i className="fas fa-database" /> Disks
+            </FlexItem>
+            <ChartHeaderActions chartId={chartId} title={chartTitle}>
               <Dropdown
                 isOpen={isDropdownOpen}
                 onSelect={onSelect}
@@ -406,13 +393,11 @@ export const StorageOverview: React.FC<StorageOverviewProps> = ({
                   </DropdownItem>
                 </DropdownList>
               </Dropdown>
-            </FlexItem>
-          )}
-        </Flex>
-      </CardTitle>
-      <CardBody>
-        {!isExportMode || !exportAllViews ? (
-          viewMode === "vmCountByDiskType" ? (
+            </ChartHeaderActions>
+          </Flex>
+        </CardTitle>
+        <CardBody>
+          {viewMode === "vmCountByDiskType" ? (
             diskTypeChartData.length === 0 ? (
               <CardEmptyState
                 title={REPORT_CARD_EMPTY_STATE_TITLES.diskTypes}
@@ -450,7 +435,7 @@ export const StorageOverview: React.FC<StorageOverviewProps> = ({
                       }}
                       domainPadding={{ x: domainPaddingX }}
                       padding={{ top: 10, bottom: 36, left: 20, right: 20 }}
-                      height={isExportMode ? 180 : 250}
+                      height={250}
                       width={barChartWidth}
                     >
                       <ChartAxis />
@@ -485,12 +470,10 @@ export const StorageOverview: React.FC<StorageOverviewProps> = ({
                     </Chart>
                   </div>
                 </div>
-                {!isExportMode && (
-                  <Content component="small" className={storageTotalsNote}>
-                    Totals may exceed the unique VM count because individual VMs
-                    can have multiple disk types
-                  </Content>
-                )}
+                <Content component="small" className={storageTotalsNote}>
+                  Totals may exceed the unique VM count because individual VMs
+                  can have multiple disk types
+                </Content>
               </>
             )
           ) : viewMode === "sharedDisks" ? (
@@ -543,168 +526,9 @@ export const StorageOverview: React.FC<StorageOverviewProps> = ({
                 `${datum.countDisplay}\n${percent.toFixed(1)}%`
               }
             />
-          )
-        ) : (
-          <>
-            <DashboardExportSection
-              title={VIEW_MODE_LABELS.vmCountByDiskType}
-              withMargin
-            >
-              <div className={storageChartWrapper}>
-                <div style={{ width: `${barChartWidth + 200}px` }}>
-                  <Chart
-                    ariaTitle="VM count by disk type"
-                    ariaDesc="Vertical bar chart of VM counts grouped by disk type"
-                    theme={smallFontTheme}
-                    containerComponent={
-                      <ChartVoronoiContainer
-                        responsive
-                        labels={({ datum }) => {
-                          const safeDatum = datum as { x: string; y: number };
-                          return `${safeDatum.x}: ${Number(safeDatum.y)} VMs`;
-                        }}
-                        constrainToVisibleArea
-                        labelComponent={
-                          <ChartTooltip
-                            style={{ ...themedChartTooltipStyle, fontSize: 8 }}
-                            flyoutStyle={themedChartTooltipFlyoutStyle}
-                            flyoutPadding={themedChartTooltipFlyoutPadding}
-                          />
-                        }
-                      />
-                    }
-                    domain={{
-                      y: [0, maxDiskTypeCount],
-                    }}
-                    domainPadding={{ x: domainPaddingX }}
-                    padding={{ top: 10, bottom: 36, left: 20, right: 20 }}
-                    height={isExportMode ? 180 : 250}
-                    width={barChartWidth}
-                  >
-                    <ChartAxis />
-                    <ChartAxis
-                      tickValues={diskTypeChartData.map((d) => d.name)}
-                      tickFormat={(x: string) => {
-                        const item = diskTypeChartData.find(
-                          (d) => d.name === x,
-                        );
-                        return item ? item.name : String(x);
-                      }}
-                      style={{
-                        axis: { stroke: "none" },
-                        tickLabels: {
-                          fontSize: 8,
-                          fill: "var(--pf-t--global--text--color--regular)",
-                        },
-                      }}
-                    />
-                    <ChartBar
-                      barWidth={computedBarWidth}
-                      data={diskTypeChartData.map((d) => ({
-                        x: d.name,
-                        y: d.count,
-                      }))}
-                      style={{
-                        data: {
-                          fill: ({ index }) =>
-                            diskTypeBarColors[
-                              (typeof index === "number" ? index : 0) %
-                                diskTypeBarColors.length
-                            ],
-                        },
-                        labels: { fontSize: 8 },
-                      }}
-                    />
-                  </Chart>
-                </div>
-              </div>
-            </DashboardExportSection>
-            <DashboardExportSection title={VIEW_MODE_LABELS.vmCount} withMargin>
-              {chartDataForVmCount.length === 0 ? (
-                <CardEmptyState
-                  title={REPORT_CARD_EMPTY_STATE_TITLES.storage}
-                />
-              ) : (
-                <MigrationDonutChart
-                  legendVariant="chart"
-                  data={chartDataForVmCount}
-                  height={300}
-                  width={420}
-                  donutThickness={18}
-                  titleFontSize={34}
-                  title={`${totals.totalVMs} VMs`}
-                  subTitle={`${totals.totalSize.toFixed(2)} TB`}
-                  subTitleColor="var(--pf-t--global--text--color--subtle)"
-                  itemsPerRow={Math.min(
-                    Math.ceil(chartDataForVmCount.length / 2),
-                    2,
-                  )}
-                  legendWidth={420}
-                  labelFontSize={14}
-                  tooltipLabelFormatter={({ datum, percent }) =>
-                    `${datum.countDisplay}\n${percent.toFixed(1)}%`
-                  }
-                />
-              )}
-            </DashboardExportSection>
-            <DashboardExportSection title={VIEW_MODE_LABELS.totalSize}>
-              {chartDataForTotalSize.length === 0 ? (
-                <CardEmptyState
-                  title={REPORT_CARD_EMPTY_STATE_TITLES.storage}
-                />
-              ) : (
-                <MigrationDonutChart
-                  legendVariant="chart"
-                  data={chartDataForTotalSize}
-                  height={300}
-                  width={420}
-                  donutThickness={18}
-                  titleFontSize={34}
-                  title={`${totals.totalSize.toFixed(2)} TB`}
-                  subTitle={`${totals.totalVMs} VMs`}
-                  subTitleColor="var(--pf-t--global--text--color--subtle)"
-                  itemsPerRow={Math.min(
-                    Math.ceil(chartDataForTotalSize.length / 2),
-                    2,
-                  )}
-                  legendWidth={420}
-                  labelFontSize={14}
-                  tooltipLabelFormatter={({ datum, percent }) =>
-                    `${datum.countDisplay}\n${percent.toFixed(1)}%`
-                  }
-                />
-              )}
-            </DashboardExportSection>
-            {isSharedDisksViewAvailable && (
-              <DashboardExportSection title={VIEW_MODE_LABELS.sharedDisks}>
-                {sharedDisksChartData.length === 0 ? (
-                  <CardEmptyState
-                    title={REPORT_CARD_EMPTY_STATE_TITLES.storage}
-                  />
-                ) : (
-                  <MigrationDonutChart
-                    legendVariant="chart"
-                    data={sharedDisksChartData}
-                    height={300}
-                    width={420}
-                    donutThickness={18}
-                    titleFontSize={34}
-                    title={`${totalVMs} VMs`}
-                    subTitle={`${normalizedWithShared} with shared disks`}
-                    subTitleColor="var(--pf-t--global--text--color--subtle)"
-                    itemsPerRow={Math.ceil(sharedDisksChartData.length / 2)}
-                    labelFontSize={18}
-                    marginLeft="52%"
-                    tooltipLabelFormatter={({ datum, percent }) =>
-                      `${datum.countDisplay}\n${percent.toFixed(1)}%`
-                    }
-                  />
-                )}
-              </DashboardExportSection>
-            )}
-          </>
-        )}
-      </CardBody>
-    </Card>
+          )}
+        </CardBody>
+      </Card>
+    </ChartExportSurface>
   );
 };

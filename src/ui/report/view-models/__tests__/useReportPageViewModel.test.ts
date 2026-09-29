@@ -78,16 +78,6 @@ const mockSourcesStore = {
   stopPolling: vi.fn(),
 };
 
-const idleExportState = { loadingState: "idle" as const, error: null };
-
-const mockReportStore = {
-  subscribe: vi.fn(() => () => {}),
-  getSnapshot: vi.fn(() => idleExportState),
-  exportPdf: vi.fn().mockResolvedValue(undefined),
-  exportHtml: vi.fn().mockResolvedValue(undefined),
-  clearError: vi.fn(),
-};
-
 const idleJobState = {
   currentJob: null,
   isCreating: false,
@@ -114,7 +104,6 @@ vi.mock("@openshift-migration-advisor/ioc", () => ({
     const key = symbol.description;
     if (key === "AssessmentsStore") return mockAssessmentsStore;
     if (key === "SourcesStore") return mockSourcesStore;
-    if (key === "ReportStore") return mockReportStore;
     if (key === "JobsStore") return mockJobsStore;
     if (key === "AccountStore") return mockAccountStore;
     throw new Error(`Unknown symbol: ${String(symbol)}`);
@@ -501,147 +490,22 @@ describe("useReportPageViewModel", () => {
   });
 
   describe("export", () => {
-    it("starts with null exportError and not exporting", () => {
-      const { result } = renderHook(() => useReportPageViewModel());
-      expect(result.current.exportError).toBeNull();
-      expect(result.current.isExporting).toBe(false);
-      expect(result.current.exportLoadingLabel).toBeNull();
-    });
-
-    it("clearExportError delegates to store.clearError()", () => {
-      const { result } = renderHook(() => useReportPageViewModel());
-
-      act(() => {
-        result.current.clearExportError();
-      });
-
-      expect(mockReportStore.clearError).toHaveBeenCalledTimes(1);
-    });
-
-    it("exportPdf delegates to store.exportPdf()", () => {
-      const { result } = renderHook(() => useReportPageViewModel());
-      const mockContainer = document.createElement("div");
-
-      act(() => {
-        result.current.exportPdf(mockContainer);
-      });
-
-      expect(mockReportStore.exportPdf).toHaveBeenCalledTimes(1);
-      expect(mockReportStore.exportPdf).toHaveBeenCalledWith(
-        mockContainer,
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        expect.objectContaining({ documentTitle: expect.any(String) }),
-      );
-    });
-
-    it("exportPdf includes only sized clusters from the active group in aggregate view", () => {
+    it("builds a document title from the assessment name", () => {
       const assessment = createAssessment("assessment-1", {
         "Cluster-A": { infra: createInfra(2, 2), vms: createVMs(5) },
-        "Cluster-B": { infra: createInfra(2, 2), vms: createVMs(6) },
-        "Cluster-C": { infra: createInfra(2, 2), vms: createVMs(4) },
       });
-      assessment.snapshots = [
-        {
-          createdAt: new Date(),
-          inventory: assessment.snapshots?.[0]?.inventory ?? {
-            vcenterId: "vcenter-1",
-            clusters: {},
-          },
-          subsetInventories: [
-            {
-              id: "group-1",
-              name: "Group 1",
-              vcenterId: "vcenter-1",
-              vmsCount: 9,
-              createdAt: new Date(),
-              inventory: {
-                vcenterId: "vcenter-1",
-                clusters: {
-                  "Cluster-A": {
-                    infra: createInfra(2, 2),
-                    vms: createVMs(5),
-                  },
-                  "Cluster-C": {
-                    infra: createInfra(2, 2),
-                    vms: createVMs(4),
-                  },
-                },
-                vcenter: {
-                  infra: createInfra(4, 4),
-                  vms: createVMs(9),
-                },
-              },
-            },
-          ],
-        },
-      ];
       mockAssessmentsStore.getSnapshot.mockReturnValue([assessment]);
 
       const { result } = renderHook(() => useReportPageViewModel());
-      const mockContainer = document.createElement("div");
-
-      act(() => {
-        result.current.onSizingCalculated(
-          createSizingPdfData("Cluster-A", "Cluster A"),
-        );
-        result.current.onSizingCalculated(
-          createSizingPdfData("Cluster-B", "Cluster B"),
-        );
-        result.current.onSizingCalculated(
-          createSizingPdfData("Cluster-C", "Cluster C"),
-        );
-        result.current.selectGroup("group-1");
-        result.current.selectCluster(ALL_CLUSTERS_ID);
-      });
-
-      act(() => {
-        result.current.exportPdf(mockContainer);
-      });
-
-      const calls = mockReportStore.exportPdf.mock.calls as Array<
-        [
-          HTMLElement,
-          { additionalTocItems?: string[]; extraPages?: unknown[] } | undefined,
-        ]
-      >;
-      const exportOptions = calls[0]?.[1];
-      expect(exportOptions?.additionalTocItems).toHaveLength(2);
-      expect(exportOptions?.additionalTocItems).toEqual(
-        expect.arrayContaining([
-          "- Cluster sizing recommendations: Cluster A",
-          "- Cluster sizing recommendations: Cluster C",
-        ]),
+      expect(result.current.exportDocumentTitle).toBe(
+        "Assessment assessment-1 - vCenter report",
       );
-      expect(exportOptions?.extraPages).toHaveLength(2);
     });
 
-    it("exportHtml delegates to store.exportHtml()", () => {
-      const { result } = renderHook(() => useReportPageViewModel());
-
-      act(() => {
-        result.current.exportHtml();
-      });
-
-      expect(mockReportStore.exportHtml).toHaveBeenCalledTimes(1);
-    });
-
-    it("exportHtml uses scoped inventory when a group is selected", () => {
+    it("appends the selected group name to the export title", () => {
       const assessment = createAssessment("assessment-1", {
         "Cluster-A": { infra: createInfra(2, 2), vms: createVMs(10) },
       });
-      const subsetInventory = {
-        vcenterId: "vcenter-1",
-        clusters: {
-          "Cluster-A": {
-            infra: createInfra(1, 1),
-            vms: createVMs(3),
-          },
-        },
-        vcenter: {
-          infra: createInfra(1, 1),
-          vms: createVMs(3),
-        },
-      };
       assessment.snapshots = [
         {
           createdAt: new Date(),
@@ -656,7 +520,19 @@ describe("useReportPageViewModel", () => {
               vcenterId: "vcenter-1",
               vmsCount: 3,
               createdAt: new Date(),
-              inventory: subsetInventory,
+              inventory: {
+                vcenterId: "vcenter-1",
+                clusters: {
+                  "Cluster-A": {
+                    infra: createInfra(1, 1),
+                    vms: createVMs(3),
+                  },
+                },
+                vcenter: {
+                  infra: createInfra(1, 1),
+                  vms: createVMs(3),
+                },
+              },
             },
           ],
         },
@@ -669,16 +545,21 @@ describe("useReportPageViewModel", () => {
         result.current.selectGroup("group-1");
       });
 
+      expect(result.current.exportDocumentTitle).toContain("Group 1");
+    });
+
+    it("stores sizing results by cluster id", () => {
+      const { result } = renderHook(() => useReportPageViewModel());
+
       act(() => {
-        result.current.exportHtml();
+        result.current.onSizingCalculated(
+          createSizingPdfData("Cluster-A", "Cluster A"),
+        );
       });
 
-      expect(mockReportStore.exportHtml).toHaveBeenCalledTimes(1);
-      const calls = mockReportStore.exportHtml.mock.calls as Array<
-        [unknown, { documentTitle?: string } | undefined]
-      >;
-      expect(calls[0]?.[0]).toBe(subsetInventory);
-      expect(calls[0]?.[1]?.documentTitle).toContain("Group 1");
+      expect(result.current.savedSizingDataMap["Cluster-A"]?.clusterName).toBe(
+        "Cluster A",
+      );
     });
   });
 

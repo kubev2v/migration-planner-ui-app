@@ -4,7 +4,7 @@ import type {
   DiskSizeTierSummary,
   DiskTypeSummary,
 } from "@openshift-migration-advisor/planner-sdk";
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import React from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -80,42 +80,39 @@ vi.mock("@patternfly/react-core", async (importOriginal) => {
     Dropdown: ({
       children,
       toggle,
-      isOpen,
       onSelect,
     }: {
       children?: React.ReactNode;
       toggle?: React.ReactNode | ((ref: React.Ref<unknown>) => React.ReactNode);
-      isOpen?: boolean;
       onSelect?: (
         event: React.MouseEvent<Element, MouseEvent> | undefined,
         value: string | number | undefined,
       ) => void;
     }) => {
-      const handleItemClick = (value: string) => {
-        if (onSelect) {
-          onSelect(undefined, value);
-        }
-      };
+      const renderItems = (nodes: React.ReactNode): React.ReactNode =>
+        React.Children.map(nodes, (child) => {
+          if (!React.isValidElement(child)) {
+            return child;
+          }
+
+          const value = (child.props as { value?: string }).value;
+          if (value) {
+            return React.cloneElement(child, {
+              onClick: () => onSelect?.(undefined, value),
+            } as Partial<unknown>);
+          }
+
+          return React.cloneElement(child, {
+            children: renderItems(
+              (child.props as { children?: React.ReactNode }).children,
+            ),
+          } as Partial<unknown>);
+        });
 
       return (
         <div data-testid="dropdown">
           {typeof toggle === "function" ? toggle(null) : toggle}
-          {isOpen &&
-            React.Children.map(children, (child) => {
-              if (React.isValidElement(child)) {
-                return React.cloneElement(child as React.ReactElement, {
-                  onClick: () => {
-                    const value = (
-                      child as React.ReactElement<{ value?: string }>
-                    ).props.value;
-                    if (value) {
-                      handleItemClick(value);
-                    }
-                  },
-                });
-              }
-              return child;
-            })}
+          {renderItems(children)}
         </div>
       );
     },
@@ -126,12 +123,19 @@ vi.mock("@patternfly/react-core", async (importOriginal) => {
       children,
       value,
       onClick,
+      isDisabled,
     }: {
       children?: React.ReactNode;
       value?: string;
       onClick?: () => void;
+      isDisabled?: boolean;
     }) => (
-      <button role="menuitem" onClick={onClick} data-value={value}>
+      <button
+        role="menuitem"
+        onClick={onClick}
+        data-value={value}
+        disabled={isDisabled}
+      >
         {children}
       </button>
     ),
@@ -171,6 +175,26 @@ type ChartDataItem = {
   legendCategory?: string;
 };
 
+const selectSharedDisksView = (): void => {
+  fireEvent.click(
+    screen.getByRole("menuitem", {
+      name: /Shared disks VS\. No shared disks/i,
+    }),
+  );
+};
+
+const readSharedDisksChart = (): ChartDataItem[] => {
+  const donutCharts = screen.getAllByTestId("donut-chart");
+  const sharedDisksChart = donutCharts.find((chart) => {
+    const subtitle = chart.querySelector('[data-testid="chart-subtitle"]');
+    return subtitle?.textContent?.includes("with shared disks");
+  });
+  const chartData = sharedDisksChart?.querySelector(
+    '[data-testid="chart-data"]',
+  );
+  return JSON.parse(chartData?.textContent || "[]") as ChartDataItem[];
+};
+
 describe("StorageOverview", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -192,64 +216,39 @@ describe("StorageOverview", () => {
       );
 
       expect(container.querySelector("#storage-overview")).toBeInTheDocument();
-      expect(screen.getByText(/Disks/i)).toBeInTheDocument();
+      expect(screen.getByText(/^Disks$/)).toBeInTheDocument();
     });
 
-    it("includes shared disks chart in export mode", () => {
+    it("includes shared disks chart when that view is selected", () => {
       render(
         <StorageOverview
           DiskSizeTierSummary={mockDiskSizeTierSummary}
           diskTypeSummary={mockDiskTypeSummary}
           totalVMs={100}
           totalWithSharedDisks={25}
-          isExportMode={true}
-          exportAllViews={true}
         />,
       );
 
-      expect(
-        screen.getByText(/Shared disks VS\. No shared disks/i),
-      ).toBeInTheDocument();
+      selectSharedDisksView();
 
-      const donutCharts = screen.getAllByTestId("donut-chart");
-      const sharedDisksChartIndex = donutCharts.findIndex((chart) => {
-        const title = chart.querySelector('[data-testid="chart-title"]');
-        const subtitle = chart.querySelector('[data-testid="chart-subtitle"]');
-        return (
-          title?.textContent === "100 VMs" &&
-          subtitle?.textContent === "25 with shared disks"
-        );
-      });
-
-      expect(sharedDisksChartIndex).toBeGreaterThan(-1);
+      expect(screen.getByTestId("chart-title")).toHaveTextContent("100 VMs");
+      expect(screen.getByTestId("chart-subtitle")).toHaveTextContent(
+        "25 with shared disks",
+      );
     });
 
-    it("calculates shared disks data correctly in export mode", () => {
+    it("calculates shared disks data correctly", () => {
       render(
         <StorageOverview
           DiskSizeTierSummary={mockDiskSizeTierSummary}
           diskTypeSummary={mockDiskTypeSummary}
           totalVMs={100}
           totalWithSharedDisks={25}
-          isExportMode={true}
-          exportAllViews={true}
         />,
       );
 
-      const donutCharts = screen.getAllByTestId("donut-chart");
-      const sharedDisksChart = donutCharts.find((chart) => {
-        const title = chart.querySelector('[data-testid="chart-title"]');
-        return title?.textContent === "100 VMs";
-      });
-
-      expect(sharedDisksChart).toBeDefined();
-
-      const chartData = sharedDisksChart!.querySelector(
-        '[data-testid="chart-data"]',
-      );
-      const data = JSON.parse(
-        chartData!.textContent || "[]",
-      ) as ChartDataItem[];
+      selectSharedDisksView();
+      const data = readSharedDisksChart();
 
       const withShared = data.find((d) => d.name === "With shared disks");
       const withoutShared = data.find((d) => d.name === "No shared disks");
@@ -264,29 +263,24 @@ describe("StorageOverview", () => {
       });
     });
 
-    it("excludes shared disks chart from export when there are no shared disks", () => {
+    it("disables the shared disks view when there are no shared disks", () => {
       render(
         <StorageOverview
           DiskSizeTierSummary={mockDiskSizeTierSummary}
           diskTypeSummary={mockDiskTypeSummary}
           totalVMs={100}
           totalWithSharedDisks={0}
-          isExportMode={true}
-          exportAllViews={true}
         />,
       );
 
       expect(
-        screen.queryByText(/Shared disks VS\. No shared disks/i),
-      ).not.toBeInTheDocument();
-
-      const donutCharts = screen.getAllByTestId("donut-chart");
-      const sharedDisksChart = donutCharts.find((chart) => {
-        const subtitle = chart.querySelector('[data-testid="chart-subtitle"]');
-        return subtitle?.textContent?.includes("with shared disks");
-      });
-
-      expect(sharedDisksChart).toBeUndefined();
+        screen.getByRole("menuitem", {
+          name: /Shared disks VS\. No shared disks/i,
+        }),
+      ).toBeDisabled();
+      expect(screen.queryByTestId("chart-subtitle")).not.toHaveTextContent(
+        "with shared disks",
+      );
     });
 
     it("handles all VMs with shared disks", () => {
@@ -296,25 +290,11 @@ describe("StorageOverview", () => {
           diskTypeSummary={mockDiskTypeSummary}
           totalVMs={100}
           totalWithSharedDisks={100}
-          isExportMode={true}
-          exportAllViews={true}
         />,
       );
 
-      const donutCharts = screen.getAllByTestId("donut-chart");
-      const sharedDisksChart = donutCharts.find((chart) => {
-        const subtitle = chart.querySelector('[data-testid="chart-subtitle"]');
-        return subtitle?.textContent === "100 with shared disks";
-      });
-
-      expect(sharedDisksChart).toBeDefined();
-
-      const chartData = sharedDisksChart!.querySelector(
-        '[data-testid="chart-data"]',
-      );
-      const data = JSON.parse(
-        chartData!.textContent || "[]",
-      ) as ChartDataItem[];
+      selectSharedDisksView();
+      const data = readSharedDisksChart();
 
       expect(data.length).toBeGreaterThan(0);
       const withShared = data.find((d) => d.name === "With shared disks");
@@ -323,21 +303,21 @@ describe("StorageOverview", () => {
       });
     });
 
-    it("excludes shared disks chart from export when totalWithSharedDisks is undefined", () => {
+    it("disables the shared disks view when totalWithSharedDisks is undefined", () => {
       render(
         <StorageOverview
           DiskSizeTierSummary={mockDiskSizeTierSummary}
           diskTypeSummary={mockDiskTypeSummary}
           totalVMs={100}
           totalWithSharedDisks={undefined}
-          isExportMode={true}
-          exportAllViews={true}
         />,
       );
 
       expect(
-        screen.queryByText(/Shared disks VS\. No shared disks/i),
-      ).not.toBeInTheDocument();
+        screen.getByRole("menuitem", {
+          name: /Shared disks VS\. No shared disks/i,
+        }),
+      ).toBeDisabled();
     });
 
     it("clamps totalWithSharedDisks to valid range", () => {
@@ -347,25 +327,11 @@ describe("StorageOverview", () => {
           diskTypeSummary={mockDiskTypeSummary}
           totalVMs={100}
           totalWithSharedDisks={150}
-          isExportMode={true}
-          exportAllViews={true}
         />,
       );
 
-      const donutCharts = screen.getAllByTestId("donut-chart");
-      const sharedDisksChart = donutCharts.find((chart) => {
-        const subtitle = chart.querySelector('[data-testid="chart-subtitle"]');
-        return subtitle?.textContent === "100 with shared disks";
-      });
-
-      expect(sharedDisksChart).toBeDefined();
-
-      const chartData = sharedDisksChart!.querySelector(
-        '[data-testid="chart-data"]',
-      );
-      const data = JSON.parse(
-        chartData!.textContent || "[]",
-      ) as ChartDataItem[];
+      selectSharedDisksView();
+      const data = readSharedDisksChart();
 
       const withShared = data.find((d) => d.name === "With shared disks");
       expect(withShared?.count).toBe(100);
@@ -378,25 +344,11 @@ describe("StorageOverview", () => {
           diskTypeSummary={mockDiskTypeSummary}
           totalVMs={100}
           totalWithSharedDisks={-10}
-          isExportMode={true}
-          exportAllViews={true}
         />,
       );
 
-      const donutCharts = screen.getAllByTestId("donut-chart");
-      const sharedDisksChart = donutCharts.find((chart) => {
-        const subtitle = chart.querySelector('[data-testid="chart-subtitle"]');
-        return subtitle?.textContent === "0 with shared disks";
-      });
-
-      expect(sharedDisksChart).toBeDefined();
-
-      const chartData = sharedDisksChart!.querySelector(
-        '[data-testid="chart-data"]',
-      );
-      const data = JSON.parse(
-        chartData!.textContent || "[]",
-      ) as ChartDataItem[];
+      selectSharedDisksView();
+      const data = readSharedDisksChart();
 
       expect(data).toHaveLength(1);
       const withoutShared = data.find((d) => d.name === "No shared disks");
@@ -419,29 +371,6 @@ describe("StorageOverview", () => {
       expect(screen.getByTestId("chart-title")).toHaveTextContent("15 VMs");
     });
 
-    it("includes all views in export mode", () => {
-      render(
-        <StorageOverview
-          DiskSizeTierSummary={mockDiskSizeTierSummary}
-          diskTypeSummary={mockDiskTypeSummary}
-          totalVMs={100}
-          totalWithSharedDisks={25}
-          isExportMode={true}
-          exportAllViews={true}
-        />,
-      );
-
-      expect(screen.getByText(/VM count by disk type/i)).toBeInTheDocument();
-      expect(
-        screen.getByText(/VM count by disk size tier/i),
-      ).toBeInTheDocument();
-      expect(screen.getByText(/Total disk size by tier/i)).toBeInTheDocument();
-
-      expect(screen.getByTestId("bar-chart")).toBeInTheDocument();
-      const donutCharts = screen.getAllByTestId("donut-chart");
-      expect(donutCharts.length).toBeGreaterThanOrEqual(3);
-    });
-
     it("renders toggle button for view selection", () => {
       render(
         <StorageOverview
@@ -455,49 +384,6 @@ describe("StorageOverview", () => {
       expect(
         screen.getByRole("button", { name: /VM count by disk size tier/i }),
       ).toBeInTheDocument();
-    });
-  });
-
-  describe("Export Mode", () => {
-    it("renders all views including shared disks when exportAllViews is true", () => {
-      render(
-        <StorageOverview
-          DiskSizeTierSummary={mockDiskSizeTierSummary}
-          diskTypeSummary={mockDiskTypeSummary}
-          totalVMs={100}
-          totalWithSharedDisks={25}
-          isExportMode={true}
-          exportAllViews={true}
-        />,
-      );
-
-      const donutCharts = screen.getAllByTestId("donut-chart");
-      expect(donutCharts.length).toBeGreaterThanOrEqual(3);
-
-      expect(screen.getByText(/VM count by disk type/i)).toBeInTheDocument();
-      expect(
-        screen.getByText(/VM count by disk size tier/i),
-      ).toBeInTheDocument();
-      expect(screen.getByText(/Total disk size by tier/i)).toBeInTheDocument();
-      expect(
-        screen.getByText(/Shared disks VS\. No shared disks/i),
-      ).toBeInTheDocument();
-    });
-
-    it("hides dropdown in export mode", () => {
-      render(
-        <StorageOverview
-          DiskSizeTierSummary={mockDiskSizeTierSummary}
-          diskTypeSummary={mockDiskTypeSummary}
-          totalVMs={100}
-          totalWithSharedDisks={25}
-          isExportMode={true}
-        />,
-      );
-
-      expect(
-        screen.queryByRole("button", { name: /VM count by disk size tier/i }),
-      ).not.toBeInTheDocument();
     });
   });
 

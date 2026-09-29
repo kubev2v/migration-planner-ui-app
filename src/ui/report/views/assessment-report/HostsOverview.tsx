@@ -1,6 +1,8 @@
 import type { Host } from "@openshift-migration-advisor/planner-sdk";
 import {
   CardEmptyState,
+  ChartExportSurface,
+  ChartHeaderActions,
   MigrationDonutChart,
   REPORT_CARD_EMPTY_STATE_TITLES,
 } from "@openshift-migration-advisor/shared-components";
@@ -21,11 +23,8 @@ type HostLike = {
 
 interface HostsOverviewProps {
   hosts?: Array<Host>;
-  isExportMode?: boolean;
-  exportAllViews?: boolean;
 }
 
-// Keep the same extended palette style used by other overview widgets
 const colorPalette = [
   "#0066cc",
   "#5e40be",
@@ -39,14 +38,10 @@ const colorPalette = [
   "#6a6e73",
 ];
 
-export const HostsOverview: React.FC<HostsOverviewProps> = ({
-  hosts,
-  isExportMode = false,
-}) => {
+export const HostsOverview: React.FC<HostsOverviewProps> = ({ hosts }) => {
   const { slices, legend, totalHosts } = useMemo(() => {
     const asArray: HostLike[] = Array.isArray(hosts) ? hosts : [];
 
-    // Build counts per model, defaulting to "Unknown model" if not available
     const countsMap = asArray.reduce(
       (acc, h) => {
         const raw =
@@ -96,24 +91,23 @@ export const HostsOverview: React.FC<HostsOverviewProps> = ({
     return { slices, legend: legendMap, totalHosts };
   }, [hosts]);
 
+  const chartId = "hosts-overview";
+  const chartTitle = "Host distribution by model";
+
   return (
-    <Card
-      className={dashboardCard}
-      id="hosts-overview"
-      style={{ overflow: isExportMode ? "visible" : "hidden" }}
-    >
-      <CardTitle>
-        <Flex
-          justifyContent={{ default: "justifyContentSpaceBetween" }}
-          alignItems={{ default: "alignItemsCenter" }}
-          style={{ width: "100%" }}
-        >
-          <FlexItem>
-            <div>
+    <ChartExportSurface id={chartId} title={chartTitle}>
+      <Card className={dashboardCard} style={{ overflow: "hidden" }}>
+        <CardTitle>
+          <Flex
+            justifyContent={{ default: "justifyContentSpaceBetween" }}
+            alignItems={{ default: "alignItemsCenter" }}
+            style={{ width: "100%" }}
+          >
+            <FlexItem>
               <div>
-                <i className="fas fa-server" /> Host distribution by model
-              </div>
-              {!isExportMode && (
+                <div>
+                  <i className="fas fa-server" /> Host distribution by model
+                </div>
                 <div
                   style={{
                     color: "var(--pf-t--global--text--color--subtle)",
@@ -122,37 +116,38 @@ export const HostsOverview: React.FC<HostsOverviewProps> = ({
                 >
                   Top 5 models
                 </div>
-              )}
-            </div>
-          </FlexItem>
-        </Flex>
-      </CardTitle>
-      <CardBody>
-        {slices.length === 0 ? (
-          <CardEmptyState title={REPORT_CARD_EMPTY_STATE_TITLES.hosts} />
-        ) : (
-          <MigrationDonutChart
-            legendVariant="chart"
-            data={slices}
-            height={300}
-            width={420}
-            donutThickness={18}
-            titleFontSize={34}
-            legend={legend}
-            legendWidth={680}
-            title={`${totalHosts}`}
-            subTitle="Hosts"
-            subTitleColor="var(--pf-t--global--text--color--subtle)"
-            itemsPerRow={2}
-            labelFontSize={16}
-            marginLeft="0%"
-            tooltipLabelFormatter={({ datum, percent }) =>
-              `${datum.countDisplay}\n${percent.toFixed(1)}%`
-            }
-          />
-        )}
-      </CardBody>
-    </Card>
+              </div>
+            </FlexItem>
+            <ChartHeaderActions chartId={chartId} title={chartTitle} />
+          </Flex>
+        </CardTitle>
+        <CardBody>
+          {slices.length === 0 ? (
+            <CardEmptyState title={REPORT_CARD_EMPTY_STATE_TITLES.hosts} />
+          ) : (
+            <MigrationDonutChart
+              legendVariant="chart"
+              data={slices}
+              height={300}
+              width={420}
+              donutThickness={18}
+              titleFontSize={34}
+              legend={legend}
+              legendWidth={680}
+              title={`${totalHosts}`}
+              subTitle="Hosts"
+              subTitleColor="var(--pf-t--global--text--color--subtle)"
+              itemsPerRow={2}
+              labelFontSize={16}
+              marginLeft="0%"
+              tooltipLabelFormatter={({ datum, percent }) =>
+                `${datum.countDisplay}\n${percent.toFixed(1)}%`
+              }
+            />
+          )}
+        </CardBody>
+      </Card>
+    </ChartExportSurface>
   );
 };
 
