@@ -535,16 +535,17 @@ export const useReportPageViewModel = (): ReportPageViewModel => {
         ) {
           return null;
         }
-        if (current === "architecture" && !isAggregate) {
-          const cluster = clusters?.[clusterId];
-          return hasClusterResources(cluster?.infra, cluster?.vms)
-            ? current
-            : null;
+        if (current === "architecture") {
+          const targetInfra = isAggregate
+            ? infra
+            : clusters?.[clusterId]?.infra;
+          const targetVms = isAggregate ? vms : clusters?.[clusterId]?.vms;
+          return hasClusterResources(targetInfra, targetVms) ? current : null;
         }
         return current;
       });
     },
-    [clusters, hasClusterResources, isPartner],
+    [clusters, hasClusterResources, infra, isPartner, vms],
   );
 
   const openRecommendationTool = useCallback((toolId: RecommendationToolId) => {
@@ -581,9 +582,10 @@ export const useReportPageViewModel = (): ReportPageViewModel => {
     : undefined;
 
   // ---- Resource checks -----------------------------------------------------
-  const canShowClusterRecommendations =
-    selectedClusterId !== ALL_CLUSTERS_ID &&
-    hasClusterResources(clusterView.viewInfra, clusterView.viewVms);
+  const canShowClusterRecommendations = hasClusterResources(
+    clusterView.viewInfra,
+    clusterView.viewVms,
+  );
 
   const canUseRecommendationTools = (clusterView.viewVms?.total ?? 0) > 0;
 

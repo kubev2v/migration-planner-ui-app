@@ -36,6 +36,7 @@ export const RECOMMENDATION_TOOL_CARDS: RecommendationToolCard[] = [
 ];
 
 const ENVIRONMENT_WIDE_TOOL_IDS: RecommendationToolId[] = [
+  "architecture",
   "cost-estimation",
   "time-estimation",
   "complexity",

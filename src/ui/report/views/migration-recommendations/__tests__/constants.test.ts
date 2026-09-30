@@ -11,7 +11,7 @@ describe("recommendation tool catalog", () => {
       getRecommendationToolCards({ isAggregateView: true }).map(
         (card) => card.id,
       ),
-    ).toEqual(["time-estimation", "complexity"]);
+    ).toEqual(["architecture", "time-estimation", "complexity"]);
   });
 
   it("includes cost estimation for partners on the aggregate view", () => {
@@ -20,7 +20,12 @@ describe("recommendation tool catalog", () => {
         isAggregateView: true,
         isPartner: true,
       }).map((card) => card.id),
-    ).toEqual(["cost-estimation", "time-estimation", "complexity"]);
+    ).toEqual([
+      "architecture",
+      "cost-estimation",
+      "time-estimation",
+      "complexity",
+    ]);
   });
 
   it("returns cluster tools including the disabled plan placeholder", () => {
@@ -46,10 +51,10 @@ describe("recommendation tool catalog", () => {
     ]);
   });
 
-  it("treats architecture as unavailable in the aggregate view", () => {
+  it("treats architecture as available in the aggregate view", () => {
     expect(
       isRecommendationToolAvailable("architecture", { isAggregateView: true }),
-    ).toBe(false);
+    ).toBe(true);
     expect(
       isRecommendationToolAvailable("architecture", { isAggregateView: false }),
     ).toBe(true);

@@ -433,11 +433,26 @@ describe("useReportPageViewModel", () => {
       expect(result.current.canShowClusterRecommendations).toBe(true);
     });
 
-    it("canShowClusterRecommendations is false on aggregate view", () => {
+    it("canShowClusterRecommendations is true on aggregate view when hosts and VMs exist", () => {
       const assessment = createAssessment("assessment-1");
       mockAssessmentsStore.getSnapshot.mockReturnValue([assessment]);
 
       const { result } = renderHook(() => useReportPageViewModel());
+      expect(result.current.canShowClusterRecommendations).toBe(true);
+    });
+
+    it("canShowClusterRecommendations is false on aggregate view without hosts or VMs", () => {
+      const assessment = createAssessment("assessment-1", {
+        "Cluster-A": { infra: createInfra(0, 0), vms: createVMs(0) },
+      });
+      mockAssessmentsStore.getSnapshot.mockReturnValue([assessment]);
+
+      const { result } = renderHook(() => useReportPageViewModel());
+
+      act(() => {
+        result.current.selectCluster(ALL_CLUSTERS_ID);
+      });
+
       expect(result.current.canShowClusterRecommendations).toBe(false);
     });
 
@@ -688,7 +703,7 @@ describe("useReportPageViewModel", () => {
       expect(result.current.selectedRecommendationTool).toBeNull();
     });
 
-    it("closes architecture when switching to the aggregate cluster view", () => {
+    it("keeps architecture open when switching to the aggregate cluster view", () => {
       const assessment = createAssessment("assessment-1", {
         "Cluster-A": { infra: createInfra(2, 2), vms: createVMs(5) },
       });
@@ -698,6 +713,26 @@ describe("useReportPageViewModel", () => {
 
       act(() => {
         result.current.openRecommendationTool("architecture");
+        result.current.selectCluster(ALL_CLUSTERS_ID);
+      });
+
+      expect(result.current.selectedRecommendationTool).toBe("architecture");
+    });
+
+    it("closes architecture when switching to an aggregate view without hosts or VMs", () => {
+      const assessment = createAssessment("assessment-1", {
+        "Cluster-A": { infra: createInfra(0, 0), vms: createVMs(0) },
+      });
+      mockAssessmentsStore.getSnapshot.mockReturnValue([assessment]);
+
+      const { result } = renderHook(() => useReportPageViewModel());
+
+      act(() => {
+        result.current.openRecommendationTool("architecture");
+      });
+      expect(result.current.selectedRecommendationTool).toBe("architecture");
+
+      act(() => {
         result.current.selectCluster(ALL_CLUSTERS_ID);
       });
 
