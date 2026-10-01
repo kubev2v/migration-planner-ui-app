@@ -129,9 +129,12 @@ const ReportContent: React.FC = () => {
           </StackItem>
 
           <StackItem>
-            {vm.lastUpdatedText !== "-"
-              ? `Last updated: ${vm.lastUpdatedText}`
-              : "[Last updated time stamp]"}
+            <div>
+              <strong>Data collected on:</strong> {vm.dataCollectedOnText}
+            </div>
+            <div>
+              <strong>Imported to console:</strong> {vm.importedToConsoleText}
+            </div>
           </StackItem>
           <StackItem>
             {vm.clusterCount > 0 ? (

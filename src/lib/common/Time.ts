@@ -45,6 +45,38 @@ export function humanizeDate(when: Date): string {
   return "just now";
 }
 
+/**
+ * Absolute timestamp used for inventory collection and console import times.
+ * Example: "June 18, 2026 at 4:20 AM EDT".
+ */
+export function formatDateTimeAt(
+  value?: string | number | Date | null,
+  timeZone?: string,
+): string {
+  if (value == null || value === "") return "-";
+  const date = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(date.getTime())) return "-";
+
+  const zone = timeZone ? { timeZone } : {};
+  const datePart = new Intl.DateTimeFormat("en-US", {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+    ...zone,
+  }).format(date);
+  const timePart = new Intl.DateTimeFormat("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+    timeZoneName: "short",
+    ...zone,
+  })
+    .format(date)
+    .replace(/[\u202f\u00a0]/g, " ");
+
+  return `${datePart} at ${timePart}`;
+}
+
 export function formatRelativeTime(updatedAt?: string | number | Date): string {
   if (!updatedAt) return "-";
   const date = new Date(updatedAt);

@@ -72,8 +72,19 @@ export interface SnapshotData {
   vms: string | number;
   networks: string | number;
   datastores: string | number;
-  lastUpdated: string;
+  /** When the inventory was collected (`inventory.createdAt`, API `created_at`). */
+  dataCollectedAt: Date | null;
+  /** When the snapshot was imported into the console (`snapshot.createdAt`). */
+  importedAt: Date | null;
 }
+
+const toValidDate = (
+  value: Date | string | number | null | undefined,
+): Date | null => {
+  if (value == null || value === "") return null;
+  const date = value instanceof Date ? value : new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date;
+};
 
 export const parseLatestSnapshot = (
   snapshots: Snapshot[] | undefined,
@@ -85,7 +96,8 @@ export const parseLatestSnapshot = (
       vms: "-",
       networks: "-",
       datastores: "-",
-      lastUpdated: "-",
+      dataCollectedAt: null,
+      importedAt: null,
     };
   }
 
@@ -106,34 +118,23 @@ export const parseLatestSnapshot = (
     ? lastSnapshot.inventory.vcenter?.infra?.datastores.length
     : "-";
 
-  const lastUpdated = lastSnapshot.createdAt
-    ? ((): string => {
-        const date = new Date(lastSnapshot.createdAt);
-        const now = new Date();
-        const diffMs = now.getTime() - date.getTime();
-        const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-
-        if (diffDays === 0) {
-          return "Today";
-        } else if (diffDays === 1) {
-          return "1 day ago";
-        } else if (diffDays < 7) {
-          return `${diffDays} days ago`;
-        } else {
-          return (
-            date.toLocaleDateString() +
-            " " +
-            date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-          );
-        }
-      })()
-    : "-";
+  const inventory = lastSnapshot.inventory as
+    | {
+        createdAt?: Date | string;
+        created_at?: Date | string;
+      }
+    | undefined;
+  const dataCollectedAt = toValidDate(
+    inventory?.createdAt ?? inventory?.created_at,
+  );
+  const importedAt = toValidDate(lastSnapshot.createdAt);
 
   return {
     hosts,
     vms,
     networks,
     datastores,
-    lastUpdated,
+    dataCollectedAt,
+    importedAt,
   };
 };

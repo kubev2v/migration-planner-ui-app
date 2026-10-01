@@ -6,6 +6,7 @@ import userEvent from "@testing-library/user-event";
 import React from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+import { formatDateTimeAt } from "../../../../lib/common/Time";
 import { createAssessmentModel } from "../../../../models/AssessmentModel";
 import {
   selectAttribute,
@@ -128,6 +129,60 @@ describe("AssessmentsPage Source column", () => {
     expect(within(table).getAllByText("Uploaded file")).toHaveLength(3);
     expect(
       within(table).getByText("Connected discovery appliance"),
+    ).toBeInTheDocument();
+  });
+});
+
+describe("AssessmentsPage timestamps", () => {
+  it("shows collected and imported times to the right of sharing status", () => {
+    const collectedAt = new Date("2026-06-18T08:20:00.000Z");
+    const importedAt = new Date("2026-06-20T14:00:00.000Z");
+
+    render(
+      <AssessmentsPage
+        assessments={[
+          makeAssessment({
+            id: "dated",
+            name: "Dated Assessment",
+            snapshots: [
+              {
+                createdAt: importedAt,
+                inventory: {
+                  vcenterId: "vc",
+                  clusters: {},
+                  createdAt: collectedAt,
+                },
+              },
+            ],
+          }),
+        ]}
+      />,
+    );
+
+    const table = screen.getByRole("grid", { name: "Assessments table" });
+    const labels = within(table)
+      .getAllByRole("columnheader")
+      .map((header) => header.textContent ?? "");
+    const sharingIndex = labels.findIndex((label) =>
+      label.includes("Sharing status"),
+    );
+    const collectedIndex = labels.findIndex((label) =>
+      label.includes("Data collected on"),
+    );
+    const importedIndex = labels.findIndex((label) =>
+      label.includes("Imported to console"),
+    );
+
+    expect(collectedIndex).toBeGreaterThan(sharingIndex);
+    expect(importedIndex).toBeGreaterThan(collectedIndex);
+    expect(
+      within(table).queryByRole("columnheader", { name: /Last updated/ }),
+    ).not.toBeInTheDocument();
+    expect(
+      within(table).getByText(formatDateTimeAt(collectedAt)),
+    ).toBeInTheDocument();
+    expect(
+      within(table).getByText(formatDateTimeAt(importedAt)),
     ).toBeInTheDocument();
   });
 });

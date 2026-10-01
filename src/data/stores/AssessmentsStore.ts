@@ -69,7 +69,6 @@ export class AssessmentsStore
     initOverrides?: RequestInit | InitOverrideFunction,
   ): Promise<AssessmentModel[]> {
     const response = (await this.api.listAssessments(
-      { sourceId },
       initOverrides,
     )) as AssessmentListResponse;
     const rawAssessments = normalizeListResponse(response).map(

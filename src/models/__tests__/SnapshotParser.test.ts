@@ -1,7 +1,7 @@
 import type { Snapshot as SnapshotModel } from "@openshift-migration-advisor/planner-sdk";
 import { describe, expect, it } from "vitest";
 
-import { hasUsefulData } from "../SnapshotParser";
+import { hasUsefulData, parseLatestSnapshot } from "../SnapshotParser";
 
 const buildSnapshot = (
   createdAt: string,
@@ -22,6 +22,55 @@ const buildLegacySnapshot = (
     ...data,
   } as unknown as SnapshotModel;
 };
+
+describe("parseLatestSnapshot", () => {
+  it("returns null timestamps when there are no snapshots", () => {
+    expect(parseLatestSnapshot(undefined)).toMatchObject({
+      dataCollectedAt: null,
+      importedAt: null,
+    });
+  });
+
+  it("uses the latest snapshot import time and inventory createdAt", () => {
+    const collectedAt = new Date("2026-06-18T08:20:00.000Z");
+    const importedAt = new Date("2026-06-20T14:00:00.000Z");
+
+    const result = parseLatestSnapshot([
+      buildSnapshot("2026-06-01T00:00:00.000Z", {
+        inventory: {
+          vcenterId: "vcenter-1",
+          clusters: {},
+          createdAt: new Date("2026-01-01T00:00:00.000Z"),
+        },
+      }),
+      buildSnapshot(importedAt.toISOString(), {
+        inventory: {
+          vcenterId: "vcenter-1",
+          clusters: {},
+          createdAt: collectedAt,
+        },
+      }),
+    ]);
+
+    expect(result.dataCollectedAt).toEqual(collectedAt);
+    expect(result.importedAt).toEqual(importedAt);
+  });
+
+  it("reads inventory created_at when createdAt is absent", () => {
+    const collectedAt = "2026-06-18T08:20:00.000Z";
+    const result = parseLatestSnapshot([
+      buildSnapshot("2026-06-20T14:00:00.000Z", {
+        inventory: {
+          vcenterId: "vcenter-1",
+          clusters: {},
+          created_at: collectedAt,
+        } as unknown as SnapshotModel["inventory"],
+      }),
+    ]);
+
+    expect(result.dataCollectedAt).toEqual(new Date(collectedAt));
+  });
+});
 
 describe("hasUsefulData", () => {
   it("returns false when snapshots are empty", () => {
