@@ -3,6 +3,9 @@ import {
   CardEmptyState,
   chartColorFailure,
   chartColorSuccess,
+  ChartExportSurface,
+  chartExportViewsFromLabels,
+  ChartHeaderActions,
   MigrationDonutChart,
   REPORT_CARD_EMPTY_STATE_TITLES,
 } from "@openshift-migration-advisor/shared-components";
@@ -22,7 +25,6 @@ import RhUiVirtualMachineIcon from "@patternfly/react-icons/dist/esm/icons/virtu
 import React, { useState } from "react";
 
 import IssuesBreakdownChart from "../../../core/components/IssuesBreakdownChart";
-import { DashboardExportSection } from "./DashboardExportSection";
 import {
   dashboardCard,
   storageFlexFullWidth,
@@ -42,15 +44,11 @@ interface VmMigrationStatusProps {
     nonMigratable: number;
   };
   issuesBreakdown?: IssuesBreakdown;
-  isExportMode?: boolean;
-  exportAllViews?: boolean;
 }
 
 export const VMMigrationStatus: React.FC<VmMigrationStatusProps> = ({
   data,
   issuesBreakdown,
-  isExportMode = false,
-  exportAllViews = false,
 }) => {
   const [viewMode, setViewMode] = useState<ViewMode>("issuesVsNoIssues");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -91,59 +89,37 @@ export const VMMigrationStatus: React.FC<VmMigrationStatusProps> = ({
 
   const totalVMs = data.migratable + data.nonMigratable;
 
-  const renderDonutChart = (): React.ReactNode =>
-    donutData.length === 0 ? (
-      <CardEmptyState title={REPORT_CARD_EMPTY_STATE_TITLES.migrationStatus} />
-    ) : (
-      <MigrationDonutChart
-        legendVariant="chart"
-        data={donutData}
-        legend={legend}
-        height={300}
-        width={420}
-        donutThickness={18}
-        padAngle={1}
-        title={`${totalVMs}`}
-        subTitle="VMs"
-        subTitleColor="var(--pf-t--global--text--color--subtle)"
-        titleFontSize={34}
-        labelFontSize={18}
-        itemsPerRow={2}
-        marginLeft="40%"
-      />
-    );
-
-  const renderBreakdownChart = (showTotalsNote: boolean): React.ReactNode =>
-    issuesBreakdown ? (
-      <IssuesBreakdownChart
-        issuesBreakdown={issuesBreakdown}
-        isExportMode={isExportMode}
-        showTotalsNote={showTotalsNote}
-      />
-    ) : (
-      <CardEmptyState title={REPORT_CARD_EMPTY_STATE_TITLES.issuesBreakdown} />
-    );
+  const chartId = "vm-migration-status";
+  const chartTitle = `VM migration status — ${VIEW_MODE_LABELS[viewMode]}`;
 
   return (
-    <Card
-      className={dashboardCard}
-      id="vm-migration-status"
-      style={{
-        height: isExportMode ? "auto" : "340px !important",
-        overflow: isExportMode ? "visible" : "hidden",
-      }}
+    <ChartExportSurface
+      id={chartId}
+      title={chartTitle}
+      exportViews={chartExportViewsFromLabels(
+        "VM migration status",
+        VIEW_MODE_LABELS,
+      )}
+      activeExportViewId={viewMode}
+      onExportViewChange={(viewId) => setViewMode(viewId as ViewMode)}
     >
-      <CardTitle>
-        <Flex
-          alignItems={{ default: "alignItemsCenter" }}
-          justifyContent={{ default: "justifyContentSpaceBetween" }}
-          className={storageFlexFullWidth}
-        >
-          <FlexItem>
-            <RhUiVirtualMachineIcon /> VM Migration Status
-          </FlexItem>
-          {!isExportMode && (
+      <Card
+        className={dashboardCard}
+        style={{
+          height: "340px !important",
+          overflow: "hidden",
+        }}
+      >
+        <CardTitle>
+          <Flex
+            alignItems={{ default: "alignItemsCenter" }}
+            justifyContent={{ default: "justifyContentSpaceBetween" }}
+            className={storageFlexFullWidth}
+          >
             <FlexItem>
+              <RhUiVirtualMachineIcon /> VM Migration Status
+            </FlexItem>
+            <ChartHeaderActions chartId={chartId} title={chartTitle}>
               <Dropdown
                 isOpen={isDropdownOpen}
                 onSelect={onSelect}
@@ -168,29 +144,45 @@ export const VMMigrationStatus: React.FC<VmMigrationStatusProps> = ({
                   </DropdownItem>
                 </DropdownList>
               </Dropdown>
-            </FlexItem>
+            </ChartHeaderActions>
+          </Flex>
+        </CardTitle>
+        <CardBody>
+          {viewMode === "issuesVsNoIssues" ? (
+            donutData.length === 0 ? (
+              <CardEmptyState
+                title={REPORT_CARD_EMPTY_STATE_TITLES.migrationStatus}
+              />
+            ) : (
+              <MigrationDonutChart
+                legendVariant="chart"
+                data={donutData}
+                legend={legend}
+                height={300}
+                width={420}
+                donutThickness={18}
+                padAngle={1}
+                title={`${totalVMs}`}
+                subTitle="VMs"
+                subTitleColor="var(--pf-t--global--text--color--subtle)"
+                titleFontSize={34}
+                labelFontSize={18}
+                itemsPerRow={2}
+                marginLeft="40%"
+              />
+            )
+          ) : issuesBreakdown ? (
+            <IssuesBreakdownChart
+              issuesBreakdown={issuesBreakdown}
+              showTotalsNote
+            />
+          ) : (
+            <CardEmptyState
+              title={REPORT_CARD_EMPTY_STATE_TITLES.issuesBreakdown}
+            />
           )}
-        </Flex>
-      </CardTitle>
-      <CardBody>
-        {isExportMode && exportAllViews ? (
-          <>
-            <DashboardExportSection
-              title={VIEW_MODE_LABELS.issuesVsNoIssues}
-              withMargin
-            >
-              {renderDonutChart()}
-            </DashboardExportSection>
-            <DashboardExportSection title={VIEW_MODE_LABELS.issuesBreakdown}>
-              {renderBreakdownChart(false)}
-            </DashboardExportSection>
-          </>
-        ) : viewMode === "issuesVsNoIssues" ? (
-          renderDonutChart()
-        ) : (
-          renderBreakdownChart(true)
-        )}
-      </CardBody>
-    </Card>
+        </CardBody>
+      </Card>
+    </ChartExportSurface>
   );
 };

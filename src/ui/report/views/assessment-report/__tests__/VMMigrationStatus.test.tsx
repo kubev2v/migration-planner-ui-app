@@ -174,35 +174,4 @@ describe("VMMigrationStatus", () => {
       "Issues breakdown data not collected",
     );
   });
-
-  it("hides the view mode dropdown in export mode", () => {
-    render(
-      <VMMigrationStatus
-        data={baseData}
-        issuesBreakdown={issuesBreakdown}
-        isExportMode
-      />,
-    );
-
-    expect(screen.queryByTestId("view-mode-dropdown")).not.toBeInTheDocument();
-    expect(screen.getByTestId("donut-chart")).toBeInTheDocument();
-  });
-
-  it("renders both views when exporting with exportAllViews", () => {
-    render(
-      <VMMigrationStatus
-        data={baseData}
-        issuesBreakdown={issuesBreakdown}
-        isExportMode
-        exportAllViews
-      />,
-    );
-
-    expect(screen.queryByTestId("view-mode-dropdown")).not.toBeInTheDocument();
-    expect(screen.getAllByTestId("donut-chart")).toHaveLength(1);
-    expect(screen.getByText("No issues vs with issues")).toBeInTheDocument();
-    expect(screen.getByText("With issues breakdown")).toBeInTheDocument();
-    expect(screen.getByText(/Critical/)).toBeInTheDocument();
-    expect(screen.getByText(/\(12 VMs\)/)).toBeInTheDocument();
-  });
 });

@@ -59,13 +59,11 @@ const totalsNote = css`
 
 interface IssuesBreakdownChartProps {
   issuesBreakdown: IssuesBreakdown;
-  isExportMode?: boolean;
   showTotalsNote?: boolean;
 }
 
 const IssuesBreakdownChart: React.FC<IssuesBreakdownChartProps> = ({
   issuesBreakdown,
-  isExportMode = false,
   showTotalsNote = true,
 }) => {
   const breakdownData = useMemo(
@@ -84,8 +82,8 @@ const IssuesBreakdownChart: React.FC<IssuesBreakdownChartProps> = ({
       : 0;
   }, [breakdownData]);
 
-  const barTrackHeight = isExportMode ? 140 : 200;
-  const chartHeight = isExportMode ? "180px" : "250px";
+  const barTrackHeight = 200;
+  const chartHeight = "250px";
 
   return (
     <div>
