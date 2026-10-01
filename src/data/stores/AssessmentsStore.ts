@@ -246,6 +246,25 @@ export class AssessmentsStore
     return model;
   }
 
+  async unshare(
+    id: string,
+    initOverrides?: RequestInit | InitOverrideFunction,
+  ): Promise<AssessmentModel> {
+    try {
+      await this.api.unshareAssessment({ id }, initOverrides);
+    } catch (err) {
+      throw await parseApiError(err, "Failed to unshare assessment");
+    }
+    // Fetch the updated assessment to clear the sharing information
+    const updated = await this.api.getAssessment({ id }, initOverrides);
+    const model = createAssessmentModel(updated);
+    this.assessments = this.assessments.map((assessment) =>
+      assessment.id === model.id ? model : assessment,
+    );
+    this.notify();
+    return model;
+  }
+
   calculateAssessmentClusterRequirements(
     requestParameters: CalculateAssessmentClusterRequirementsRequest,
     initOverrides?: RequestInit | InitOverrideFunction,

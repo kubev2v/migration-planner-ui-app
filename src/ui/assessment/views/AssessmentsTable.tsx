@@ -70,6 +70,7 @@ type AssessmentsTableProps = {
   onUpdate?: (assessmentId: string) => void;
   visibleColumns?: ColumnKey[];
   onShareAssessment: (assessmentId: string) => void;
+  onUnshareAssessment: (assessmentId: string) => void;
 };
 
 export const Columns = {
@@ -173,6 +174,7 @@ export const AssessmentsTable: React.FC<AssessmentsTableProps> = ({
   onDelete,
   visibleColumns = Object.keys(Columns) as ColumnKey[],
   onShareAssessment,
+  onUnshareAssessment,
 }) => {
   const navigate = useNavigate();
   const [openDropdowns, setOpenDropdowns] = useState<Record<string, boolean>>(
@@ -633,17 +635,27 @@ export const AssessmentsTable: React.FC<AssessmentsTableProps> = ({
                     >
                       View assessment report
                     </DropdownItem>
-                    <DropdownItem
-                      onClick={() => {
-                        toggleDropdown(row.id);
-                        return onShareAssessment(row.id);
-                      }}
-                      isDisabled={
-                        !row.permissions.includes("share") || row.isShared
-                      }
-                    >
-                      Share assessment
-                    </DropdownItem>
+                    {row.isShared ? (
+                      <DropdownItem
+                        onClick={() => {
+                          toggleDropdown(row.id);
+                          return onUnshareAssessment(row.id);
+                        }}
+                        isDisabled={!row.permissions.includes("share")}
+                      >
+                        Unshare assessment
+                      </DropdownItem>
+                    ) : (
+                      <DropdownItem
+                        onClick={() => {
+                          toggleDropdown(row.id);
+                          return onShareAssessment(row.id);
+                        }}
+                        isDisabled={!row.permissions.includes("share")}
+                      >
+                        Share assessment
+                      </DropdownItem>
+                    )}
                     <DropdownItem
                       onClick={openAssistedInstaller}
                       isDisabled={!row.hasData}
