@@ -87,6 +87,9 @@ const makeViewModel = (
   shareAssessment: vi.fn(),
   isSharingAssessment: false,
   shareError: undefined,
+  unshareAssessment: vi.fn(),
+  isUnsharingAssessment: false,
+  unshareError: undefined,
   ...overrides,
 });
 
@@ -231,5 +234,99 @@ describe("AssessmentsPage filters", () => {
     expect(
       screen.queryByRole("textbox", { name: "Filter by name" }),
     ).not.toBeInTheDocument();
+  });
+});
+
+describe("AssessmentsPage sharing actions", () => {
+  const openKebab = async (
+    user: ReturnType<typeof userEvent.setup>,
+  ): Promise<void> => {
+    await user.click(screen.getByRole("button", { name: "Actions" }));
+  };
+
+  it("shows 'Share assessment' in the kebab for a non-shared assessment", async () => {
+    const user = userEvent.setup();
+    render(
+      <AssessmentsPage
+        assessments={[makeAssessment({ id: "a-1", name: "Alpha Discovery" })]}
+      />,
+    );
+
+    await openKebab(user);
+
+    expect(
+      screen.getByRole("menuitem", { name: "Share assessment" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("menuitem", { name: "Unshare assessment" }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("shows 'Unshare assessment' instead of 'Share assessment' when already shared", async () => {
+    const user = userEvent.setup();
+    render(
+      <AssessmentsPage
+        assessments={[
+          makeAssessment({
+            id: "a-1",
+            name: "Alpha Discovery",
+            sharing: { isShared: true, sharedWith: [] },
+          }),
+        ]}
+      />,
+    );
+
+    await openKebab(user);
+
+    expect(
+      screen.getByRole("menuitem", { name: "Unshare assessment" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("menuitem", { name: "Share assessment" }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("calls shareAssessment after confirming the share modal", async () => {
+    const user = userEvent.setup();
+    const shareAssessment = vi.fn();
+    mockViewModel = makeViewModel({ shareAssessment });
+    render(
+      <AssessmentsPage
+        assessments={[makeAssessment({ id: "a-1", name: "Alpha Discovery" })]}
+      />,
+    );
+
+    await openKebab(user);
+    await user.click(
+      screen.getByRole("menuitem", { name: "Share assessment" }),
+    );
+    await user.click(screen.getByRole("button", { name: "Share" }));
+
+    expect(shareAssessment).toHaveBeenCalledWith("a-1");
+  });
+
+  it("calls unshareAssessment after confirming the unshare modal", async () => {
+    const user = userEvent.setup();
+    const unshareAssessment = vi.fn();
+    mockViewModel = makeViewModel({ unshareAssessment });
+    render(
+      <AssessmentsPage
+        assessments={[
+          makeAssessment({
+            id: "a-1",
+            name: "Alpha Discovery",
+            sharing: { isShared: true, sharedWith: [] },
+          }),
+        ]}
+      />,
+    );
+
+    await openKebab(user);
+    await user.click(
+      screen.getByRole("menuitem", { name: "Unshare assessment" }),
+    );
+    await user.click(screen.getByRole("button", { name: "Unshare" }));
+
+    expect(unshareAssessment).toHaveBeenCalledWith("a-1");
   });
 });

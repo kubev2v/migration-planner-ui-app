@@ -63,6 +63,7 @@ export const AssessmentsPage: React.FC<AssessmentsPageProps> = ({
     jobError,
     isNavigatingToReport,
     isSharingAssessment,
+    isUnsharingAssessment,
     isDeletingAssessment,
     isColumnModalOpen,
     setIsColumnModalOpen,
@@ -75,6 +76,7 @@ export const AssessmentsPage: React.FC<AssessmentsPageProps> = ({
     cancelRVToolsJob,
     updateAssessment,
     shareAssessment,
+    unshareAssessment,
     deleteAssessment,
   } = useAssessmentPageViewModel();
 
@@ -108,6 +110,7 @@ export const AssessmentsPage: React.FC<AssessmentsPageProps> = ({
   const [modalMode, setModalMode] = useState<AssessmentMode>("inventory");
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
   const [isSharingModalOpen, setIsSharingModalOpen] = useState(false);
+  const [isUnsharingModalOpen, setIsUnsharingModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedAssessment, setSelectedAssessment] =
     useState<AssessmentModel | null>(null);
@@ -227,6 +230,13 @@ export const AssessmentsPage: React.FC<AssessmentsPageProps> = ({
       setIsSharingModalOpen(true);
     }
   };
+  const handleUnshareAssessment = (assessmentId: string): void => {
+    const assessment = assessments.find((a) => a.id === assessmentId);
+    if (assessment) {
+      setSelectedAssessment(assessment);
+      setIsUnsharingModalOpen(true);
+    }
+  };
 
   const isTableEmpty = (): boolean => {
     return !Array.isArray(assessments) || assessments.length === 0;
@@ -250,6 +260,11 @@ export const AssessmentsPage: React.FC<AssessmentsPageProps> = ({
     setSelectedAssessment(null);
   };
 
+  const handleCloseUnsharingModal = (): void => {
+    setIsUnsharingModalOpen(false);
+    setSelectedAssessment(null);
+  };
+
   const handleCloseDeleteModal = (): void => {
     setIsDeleteModalOpen(false);
     setSelectedAssessment(null);
@@ -265,6 +280,12 @@ export const AssessmentsPage: React.FC<AssessmentsPageProps> = ({
     if (!selectedAssessment) return;
     await shareAssessment(selectedAssessment.id);
     handleCloseSharingModal();
+  };
+
+  const handleConfirmUnshare = async (): Promise<void> => {
+    if (!selectedAssessment) return;
+    await unshareAssessment(selectedAssessment.id);
+    handleCloseUnsharingModal();
   };
 
   const handleConfirmDelete = async (): Promise<void> => {
@@ -325,6 +346,7 @@ export const AssessmentsPage: React.FC<AssessmentsPageProps> = ({
             onDelete={handleDeleteAssessment}
             onUpdate={handleUpdateAssessment}
             onShareAssessment={handleShareAssessment}
+            onUnshareAssessment={handleUnshareAssessment}
             selectedSources={selectedSources}
             selectedOwners={selectedOwners}
             visibleColumns={visibleColumns}
@@ -370,6 +392,23 @@ export const AssessmentsPage: React.FC<AssessmentsPageProps> = ({
         confirmButtonText="Share"
       >
         Your partner will receive access to the{" "}
+        <b>{(selectedAssessment as AssessmentModel)?.name}</b> assessment.
+      </ConfirmationModal>
+
+      <ConfirmationModal
+        isOpen={isUnsharingModalOpen}
+        onClose={handleCloseUnsharingModal}
+        onCancel={handleCloseUnsharingModal}
+        onConfirm={() => {
+          void handleConfirmUnshare();
+        }}
+        isDisabled={isUnsharingAssessment}
+        title="Unshare assessment with partner"
+        titleIconVariant="warning"
+        primaryButtonVariant="danger"
+        confirmButtonText="Unshare"
+      >
+        Your partner will lose access to the{" "}
         <b>{(selectedAssessment as AssessmentModel)?.name}</b> assessment.
       </ConfirmationModal>
 

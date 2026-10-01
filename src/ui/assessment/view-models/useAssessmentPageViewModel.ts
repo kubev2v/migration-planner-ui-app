@@ -153,6 +153,11 @@ export interface AssessmentPageViewModel {
   shareAssessment: (id: string) => Promise<void>;
   isSharingAssessment: boolean;
   shareError?: Error;
+
+  /** Revoke an assessment share with the partner. */
+  unshareAssessment: (id: string) => Promise<void>;
+  isUnsharingAssessment: boolean;
+  unshareError?: Error;
 }
 
 // ---------------------------------------------------------------------------
@@ -310,6 +315,13 @@ export const useAssessmentPageViewModel = (): AssessmentPageViewModel => {
     [assessmentsStore],
   );
 
+  const [unshareState, doUnshareAssessment] = useAsyncFn(
+    async (id: string): Promise<void> => {
+      await assessmentsStore.unshare(id);
+    },
+    [assessmentsStore],
+  );
+
   const [deleteState, doDeleteAssessment] = useAsyncFn(
     async (id: string): Promise<void> => {
       await assessmentsStore.remove(id);
@@ -377,5 +389,8 @@ export const useAssessmentPageViewModel = (): AssessmentPageViewModel => {
     shareAssessment: doShareAssessment,
     isSharingAssessment: shareState.loading,
     shareError: shareState.error,
+    unshareAssessment: doUnshareAssessment,
+    isUnsharingAssessment: unshareState.loading,
+    unshareError: unshareState.error,
   };
 };

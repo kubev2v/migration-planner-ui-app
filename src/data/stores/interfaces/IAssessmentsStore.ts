@@ -55,6 +55,10 @@ export interface IAssessmentsStore extends ExternalStore<AssessmentModel[]> {
     id: string,
     initOverrides?: RequestInit | InitOverrideFunction,
   ): Promise<AssessmentModel>;
+  unshare(
+    id: string,
+    initOverrides?: RequestInit | InitOverrideFunction,
+  ): Promise<AssessmentModel>;
   calculateAssessmentClusterRequirements(
     requestParameters: CalculateAssessmentClusterRequirementsRequest,
     initOverrides?: RequestInit | InitOverrideFunction,
