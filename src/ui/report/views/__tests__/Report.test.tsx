@@ -92,13 +92,16 @@ vi.mock("../../../core/components/AppPage", () => ({
     children,
     headerActions,
     alerts,
+    caption,
   }: {
     children: React.ReactNode;
     headerActions?: React.ReactNode;
     alerts?: React.ReactNode;
+    caption?: React.ReactNode;
   }): React.ReactElement => (
     <div data-testid="app-page">
       {alerts && <div data-testid="alerts">{alerts}</div>}
+      {caption && <div data-testid="caption">{caption}</div>}
       {headerActions && <div data-testid="header-actions">{headerActions}</div>}
       {children}
     </div>
@@ -203,7 +206,8 @@ function makeBaseVm(
     vms,
     clusters,
     latestSnapshot: {},
-    lastUpdatedText: "-",
+    dataCollectedOnText: "-",
+    importedToConsoleText: "-",
     clusterCount: 0,
     reportSummaryVms: vms,
     vcenterId: undefined,
@@ -262,6 +266,33 @@ describe("Report", () => {
     mockVm = makeBaseVm({ isLoadingData: true, assessment: undefined });
     render(<Report />);
     expect(screen.getByRole("progressbar")).toBeInTheDocument();
+  });
+
+  it("shows data collected on and imported to console", () => {
+    mockVm = makeBaseVm({
+      assessment: {
+        id: "assessment-1",
+        name: "Legacy vCenter",
+        sourceType: "vcenter",
+      },
+      dataCollectedOnText: "June 18, 2026 at 4:20 AM EDT",
+      importedToConsoleText: "June 20, 2026 at 10:00 AM EDT",
+    });
+
+    render(<Report />);
+
+    const caption = screen.getByTestId("caption");
+    expect(within(caption).getByText("Data collected on:")).toBeInTheDocument();
+    expect(
+      within(caption).getByText("June 18, 2026 at 4:20 AM EDT"),
+    ).toBeInTheDocument();
+    expect(
+      within(caption).getByText("Imported to console:"),
+    ).toBeInTheDocument();
+    expect(
+      within(caption).getByText("June 20, 2026 at 10:00 AM EDT"),
+    ).toBeInTheDocument();
+    expect(screen.queryByText(/Last updated/)).not.toBeInTheDocument();
   });
 
   it("renders not found message when assessment does not exist", () => {

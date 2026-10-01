@@ -30,6 +30,7 @@ import {
   TERMINAL_JOB_STATUSES,
 } from "../../../data/stores/JobsStore";
 import { useIsPartner } from "../../../hooks/useIdentity";
+import { formatDateTimeAt } from "../../../lib/common/Time";
 import type { AssessmentModel } from "../../../models/AssessmentModel";
 import type { SourceModel } from "../../../models/SourceModel";
 import { routes } from "../../../routing/Routes";
@@ -217,7 +218,8 @@ export interface ReportPageViewModel {
   vms: VMs | undefined;
   clusters: { [key: string]: InventoryData } | undefined;
   latestSnapshot: SnapshotLike;
-  lastUpdatedText: string;
+  dataCollectedOnText: string;
+  importedToConsoleText: string;
   clusterCount: number;
   reportSummaryVms: VMs | undefined;
   vcenterId: string | undefined;
@@ -594,11 +596,13 @@ export const useReportPageViewModel = (): ReportPageViewModel => {
     clusterView.viewVms,
   );
 
-  // ---- Last updated text ---------------------------------------------------
-  const lastUpdatedText = useMemo((): string => {
-    // Delegate to the domain model's pre-computed latestSnapshot
-    const model = assessment;
-    return model?.latestSnapshot?.lastUpdated || "-";
+  // ---- Collection and import timestamps ------------------------------------
+  const dataCollectedOnText = useMemo((): string => {
+    return formatDateTimeAt(assessment?.latestSnapshot?.dataCollectedAt);
+  }, [assessment]);
+
+  const importedToConsoleText = useMemo((): string => {
+    return formatDateTimeAt(assessment?.latestSnapshot?.importedAt);
   }, [assessment]);
 
   // ---- Missing metrics detection -------------------------------------------
@@ -854,7 +858,8 @@ export const useReportPageViewModel = (): ReportPageViewModel => {
     vms,
     clusters,
     latestSnapshot,
-    lastUpdatedText,
+    dataCollectedOnText,
+    importedToConsoleText,
     clusterCount: reportSummaryClusterCount,
     reportSummaryVms,
     vcenterId,

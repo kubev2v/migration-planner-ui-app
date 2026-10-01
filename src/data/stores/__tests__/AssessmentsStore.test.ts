@@ -61,10 +61,7 @@ describe("AssessmentsStore", () => {
 
     const result = await store.list();
 
-    expect(api.listAssessments).toHaveBeenCalledWith(
-      { sourceId: undefined },
-      undefined,
-    );
+    expect(api.listAssessments).toHaveBeenCalledWith(undefined);
     expect(result).toHaveLength(2);
     expect(result[0].id).toBe("a-1");
     expect(result[0].name).toBe("A");
