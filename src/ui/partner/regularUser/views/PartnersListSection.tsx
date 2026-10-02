@@ -1,11 +1,16 @@
+import { css } from "@emotion/css";
 import type { PartnerRequestCreate } from "@openshift-migration-advisor/planner-sdk";
 import {
   Alert,
   Content,
   ContentVariants,
   EmptyState,
+  SearchInput,
   Stack,
   StackItem,
+  Toolbar,
+  ToolbarContent,
+  ToolbarItem,
 } from "@patternfly/react-core";
 import { RhUiSearchIcon } from "@patternfly/react-icons";
 import React from "react";
@@ -14,6 +19,10 @@ import { LoadingSpinner } from "../../../core/components/LoadingSpinner";
 import { ContactFormModal } from "../components/ContactFormModal";
 import { PartnersGallery } from "../components/PartnersGallery";
 import { usePartnersViewModel } from "../view-models/usePartnersViewModel";
+
+const searchToolbarItemStyle = css`
+  min-width: 212px;
+`;
 
 export const PartnersListSection: React.FC = () => {
   const vm = usePartnersViewModel();
@@ -43,12 +52,33 @@ export const PartnersListSection: React.FC = () => {
         </StackItem>
       )}
 
+      {!vm.isLoading && !vm.error && (
+        <StackItem>
+          <Toolbar>
+            <ToolbarContent>
+              <ToolbarItem className={searchToolbarItemStyle}>
+                <SearchInput
+                  placeholder="Search partners by name"
+                  value={vm.searchTerm}
+                  onChange={(_event, value) => vm.setSearchTerm(value)}
+                  onClear={() => vm.setSearchTerm("")}
+                />
+              </ToolbarItem>
+            </ToolbarContent>
+          </Toolbar>
+        </StackItem>
+      )}
+
       {!vm.isLoading && !vm.error && vm.partners.length === 0 && (
         <StackItem>
           <EmptyState
             headingLevel="h4"
             icon={RhUiSearchIcon}
-            titleText="No partners available"
+            titleText={
+              vm.searchTerm
+                ? "No partners match your search"
+                : "No partners available"
+            }
             variant="sm"
           />
         </StackItem>
