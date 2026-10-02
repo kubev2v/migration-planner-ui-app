@@ -48,6 +48,8 @@ vi.mock(
       HostsOverview: (): JSX.Element => <div data-testid="hosts" />,
       NetworkOverview: (): JSX.Element => <div data-testid="network" />,
       VmPowerStates: (): JSX.Element => <div data-testid="vm-power-states" />,
+      WarningsTable: (): JSX.Element => <div data-testid="warnings" />,
+      ErrorTable: (): JSX.Element => <div data-testid="errors" />,
       buildInfrastructureSummary: (): {
         vmwareVersion: string;
         datacenters: undefined;
@@ -64,12 +66,6 @@ vi.mock(
     };
   },
 );
-vi.mock("../WarningsTable", () => ({
-  WarningsTable: (): JSX.Element => <div data-testid="warnings" />,
-}));
-vi.mock("../ErrorTable", () => ({
-  ErrorTable: (): JSX.Element => <div data-testid="errors" />,
-}));
 
 const emptyBreakdown: VMResourceBreakdown = {
   total: 0,
