@@ -5,6 +5,7 @@ import type {
   VMs,
 } from "@openshift-migration-advisor/planner-sdk";
 import {
+  ErrorTable,
   HostPowerStates,
   HostsOverview,
   InfrastructureSummary,
@@ -13,6 +14,7 @@ import {
   type OSDistributionEntry,
   VCenterClusterDetails,
   VmPowerStates,
+  WarningsTable,
 } from "@openshift-migration-advisor/shared-components";
 import { Gallery, GalleryItem, Grid, GridItem } from "@patternfly/react-core";
 import React from "react";
@@ -20,10 +22,8 @@ import React from "react";
 import { useDashboardViewModel } from "../../view-models/useDashboardViewModel";
 import { ClustersOverview } from "./ClustersOverview";
 import { CpuAndMemoryOverview } from "./CpuAndMemoryOverview";
-import { ErrorTable } from "./ErrorTable";
 import { StorageOverview } from "./StorageOverview";
 import { VMMigrationStatus } from "./VMMigrationStatus";
-import { WarningsTable } from "./WarningsTable";
 
 interface Props {
   infra: Infra;
