@@ -82,3 +82,83 @@ describe("usePartnersViewModel - createPartnerRequest", () => {
     );
   });
 });
+
+describe("usePartnersViewModel - search", () => {
+  const partners = [
+    { id: "1", name: "Red Hat Consulting" },
+    { id: "2", name: "Acme Cloud" },
+    { id: "3", name: "Globex Migrations" },
+  ] as Partner[];
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+
+    const unsubscribe = vi.fn();
+    mockPartnersStore = {
+      subscribe: vi.fn(() => unsubscribe),
+      getSnapshot: vi.fn(() => partners),
+      list: vi.fn().mockResolvedValue(undefined),
+    };
+
+    mockPartnerRequestsStore = {
+      create: vi.fn().mockResolvedValue(undefined),
+    };
+  });
+
+  it("returns all partners when the search term is empty", async () => {
+    const { result } = renderHook(() => usePartnersViewModel());
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    expect(result.current.searchTerm).toBe("");
+    expect(result.current.partners).toHaveLength(3);
+  });
+
+  it("filters partners by name, case-insensitively", async () => {
+    const { result } = renderHook(() => usePartnersViewModel());
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    act(() => {
+      result.current.setSearchTerm("red hat");
+    });
+
+    expect(result.current.partners).toEqual([
+      expect.objectContaining({ id: "1" }),
+    ]);
+  });
+
+  it("trims the search term before matching", async () => {
+    const { result } = renderHook(() => usePartnersViewModel());
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    act(() => {
+      result.current.setSearchTerm("  acme  ");
+    });
+
+    expect(result.current.partners).toEqual([
+      expect.objectContaining({ id: "2" }),
+    ]);
+  });
+
+  it("returns an empty list when no partner matches", async () => {
+    const { result } = renderHook(() => usePartnersViewModel());
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    act(() => {
+      result.current.setSearchTerm("nonexistent");
+    });
+
+    expect(result.current.partners).toEqual([]);
+  });
+});

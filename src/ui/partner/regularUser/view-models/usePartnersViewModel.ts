@@ -3,7 +3,7 @@ import type {
   PartnerRequest,
   PartnerRequestCreate,
 } from "@openshift-migration-advisor/planner-sdk";
-import { useState, useSyncExternalStore } from "react";
+import { useMemo, useState, useSyncExternalStore } from "react";
 import { useAsync, useAsyncFn } from "react-use";
 
 import { Symbols } from "../../../../config/Dependencies";
@@ -14,6 +14,8 @@ import type { Partner } from "../../../../models/PartnerModel";
 
 export interface PartnersViewModel {
   partners: Partner[];
+  searchTerm: string;
+  setSearchTerm: (value: string) => void;
   isLoading: boolean;
   error?: Error;
   createError?: Error;
@@ -31,11 +33,22 @@ export const usePartnersViewModel = (): PartnersViewModel => {
 
   const [selectedPartner, setSelectedPartner] = useState<Partner | null>(null);
   const [createError, setCreateError] = useState<Error | undefined>();
+  const [searchTerm, setSearchTerm] = useState("");
 
   const partners = useSyncExternalStore<Partner[]>(
     partnersStore.subscribe.bind(partnersStore),
     partnersStore.getSnapshot.bind(partnersStore),
   );
+
+  const filteredPartners = useMemo(() => {
+    const term = searchTerm.trim().toLowerCase();
+    if (!term) {
+      return partners;
+    }
+    return partners.filter((partner) =>
+      partner.name.toLowerCase().includes(term),
+    );
+  }, [partners, searchTerm]);
 
   const { loading, error } = useAsync(() => partnersStore.list(), []);
 
@@ -73,7 +86,9 @@ export const usePartnersViewModel = (): PartnersViewModel => {
   };
 
   return {
-    partners,
+    partners: filteredPartners,
+    searchTerm,
+    setSearchTerm,
     isLoading: loading || createState.loading,
     error,
     createError,
