@@ -6,7 +6,9 @@ import type {
 } from "@openshift-migration-advisor/planner-sdk";
 import {
   HostPowerStates,
+  HostsOverview,
   InfrastructureSummary,
+  NetworkOverview,
   OSDistribution,
   type OSDistributionEntry,
   VCenterClusterDetails,
@@ -19,8 +21,6 @@ import { useDashboardViewModel } from "../../view-models/useDashboardViewModel";
 import { ClustersOverview } from "./ClustersOverview";
 import { CpuAndMemoryOverview } from "./CpuAndMemoryOverview";
 import { ErrorTable } from "./ErrorTable";
-import { HostsOverview } from "./HostsOverview";
-import { NetworkOverview } from "./NetworkOverview";
 import { StorageOverview } from "./StorageOverview";
 import { VMMigrationStatus } from "./VMMigrationStatus";
 import { WarningsTable } from "./WarningsTable";
@@ -174,7 +174,7 @@ export const Dashboard: React.FC<Props> = ({
               />
             </GalleryItem>
             <GalleryItem>
-              <HostsOverview hosts={infra.hosts} />
+              <HostsOverview hosts={infra.hosts} legendVariant="chart" />
             </GalleryItem>
           </Gallery>
         </GridItem>
@@ -182,13 +182,14 @@ export const Dashboard: React.FC<Props> = ({
         <GridItem>
           <Gallery hasGutter minWidths={{ default: "300px", md: "45%" }}>
             <GalleryItem>
-              <HostsOverview hosts={infra.hosts} />
+              <HostsOverview hosts={infra.hosts} legendVariant="chart" />
             </GalleryItem>
             <GalleryItem>
               <NetworkOverview
                 infra={infra}
                 nicCount={vms.nicCount}
                 distributionByNicCount={vms.distributionByNicCount}
+                legendVariant="chart"
               />
             </GalleryItem>
           </Gallery>
@@ -202,6 +203,7 @@ export const Dashboard: React.FC<Props> = ({
                 infra={infra}
                 nicCount={vms.nicCount}
                 distributionByNicCount={vms.distributionByNicCount}
+                legendVariant="chart"
               />
             </GalleryItem>
           </Gallery>

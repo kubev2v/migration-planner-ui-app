@@ -22,12 +22,6 @@ vi.mock("../CpuAndMemoryOverview", () => ({
 vi.mock("../StorageOverview", () => ({
   StorageOverview: (): JSX.Element => <div data-testid="storage" />,
 }));
-vi.mock("../NetworkOverview", () => ({
-  NetworkOverview: (): JSX.Element => <div data-testid="network" />,
-}));
-vi.mock("../HostsOverview", () => ({
-  HostsOverview: (): JSX.Element => <div data-testid="hosts" />,
-}));
 vi.mock("../VMMigrationStatus", () => ({
   VMMigrationStatus: (): JSX.Element => <div data-testid="vm-status" />,
 }));
@@ -51,6 +45,8 @@ vi.mock(
       HostPowerStates: (): JSX.Element => (
         <div data-testid="host-power-states" />
       ),
+      HostsOverview: (): JSX.Element => <div data-testid="hosts" />,
+      NetworkOverview: (): JSX.Element => <div data-testid="network" />,
       VmPowerStates: (): JSX.Element => <div data-testid="vm-power-states" />,
       buildInfrastructureSummary: (): {
         vmwareVersion: string;
@@ -168,6 +164,8 @@ describe("Dashboard", () => {
     );
 
     expect(screen.queryByTestId("clusters-overview")).toBeNull();
+    expect(screen.getByTestId("hosts")).toBeInTheDocument();
+    expect(screen.getByTestId("network")).toBeInTheDocument();
     expect(screen.getByTestId("infra-summary")).toBeInTheDocument();
     expect(screen.getByTestId("cluster-details")).toBeInTheDocument();
     expect(screen.getByTestId("host-power-states")).toBeInTheDocument();
