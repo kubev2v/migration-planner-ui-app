@@ -261,7 +261,7 @@ coverage: install
 # Security vulnerability scanning
 security-scan: install
 	@echo "🔒 Running security vulnerability scan..."
-	@npm audit --audit-level=moderate
+	@npm run audit
 	@echo "✅ Security vulnerability scan completed!"
 
 # Fix security vulnerabilities
