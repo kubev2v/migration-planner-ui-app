@@ -4,6 +4,7 @@ import {
   type CalculateMigrationComplexityRequest,
   type CalculateMigrationEstimationByComplexityRequest,
   type CalculateMigrationEstimationRequest,
+  type EnhancementData,
   type GetAssessmentClusterRequirementsStoredInputRequest,
   ResponseError,
 } from "@openshift-migration-advisor/planner-sdk";
@@ -69,12 +70,18 @@ export class AssessmentsStore
     initOverrides?: RequestInit | InitOverrideFunction,
   ): Promise<AssessmentModel[]> {
     const response = (await this.api.listAssessments(
-      { sourceId },
       initOverrides,
     )) as AssessmentListResponse;
-    const rawAssessments = normalizeListResponse(response).map(
+    const listedAssessments = normalizeListResponse(response).map(
       createAssessmentModel,
     );
+    // The current assessment API lists every assessment. Keep source filtering
+    // in the store so callers can still request one source.
+    const rawAssessments = sourceId
+      ? listedAssessments.filter(
+          (assessment) => assessment.sourceId === sourceId,
+        )
+      : listedAssessments;
 
     // Clean up the deleted IDs cache: if an ID is marked as deleted but no longer
     // appears in the server response, the backend has confirmed the deletion.
@@ -263,6 +270,41 @@ export class AssessmentsStore
     );
     this.notify();
     return model;
+  }
+
+  async getEnhancementData(
+    id: string,
+    initOverrides?: RequestInit | InitOverrideFunction,
+  ): Promise<EnhancementData | null> {
+    try {
+      return await this.api.getAssessmentEnhancementData({ id }, initOverrides);
+    } catch (err) {
+      if (err instanceof ResponseError && err.response.status === 404) {
+        return null;
+      }
+      throw await parseApiError(
+        err,
+        "Failed to load manual environment details",
+      );
+    }
+  }
+
+  async saveEnhancementData(
+    id: string,
+    enhancementData: EnhancementData,
+    initOverrides?: RequestInit | InitOverrideFunction,
+  ): Promise<EnhancementData> {
+    try {
+      return await this.api.saveAssessmentEnhancementData(
+        { id, enhancementData },
+        initOverrides,
+      );
+    } catch (err) {
+      throw await parseApiError(
+        err,
+        "Failed to save manual environment details",
+      );
+    }
   }
 
   calculateAssessmentClusterRequirements(

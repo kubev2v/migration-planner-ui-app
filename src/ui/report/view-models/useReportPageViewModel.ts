@@ -16,7 +16,7 @@ import {
   useState,
   useSyncExternalStore,
 } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { useAsyncFn, useMount } from "react-use";
 
 import { Symbols } from "../../../config/Dependencies";
@@ -45,9 +45,10 @@ import {
 import { ALL_VMS_GROUP_ID } from "../helpers/groupViewModel";
 import type { SizingFormValues } from "../views/cluster-sizer/types";
 import { isRecommendationToolAvailable } from "../views/migration-recommendations/constants";
-import type {
-  RecommendationToolId,
-  ReportContentTab,
+import {
+  type RecommendationToolId,
+  type ReportContentTab,
+  reportTabFromSearch,
 } from "../views/migration-recommendations/types";
 import { useGroupInventoryFilter } from "./useGroupInventoryFilter";
 
@@ -209,6 +210,25 @@ export const useReportPageViewModel = (): ReportPageViewModel => {
   // ---- Route params --------------------------------------------------------
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const activeReportTab = reportTabFromSearch(searchParams.get("tab"));
+  const setActiveReportTab = useCallback(
+    (tab: ReportContentTab) => {
+      setSearchParams(
+        (current) => {
+          const next = new URLSearchParams(current);
+          if (tab === "report") {
+            next.delete("tab");
+          } else {
+            next.set("tab", tab);
+          }
+          return next;
+        },
+        { replace: true },
+      );
+    },
+    [setSearchParams],
+  );
 
   // ---- Stores --------------------------------------------------------------
   const assessmentsStore = useInjection<IAssessmentsStore>(
@@ -275,8 +295,6 @@ export const useReportPageViewModel = (): ReportPageViewModel => {
     string | null
   >(null);
   const [isClusterSelectOpen, setIsClusterSelectOpen] = useState(false);
-  const [activeReportTab, setActiveReportTab] =
-    useState<ReportContentTab>("report");
   const [selectedRecommendationTool, setSelectedRecommendationTool] =
     useState<RecommendationToolId | null>(null);
   const [savedSizingDataMap, setSavedSizingDataMap] = useState<

@@ -29,10 +29,16 @@ import { useReportPageViewModel } from "../useReportPageViewModel";
 
 // Mock react-router-dom
 let mockRouteId = "assessment-1";
+let mockReportSearch = "";
 const mockNavigate = vi.fn();
+const mockSetSearchParams = vi.fn();
 vi.mock("react-router-dom", () => ({
   useParams: () => ({ id: mockRouteId }),
   useNavigate: () => mockNavigate,
+  useSearchParams: () => [
+    new URLSearchParams(mockReportSearch),
+    mockSetSearchParams,
+  ],
   Link: ({ children }: { children: React.ReactNode }) => children,
 }));
 
@@ -235,6 +241,7 @@ describe("useReportPageViewModel", () => {
     vi.clearAllMocks();
     mountCallbacks.length = 0;
     mockRouteId = "assessment-1";
+    mockReportSearch = "";
     mockAssessmentsStore.getSnapshot.mockReturnValue([]);
     mockSourcesStore.getSnapshot.mockReturnValue([]);
     mockSourcesStore.getById.mockReturnValue(undefined);
@@ -568,6 +575,38 @@ describe("useReportPageViewModel", () => {
       const { result } = renderHook(() => useReportPageViewModel());
       expect(result.current.activeReportTab).toBe("report");
       expect(result.current.selectedRecommendationTool).toBeNull();
+    });
+
+    it("opens the manual environment tab from the query string", () => {
+      mockReportSearch = "tab=manual-details";
+      const { result } = renderHook(() => useReportPageViewModel());
+      expect(result.current.activeReportTab).toBe("manual-details");
+    });
+
+    it("stores the selected report tab in the query string", () => {
+      const { result } = renderHook(() => useReportPageViewModel());
+
+      act(() => {
+        result.current.setActiveReportTab("manual-details");
+      });
+
+      const updater = mockSetSearchParams.mock.calls[0][0] as (
+        current: URLSearchParams,
+      ) => URLSearchParams;
+      expect(
+        updater(new URLSearchParams("tab=recommendations")).get("tab"),
+      ).toBe("manual-details");
+      expect(mockSetSearchParams.mock.calls[0][1]).toEqual({ replace: true });
+
+      act(() => {
+        result.current.setActiveReportTab("report");
+      });
+      const clearTab = mockSetSearchParams.mock.calls[1][0] as (
+        current: URLSearchParams,
+      ) => URLSearchParams;
+      expect(
+        clearTab(new URLSearchParams("tab=manual-details")).has("tab"),
+      ).toBe(false);
     });
 
     it("opens and closes a recommendation tool", () => {

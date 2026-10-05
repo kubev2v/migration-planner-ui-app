@@ -28,6 +28,8 @@ const createMockApi = (): AssessmentApiInterface =>
     updateAssessment: vi.fn(),
     deleteAssessment: vi.fn(),
     calculateAssessmentClusterRequirements: vi.fn(),
+    getAssessmentEnhancementData: vi.fn(),
+    saveAssessmentEnhancementData: vi.fn(),
   }) as unknown as AssessmentApiInterface;
 
 // ---------------------------------------------------------------------------
@@ -61,10 +63,7 @@ describe("AssessmentsStore", () => {
 
     const result = await store.list();
 
-    expect(api.listAssessments).toHaveBeenCalledWith(
-      { sourceId: undefined },
-      undefined,
-    );
+    expect(api.listAssessments).toHaveBeenCalledWith(undefined);
     expect(result).toHaveLength(2);
     expect(result[0].id).toBe("a-1");
     expect(result[0].name).toBe("A");
@@ -430,6 +429,17 @@ describe("AssessmentsStore", () => {
     expect(store.getSnapshot()[0].id).toBe("a-2");
   });
 
+  it("list(sourceId) keeps assessments for that source", async () => {
+    vi.mocked(api.listAssessments).mockResolvedValue([
+      makeAssessment({ id: "a-1", sourceId: "source-a" }),
+      makeAssessment({ id: "a-2", sourceId: "source-b" }),
+    ]);
+
+    const result = await store.list("source-a");
+
+    expect(result.map((assessment) => assessment.id)).toEqual(["a-1"]);
+  });
+
   it("list(sourceId) does not clear deleted-ID cache for other sources", async () => {
     const allItems = [
       makeAssessment({ id: "a-1", name: "Assessment 1" }),
@@ -498,5 +508,65 @@ describe("AssessmentsStore", () => {
     expect(store.getSnapshot()).toHaveLength(2);
 
     store.stopPolling();
+  });
+
+  describe("enhancement data", () => {
+    it("getEnhancementData returns stored data", async () => {
+      const enhancement = {
+        vsphereCore: { vmEncryptionEnabled: true, srmEnabled: false },
+      };
+      vi.mocked(api.getAssessmentEnhancementData).mockResolvedValue(
+        enhancement,
+      );
+
+      await expect(store.getEnhancementData("a-1")).resolves.toEqual(
+        enhancement,
+      );
+      expect(api.getAssessmentEnhancementData).toHaveBeenCalledWith(
+        { id: "a-1" },
+        undefined,
+      );
+    });
+
+    it("getEnhancementData treats 404 as no saved details", async () => {
+      vi.mocked(api.getAssessmentEnhancementData).mockRejectedValue(
+        new ResponseError(new Response(null, { status: 404 }), "Not found"),
+      );
+
+      await expect(store.getEnhancementData("a-1")).resolves.toBeNull();
+    });
+
+    it("getEnhancementData surfaces other API errors", async () => {
+      vi.mocked(api.getAssessmentEnhancementData).mockRejectedValue(
+        new ResponseError(
+          new Response(JSON.stringify({ message: "unavailable" }), {
+            status: 500,
+            headers: { "Content-Type": "application/json" },
+          }),
+          "unavailable",
+        ),
+      );
+
+      await expect(store.getEnhancementData("a-1")).rejects.toThrow(
+        "unavailable",
+      );
+    });
+
+    it("saveEnhancementData posts the payload", async () => {
+      const enhancement = {
+        customerDetails: { targetHardware: "Dell" },
+      };
+      vi.mocked(api.saveAssessmentEnhancementData).mockResolvedValue(
+        enhancement,
+      );
+
+      await expect(
+        store.saveEnhancementData("a-1", enhancement),
+      ).resolves.toEqual(enhancement);
+      expect(api.saveAssessmentEnhancementData).toHaveBeenCalledWith(
+        { id: "a-1", enhancementData: enhancement },
+        undefined,
+      );
+    });
   });
 });

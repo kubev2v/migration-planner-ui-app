@@ -20,6 +20,13 @@ const Report = lazy(
   () => import(/* webpackChunkName: "Report" */ "../ui/report/views/Report"),
 );
 
+const ManualEnvironmentWizardPage = lazy(
+  () =>
+    import(
+      /* webpackChunkName: "ManualEnvironmentWizard" */ "../ui/report/views/manual-environment/ManualEnvironmentWizard"
+    ),
+);
+
 const ExampleReport = lazy(
   () =>
     import(
@@ -98,6 +105,10 @@ export const AppRoutes: React.FC = () => (
         </Route>
       </Route>
       {/* Independent routes — they have their own page layout */}
+      <Route
+        path="assessments/:id/report/manual-details"
+        element={<ManualEnvironmentWizardPage />}
+      />
       <Route path="assessments/:id/report" element={<Report />} />
       <Route path="assessments/example-report" element={<ExampleReport />} />
       <Route
