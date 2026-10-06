@@ -1,5 +1,7 @@
+import { yupResolver } from "@hookform/resolvers/yup";
 import { useInjection } from "@openshift-migration-advisor/ioc";
 import { useCallback, useEffect, useState } from "react";
+import { useForm, type UseFormReturn } from "react-hook-form";
 import { useNavigate, useParams } from "react-router-dom";
 
 import { Symbols } from "../../../config/Dependencies";
@@ -12,14 +14,14 @@ import {
 } from "../manual-environment/mapEnhancementData";
 import { manualEnvironmentReportPath } from "../manual-environment/paths";
 import type { ManualEnvironmentFormValues } from "../manual-environment/types";
+import { manualEnvironmentValidationSchema } from "../manual-environment/validation";
 
 export interface ManualEnvironmentWizardViewModel {
   isLoading: boolean;
   loadError: Error | null;
   assessmentName: string;
   reportPath: string;
-  form: ManualEnvironmentFormValues;
-  updateForm: (patch: Partial<ManualEnvironmentFormValues>) => void;
+  formMethods: UseFormReturn<ManualEnvironmentFormValues>;
   isSaving: boolean;
   saveError: Error | null;
   save: () => Promise<void>;
@@ -33,14 +35,18 @@ export const useManualEnvironmentWizardViewModel =
     const navigate = useNavigate();
     const store = useInjection<IAssessmentsStore>(Symbols.AssessmentsStore);
     const [assessmentName, setAssessmentName] = useState("");
-    const [form, setForm] = useState<ManualEnvironmentFormValues>(
-      createEmptyManualEnvironmentForm,
-    );
     const [isLoading, setIsLoading] = useState(true);
     const [loadError, setLoadError] = useState<Error | null>(null);
     const [isSaving, setIsSaving] = useState(false);
     const [saveError, setSaveError] = useState<Error | null>(null);
     const [reloadToken, setReloadToken] = useState(0);
+
+    const formMethods = useForm<ManualEnvironmentFormValues>({
+      resolver: yupResolver(manualEnvironmentValidationSchema),
+      mode: "onTouched",
+      defaultValues: createEmptyManualEnvironmentForm(),
+    });
+    const { reset, handleSubmit } = formMethods;
 
     const reportPath = assessmentId
       ? manualEnvironmentReportPath(assessmentId)
@@ -70,7 +76,7 @@ export const useManualEnvironmentWizardViewModel =
           ]);
           if (cancelled) return;
           setAssessmentName(assessment.name || `Assessment ${assessmentId}`);
-          setForm(formFromEnhancementData(enhancement));
+          reset(formFromEnhancementData(enhancement));
         } catch (err) {
           if (cancelled) return;
           setLoadError(
@@ -87,44 +93,53 @@ export const useManualEnvironmentWizardViewModel =
       return () => {
         cancelled = true;
       };
-    }, [assessmentId, reloadToken, store]);
-
-    const updateForm = useCallback(
-      (patch: Partial<ManualEnvironmentFormValues>) => {
-        setForm((current) => ({ ...current, ...patch }));
-      },
-      [],
-    );
+    }, [assessmentId, reloadToken, reset, store]);
 
     const cancel = useCallback(() => {
       void navigate(reportPath);
     }, [navigate, reportPath]);
 
+    const submitForm = useCallback(
+      async (data: ManualEnvironmentFormValues): Promise<void> => {
+        if (!assessmentId) return;
+        setIsSaving(true);
+        setSaveError(null);
+        try {
+          await store.saveEnhancementData(
+            assessmentId,
+            toEnhancementData(data),
+          );
+          void navigate(reportPath);
+        } catch (err) {
+          setSaveError(
+            err instanceof Error
+              ? err
+              : new Error("Failed to save manual environment details"),
+          );
+        } finally {
+          setIsSaving(false);
+        }
+      },
+      [assessmentId, navigate, reportPath, store],
+    );
+
+    const onInvalid = useCallback(() => {
+      setSaveError(
+        new Error("Please fix the highlighted fields before saving."),
+      );
+    }, []);
+
     const save = useCallback(async () => {
-      if (!assessmentId || isSaving) return;
-      setIsSaving(true);
-      setSaveError(null);
-      try {
-        await store.saveEnhancementData(assessmentId, toEnhancementData(form));
-        void navigate(reportPath);
-      } catch (err) {
-        setSaveError(
-          err instanceof Error
-            ? err
-            : new Error("Failed to save manual environment details"),
-        );
-      } finally {
-        setIsSaving(false);
-      }
-    }, [assessmentId, form, isSaving, navigate, reportPath, store]);
+      if (isSaving) return;
+      await handleSubmit(submitForm, onInvalid)();
+    }, [handleSubmit, isSaving, onInvalid, submitForm]);
 
     return {
       isLoading,
       loadError,
       assessmentName,
       reportPath,
-      form,
-      updateForm,
+      formMethods,
       isSaving,
       saveError,
       save,

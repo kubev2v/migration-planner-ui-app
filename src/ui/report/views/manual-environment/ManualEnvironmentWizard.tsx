@@ -13,6 +13,7 @@ import {
   WizardStep,
 } from "@patternfly/react-core";
 import React from "react";
+import { FormProvider } from "react-hook-form";
 
 import { routes } from "../../../../routing/Routes";
 import { AppPage } from "../../../core/components/AppPage";
@@ -103,88 +104,90 @@ export const ManualEnvironmentWizardPage: React.FC = () => {
         ) : undefined
       }
     >
-      <Wizard
-        className={wizardLayout}
-        height="calc(100vh - 16rem)"
-        navAriaLabel="Manual environment sections"
-        isVisitRequired={false}
-        onClose={vm.cancel}
-        footer={(activeStep, onNext, onBack, onClose) => {
-          if (!activeStep) {
-            return <WizardFooterWrapper>{null}</WizardFooterWrapper>;
-          }
-          const isFirst = activeStep.index === 1;
-          const isLast = activeStep.index === STEP_COUNT;
-          return (
-            <WizardFooterWrapper>
-              <ActionList>
-                <ActionListGroup>
-                  <ActionListItem>
-                    <Button
-                      variant="secondary"
-                      onClick={(event) => {
-                        void onBack(event);
-                      }}
-                      isDisabled={isFirst || vm.isSaving}
-                    >
-                      Back
-                    </Button>
-                  </ActionListItem>
-                  <ActionListItem>
-                    <Button
-                      variant="primary"
-                      onClick={(event) => {
-                        void onNext(event);
-                      }}
-                      isDisabled={isLast || vm.isSaving}
-                    >
-                      Next
-                    </Button>
-                  </ActionListItem>
-                  <ActionListItem>
-                    <Button
-                      variant="secondary"
-                      onClick={() => {
-                        void vm.save();
-                      }}
-                      isLoading={vm.isSaving}
-                      isDisabled={vm.isSaving}
-                    >
-                      Save
-                    </Button>
-                  </ActionListItem>
-                </ActionListGroup>
-                <ActionListGroup>
-                  <ActionListItem>
-                    <Button
-                      variant="link"
-                      onClick={(event) => {
-                        void onClose(event);
-                      }}
-                      isDisabled={vm.isSaving}
-                    >
-                      Cancel
-                    </Button>
-                  </ActionListItem>
-                </ActionListGroup>
-              </ActionList>
-            </WizardFooterWrapper>
-          );
-        }}
-      >
-        <WizardStep id={WIZARD_STEPS[0].id} name={WIZARD_STEPS[0].name}>
-          <VmwareEnvironmentStep form={vm.form} onChange={vm.updateForm} />
-        </WizardStep>
-        <WizardStep id={WIZARD_STEPS[1].id} name={WIZARD_STEPS[1].name}>
-          <VsphereCoreStep form={vm.form} onChange={vm.updateForm} />
-        </WizardStep>
-        <WizardStep id={WIZARD_STEPS[2].id} name={WIZARD_STEPS[2].name}>
-          <NsxAriaStep form={vm.form} onChange={vm.updateForm} />
-        </WizardStep>
-        <WizardStep id={WIZARD_STEPS[3].id} name={WIZARD_STEPS[3].name}>
-          <CustomerTargetStep form={vm.form} onChange={vm.updateForm} />
-        </WizardStep>
-      </Wizard>
+      <FormProvider {...vm.formMethods}>
+        <Wizard
+          className={wizardLayout}
+          height="calc(100vh - 16rem)"
+          navAriaLabel="Manual environment sections"
+          isVisitRequired={false}
+          onClose={vm.cancel}
+          footer={(activeStep, onNext, onBack, onClose) => {
+            if (!activeStep) {
+              return <WizardFooterWrapper>{null}</WizardFooterWrapper>;
+            }
+            const isFirst = activeStep.index === 1;
+            const isLast = activeStep.index === STEP_COUNT;
+            return (
+              <WizardFooterWrapper>
+                <ActionList>
+                  <ActionListGroup>
+                    <ActionListItem>
+                      <Button
+                        variant="secondary"
+                        onClick={(event) => {
+                          void onBack(event);
+                        }}
+                        isDisabled={isFirst || vm.isSaving}
+                      >
+                        Back
+                      </Button>
+                    </ActionListItem>
+                    <ActionListItem>
+                      <Button
+                        variant="primary"
+                        onClick={(event) => {
+                          void onNext(event);
+                        }}
+                        isDisabled={isLast || vm.isSaving}
+                      >
+                        Next
+                      </Button>
+                    </ActionListItem>
+                    <ActionListItem>
+                      <Button
+                        variant="secondary"
+                        onClick={() => {
+                          void vm.save();
+                        }}
+                        isLoading={vm.isSaving}
+                        isDisabled={vm.isSaving}
+                      >
+                        Save
+                      </Button>
+                    </ActionListItem>
+                  </ActionListGroup>
+                  <ActionListGroup>
+                    <ActionListItem>
+                      <Button
+                        variant="link"
+                        onClick={(event) => {
+                          void onClose(event);
+                        }}
+                        isDisabled={vm.isSaving}
+                      >
+                        Cancel
+                      </Button>
+                    </ActionListItem>
+                  </ActionListGroup>
+                </ActionList>
+              </WizardFooterWrapper>
+            );
+          }}
+        >
+          <WizardStep id={WIZARD_STEPS[0].id} name={WIZARD_STEPS[0].name}>
+            <VmwareEnvironmentStep />
+          </WizardStep>
+          <WizardStep id={WIZARD_STEPS[1].id} name={WIZARD_STEPS[1].name}>
+            <VsphereCoreStep />
+          </WizardStep>
+          <WizardStep id={WIZARD_STEPS[2].id} name={WIZARD_STEPS[2].name}>
+            <NsxAriaStep />
+          </WizardStep>
+          <WizardStep id={WIZARD_STEPS[3].id} name={WIZARD_STEPS[3].name}>
+            <CustomerTargetStep />
+          </WizardStep>
+        </Wizard>
+      </FormProvider>
     </AppPage>
   );
 };

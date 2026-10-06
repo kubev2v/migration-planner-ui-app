@@ -1,22 +1,56 @@
+import { yupResolver } from "@hookform/resolvers/yup";
 import { ActiveEnvironmentsInputEnvironmentsEnum } from "@openshift-migration-advisor/planner-sdk";
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import React from "react";
+import { useForm } from "react-hook-form";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { createEmptyManualEnvironmentForm } from "../../../manual-environment/mapEnhancementData";
+import type { ManualEnvironmentFormValues } from "../../../manual-environment/types";
+import { manualEnvironmentValidationSchema } from "../../../manual-environment/validation";
 import type { ManualEnvironmentWizardViewModel } from "../../../view-models/useManualEnvironmentWizardViewModel";
 import { ManualEnvironmentWizardPage } from "../ManualEnvironmentWizard";
 
 const save = vi.fn();
 const cancel = vi.fn();
 const reload = vi.fn();
-const updateForm = vi.fn();
 
-let mockVm: ManualEnvironmentWizardViewModel;
+let overrides: Partial<ManualEnvironmentWizardViewModel> = {};
+let formDefaultValues: ManualEnvironmentFormValues =
+  createEmptyManualEnvironmentForm();
 
+/**
+ * `ManualEnvironmentWizardPage` reads `formMethods` from the view model and
+ * wraps the wizard content in the real `FormProvider`. Rather than faking a
+ * `UseFormReturn` instance by hand, the mocked hook below builds a real
+ * `useForm()` (with the same resolver/defaults the real view model uses) on
+ * every render, so these tests exercise the actual react-hook-form + yup
+ * wiring. `overrides`/`formDefaultValues` are plain module state read here
+ * and written only from test bodies (never during render).
+ */
 vi.mock("../../../view-models/useManualEnvironmentWizardViewModel", () => ({
-  useManualEnvironmentWizardViewModel: () => mockVm,
+  useManualEnvironmentWizardViewModel: (): ManualEnvironmentWizardViewModel => {
+    const formMethods = useForm<ManualEnvironmentFormValues>({
+      resolver: yupResolver(manualEnvironmentValidationSchema),
+      mode: "onTouched",
+      defaultValues: formDefaultValues,
+    });
+
+    return {
+      isLoading: false,
+      loadError: null,
+      assessmentName: "Legacy cluster migration",
+      reportPath: "/assessments/assessment-1/report?tab=manual-details",
+      formMethods,
+      isSaving: false,
+      saveError: null,
+      save,
+      cancel,
+      reload,
+      ...overrides,
+    };
+  },
 }));
 
 vi.mock("react-router-dom", () => ({
@@ -29,27 +63,13 @@ vi.mock("react-router-dom", () => ({
   }): React.ReactElement => <a href={to}>{children}</a>,
 }));
 
-const readyVm = (): ManualEnvironmentWizardViewModel => ({
-  isLoading: false,
-  loadError: null,
-  assessmentName: "Legacy cluster migration",
-  reportPath: "/assessments/assessment-1/report?tab=manual-details",
-  form: createEmptyManualEnvironmentForm(),
-  updateForm,
-  isSaving: false,
-  saveError: null,
-  save,
-  cancel,
-  reload,
-});
-
 describe("ManualEnvironmentWizardPage", () => {
   beforeEach(() => {
     save.mockReset();
     cancel.mockReset();
     reload.mockReset();
-    updateForm.mockReset();
-    mockVm = readyVm();
+    overrides = {};
+    formDefaultValues = createEmptyManualEnvironmentForm();
   });
 
   it("lets any section be opened without stepping through the others", async () => {
@@ -94,28 +114,27 @@ describe("ManualEnvironmentWizardPage", () => {
         name: "Increase Number of perpetual licenses",
       }),
     );
-    expect(updateForm).toHaveBeenCalledWith({ perpetualLicensesCount: 1 });
+    expect(screen.getByLabelText("Number of perpetual licenses")).toHaveValue(
+      "1",
+    );
 
     await user.click(screen.getByRole("button", { name: "vSphere core" }));
     await user.click(screen.getAllByRole("radio", { name: "Yes" })[0]);
-    expect(updateForm).toHaveBeenCalledWith({ vmEncryptionEnabled: true });
+    expect(screen.getAllByRole("radio", { name: "Yes" })[0]).toBeChecked();
 
     await user.click(screen.getByRole("button", { name: "Save" }));
     expect(save).toHaveBeenCalledTimes(1);
   });
 
   it("checks the options already chosen in a multi-select", async () => {
-    const user = userEvent.setup();
-    mockVm = {
-      ...readyVm(),
-      form: {
-        ...createEmptyManualEnvironmentForm(),
-        activeEnvironments: [
-          ActiveEnvironmentsInputEnvironmentsEnum.Qa,
-          ActiveEnvironmentsInputEnvironmentsEnum.Dev,
-        ],
-      },
+    formDefaultValues = {
+      ...createEmptyManualEnvironmentForm(),
+      activeEnvironments: [
+        ActiveEnvironmentsInputEnvironmentsEnum.Qa,
+        ActiveEnvironmentsInputEnvironmentsEnum.Dev,
+      ],
     };
+    const user = userEvent.setup();
     render(<ManualEnvironmentWizardPage />);
 
     await user.click(screen.getByLabelText("Active environments"));
@@ -133,6 +152,24 @@ describe("ManualEnvironmentWizardPage", () => {
     expect(checkboxFor("Production")).not.toBeChecked();
   });
 
+  it("shows a validation message when a field is too long", async () => {
+    const user = userEvent.setup();
+    formDefaultValues = {
+      ...createEmptyManualEnvironmentForm(),
+      targetHardware: "a".repeat(1001),
+    };
+    render(<ManualEnvironmentWizardPage />);
+
+    await user.click(screen.getByRole("button", { name: "Customer & target" }));
+    const input = screen.getByLabelText("Target hardware framework");
+    await user.click(input);
+    await user.tab();
+
+    expect(
+      await screen.findByText(/1000 characters or less/i),
+    ).toBeInTheDocument();
+  });
+
   it("cancels back to the report", async () => {
     const user = userEvent.setup();
     render(<ManualEnvironmentWizardPage />);
@@ -143,18 +180,18 @@ describe("ManualEnvironmentWizardPage", () => {
   });
 
   it("shows a save error without leaving the wizard", () => {
-    mockVm = { ...readyVm(), saveError: new Error("rejected") };
+    overrides = { saveError: new Error("rejected") };
     render(<ManualEnvironmentWizardPage />);
     expect(screen.getByText("rejected")).toBeInTheDocument();
   });
 
   it("shows a loader and a retry when the assessment cannot be loaded", async () => {
     const user = userEvent.setup();
-    mockVm = { ...readyVm(), isLoading: true };
+    overrides = { isLoading: true };
     const { rerender } = render(<ManualEnvironmentWizardPage />);
     expect(screen.getByRole("progressbar")).toBeInTheDocument();
 
-    mockVm = { ...readyVm(), loadError: new Error("missing") };
+    overrides = { loadError: new Error("missing") };
     rerender(<ManualEnvironmentWizardPage />);
     expect(screen.getByText("missing")).toBeInTheDocument();
     expect(

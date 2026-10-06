@@ -1,3 +1,4 @@
+import { FormFieldHelperText } from "@openshift-migration-advisor/shared-components";
 import {
   Button,
   FormGroup,
@@ -29,6 +30,8 @@ interface CountFieldProps {
   label: string;
   value: number | "";
   onChange: (value: number | "") => void;
+  onBlur?: () => void;
+  errorMessage?: string;
 }
 
 export const CountField: React.FC<CountFieldProps> = ({
@@ -36,6 +39,8 @@ export const CountField: React.FC<CountFieldProps> = ({
   label,
   value,
   onChange,
+  onBlur,
+  errorMessage,
 }) => {
   const parsed = value === "" ? "" : String(value);
   const decrementDisabled = value === "" || value <= 0;
@@ -75,6 +80,8 @@ export const CountField: React.FC<CountFieldProps> = ({
             inputMode="numeric"
             value={parsed}
             onChange={handleChange}
+            onBlur={onBlur}
+            validated={errorMessage ? "error" : "default"}
             aria-label={label}
             autoComplete="off"
             onWheel={(event) => {
@@ -93,6 +100,7 @@ export const CountField: React.FC<CountFieldProps> = ({
           />
         </InputGroupItem>
       </InputGroup>
+      <FormFieldHelperText errorMessage={errorMessage} />
     </FormGroup>
   );
 };
@@ -147,6 +155,8 @@ type OptionSelectProps<T extends string> =
       options: readonly LabeledOption<T>[];
       value: T | "";
       onChange: (value: T | "") => void;
+      onBlur?: () => void;
+      errorMessage?: string;
     }
   | {
       isMulti: true;
@@ -156,6 +166,8 @@ type OptionSelectProps<T extends string> =
       options: readonly LabeledOption<T>[];
       value: readonly T[];
       onChange: (value: T[]) => void;
+      onBlur?: () => void;
+      errorMessage?: string;
     };
 
 const labelsFor = <T extends string>(
@@ -171,7 +183,7 @@ const labelsFor = <T extends string>(
 export function OptionSelect<T extends string>(
   props: OptionSelectProps<T>,
 ): React.ReactElement {
-  const { id, label, placeholder, options } = props;
+  const { id, label, placeholder, options, errorMessage } = props;
   const [isOpen, setIsOpen] = useState(false);
   const selectedLabels = props.isMulti
     ? labelsFor(options, props.value)
@@ -210,7 +222,10 @@ export function OptionSelect<T extends string>(
         maxMenuHeight="16rem"
         selected={props.isMulti ? [...props.value] : props.value || undefined}
         onSelect={handleSelect}
-        onOpenChange={setIsOpen}
+        onOpenChange={(open) => {
+          setIsOpen(open);
+          if (!open) props.onBlur?.();
+        }}
         role={props.isMulti ? "menu" : undefined}
         toggle={(toggleRef: React.Ref<MenuToggleElement>) => (
           <MenuToggle
@@ -247,6 +262,7 @@ export function OptionSelect<T extends string>(
           })}
         </SelectList>
       </Select>
+      <FormFieldHelperText errorMessage={errorMessage} />
     </FormGroup>
   );
 }

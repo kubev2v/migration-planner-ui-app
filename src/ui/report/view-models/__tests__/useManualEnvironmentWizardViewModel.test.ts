@@ -48,10 +48,11 @@ describe("useManualEnvironmentWizardViewModel", () => {
     });
 
     expect(result.current.assessmentName).toBe("Legacy cluster migration");
-    expect(result.current.form.vmEncryptionEnabled).toBe(true);
-    expect(result.current.form.vmEncryptionPolicy).toBe("keep-me");
-    expect(result.current.form.physicalLocationsCount).toBe(2);
-    expect(result.current.form.targetHardware).toBe("Dell");
+    const values = result.current.formMethods.getValues();
+    expect(values.vmEncryptionEnabled).toBe(true);
+    expect(values.vmEncryptionPolicy).toBe("keep-me");
+    expect(values.physicalLocationsCount).toBe(2);
+    expect(values.targetHardware).toBe("Dell");
     expect(result.current.loadError).toBeNull();
   });
 
@@ -63,10 +64,8 @@ describe("useManualEnvironmentWizardViewModel", () => {
     });
 
     act(() => {
-      result.current.updateForm({
-        deployedEnvironment: "on_premises",
-        perpetualLicensesCount: 5,
-      });
+      result.current.formMethods.setValue("deployedEnvironment", "on_premises");
+      result.current.formMethods.setValue("perpetualLicensesCount", 5);
     });
 
     await act(async () => {
@@ -132,5 +131,25 @@ describe("useManualEnvironmentWizardViewModel", () => {
       expect(result.current.loadError?.message).toBe("missing");
     });
     expect(result.current.isLoading).toBe(false);
+  });
+
+  it("blocks saving when a field fails yup validation", async () => {
+    const { result } = renderHook(() => useManualEnvironmentWizardViewModel());
+
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
+    });
+
+    act(() => {
+      result.current.formMethods.setValue("perpetualLicensesCount", -5);
+    });
+
+    await act(async () => {
+      await result.current.save();
+    });
+
+    expect(mockStore.saveEnhancementData).not.toHaveBeenCalled();
+    expect(mockNavigate).not.toHaveBeenCalled();
+    expect(result.current.saveError).not.toBeNull();
   });
 });
