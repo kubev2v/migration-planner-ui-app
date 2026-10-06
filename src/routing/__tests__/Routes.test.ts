@@ -51,6 +51,12 @@ describe("Standalone mode (dev) — APP_BASENAME is empty", () => {
     );
   });
 
+  it("routes.manualEnvironmentDetails returns the wizard path", () => {
+    expect(routes.manualEnvironmentDetails("test-123")).toBe(
+      "/assessments/test-123/report/manual-details",
+    );
+  });
+
   it("routes.assessmentCreate returns /assessments/create", () => {
     expect(routes.assessmentCreate).toBe("/assessments/create");
   });
@@ -96,6 +102,12 @@ describe("Microfrontend mode (stage/prod) — APP_BASENAME is /openshift/migrati
   it("routes.assessmentReport includes basename", () => {
     expect(routes.assessmentReport("test-123")).toBe(
       `${BASE}/assessments/test-123/report`,
+    );
+  });
+
+  it("routes.manualEnvironmentDetails includes basename", () => {
+    expect(routes.manualEnvironmentDetails("test-123")).toBe(
+      `${BASE}/assessments/test-123/report/manual-details`,
     );
   });
 

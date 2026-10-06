@@ -35,7 +35,9 @@ import { ReportFilterBar } from "./assessment-report/ReportFilterBar";
 import { ReportSourceStatus } from "./assessment-report/ReportSourceStatus";
 import { DeployOvaBanner } from "./DeployOvaBanner";
 import { ExportReportButton } from "./ExportReportButton";
+import { ManualEnvironmentDetailsPanel } from "./manual-environment/ManualEnvironmentDetailsPanel";
 import { MigrationRecommendations } from "./migration-recommendations/MigrationRecommendations";
+import { MANUAL_ENVIRONMENT_DETAILS_TAB } from "./migration-recommendations/types";
 
 const ReportContent: React.FC = () => {
   const vm = useReportPageViewModel();
@@ -250,7 +252,11 @@ const ReportContent: React.FC = () => {
       <Tabs
         activeKey={vm.activeReportTab}
         onSelect={(_event, tabIndex) => {
-          if (tabIndex === "report" || tabIndex === "recommendations") {
+          if (
+            tabIndex === "report" ||
+            tabIndex === "recommendations" ||
+            tabIndex === MANUAL_ENVIRONMENT_DETAILS_TAB
+          ) {
             vm.setActiveReportTab(tabIndex);
           }
         }}
@@ -260,6 +266,11 @@ const ReportContent: React.FC = () => {
           eventKey="report"
           title={<TabTitleText>Migration report</TabTitleText>}
           tabContentId="assessment-report-panel"
+        />
+        <Tab
+          eventKey={MANUAL_ENVIRONMENT_DETAILS_TAB}
+          title={<TabTitleText>Manual environment details</TabTitleText>}
+          tabContentId="assessment-manual-environment-panel"
         />
         <Tab
           eventKey="recommendations"
@@ -297,6 +308,17 @@ const ReportContent: React.FC = () => {
               </Content>
             </Bullseye>
           )}
+        </TabContentBody>
+      </TabContent>
+      <TabContent
+        eventKey={MANUAL_ENVIRONMENT_DETAILS_TAB}
+        id="assessment-manual-environment-panel"
+        activeKey={vm.activeReportTab}
+        hidden={vm.activeReportTab !== MANUAL_ENVIRONMENT_DETAILS_TAB}
+        aria-label="Manual environment details"
+      >
+        <TabContentBody>
+          <ManualEnvironmentDetailsPanel />
         </TabContentBody>
       </TabContent>
       <TabContent

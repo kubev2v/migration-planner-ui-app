@@ -71,6 +71,8 @@ export const routes = {
   },
   assessmentReport: (id: string) =>
     `${getAppBasename()}/assessments/${id}/report`,
+  manualEnvironmentDetails: (id: string) =>
+    `${getAppBasename()}/assessments/${id}/report/manual-details`,
   get assessmentCreate() {
     return `${getAppBasename()}/assessments/create`;
   },

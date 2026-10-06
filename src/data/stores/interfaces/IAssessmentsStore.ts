@@ -5,6 +5,7 @@ import type {
   CalculateMigrationEstimationRequest,
   ClusterRequirementsResponse,
   ClusterRequirementsStoredInput,
+  EnhancementData,
   GetAssessmentClusterRequirementsStoredInputRequest,
   InitOverrideFunction,
   MigrationComplexityResponse,
@@ -38,6 +39,15 @@ export interface IAssessmentsStore extends ExternalStore<AssessmentModel[]> {
     initOverrides?: RequestInit | InitOverrideFunction,
   ): Promise<AssessmentModel>;
   getById(id: string): AssessmentModel | undefined;
+  getEnhancementData(
+    id: string,
+    initOverrides?: RequestInit | InitOverrideFunction,
+  ): Promise<EnhancementData | null>;
+  saveEnhancementData(
+    id: string,
+    enhancementData: EnhancementData,
+    initOverrides?: RequestInit | InitOverrideFunction,
+  ): Promise<EnhancementData>;
   create(
     assessmentForm: AssessmentCreateForm,
     initOverrides?: RequestInit | InitOverrideFunction,

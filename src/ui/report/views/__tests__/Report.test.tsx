@@ -80,6 +80,12 @@ vi.mock("../migration-recommendations/MigrationRecommendations", () => ({
   ),
 }));
 
+vi.mock("../manual-environment/ManualEnvironmentDetailsPanel", () => ({
+  ManualEnvironmentDetailsPanel: (): React.ReactElement => (
+    <div data-testid="manual-environment-details" />
+  ),
+}));
+
 vi.mock("../../../assessment/views/CreateAssessmentModal", () => ({
   __esModule: true,
   default: (): React.ReactElement => (
@@ -286,8 +292,16 @@ describe("Report", () => {
         ).toBeInTheDocument();
       });
       expect(
+        screen.getByRole("tab", { name: "Manual environment details" }),
+      ).toBeInTheDocument();
+      expect(
         screen.getByRole("tab", { name: "Migration recommendations" }),
       ).toBeInTheDocument();
+      expect(screen.getAllByRole("tab").map((tab) => tab.textContent)).toEqual([
+        "Migration report",
+        "Manual environment details",
+        "Migration recommendations",
+      ]);
       expect(
         screen.queryByText("View Recommendation based on vCenter cluster"),
       ).not.toBeInTheDocument();
@@ -370,6 +384,25 @@ describe("Report", () => {
       await waitFor(() => {
         expect(screen.getByTestId("migration-recommendations")).toBeVisible();
       });
+    });
+
+    it("shows manual environment details when that tab is selected", async () => {
+      mockVm = makeBaseVm({
+        assessment: {
+          id: "assessment-1",
+          name: "Assessment 1",
+          sourceId: "source-1",
+          sourceType: "vcenter",
+        },
+        activeReportTab: "manual-details",
+      });
+
+      render(<Report />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId("manual-environment-details")).toBeVisible();
+      });
+      expect(screen.queryByTestId("dashboard")).not.toBeInTheDocument();
     });
   });
 
