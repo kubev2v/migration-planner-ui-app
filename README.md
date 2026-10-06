@@ -27,4 +27,4 @@ This starts the application in standalone mode with local development settings, 
 ## Deployment
 
 - **Development**: https://console.dev.redhat.com/openshift/migration-advisor/
-- **Staging**: https://stage.foo.redhat.com:1337/openshift/migration-advisor
+- **Staging**: https://stage.foo.redhat.com:1337/openshift/migration-advisor 
