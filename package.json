@@ -38,7 +38,7 @@
     "@patternfly/react-tokens": "^6.6.1",
     "@redhat-cloud-services/frontend-components": "^7.10.12",
     "classnames": "^2.5.1",
-    "html2canvas-pro": "^2.4.5",
+    "html2canvas-pro": "^2.5.0",
     "jspdf": "^4.2.1",
     "lodash": "^4.18.1",
     "react": "^18.3.1",
