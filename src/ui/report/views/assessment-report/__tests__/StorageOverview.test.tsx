@@ -35,6 +35,25 @@ vi.mock(
           <div data-testid="chart-data">{JSON.stringify(data)}</div>
         </div>
       ),
+      ChartExportSurface: ({
+        id,
+        exportViews,
+        children,
+      }: {
+        id: string;
+        exportViews?: Array<{ id: string; title: string }>;
+        children?: React.ReactNode;
+      }): JSX.Element => (
+        <div
+          id={id}
+          data-testid="chart-export-surface"
+          data-export-view-ids={JSON.stringify(
+            (exportViews ?? []).map((view) => view.id),
+          )}
+        >
+          {children}
+        </div>
+      ),
     };
   },
 );
@@ -281,6 +300,47 @@ describe("StorageOverview", () => {
       expect(screen.queryByTestId("chart-subtitle")).not.toHaveTextContent(
         "with shared disks",
       );
+    });
+
+    it("excludes the shared disks view from the chart export cycle when disabled, so PDF/PNG/HTML exports stay consistent with the dropdown", () => {
+      render(
+        <StorageOverview
+          DiskSizeTierSummary={mockDiskSizeTierSummary}
+          diskTypeSummary={mockDiskTypeSummary}
+          totalVMs={100}
+          totalWithSharedDisks={0}
+        />,
+      );
+
+      const exportViewIds = JSON.parse(
+        screen
+          .getByTestId("chart-export-surface")
+          .getAttribute("data-export-view-ids") || "[]",
+      ) as string[];
+
+      expect(exportViewIds).not.toContain("sharedDisks");
+      expect(exportViewIds).toEqual(
+        expect.arrayContaining(["totalSize", "vmCount", "vmCountByDiskType"]),
+      );
+    });
+
+    it("includes the shared disks view in the chart export cycle when available", () => {
+      render(
+        <StorageOverview
+          DiskSizeTierSummary={mockDiskSizeTierSummary}
+          diskTypeSummary={mockDiskTypeSummary}
+          totalVMs={100}
+          totalWithSharedDisks={25}
+        />,
+      );
+
+      const exportViewIds = JSON.parse(
+        screen
+          .getByTestId("chart-export-surface")
+          .getAttribute("data-export-view-ids") || "[]",
+      ) as string[];
+
+      expect(exportViewIds).toContain("sharedDisks");
     });
 
     it("handles all VMs with shared disks", () => {
