@@ -234,6 +234,7 @@ function makeBaseVm(
     jobError: null,
     isNavigatingToReport: false,
     exportDocumentTitle: "Assessment 1 - vCenter report",
+    pdfExtraPages: [],
     activeReportTab: "report",
     setActiveReportTab: vi.fn(),
     selectedRecommendationTool: null,

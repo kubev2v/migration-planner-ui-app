@@ -568,6 +568,99 @@ describe("useReportPageViewModel", () => {
         "Cluster A",
       );
     });
+
+    // @see OMA-2414 - cluster sizing recommendations were silently dropped
+    // from the PDF export after the report moved to the shared chart-export
+    // component. pdfExtraPages is how that data is re-threaded into the PDF.
+    describe("pdfExtraPages (cluster sizing recommendations)", () => {
+      it("is empty when no cluster has been sized", () => {
+        const assessment = createAssessment("assessment-1", {
+          "Cluster-A": { infra: createInfra(2, 2), vms: createVMs(5) },
+        });
+        mockAssessmentsStore.getSnapshot.mockReturnValue([assessment]);
+
+        const { result } = renderHook(() => useReportPageViewModel());
+
+        expect(result.current.pdfExtraPages).toEqual([]);
+      });
+
+      it("includes a page for the selected cluster once sizing is calculated", () => {
+        const assessment = createAssessment("assessment-1", {
+          "Cluster-A": { infra: createInfra(2, 2), vms: createVMs(5) },
+          "Cluster-B": { infra: createInfra(3, 3), vms: createVMs(7) },
+        });
+        mockAssessmentsStore.getSnapshot.mockReturnValue([assessment]);
+
+        const { result } = renderHook(() => useReportPageViewModel());
+
+        act(() => {
+          result.current.selectCluster("Cluster-A");
+          result.current.onSizingCalculated(
+            createSizingPdfData("Cluster-A", "Cluster A"),
+          );
+        });
+
+        expect(result.current.pdfExtraPages).toHaveLength(1);
+        expect(result.current.pdfExtraPages[0].title).toContain("Cluster A");
+        expect(result.current.pdfExtraPages[0].items).toEqual(
+          expect.arrayContaining([
+            { label: "Cluster name", value: "Cluster A" },
+            { label: "Target platform", value: "Bare metal" },
+          ]),
+        );
+      });
+
+      it("excludes sizing data for clusters other than the one selected", () => {
+        const assessment = createAssessment("assessment-1", {
+          "Cluster-A": { infra: createInfra(2, 2), vms: createVMs(5) },
+          "Cluster-B": { infra: createInfra(3, 3), vms: createVMs(7) },
+        });
+        mockAssessmentsStore.getSnapshot.mockReturnValue([assessment]);
+
+        const { result } = renderHook(() => useReportPageViewModel());
+
+        act(() => {
+          result.current.onSizingCalculated(
+            createSizingPdfData("Cluster-A", "Cluster A"),
+          );
+          result.current.onSizingCalculated(
+            createSizingPdfData("Cluster-B", "Cluster B"),
+          );
+          result.current.selectCluster("Cluster-A");
+        });
+
+        expect(result.current.pdfExtraPages).toHaveLength(1);
+        expect(result.current.pdfExtraPages[0].title).toContain("Cluster A");
+      });
+
+      it("includes every sized cluster when viewing all clusters", () => {
+        const assessment = createAssessment("assessment-1", {
+          "Cluster-A": { infra: createInfra(2, 2), vms: createVMs(5) },
+          "Cluster-B": { infra: createInfra(3, 3), vms: createVMs(7) },
+        });
+        mockAssessmentsStore.getSnapshot.mockReturnValue([assessment]);
+
+        const { result } = renderHook(() => useReportPageViewModel());
+
+        act(() => {
+          result.current.onSizingCalculated(
+            createSizingPdfData("Cluster-A", "Cluster A"),
+          );
+          result.current.onSizingCalculated(
+            createSizingPdfData("Cluster-B", "Cluster B"),
+          );
+          result.current.selectCluster(ALL_CLUSTERS_ID);
+        });
+
+        expect(result.current.pdfExtraPages).toHaveLength(2);
+        expect(result.current.pdfExtraPages.map((page) => page.title)).toEqual(
+          expect.arrayContaining([
+            expect.stringContaining("Cluster A"),
+            expect.stringContaining("Cluster B"),
+          ]),
+        );
+      });
+    });
   });
 
   describe("recommendation tools", () => {
