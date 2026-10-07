@@ -234,6 +234,16 @@ export const StorageOverview: React.FC<StorageOverviewProps> = ({
 
   const isSharedDisksViewAvailable = totalWithSharedDisks !== 0;
 
+  // Exclude the "Shared disks" view from the chart export cycle (used to
+  // build the PDF/PNG/HTML exports) when that view is disabled in the
+  // dropdown, so the exported report stays consistent with what's
+  // selectable on screen.
+  const availableExportViewLabels = useMemo(() => {
+    if (isSharedDisksViewAvailable) return VIEW_MODE_LABELS;
+    const { sharedDisks: _sharedDisks, ...rest } = VIEW_MODE_LABELS;
+    return rest;
+  }, [isSharedDisksViewAvailable]);
+
   const sharedDisksChartData = useMemo(() => {
     const withoutShared = totalVMs - normalizedWithShared;
 
@@ -341,7 +351,10 @@ export const StorageOverview: React.FC<StorageOverviewProps> = ({
     <ChartExportSurface
       id={chartId}
       title={chartTitle}
-      exportViews={chartExportViewsFromLabels("Storage", VIEW_MODE_LABELS)}
+      exportViews={chartExportViewsFromLabels(
+        "Storage",
+        availableExportViewLabels,
+      )}
       activeExportViewId={viewMode}
       onExportViewChange={(viewId) => setViewMode(viewId as ViewMode)}
     >
