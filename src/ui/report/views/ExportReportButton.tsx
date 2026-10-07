@@ -1,4 +1,5 @@
 import {
+  type PdfTextPage,
   ReportExportMenu,
   useChartExport,
 } from "@openshift-migration-advisor/shared-components";
@@ -9,17 +10,23 @@ import { buildReportExportOptions } from "../helpers/reportExportOptions";
 interface ExportReportButtonProps {
   documentTitle: string;
   isDisabled?: boolean;
+  /**
+   * Calculated cluster sizing recommendations (if any) to append as extra
+   * pages in the exported PDF. @see OMA-2414
+   */
+  pdfExtraPages?: PdfTextPage[];
 }
 
 export const ExportReportButton: React.FC<ExportReportButtonProps> = ({
   documentTitle,
   isDisabled = false,
+  pdfExtraPages,
 }): JSX.Element => {
   const charts = useChartExport();
   const exportOptions = buildReportExportOptions({
     onExportPdf: charts
       ? () => {
-          void charts.downloadPdf(documentTitle);
+          void charts.downloadPdf(documentTitle, pdfExtraPages);
         }
       : undefined,
     onExportPng: charts

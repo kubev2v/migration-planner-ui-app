@@ -8,6 +8,7 @@ import type {
   VMs,
 } from "@openshift-migration-advisor/planner-sdk";
 import { JobStatus } from "@openshift-migration-advisor/planner-sdk";
+import type { PdfTextPage } from "@openshift-migration-advisor/shared-components";
 import {
   useCallback,
   useEffect,
@@ -43,14 +44,165 @@ import {
   type ReportInventorySource,
 } from "../helpers/groupInventoryFilter";
 import { ALL_VMS_GROUP_ID } from "../helpers/groupViewModel";
-import type { SizingFormValues } from "../views/cluster-sizer/types";
+import {
+  isControlPlaneOnlyClusterMode,
+  type SizingFormValues,
+} from "../views/cluster-sizer/types";
+import {
+  getOptimizationStatusMessage,
+  hasUtilizationComparison,
+} from "../views/cluster-sizer/UtilizationSizing";
 import { isRecommendationToolAvailable } from "../views/migration-recommendations/constants";
 import {
   type RecommendationToolId,
   type ReportContentTab,
   reportTabFromSearch,
 } from "../views/migration-recommendations/types";
+import {
+  formatNumber,
+  formatRatio,
+  getCpuOvercommitLabel,
+  getMemoryOvercommitLabel,
+} from "./ClusterSizingHelpers";
 import { useGroupInventoryFilter } from "./useGroupInventoryFilter";
+
+// ---------------------------------------------------------------------------
+// Sizing → PDF page builder
+// ---------------------------------------------------------------------------
+
+/**
+ * Build the "Cluster sizing recommendations" PDF page for one calculated
+ * cluster. Mirrors the fields shown in `SizingResult` so the exported PDF
+ * matches what the user sees on screen (including the utilization-optimized
+ * sizing when available).
+ *
+ * @see OMA-2414 - PDF export was dropping this section entirely after the
+ * report moved to the shared chart-export component, because the chart
+ * registry only captures registered chart/card elements, not the sizing
+ * wizard's result panel.
+ */
+const buildClusterSizingPdfPage = (data: SizingPdfData): PdfTextPage => {
+  const { result, formValues, clusterName } = data;
+  const isSNO = isControlPlaneOnlyClusterMode(formValues.clusterMode);
+  const isOptimized = hasUtilizationComparison(result);
+  const displaySizing =
+    isOptimized && result.optimizedSizing
+      ? result.optimizedSizing
+      : result.clusterSizing;
+  const hasControlPlane = displaySizing.controlPlaneNodes > 0;
+
+  const cpuOverCommitRatio =
+    result.resourceConsumption.overCommitRatio?.cpu ?? 0;
+  const memoryOverCommitRatio =
+    result.resourceConsumption.overCommitRatio?.memory ?? 0;
+  const cpuLimits = result.resourceConsumption.limits?.cpu ?? 0;
+  const memoryLimits = result.resourceConsumption.limits?.memory ?? 0;
+
+  const items: PdfTextPage["items"] = [
+    { label: "Cluster name", value: clusterName },
+    { label: "Target platform", value: "Bare metal" },
+  ];
+
+  if (isSNO) {
+    items.push(
+      {
+        label: "Total nodes",
+        value: String(displaySizing.totalNodes),
+      },
+      {
+        label: "Node size",
+        value: `${formValues.controlPlaneCpu} CPU, ${formValues.controlPlaneMemoryGb} GB memory`,
+      },
+      {
+        label: "VMs to migrate",
+        value: formatNumber(result.inventoryTotals.totalVMs),
+      },
+      {
+        label: "VM resources (request)",
+        value: `${formatNumber(result.inventoryTotals.totalCPU)} CPU, ${formatNumber(result.inventoryTotals.totalMemory)} GB memory`,
+      },
+    );
+  } else {
+    items.push(
+      {
+        label: "Total nodes",
+        value: `${displaySizing.totalNodes} (${displaySizing.workerNodes} workers + ${displaySizing.controlPlaneNodes} control plane)`,
+      },
+      {
+        label: "Failover capacity",
+        value: `${displaySizing.failoverNodes} failover nodes`,
+      },
+    );
+
+    if (hasControlPlane) {
+      items.push(
+        {
+          label: "Worker node size",
+          value: `${formValues.customCpu} CPU, ${formValues.customMemoryGb} GB memory`,
+        },
+        {
+          label: "Control plane node size",
+          value: `${formValues.controlPlaneCpu} CPU, ${formValues.controlPlaneMemoryGb} GB memory`,
+        },
+      );
+    } else {
+      items.push({
+        label: "Node size",
+        value: `${formValues.customCpu} CPU, ${formValues.customMemoryGb} GB memory`,
+      });
+    }
+
+    items.push(
+      {
+        label: "Overcommitment",
+        value: `CPU ${getCpuOvercommitLabel(formValues.cpuOvercommitRatio)}, Memory ${getMemoryOvercommitLabel(formValues.memoryOvercommitRatio)}`,
+      },
+      {
+        label: "VMs to migrate",
+        value: formatNumber(result.inventoryTotals.totalVMs),
+      },
+      {
+        label: "CPU over-commit ratio",
+        value: formatRatio(cpuOverCommitRatio),
+      },
+      {
+        label: "Memory over-commit ratio",
+        value: formatRatio(memoryOverCommitRatio),
+      },
+      {
+        label: "VM resources (request)",
+        value: `${formatNumber(result.inventoryTotals.totalCPU)} CPU, ${formatNumber(result.inventoryTotals.totalMemory)} GB memory`,
+      },
+      {
+        label: "With over-commit (limits)",
+        value: `${formatNumber(cpuLimits)} CPU, ${formatNumber(memoryLimits)} GB memory`,
+      },
+      {
+        label: "Physical capacity",
+        value: `${formatNumber(displaySizing.totalCPU)} CPU, ${formatNumber(displaySizing.totalMemory)} GB memory`,
+      },
+    );
+  }
+
+  if (isOptimized) {
+    items.push({
+      label: "Sizing basis",
+      value: "Based on actual utilization (right-sized)",
+    });
+  } else {
+    const optimizationNote = getOptimizationStatusMessage(result);
+    if (optimizationNote) {
+      items.push({ label: "Note", value: optimizationNote });
+    }
+  }
+
+  return {
+    title: `Cluster sizing recommendations — ${clusterName}`,
+    items,
+    footer:
+      "Note: Resource requirements are estimates based on current workloads. Please verify this architecture with your SME team to ensure optimal performance.",
+  };
+};
 
 // ---------------------------------------------------------------------------
 // Public interface
@@ -112,6 +264,13 @@ export interface ReportPageViewModel {
 
   // Export
   exportDocumentTitle: string;
+  /**
+   * Native-text PDF pages for calculated cluster sizing recommendations,
+   * scoped to the active cluster/group selection. Passed through to
+   * `useChartExport().downloadPdf` so the PDF export includes this data
+   * even though it is not rendered as a chart/card.
+   */
+  pdfExtraPages: PdfTextPage[];
 
   // Report tabs + recommendation tools
   activeReportTab: ReportContentTab;
@@ -534,6 +693,23 @@ export const useReportPageViewModel = (): ReportPageViewModel => {
     return `${assessment?.name || `Assessment ${id}`} - vCenter report${groupSuffix}`;
   }, [assessment?.name, id, selectedGroupId, groupView.selectionLabel]);
 
+  // Scope sizing results to what's currently in view:
+  // - Single cluster view → only that cluster (if calculated)
+  // - All-clusters view → every sized cluster within the active group inventory
+  const pdfExtraPages = useMemo((): PdfTextPage[] => {
+    const scopedClusterIds = new Set(clusters ? Object.keys(clusters) : []);
+    const sizingEntries =
+      selectedClusterId === ALL_CLUSTERS_ID
+        ? Object.values(savedSizingDataMap).filter((entry) =>
+            scopedClusterIds.has(entry.clusterId),
+          )
+        : savedSizingDataMap[selectedClusterId]
+          ? [savedSizingDataMap[selectedClusterId]]
+          : [];
+
+    return sizingEntries.map(buildClusterSizingPdfPage);
+  }, [clusters, savedSizingDataMap, selectedClusterId]);
+
   // ---- RVTools modal (create-new-assessment from report page) ---------------
   const [isRvtoolsModalOpen, setIsRvtoolsModalOpen] = useState(false);
 
@@ -667,6 +843,7 @@ export const useReportPageViewModel = (): ReportPageViewModel => {
     hasMissingMetrics: missingMetrics.length > 0,
 
     exportDocumentTitle,
+    pdfExtraPages,
 
     activeReportTab,
     setActiveReportTab,

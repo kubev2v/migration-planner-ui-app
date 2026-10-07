@@ -98,7 +98,30 @@ describe("ExportReportButton", () => {
       fireEvent.click(screen.getByRole("menuitem", { name: /pdf/i }));
     });
 
-    expect(downloadPdf).toHaveBeenCalledWith("Assessment 1 - vCenter report");
+    expect(downloadPdf).toHaveBeenCalledWith(
+      "Assessment 1 - vCenter report",
+      undefined,
+    );
+  });
+
+  it("forwards calculated cluster sizing recommendations to downloadPdf", () => {
+    const pdfExtraPages = [
+      {
+        title: "Cluster sizing recommendations — Cluster A",
+        items: [{ label: "Cluster name", value: "Cluster A" }],
+      },
+    ];
+
+    renderButton({ pdfExtraPages });
+
+    act(() => {
+      fireEvent.click(screen.getByRole("menuitem", { name: /pdf/i }));
+    });
+
+    expect(downloadPdf).toHaveBeenCalledWith(
+      "Assessment 1 - vCenter report",
+      pdfExtraPages,
+    );
   });
 
   it("calls downloadHtml when HTML option is clicked", () => {

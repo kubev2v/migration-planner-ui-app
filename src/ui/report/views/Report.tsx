@@ -230,7 +230,10 @@ const ReportContent: React.FC = () => {
       headerActions={
         vm.scopedClusterView ? (
           vm.canExportReport ? (
-            <ExportReportButton documentTitle={vm.exportDocumentTitle} />
+            <ExportReportButton
+              documentTitle={vm.exportDocumentTitle}
+              pdfExtraPages={vm.pdfExtraPages}
+            />
           ) : (
             <Tooltip
               {...themeTooltipFlyoutProps}
@@ -240,6 +243,7 @@ const ReportContent: React.FC = () => {
             >
               <ExportReportButton
                 documentTitle={vm.exportDocumentTitle}
+                pdfExtraPages={vm.pdfExtraPages}
                 isDisabled
               />
             </Tooltip>
