@@ -13,12 +13,6 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { Dashboard } from "../Dashboard";
 
 // Mock heavy child components to keep tests lightweight
-vi.mock("../ClustersOverview", () => ({
-  ClustersOverview: (): JSX.Element => <div data-testid="clusters-overview" />,
-}));
-vi.mock("../CpuAndMemoryOverview", () => ({
-  CpuAndMemoryOverview: (): JSX.Element => <div data-testid="cpu-memory" />,
-}));
 vi.mock("../StorageOverview", () => ({
   StorageOverview: (): JSX.Element => <div data-testid="storage" />,
 }));
@@ -35,6 +29,10 @@ vi.mock(
 
     return {
       ...actual,
+      ClustersOverview: (): JSX.Element => (
+        <div data-testid="clusters-overview" />
+      ),
+      CpuAndMemoryOverview: (): JSX.Element => <div data-testid="cpu-memory" />,
       OSDistribution: (): JSX.Element => <div data-testid="os-distribution" />,
       InfrastructureSummary: (): JSX.Element => (
         <div data-testid="infra-summary" />

@@ -5,6 +5,8 @@ import type {
   VMs,
 } from "@openshift-migration-advisor/planner-sdk";
 import {
+  ClustersOverview,
+  CpuAndMemoryOverview,
   ErrorTable,
   HostPowerStates,
   HostsOverview,
@@ -20,8 +22,6 @@ import { Gallery, GalleryItem, Grid, GridItem } from "@patternfly/react-core";
 import React from "react";
 
 import { useDashboardViewModel } from "../../view-models/useDashboardViewModel";
-import { ClustersOverview } from "./ClustersOverview";
-import { CpuAndMemoryOverview } from "./CpuAndMemoryOverview";
 import { StorageOverview } from "./StorageOverview";
 import { VMMigrationStatus } from "./VMMigrationStatus";
 
@@ -148,6 +148,7 @@ export const Dashboard: React.FC<Props> = ({
               memoryTierDistribution={vms.distributionByMemoryTier}
               memoryTotalGB={ramGB?.total}
               cpuTotalCores={cpuCores?.total}
+              legendVariant="chart"
             />
           </GalleryItem>
           <GalleryItem>
@@ -166,11 +167,9 @@ export const Dashboard: React.FC<Props> = ({
           <Gallery hasGutter minWidths={{ default: "300px", md: "45%" }}>
             <GalleryItem>
               <ClustersOverview
-                vmsPerCluster={Object.values(clusters || {}).map(
-                  (c) => c.vms?.total ?? 0,
-                )}
                 clustersPerDatacenter={infra.clustersPerDatacenter ?? []}
                 clusters={clusters}
+                legendVariant="chart"
               />
             </GalleryItem>
             <GalleryItem>
