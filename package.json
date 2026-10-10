@@ -92,7 +92,7 @@
     "qs": ">=6.16.0",
     "uuid": ">=14.0.2",
     "source-map-js": ">=1.2.2",
-    "shell-quote": ">=1.11.0"
+    "shell-quote": ">=1.12.0"
   },
   "insights": {
     "appname": "migration-advisor"
