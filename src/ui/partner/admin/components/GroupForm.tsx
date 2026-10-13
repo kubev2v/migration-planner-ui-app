@@ -35,7 +35,7 @@ import { FormProvider, useForm, useWatch } from "react-hook-form";
 import * as yup from "yup";
 
 import type { Partner } from "../../../../models/PartnerModel";
-import { PartnersGallery } from "../../regularUser/components/PartnersGallery";
+import { PartnerCard } from "../../regularUser/components/PartnerCard";
 
 export type CreateGroupFormValues = GroupCreate;
 
@@ -156,6 +156,14 @@ export const GroupForm: React.FC<GroupFormProps> = ({
     fileInputRef.current?.click();
   };
 
+  const allowedImageTypes = [
+    "image/png",
+    "image/jpeg",
+    "image/gif",
+    "image/svg+xml",
+    "image/webp",
+  ];
+
   const handleFileChange = async (
     event: React.ChangeEvent<HTMLInputElement>,
   ) => {
@@ -165,15 +173,9 @@ export const GroupForm: React.FC<GroupFormProps> = ({
     setImageError("");
     event.target.value = "";
 
-    const allowedTypes = [
-      "image/png",
-      "image/jpeg",
-      "image/gif",
-      "image/svg+xml",
-    ];
-    if (!allowedTypes.includes(file.type)) {
+    if (!allowedImageTypes.includes(file.type)) {
       setImageError(
-        "Unsupported file format. Please select PNG, JPEG, GIF, or SVG.",
+        "Unsupported file format. Please select PNG, JPEG, GIF, WEBP or SVG.",
       );
       return;
     }
@@ -281,7 +283,7 @@ export const GroupForm: React.FC<GroupFormProps> = ({
                       <input
                         ref={fileInputRef}
                         type="file"
-                        accept="image/png,image/jpeg,image/gif,image/svg+xml"
+                        accept={allowedImageTypes.join(",")}
                         style={{ display: "none" }}
                         onChange={(e) => {
                           void handleFileChange(e);
@@ -327,8 +329,8 @@ export const GroupForm: React.FC<GroupFormProps> = ({
                 </Alert>
               ) : (
                 <div className={previewContainerStyle}>
-                  <PartnersGallery
-                    partners={[previewPartner]}
+                  <PartnerCard
+                    partner={previewPartner}
                     onRequestAssignment={() => {}}
                   />
                 </div>

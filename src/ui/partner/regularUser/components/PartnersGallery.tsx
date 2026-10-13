@@ -1,15 +1,8 @@
-import {
-  Button,
-  Card,
-  CardBody,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-  Gallery,
-} from "@patternfly/react-core";
+import { Gallery } from "@patternfly/react-core";
 import React from "react";
 
 import type { Partner } from "../../../../models/PartnerModel";
+import { PartnerCard } from "./PartnerCard";
 
 interface PartnersGalleryProps {
   partners: Partner[];
@@ -32,28 +25,11 @@ export const PartnersGallery: React.FC<PartnersGalleryProps> = ({
       maxWidths={{ default: "100%", md: "1fr" }}
     >
       {partners.map((partner) => (
-        <Card key={partner.id}>
-          <CardHeader>
-            <img
-              src={partner.icon}
-              alt={`${partner.name} icon`}
-              style={{
-                height: "60px",
-              }}
-            />
-          </CardHeader>
-          <CardTitle>{partner.name}</CardTitle>
-          <CardBody>{partner.description}</CardBody>
-          <CardFooter>
-            <Button
-              variant="primary"
-              isBlock
-              onClick={() => onRequestAssignment(partner)}
-            >
-              Request assignment
-            </Button>
-          </CardFooter>
-        </Card>
+        <PartnerCard
+          key={partner.id}
+          partner={partner}
+          onRequestAssignment={onRequestAssignment}
+        />
       ))}
     </Gallery>
   );
