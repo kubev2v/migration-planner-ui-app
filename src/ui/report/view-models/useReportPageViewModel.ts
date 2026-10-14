@@ -240,7 +240,8 @@ export interface ReportPageViewModel {
   isGroupSelectOpen: boolean;
   setGroupSelectOpen: (open: boolean) => void;
 
-  // Computed data from latest snapshot
+  // Inventory for the active group filter (cluster dropdown applies on top).
+  // Assessment-wide discovery totals: clusterCount, reportSummaryVms.
   infra: Infra | undefined;
   vms: VMs | undefined;
   clusters: { [key: string]: InventoryData } | undefined;
@@ -507,6 +508,7 @@ export const useReportPageViewModel = (): ReportPageViewModel => {
     [activeInventory, latestSnapshot],
   );
 
+  // Assessment-wide discovery totals (not scoped to cluster/group filters).
   const reportSummaryVms = useMemo(
     () =>
       (latestSnapshot.vms ||
@@ -517,7 +519,8 @@ export const useReportPageViewModel = (): ReportPageViewModel => {
 
   const reportSummaryClusterCount = useMemo(() => {
     const summaryClusters = latestSnapshot.inventory?.clusters as
-      { [key: string]: InventoryData } | undefined;
+      | { [key: string]: InventoryData }
+      | undefined;
     return summaryClusters ? Object.keys(summaryClusters).length : 0;
   }, [latestSnapshot.inventory?.clusters]);
 
