@@ -245,10 +245,9 @@ export const useEnvironmentPageViewModel = (): EnvironmentPageViewModel => {
     setInventoryUploadResult(null);
   }, []);
 
-  const [updateInventoryState, doUpdateInventory] = useAsyncFn(
-    async (sourceId: string, jsonContent: string): Promise<SourceModel> => {
-      const payload = JSON.parse(jsonContent) as unknown;
-      return sourcesStore.updateInventory(sourceId, payload);
+  const [updateInventoryState, doUploadInventoryFile] = useAsyncFn(
+    async (sourceId: string, file: Blob): Promise<SourceModel> => {
+      return sourcesStore.uploadInventoryFile(sourceId, file);
     },
     [sourcesStore],
   );
@@ -257,7 +256,7 @@ export const useEnvironmentPageViewModel = (): EnvironmentPageViewModel => {
     (sourceId: string): void => {
       const input = document.createElement("input");
       input.type = "file";
-      input.accept = ".json";
+      input.accept = ".json,.zip";
       input.style.visibility = "hidden";
 
       input.onchange = async (event: Event): Promise<void> => {
@@ -274,47 +273,38 @@ export const useEnvironmentPageViewModel = (): EnvironmentPageViewModel => {
         }
 
         const fileExtension = file.name.toLowerCase().split(".").pop();
+        const isSupportedFormat =
+          fileExtension === "json" || fileExtension === "zip";
+
+        if (!isSupportedFormat) {
+          setInventoryUploadResult({
+            message:
+              "Unsupported file format. Please upload a JSON or ZIP file.",
+            isError: true,
+          });
+          return;
+        }
 
         try {
-          if (fileExtension === "json") {
-            const content = await file.text();
-            try {
-              const res = (await doUpdateInventory(
-                sourceId,
-                content,
-              )) as unknown as { id?: string } | undefined;
+          const res = await doUploadInventoryFile(sourceId, file);
 
-              if (!res || !res.id) {
-                setInventoryUploadResult({
-                  message:
-                    "The uploaded file is using an old schema version and cannot be parsed." +
-                    "Generate a new OVA file, import to your vSphere environment and then try to upload it again.",
-                  isError: true,
-                });
-                return;
-              }
-
-              setInventoryUploadResult({
-                message: "Discovery file uploaded successfully",
-                isError: false,
-              });
-            } catch (error: unknown) {
-              const parsed = await parseApiError(
-                error,
-                "Failed to upload the inventory file",
-              );
-              setInventoryUploadResult({
-                message: parsed.message,
-                isError: true,
-              });
-              return;
-            }
-          } else {
+          // useAsyncFn resolves with the rejection value instead of throwing.
+          if (res instanceof Error) {
+            const parsed = await parseApiError(
+              res,
+              "Failed to upload the inventory file",
+            );
             setInventoryUploadResult({
-              message: "Unsupported file format. Please upload a JSON file.",
+              message: parsed.message,
               isError: true,
             });
+            return;
           }
+
+          setInventoryUploadResult({
+            message: "Discovery file uploaded successfully",
+            isError: false,
+          });
         } catch {
           setInventoryUploadResult({
             message: "Failed to import file. Please check the file format.",
@@ -329,7 +319,7 @@ export const useEnvironmentPageViewModel = (): EnvironmentPageViewModel => {
       document.body.appendChild(input);
       input.click();
     },
-    [doUpdateInventory, doListSources],
+    [doUploadInventoryFile, doListSources],
   );
 
   // ---- Download URLs -------------------------------------------------------
