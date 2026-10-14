@@ -26,6 +26,7 @@ let mockSourcesStore: {
   delete: ReturnType<typeof vi.fn>;
   getById: ReturnType<typeof vi.fn>;
   updateInventory: ReturnType<typeof vi.fn>;
+  uploadInventoryFile: ReturnType<typeof vi.fn>;
   startPolling: ReturnType<typeof vi.fn>;
   stopPolling: ReturnType<typeof vi.fn>;
   subscribe: ReturnType<typeof vi.fn>;
@@ -111,6 +112,7 @@ describe("useEnvironmentPageViewModel", () => {
       delete: vi.fn(),
       getById: vi.fn(),
       updateInventory: vi.fn(),
+      uploadInventoryFile: vi.fn(),
       startPolling: vi.fn(),
       stopPolling: vi.fn(),
       subscribe: vi.fn((listener: () => void) => {
@@ -359,6 +361,40 @@ describe("useEnvironmentPageViewModel", () => {
     const { result } = renderHook(() => useEnvironmentPageViewModel());
     expect(result.current.inventoryUploadResult).toBeNull();
     expect(typeof result.current.clearInventoryUploadResult).toBe("function");
+  });
+
+  it("surfaces the API error message when inventory file upload fails", async () => {
+    const apiMessage =
+      "failed to update source inventory: failed to create source subset inventories: already exists";
+    mockSourcesStore.uploadInventoryFile.mockRejectedValue(
+      new Error(apiMessage),
+    );
+
+    const appendChildSpy = vi.spyOn(document.body, "appendChild");
+
+    const { result } = renderHook(() => useEnvironmentPageViewModel());
+
+    act(() => {
+      result.current.uploadInventoryFromFile("src-1");
+    });
+
+    const input = appendChildSpy.mock.calls.at(-1)?.[0] as HTMLInputElement;
+    const file = new File(["{}"], "inventory.zip", { type: "application/zip" });
+    Object.defineProperty(input, "files", { value: [file] });
+
+    await act(async () => {
+      await input.onchange?.({ target: input } as unknown as Event);
+    });
+
+    appendChildSpy.mockRestore();
+
+    expect(result.current.inventoryUploadResult).toEqual({
+      message: apiMessage,
+      isError: true,
+    });
+    expect(result.current.inventoryUploadResult?.message).not.toMatch(
+      /old schema version/i,
+    );
   });
 
   // ---- Download URLs -------------------------------------------------------

@@ -22,6 +22,7 @@ const createMockApi = (): SourceApiInterface =>
     updateSource: vi.fn(),
     deleteSource: vi.fn(),
     updateInventory: vi.fn(),
+    uploadSourceInventoryFile: vi.fn(),
   }) as unknown as SourceApiInterface;
 
 // ---------------------------------------------------------------------------
@@ -174,6 +175,35 @@ describe("SourcesStore", () => {
     const result = await store.updateInventory("s-1", mockInventory);
 
     expect(api.updateInventory).toHaveBeenCalled();
+    expect(result.inventory).toEqual(mockInventory);
+    expect(store.getSnapshot()[0].inventory).toEqual(mockInventory);
+  });
+
+  it("uploadInventoryFile() uploads file and updates source in list", async () => {
+    const initial = makeSource({ id: "s-1", name: "Source" });
+    vi.mocked(api.listSources).mockResolvedValue([initial]);
+    await store.list();
+
+    const mockInventory = {
+      vcenterId: "vc-1",
+      clusters: {},
+    } as Source["inventory"];
+    const updated = makeSource({
+      id: "s-1",
+      name: "Source",
+      inventory: mockInventory,
+    });
+    const file = new Blob(['{"vcenterId":"vc-1"}'], {
+      type: "application/json",
+    });
+    vi.mocked(api.uploadSourceInventoryFile).mockResolvedValue(updated);
+
+    const result = await store.uploadInventoryFile("s-1", file);
+
+    expect(api.uploadSourceInventoryFile).toHaveBeenCalledWith(
+      { id: "s-1", file },
+      { signal: undefined },
+    );
     expect(result.inventory).toEqual(mockInventory);
     expect(store.getSnapshot()[0].inventory).toEqual(mockInventory);
   });
