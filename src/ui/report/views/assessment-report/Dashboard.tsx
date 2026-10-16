@@ -111,16 +111,10 @@ export const Dashboard: React.FC<Props> = ({
       <GridItem>
         <Gallery hasGutter minWidths={{ default: "40%" }}>
           <GalleryItem>
-            <HostPowerStates
-              hostPowerStates={infra.hostPowerStates}
-              legendVariant="chart"
-            />
+            <HostPowerStates hostPowerStates={infra.hostPowerStates} />
           </GalleryItem>
           <GalleryItem>
-            <VmPowerStates
-              powerStates={vms.powerStates}
-              legendVariant="chart"
-            />
+            <VmPowerStates powerStates={vms.powerStates} />
           </GalleryItem>
         </Gallery>
       </GridItem>
@@ -133,7 +127,6 @@ export const Dashboard: React.FC<Props> = ({
                 nonMigratable: vms.total - vms.totalMigratable,
               }}
               issuesBreakdown={vms.issuesBreakdown}
-              legendVariant="chart"
             />
           </GalleryItem>
           <GalleryItem>
@@ -149,7 +142,6 @@ export const Dashboard: React.FC<Props> = ({
               memoryTierDistribution={vms.distributionByMemoryTier}
               memoryTotalGB={ramGB?.total}
               cpuTotalCores={cpuCores?.total}
-              legendVariant="chart"
             />
           </GalleryItem>
           <GalleryItem>
@@ -158,7 +150,6 @@ export const Dashboard: React.FC<Props> = ({
               diskTypes={vms.diskTypes ?? {}}
               totalVMs={vms.total}
               totalWithSharedDisks={vms.totalWithSharedDisks}
-              legendVariant="chart"
             />
           </GalleryItem>
         </Gallery>
@@ -171,11 +162,10 @@ export const Dashboard: React.FC<Props> = ({
               <ClustersOverview
                 clustersPerDatacenter={infra.clustersPerDatacenter ?? []}
                 clusters={clusters}
-                legendVariant="chart"
               />
             </GalleryItem>
             <GalleryItem>
-              <HostsOverview hosts={infra.hosts} legendVariant="chart" />
+              <HostsOverview hosts={infra.hosts} />
             </GalleryItem>
           </Gallery>
         </GridItem>
@@ -183,14 +173,13 @@ export const Dashboard: React.FC<Props> = ({
         <GridItem>
           <Gallery hasGutter minWidths={{ default: "300px", md: "45%" }}>
             <GalleryItem>
-              <HostsOverview hosts={infra.hosts} legendVariant="chart" />
+              <HostsOverview hosts={infra.hosts} />
             </GalleryItem>
             <GalleryItem>
               <NetworkOverview
                 infra={infra}
                 nicCount={vms.nicCount}
                 distributionByNicCount={vms.distributionByNicCount}
-                legendVariant="chart"
               />
             </GalleryItem>
           </Gallery>
@@ -204,7 +193,6 @@ export const Dashboard: React.FC<Props> = ({
                 infra={infra}
                 nicCount={vms.nicCount}
                 distributionByNicCount={vms.distributionByNicCount}
-                legendVariant="chart"
               />
             </GalleryItem>
           </Gallery>
