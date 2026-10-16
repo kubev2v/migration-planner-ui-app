@@ -13,6 +13,11 @@ export interface ISourcesStore extends ExternalStore<SourceModel[]> {
     inventory: unknown,
     signal?: AbortSignal,
   ): Promise<SourceModel>;
+  uploadInventoryFile(
+    sourceId: string,
+    file: Blob,
+    signal?: AbortSignal,
+  ): Promise<SourceModel>;
   startPolling(intervalMs: number): void;
   stopPolling(): void;
 }
