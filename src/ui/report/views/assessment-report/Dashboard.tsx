@@ -14,7 +14,9 @@ import {
   NetworkOverview,
   OSDistribution,
   type OSDistributionEntry,
+  StorageOverview,
   VCenterClusterDetails,
+  VMMigrationStatus,
   VmPowerStates,
   WarningsTable,
 } from "@openshift-migration-advisor/shared-components";
@@ -22,8 +24,6 @@ import { Gallery, GalleryItem, Grid, GridItem } from "@patternfly/react-core";
 import React from "react";
 
 import { useDashboardViewModel } from "../../view-models/useDashboardViewModel";
-import { StorageOverview } from "./StorageOverview";
-import { VMMigrationStatus } from "./VMMigrationStatus";
 
 interface Props {
   infra: Infra;
@@ -133,6 +133,7 @@ export const Dashboard: React.FC<Props> = ({
                 nonMigratable: vms.total - vms.totalMigratable,
               }}
               issuesBreakdown={vms.issuesBreakdown}
+              legendVariant="chart"
             />
           </GalleryItem>
           <GalleryItem>
@@ -153,10 +154,11 @@ export const Dashboard: React.FC<Props> = ({
           </GalleryItem>
           <GalleryItem>
             <StorageOverview
-              DiskSizeTierSummary={vms.diskSizeTier ?? {}}
-              diskTypeSummary={vms.diskTypes ?? {}}
+              diskSizeTier={vms.diskSizeTier ?? {}}
+              diskTypes={vms.diskTypes ?? {}}
               totalVMs={vms.total}
               totalWithSharedDisks={vms.totalWithSharedDisks}
+              legendVariant="chart"
             />
           </GalleryItem>
         </Gallery>

@@ -12,13 +12,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { Dashboard } from "../Dashboard";
 
-// Mock heavy child components to keep tests lightweight
-vi.mock("../StorageOverview", () => ({
-  StorageOverview: (): JSX.Element => <div data-testid="storage" />,
-}));
-vi.mock("../VMMigrationStatus", () => ({
-  VMMigrationStatus: (): JSX.Element => <div data-testid="vm-status" />,
-}));
+// Mock shared components to keep tests lightweight
 vi.mock(
   "@openshift-migration-advisor/shared-components",
   async (importOriginal) => {
@@ -29,6 +23,8 @@ vi.mock(
 
     return {
       ...actual,
+      StorageOverview: (): JSX.Element => <div data-testid="storage" />,
+      VMMigrationStatus: (): JSX.Element => <div data-testid="vm-status" />,
       ClustersOverview: (): JSX.Element => (
         <div data-testid="clusters-overview" />
       ),
