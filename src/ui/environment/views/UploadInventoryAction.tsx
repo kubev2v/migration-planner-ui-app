@@ -26,10 +26,10 @@ export const UploadInventoryAction: React.FC<UploadInventoryProps> = ({
       onClick={handleUploadSource}
       style={{ padding: 0, marginTop: "5px" }}
     >
-      Upload discovery file (JSON)
+      Upload discovery file (JSON or ZIP)
     </Button>
   ) : (
-    <Tooltip {...themeTooltipFlyoutProps} content="Upload JSON file">
+    <Tooltip {...themeTooltipFlyoutProps} content="Upload JSON or ZIP file">
       <Button
         icon={
           <Icon size="md" isInline>

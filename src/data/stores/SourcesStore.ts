@@ -226,6 +226,23 @@ export class SourcesStore
     return model;
   }
 
+  async uploadInventoryFile(
+    sourceId: string,
+    file: Blob,
+    signal?: AbortSignal,
+  ): Promise<SourceModel> {
+    const updated = await this.api.uploadSourceInventoryFile(
+      { id: sourceId, file },
+      { signal },
+    );
+    const model = createSourceModel(updated);
+    this.sources = this.sources.map((source) =>
+      source.id === model.id ? model : source,
+    );
+    this.notify();
+    return model;
+  }
+
   override getSnapshot(): SourceModel[] {
     return this.sources;
   }
