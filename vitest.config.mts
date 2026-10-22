@@ -3,6 +3,12 @@ import { defineConfig } from "vitest/config";
 const nodeMajor = +process.versions.node.split(".")[0];
 
 export default defineConfig({
+  resolve: {
+    dedupe: ["react", "react-dom"],
+    // Linked shared-components uses a "development" export to source; omit it in
+    // tests so hooks resolve the same React instance as the app.
+    conditions: ["import", "module", "browser", "default"],
+  },
   test: {
     globals: true,
     environment: "jsdom",

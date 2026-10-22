@@ -26,6 +26,7 @@ import type { IJobsStore } from "../../../data/stores/interfaces/IJobsStore";
 import type { ISourcesStore } from "../../../data/stores/interfaces/ISourcesStore";
 import {
   JOB_POLLING_INTERVAL,
+  type RvtoolsUploadState,
   TERMINAL_JOB_STATUSES,
 } from "../../../data/stores/JobsStore";
 import { useIsPartner } from "../../../hooks/useIdentity";
@@ -37,13 +38,17 @@ import {
   ALL_CLUSTERS_ID,
   buildClusterViewModel,
   type ClusterViewModel,
-  compareClustersByVmCount,
+  resolveSelectedClusterId,
 } from "../helpers/clusterViewModel";
 import {
   extractScopedInventoryData,
   type ReportInventorySource,
 } from "../helpers/groupInventoryFilter";
-import { ALL_VMS_GROUP_ID } from "../helpers/groupViewModel";
+import {
+  ALL_VMS_GROUP_ID,
+  computeClusterSelectDisabled,
+} from "../helpers/groupViewModel";
+import { resolveSubsetVcenterApiId } from "../helpers/resolveSubsetVcenterApiId";
 import {
   isControlPlaneOnlyClusterMode,
   type SizingFormValues,
@@ -65,6 +70,7 @@ import {
   getMemoryOvercommitLabel,
 } from "./ClusterSizingHelpers";
 import { useGroupInventoryFilter } from "./useGroupInventoryFilter";
+import { useReportV2InventoryScope } from "./useReportV2InventoryScope";
 
 // ---------------------------------------------------------------------------
 // Sizing → PDF page builder
@@ -284,11 +290,14 @@ export interface ReportPageViewModel {
   savedSizingDataMap: Record<string, SizingPdfData>;
   onSizingCalculated: (data: SizingPdfData) => void;
 
-  // RVTools modal (create-new-assessment from report page)
+  // RVTools modals (create new assessment or append to this report)
+  rvtoolsModalMode: "create" | "append";
   isRvtoolsModalOpen: boolean;
   openRvtoolsModal: () => void;
+  openAppendRvtoolsModal: () => void;
   closeRvtoolsModal: () => void;
-  createRVToolsJob: (name: string, file: File) => Promise<void>;
+  createRVToolsJob: (name: string, files: File[]) => Promise<void>;
+  appendRvtoolsFiles: (files: File[]) => Promise<void>;
   cancelRVToolsJob: () => Promise<void>;
   isCreatingJob: boolean;
   jobCreateError?: Error;
@@ -296,7 +305,12 @@ export interface ReportPageViewModel {
   jobProgressValue: number;
   jobProgressLabel: string;
   jobError: Error | null;
+  rvtoolsUpload?: RvtoolsUploadState;
   isNavigatingToReport: boolean;
+  rvtoolsAppendSuccessMessage: string | null;
+  dismissRvtoolsAppendSuccess: () => void;
+  removeRvtoolsUploadResult: (fileName: string, fileSize: number) => void;
+  canAppendRvtoolsFiles: boolean;
 }
 
 // ---------------------------------------------------------------------------
@@ -492,7 +506,7 @@ export const useReportPageViewModel = (): ReportPageViewModel => {
   const {
     selectedGroupId,
     groupView,
-    activeInventory,
+    activeInventory: groupFilterInventory,
     isGroupSelectOpen,
     setIsGroupSelectOpen,
     selectGroup,
@@ -501,6 +515,28 @@ export const useReportPageViewModel = (): ReportPageViewModel => {
     fullInventory,
     onGroupChange: resetClusterSelection,
   });
+
+  const useV2ReportInventory = assessment?.sourceType === "rvtools";
+
+  const subsetVcenterApiId = useMemo(
+    () => resolveSubsetVcenterApiId(subsetInventories, selectedGroupId),
+    [selectedGroupId, subsetInventories],
+  );
+
+  const { activeInventory: v2ScopedInventory, inventoryLoading } =
+    useReportV2InventoryScope({
+      enabled: useV2ReportInventory,
+      assessmentId: id,
+      selectedGroupId,
+      userSelectedClusterId,
+      subsetVcenterId: subsetVcenterApiId,
+      aggregateInventory: fullInventory,
+      assessmentsStore,
+    });
+
+  const activeInventory = useV2ReportInventory
+    ? v2ScopedInventory
+    : groupFilterInventory;
 
   const { infra, vms, clusters, vcenterId, vcenterVersion } = useMemo(
     () => extractScopedInventoryData(activeInventory, latestSnapshot),
@@ -522,31 +558,10 @@ export const useReportPageViewModel = (): ReportPageViewModel => {
   }, [latestSnapshot.inventory?.clusters]);
 
   // ---- Cluster selection ---------------------------------------------------
-  const selectedClusterId = useMemo(() => {
-    if (userSelectedClusterId !== null) {
-      const isValidSelection =
-        userSelectedClusterId === ALL_CLUSTERS_ID ||
-        Boolean(
-          clusters &&
-          Object.prototype.hasOwnProperty.call(clusters, userSelectedClusterId),
-        );
-      if (isValidSelection) {
-        return userSelectedClusterId;
-      }
-    }
-
-    const clusterKeys = clusters ? Object.keys(clusters) : [];
-
-    if (clusterKeys.length === 0) {
-      return ALL_CLUSTERS_ID;
-    }
-
-    const sortedKeys = [...clusterKeys].sort((a, b) =>
-      compareClustersByVmCount(a, b, clusters),
-    );
-
-    return sortedKeys[0];
-  }, [userSelectedClusterId, clusters]);
+  const selectedClusterId = useMemo(
+    () => resolveSelectedClusterId(userSelectedClusterId, clusters),
+    [userSelectedClusterId, clusters],
+  );
 
   const hasClusterResources = useCallback(
     (viewInfra?: Infra, viewVms?: VMs): boolean => {
@@ -608,7 +623,11 @@ export const useReportPageViewModel = (): ReportPageViewModel => {
     [infra, vms, clusters, selectedClusterId],
   );
 
-  const clusterSelectDisabled = clusterView.clusterOptions.length <= 1;
+  const clusterSelectDisabled = computeClusterSelectDisabled(
+    clusterView.clusterOptions.length,
+    groupView.showGroupFilter,
+    selectedGroupId,
+  );
 
   // ---- Scoped cluster view -------------------------------------------------
   const isClusterScopedData = useCallback(
@@ -629,10 +648,22 @@ export const useReportPageViewModel = (): ReportPageViewModel => {
 
   const canUseRecommendationTools = (clusterView.viewVms?.total ?? 0) > 0;
 
-  const canExportReport = hasClusterResources(
+  const canExportReport = useMemo((): boolean => {
+    if (hasClusterResources(clusterView.viewInfra, clusterView.viewVms)) {
+      return true;
+    }
+    if (!clusters) {
+      return false;
+    }
+    return Object.values(clusters).some((cluster) =>
+      hasClusterResources(cluster.infra, cluster.vms),
+    );
+  }, [
     clusterView.viewInfra,
     clusterView.viewVms,
-  );
+    clusters,
+    hasClusterResources,
+  ]);
 
   // ---- Last updated text ---------------------------------------------------
   const lastUpdatedText = useMemo((): string => {
@@ -710,26 +741,77 @@ export const useReportPageViewModel = (): ReportPageViewModel => {
     return sizingEntries.map(buildClusterSizingPdfPage);
   }, [clusters, savedSizingDataMap, selectedClusterId]);
 
-  // ---- RVTools modal (create-new-assessment from report page) ---------------
+  // ---- RVTools modal (create or append on report page) ---------------------
   const [isRvtoolsModalOpen, setIsRvtoolsModalOpen] = useState(false);
+  const [rvtoolsModalMode, setRvtoolsModalMode] = useState<"create" | "append">(
+    "create",
+  );
+  const [rvtoolsAppendSuccessMessage, setRvtoolsAppendSuccessMessage] =
+    useState<string | null>(null);
+  const [activeRvtoolsJobIntent, setActiveRvtoolsJobIntent] = useState<
+    "create" | "append" | null
+  >(null);
+  const activeRvtoolsJobIntentRef = useRef<"create" | "append" | null>(null);
 
-  const openRvtoolsModal = useCallback(
-    (): void => setIsRvtoolsModalOpen(true),
+  const setRvtoolsJobIntent = useCallback(
+    (intent: "create" | "append" | null): void => {
+      activeRvtoolsJobIntentRef.current = intent;
+      setActiveRvtoolsJobIntent(intent);
+    },
     [],
   );
+
+  const canAppendRvtoolsFiles = assessment?.sourceType === "rvtools";
+
+  const openRvtoolsModal = useCallback((): void => {
+    setRvtoolsModalMode("create");
+    setIsRvtoolsModalOpen(true);
+  }, []);
+
+  const openAppendRvtoolsModal = useCallback((): void => {
+    setRvtoolsModalMode("append");
+    setIsRvtoolsModalOpen(true);
+  }, []);
+
   const closeRvtoolsModal = useCallback((): void => {
     void jobsStore.cancelRVToolsJob();
     setIsRvtoolsModalOpen(false);
   }, [jobsStore]);
 
+  const dismissRvtoolsAppendSuccess = useCallback((): void => {
+    setRvtoolsAppendSuccessMessage(null);
+  }, []);
+
+  const removeRvtoolsUploadResult = useCallback(
+    (fileName: string, fileSize: number): void => {
+      jobsStore.removeRvtoolsUploadResult(fileName, fileSize);
+    },
+    [jobsStore],
+  );
+
   const createRVToolsJob = useCallback(
-    async (name: string, file: File): Promise<void> => {
-      const job = await jobsStore.createRVToolsJob(name, file);
+    async (name: string, files: File[]): Promise<void> => {
+      setRvtoolsJobIntent("create");
+      const job = await jobsStore.createRVToolsJob(name, files);
       if (job) {
         jobsStore.startPolling(JOB_POLLING_INTERVAL);
       }
     },
-    [jobsStore],
+    [jobsStore, setRvtoolsJobIntent],
+  );
+
+  const appendRvtoolsFiles = useCallback(
+    async (files: File[]): Promise<void> => {
+      if (!id) {
+        return;
+      }
+      setRvtoolsJobIntent("append");
+      const job = await jobsStore.appendRvtoolsToAssessment(id, files);
+      if (job) {
+        jobsStore.startPolling(JOB_POLLING_INTERVAL);
+      }
+    },
+    [id, jobsStore, setRvtoolsJobIntent],
   );
 
   const cancelRVToolsJob = useCallback(async (): Promise<void> => {
@@ -756,11 +838,29 @@ export const useReportPageViewModel = (): ReportPageViewModel => {
         void navigate(routes.assessmentReport(assessmentId));
       } finally {
         isNavigatingRef.current = false;
+        setRvtoolsJobIntent(null);
         jobsStore.reset();
       }
     },
-    [assessmentsStore, navigate, jobsStore],
+    [assessmentsStore, navigate, jobsStore, setRvtoolsJobIntent],
   );
+
+  const [, refreshAfterAppend] = useAsyncFn(async () => {
+    if (!id) {
+      return;
+    }
+    try {
+      await assessmentsStore.get(id);
+      setIsRvtoolsModalOpen(false);
+      setRvtoolsAppendSuccessMessage(
+        "RVTools files were added. Report metrics have been updated.",
+      );
+    } finally {
+      isNavigatingRef.current = false;
+      setRvtoolsJobIntent(null);
+      jobsStore.reset();
+    }
+  }, [assessmentsStore, id, jobsStore, setRvtoolsJobIntent]);
 
   useEffect(() => {
     const { currentJob } = jobState;
@@ -773,14 +873,25 @@ export const useReportPageViewModel = (): ReportPageViewModel => {
       prevJob?.status !== JobStatus.Completed &&
       !isNavigatingRef.current
     ) {
-      const assessmentId = currentJob.assessmentId;
       isNavigatingRef.current = true;
       jobsStore.stopPolling();
-      jobsStore.reset();
 
+      if (activeRvtoolsJobIntentRef.current === "append") {
+        void refreshAfterAppend();
+        return;
+      }
+
+      const assessmentId = currentJob.assessmentId;
+      jobsStore.reset();
       void navigateToReport(assessmentId);
     }
-  }, [jobState, jobsStore, navigateToReport]);
+  }, [
+    activeRvtoolsJobIntent,
+    jobState,
+    jobsStore,
+    navigateToReport,
+    refreshAfterAppend,
+  ]);
 
   const { currentJob } = jobState;
 
@@ -808,7 +919,7 @@ export const useReportPageViewModel = (): ReportPageViewModel => {
 
     assessment,
     source,
-    isLoadingData: fetchState.loading,
+    isLoadingData: fetchState.loading || inventoryLoading,
 
     clusterView,
     selectedClusterId,
@@ -853,10 +964,13 @@ export const useReportPageViewModel = (): ReportPageViewModel => {
     savedSizingDataMap,
     onSizingCalculated,
 
+    rvtoolsModalMode,
     isRvtoolsModalOpen,
     openRvtoolsModal,
+    openAppendRvtoolsModal,
     closeRvtoolsModal,
     createRVToolsJob,
+    appendRvtoolsFiles,
     cancelRVToolsJob,
     isCreatingJob: jobState.isCreating,
     jobCreateError: jobState.createError,
@@ -864,13 +978,17 @@ export const useReportPageViewModel = (): ReportPageViewModel => {
     jobProgressValue,
     jobProgressLabel,
     jobError,
-    // Cover the one-render gap between the poll that marks the job Completed
-    // (isJobProcessing becomes false) and the effect that starts navigation
-    // (rvtoolsNavigationState.loading becomes true).
+    rvtoolsUpload: jobState.rvtoolsUpload,
     isNavigatingToReport:
-      rvtoolsNavigationState.loading ||
-      Boolean(
-        currentJob?.status === JobStatus.Completed && currentJob?.assessmentId,
-      ),
+      activeRvtoolsJobIntent === "create" &&
+      (rvtoolsNavigationState.loading ||
+        Boolean(
+          currentJob?.status === JobStatus.Completed &&
+          currentJob?.assessmentId,
+        )),
+    rvtoolsAppendSuccessMessage,
+    dismissRvtoolsAppendSuccess,
+    removeRvtoolsUploadResult,
+    canAppendRvtoolsFiles,
   };
 };

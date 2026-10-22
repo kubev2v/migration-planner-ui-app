@@ -5,6 +5,11 @@ import react from "@vitejs/plugin-react";
 import { defineConfig, loadEnv, type UserConfig } from "vite";
 
 const DEFAULT_TARGET_HOST = "http://localhost:3443";
+const projectRoot = path.resolve(import.meta.dirname, "..");
+const linkedMonorepoRoot = path.resolve(
+  projectRoot,
+  "../migration-planner-agent-ui",
+);
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, path.resolve(process.cwd(), ".."), [
@@ -45,14 +50,34 @@ export default defineConfig(({ mode }) => {
       "process.env.MIGRATION_PLANNER_APP_BASENAME": JSON.stringify(""),
     },
     resolve: {
+      // Linked shared-components resolves TypeScript source via the "development" export.
+      conditions: ["development", "import", "module", "browser", "default"],
+      // file:../migration-planner-agent-ui/... otherwise pulls React from the monorepo.
+      dedupe: ["react", "react-dom"],
       alias: {
+        react: path.resolve(projectRoot, "node_modules/react"),
+        "react-dom": path.resolve(projectRoot, "node_modules/react-dom"),
+        "react/jsx-runtime": path.resolve(
+          projectRoot,
+          "node_modules/react/jsx-runtime",
+        ),
+        "react/jsx-dev-runtime": path.resolve(
+          projectRoot,
+          "node_modules/react/jsx-dev-runtime",
+        ),
         "@redhat-cloud-services/frontend-components/useChrome": path.resolve(
           import.meta.dirname,
           "src/mocks/useChrome.ts",
         ),
       },
     },
+    optimizeDeps: {
+      include: ["react", "react-dom", "@patternfly/react-charts"],
+    },
     server: {
+      fs: {
+        allow: [projectRoot, linkedMonorepoRoot],
+      },
       port: 3000,
       proxy: {
         [`${env.MIGRATION_PLANNER_COST_ESTIMATION_API_BASE_URL}/v1/cost-estimation`]:
@@ -75,7 +100,7 @@ export default defineConfig(({ mode }) => {
           rewrite: (path: string) =>
             target === DEFAULT_TARGET_HOST
               ? path.replace(
-                  new RegExp(`^${process.env.MIGRATION_PLANNER_API_BASE_URL}`),
+                  new RegExp(`^${env.MIGRATION_PLANNER_API_BASE_URL}`),
                   "",
                 )
               : path,
