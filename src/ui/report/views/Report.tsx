@@ -1,3 +1,4 @@
+import { css } from "@emotion/css";
 import {
   ChartExportProvider,
   useChartExport,
@@ -9,6 +10,8 @@ import {
   Button,
   Content,
   ContentVariants,
+  Flex,
+  FlexItem,
   List,
   ListItem,
   Spinner,
@@ -21,14 +24,16 @@ import {
   TabTitleText,
   Tooltip,
 } from "@patternfly/react-core";
+import { RhUiAddCircleIcon } from "@patternfly/react-icons";
 import React from "react";
 import { Link } from "react-router-dom";
 
 import { themeTooltipFlyoutProps } from "../../../lib/patternfly/flyoutAppendTo";
 import { routes } from "../../../routing/Routes";
-import CreateAssessmentModal from "../../assessment/views/CreateAssessmentModal";
+import CreateRvtoolsAssessmentModal from "../../assessment/views/create-rvtools/CreateRvtoolsAssessmentModal";
 import { AppPage } from "../../core/components/AppPage";
 import CreateAssessmentDropdown from "../../core/components/CreateAssessmentDropdown";
+import { ALL_CLUSTERS_ID } from "../helpers/clusterViewModel";
 import { useReportPageViewModel } from "../view-models/useReportPageViewModel";
 import { Dashboard } from "./assessment-report/Dashboard";
 import { ReportFilterBar } from "./assessment-report/ReportFilterBar";
@@ -39,9 +44,36 @@ import { ManualEnvironmentDetailsPanel } from "./manual-environment/ManualEnviro
 import { MigrationRecommendations } from "./migration-recommendations/MigrationRecommendations";
 import { MANUAL_ENVIRONMENT_DETAILS_TAB } from "./migration-recommendations/types";
 
+const pageAlertsStackStyle = css`
+  display: flex;
+  flex-direction: column;
+  gap: var(--pf-t--global--spacer--md);
+`;
+
+const rvtoolsAppendToastStyle = css`
+  position: fixed;
+  top: var(--pf-t--global--spacer--lg);
+  right: var(--pf-t--global--spacer--lg);
+  z-index: var(--pf-t--global--z-index--2xl);
+  max-width: 28rem;
+`;
+
 const ReportContent: React.FC = () => {
   const vm = useReportPageViewModel();
   const charts = useChartExport();
+  const { rvtoolsAppendSuccessMessage, dismissRvtoolsAppendSuccess } = vm;
+
+  React.useEffect(() => {
+    if (!rvtoolsAppendSuccessMessage) {
+      return;
+    }
+    const timeoutId = window.setTimeout(() => {
+      dismissRvtoolsAppendSuccess();
+    }, 6000);
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [dismissRvtoolsAppendSuccess, rvtoolsAppendSuccessMessage]);
 
   if (vm.isLoadingData && !vm.assessment) {
     return (
@@ -94,286 +126,335 @@ const ReportContent: React.FC = () => {
     vm.setClusterSelectOpen(false);
   };
 
-  return (
-    <AppPage
-      breadcrumbs={[
-        {
-          key: 1,
-          children: "Migration advisor",
-        },
-        {
-          key: 2,
-          to: routes.assessments,
-          children: "assessments",
-        },
-        {
-          key: 3,
-          children: `${vm.assessment.name || `Assessment ${vm.assessmentId}`} - vCenter report`,
-          isActive: true,
-        },
-      ]}
-      title={`${vm.assessment.name || `Assessment ${vm.assessmentId}`} - vCenter report`}
-      caption={
-        <Stack>
-          <StackItem>
-            <ReportSourceStatus
-              sourceType={vm.assessment.sourceType}
-              displayStatus={vm.source?.displayStatus}
-              isReady={vm.source?.isReady}
-              agent={vm.source?.agent}
-              onPremises={vm.source?.onPremises}
-              hasInventory={vm.source?.inventory !== undefined}
-              updatedAt={vm.source?.updatedAt}
-            />
-          </StackItem>
-          <StackItem>
-            <p>
-              Presenting the information we were able to fetch from the
-              discovery process
-            </p>
-          </StackItem>
+  const isClusterFilterActive = vm.selectedClusterId !== ALL_CLUSTERS_ID;
 
-          <StackItem>
-            {vm.lastUpdatedText !== "-"
-              ? `Last updated: ${vm.lastUpdatedText}`
-              : "[Last updated time stamp]"}
-          </StackItem>
-          <StackItem>
-            {vm.clusterCount > 0 ? (
-              typeof vm.reportSummaryVms?.total === "number" ? (
-                <>
-                  Detected <strong>{vm.reportSummaryVms.total} VMs</strong> in{" "}
-                  <strong>
-                    {vm.clusterCount}{" "}
-                    {vm.clusterCount === 1
-                      ? "vSphere cluster"
-                      : "vSphere clusters"}
-                  </strong>
-                </>
+  return (
+    <>
+      {vm.rvtoolsAppendSuccessMessage ? (
+        <div
+          className={rvtoolsAppendToastStyle}
+          role="region"
+          aria-live="polite"
+          aria-label="Notification"
+        >
+          <Alert
+            variant="success"
+            isPlain
+            title={vm.rvtoolsAppendSuccessMessage}
+            actionClose={
+              <AlertActionCloseButton
+                onClose={vm.dismissRvtoolsAppendSuccess}
+              />
+            }
+          />
+        </div>
+      ) : null}
+      <AppPage
+        breadcrumbs={[
+          {
+            key: 1,
+            children: "Migration advisor",
+          },
+          {
+            key: 2,
+            to: routes.assessments,
+            children: "assessments",
+          },
+          {
+            key: 3,
+            children: `${vm.assessment.name || `Assessment ${vm.assessmentId}`} - vCenter report`,
+            isActive: true,
+          },
+        ]}
+        title={`${vm.assessment.name || `Assessment ${vm.assessmentId}`} - vCenter report`}
+        caption={
+          <Stack>
+            <StackItem>
+              <ReportSourceStatus
+                sourceType={vm.assessment.sourceType}
+                displayStatus={vm.source?.displayStatus}
+                isReady={vm.source?.isReady}
+                agent={vm.source?.agent}
+                onPremises={vm.source?.onPremises}
+                hasInventory={vm.source?.inventory !== undefined}
+                updatedAt={vm.source?.updatedAt}
+              />
+            </StackItem>
+            <StackItem>
+              <p>
+                Presenting the information we were able to fetch from the
+                discovery process
+              </p>
+            </StackItem>
+
+            <StackItem>
+              {vm.lastUpdatedText !== "-"
+                ? `Last updated: ${vm.lastUpdatedText}`
+                : "[Last updated time stamp]"}
+            </StackItem>
+            <StackItem>
+              {vm.clusterCount > 0 ? (
+                typeof vm.reportSummaryVms?.total === "number" ? (
+                  <>
+                    Detected <strong>{vm.reportSummaryVms.total} VMs</strong> in{" "}
+                    <strong>
+                      {vm.clusterCount}{" "}
+                      {vm.clusterCount === 1
+                        ? "vSphere cluster"
+                        : "vSphere clusters"}
+                    </strong>
+                  </>
+                ) : (
+                  <>
+                    Detected{" "}
+                    <strong>
+                      {vm.clusterCount}{" "}
+                      {vm.clusterCount === 1
+                        ? "vSphere cluster"
+                        : "vSphere clusters"}
+                    </strong>
+                  </>
+                )
               ) : (
-                <>
-                  Detected{" "}
-                  <strong>
-                    {vm.clusterCount}{" "}
-                    {vm.clusterCount === 1
-                      ? "vSphere cluster"
-                      : "vSphere clusters"}
-                  </strong>
-                </>
-              )
-            ) : (
-              "No vSphere clusters detected"
+                "No vSphere clusters detected"
+              )}
+            </StackItem>
+            <StackItem>
+              <ReportFilterBar
+                clusterView={vm.clusterView}
+                clusterSelectDisabled={vm.clusterSelectDisabled}
+                isClusterSelectOpen={vm.isClusterSelectOpen}
+                onClusterSelectOpenChange={vm.setClusterSelectOpen}
+                onClusterSelect={handleClusterSelect}
+                groupView={vm.groupView}
+                isGroupSelectOpen={vm.isGroupSelectOpen}
+                onGroupSelectOpenChange={vm.setGroupSelectOpen}
+                onGroupSelect={(_event, value) => {
+                  if (typeof value === "string") {
+                    vm.selectGroup(value);
+                  }
+                }}
+              />
+            </StackItem>
+          </Stack>
+        }
+        alerts={
+          <div className={pageAlertsStackStyle}>
+            {vm.hasMissingMetrics && (
+              <Alert
+                variant="warning"
+                isInline
+                title="Limited recommendation: required metrics are missing."
+              >
+                <Stack hasGutter>
+                  <StackItem>
+                    <p>
+                      Add the following to improve accuracy and create a new
+                      assessment:
+                    </p>
+                    <List>
+                      {vm.missingMetrics.map((metric) => (
+                        <ListItem key={metric}>{metric}</ListItem>
+                      ))}
+                    </List>
+                  </StackItem>
+                  <StackItem>
+                    <CreateAssessmentDropdown
+                      toggleLabel="Create a new assessment"
+                      onSelectRvtools={() => vm.openRvtoolsModal()}
+                    />
+                  </StackItem>
+                </Stack>
+              </Alert>
             )}
-          </StackItem>
-          <StackItem>
-            <ReportFilterBar
-              clusterView={vm.clusterView}
-              clusterSelectDisabled={vm.clusterSelectDisabled}
-              isClusterSelectOpen={vm.isClusterSelectOpen}
-              onClusterSelectOpenChange={vm.setClusterSelectOpen}
-              onClusterSelect={handleClusterSelect}
-              groupView={vm.groupView}
-              isGroupSelectOpen={vm.isGroupSelectOpen}
-              onGroupSelectOpenChange={vm.setGroupSelectOpen}
-              onGroupSelect={(_event, value) => {
-                if (typeof value === "string") {
-                  vm.selectGroup(value);
+            {charts?.exportError && (
+              <Alert
+                variant="danger"
+                isInline
+                title="Export failed"
+                actionClose={
+                  <AlertActionCloseButton onClose={charts.clearExportError} />
                 }
+              >
+                <p>{charts.exportError}</p>
+              </Alert>
+            )}
+          </div>
+        }
+        headerActions={
+          <Flex
+            alignItems={{ default: "alignItemsCenter" }}
+            gap={{ default: "gapSm" }}
+          >
+            {vm.canAppendRvtoolsFiles && (
+              <FlexItem>
+                <Button
+                  variant="primary"
+                  icon={<RhUiAddCircleIcon />}
+                  onClick={vm.openAppendRvtoolsModal}
+                >
+                  Add RVTools files
+                </Button>
+              </FlexItem>
+            )}
+            {isClusterFilterActive ? (
+              <FlexItem>
+                {vm.canExportReport ? (
+                  <ExportReportButton
+                    documentTitle={vm.exportDocumentTitle}
+                    pdfExtraPages={vm.pdfExtraPages}
+                  />
+                ) : (
+                  <Tooltip
+                    {...themeTooltipFlyoutProps}
+                    content={
+                      <p>
+                        Export is unavailable because this cluster has no VMs.
+                      </p>
+                    }
+                  >
+                    <ExportReportButton
+                      documentTitle={vm.exportDocumentTitle}
+                      pdfExtraPages={vm.pdfExtraPages}
+                      isDisabled
+                    />
+                  </Tooltip>
+                )}
+              </FlexItem>
+            ) : null}
+          </Flex>
+        }
+      >
+        {vm.assessment.sourceType === "rvtools" && <DeployOvaBanner />}
+
+        <Tabs
+          activeKey={vm.activeReportTab}
+          onSelect={(_event, tabIndex) => {
+            if (
+              tabIndex === "report" ||
+              tabIndex === "recommendations" ||
+              tabIndex === MANUAL_ENVIRONMENT_DETAILS_TAB
+            ) {
+              vm.setActiveReportTab(tabIndex);
+            }
+          }}
+          aria-label="Assessment report sections"
+        >
+          <Tab
+            eventKey="report"
+            title={<TabTitleText>Migration report</TabTitleText>}
+            tabContentId="assessment-report-panel"
+          />
+          <Tab
+            eventKey={MANUAL_ENVIRONMENT_DETAILS_TAB}
+            title={<TabTitleText>Manual environment details</TabTitleText>}
+            tabContentId="assessment-manual-environment-panel"
+          />
+          <Tab
+            eventKey="recommendations"
+            title={<TabTitleText>Migration recommendations</TabTitleText>}
+            tabContentId="assessment-recommendations-panel"
+          />
+        </Tabs>
+
+        <TabContent
+          eventKey="report"
+          id="assessment-report-panel"
+          activeKey={vm.activeReportTab}
+          hidden={vm.activeReportTab !== "report"}
+          aria-label="Migration report"
+        >
+          <TabContentBody>
+            {vm.scopedClusterView ? (
+              <Dashboard
+                infra={vm.scopedClusterView.viewInfra}
+                vms={vm.scopedClusterView.viewVms}
+                cpuCores={vm.scopedClusterView.cpuCores}
+                ramGB={vm.scopedClusterView.ramGB}
+                clusters={vm.scopedClusterView.viewClusters}
+                isAggregateView={vm.scopedClusterView.isAggregateView}
+                clusterFound={vm.scopedClusterView.clusterFound}
+                vcenterVersion={vm.vcenterVersion}
+                vcenterId={vm.vcenterId}
+              />
+            ) : (
+              <Bullseye>
+                <Content component={ContentVariants.p}>
+                  {vm.clusterView.isAggregateView
+                    ? "This assessment does not have report data yet."
+                    : "No data is available for the selected cluster."}
+                </Content>
+              </Bullseye>
+            )}
+          </TabContentBody>
+        </TabContent>
+        <TabContent
+          eventKey={MANUAL_ENVIRONMENT_DETAILS_TAB}
+          id="assessment-manual-environment-panel"
+          activeKey={vm.activeReportTab}
+          hidden={vm.activeReportTab !== MANUAL_ENVIRONMENT_DETAILS_TAB}
+          aria-label="Manual environment details"
+        >
+          <TabContentBody>
+            <ManualEnvironmentDetailsPanel />
+          </TabContentBody>
+        </TabContent>
+        <TabContent
+          eventKey="recommendations"
+          id="assessment-recommendations-panel"
+          activeKey={vm.activeReportTab}
+          hidden={vm.activeReportTab !== "recommendations"}
+          aria-label="Migration recommendations"
+        >
+          <TabContentBody>
+            <MigrationRecommendations
+              selectedTool={vm.selectedRecommendationTool}
+              onSelectTool={vm.openRecommendationTool}
+              onBack={vm.closeRecommendationTool}
+              isAggregateView={vm.clusterView.isAggregateView}
+              areToolsDisabled={!vm.canUseRecommendationTools}
+              canOpenArchitecture={vm.canShowClusterRecommendations}
+              isPartner={vm.isPartner}
+              clusterName={vm.clusterView.selectionLabel}
+              clusterId={vm.selectedClusterId}
+              assessmentId={vm.assessmentId || ""}
+              onCalculated={(result, formValues) => {
+                vm.onSizingCalculated({
+                  result,
+                  formValues,
+                  clusterName: vm.clusterView.selectionLabel,
+                  clusterId: vm.selectedClusterId,
+                });
               }}
             />
-          </StackItem>
-        </Stack>
-      }
-      alerts={
-        <div>
-          {vm.hasMissingMetrics && (
-            <Alert
-              variant="warning"
-              isInline
-              title="Limited recommendation: required metrics are missing."
-            >
-              <Stack hasGutter>
-                <StackItem>
-                  <p>
-                    Add the following to improve accuracy and create a new
-                    assessment:
-                  </p>
-                  <List>
-                    {vm.missingMetrics.map((metric) => (
-                      <ListItem key={metric}>{metric}</ListItem>
-                    ))}
-                  </List>
-                </StackItem>
-                <StackItem>
-                  <CreateAssessmentDropdown
-                    toggleLabel="Create a new assessment"
-                    onSelectRvtools={() => vm.openRvtoolsModal()}
-                  />
-                </StackItem>
-              </Stack>
-            </Alert>
-          )}
-          {charts?.exportError && (
-            <Alert
-              variant="danger"
-              isInline
-              title="Export failed"
-              actionClose={
-                <AlertActionCloseButton onClose={charts.clearExportError} />
-              }
-            >
-              <p>{charts.exportError}</p>
-            </Alert>
-          )}
-        </div>
-      }
-      headerActions={
-        vm.scopedClusterView ? (
-          vm.canExportReport ? (
-            <ExportReportButton
-              documentTitle={vm.exportDocumentTitle}
-              pdfExtraPages={vm.pdfExtraPages}
-            />
-          ) : (
-            <Tooltip
-              {...themeTooltipFlyoutProps}
-              content={
-                <p>Export is unavailable because this cluster has no VMs.</p>
-              }
-            >
-              <ExportReportButton
-                documentTitle={vm.exportDocumentTitle}
-                pdfExtraPages={vm.pdfExtraPages}
-                isDisabled
-              />
-            </Tooltip>
-          )
-        ) : undefined
-      }
-    >
-      {vm.assessment.sourceType === "rvtools" && <DeployOvaBanner />}
+          </TabContentBody>
+        </TabContent>
 
-      <Tabs
-        activeKey={vm.activeReportTab}
-        onSelect={(_event, tabIndex) => {
-          if (
-            tabIndex === "report" ||
-            tabIndex === "recommendations" ||
-            tabIndex === MANUAL_ENVIRONMENT_DETAILS_TAB
-          ) {
-            vm.setActiveReportTab(tabIndex);
-          }
-        }}
-        aria-label="Assessment report sections"
-      >
-        <Tab
-          eventKey="report"
-          title={<TabTitleText>Migration report</TabTitleText>}
-          tabContentId="assessment-report-panel"
+        <CreateRvtoolsAssessmentModal
+          mode={vm.rvtoolsModalMode}
+          isOpen={vm.isRvtoolsModalOpen}
+          onClose={vm.closeRvtoolsModal}
+          onSubmit={({ name, files }) => {
+            if (vm.rvtoolsModalMode === "append") {
+              void vm.appendRvtoolsFiles(files);
+            } else {
+              void vm.createRVToolsJob(name, files);
+            }
+          }}
+          isLoading={vm.isCreatingJob}
+          error={vm.jobCreateError}
+          isJobProcessing={vm.isJobProcessing}
+          jobProgressValue={vm.jobProgressValue}
+          jobProgressLabel={vm.jobProgressLabel}
+          jobError={vm.jobError}
+          rvtoolsUpload={vm.rvtoolsUpload}
+          isNavigatingToReport={vm.isNavigatingToReport}
+          onStagedFileRemoved={({ fileName, fileSize }) => {
+            vm.removeRvtoolsUploadResult(fileName, fileSize);
+          }}
         />
-        <Tab
-          eventKey={MANUAL_ENVIRONMENT_DETAILS_TAB}
-          title={<TabTitleText>Manual environment details</TabTitleText>}
-          tabContentId="assessment-manual-environment-panel"
-        />
-        <Tab
-          eventKey="recommendations"
-          title={<TabTitleText>Migration recommendations</TabTitleText>}
-          tabContentId="assessment-recommendations-panel"
-        />
-      </Tabs>
-
-      <TabContent
-        eventKey="report"
-        id="assessment-report-panel"
-        activeKey={vm.activeReportTab}
-        hidden={vm.activeReportTab !== "report"}
-        aria-label="Migration report"
-      >
-        <TabContentBody>
-          {vm.scopedClusterView ? (
-            <Dashboard
-              infra={vm.scopedClusterView.viewInfra}
-              vms={vm.scopedClusterView.viewVms}
-              cpuCores={vm.scopedClusterView.cpuCores}
-              ramGB={vm.scopedClusterView.ramGB}
-              clusters={vm.scopedClusterView.viewClusters}
-              isAggregateView={vm.scopedClusterView.isAggregateView}
-              clusterFound={vm.scopedClusterView.clusterFound}
-              vcenterVersion={vm.vcenterVersion}
-              vcenterId={vm.vcenterId}
-            />
-          ) : (
-            <Bullseye>
-              <Content component={ContentVariants.p}>
-                {vm.clusterView.isAggregateView
-                  ? "This assessment does not have report data yet."
-                  : "No data is available for the selected cluster."}
-              </Content>
-            </Bullseye>
-          )}
-        </TabContentBody>
-      </TabContent>
-      <TabContent
-        eventKey={MANUAL_ENVIRONMENT_DETAILS_TAB}
-        id="assessment-manual-environment-panel"
-        activeKey={vm.activeReportTab}
-        hidden={vm.activeReportTab !== MANUAL_ENVIRONMENT_DETAILS_TAB}
-        aria-label="Manual environment details"
-      >
-        <TabContentBody>
-          <ManualEnvironmentDetailsPanel />
-        </TabContentBody>
-      </TabContent>
-      <TabContent
-        eventKey="recommendations"
-        id="assessment-recommendations-panel"
-        activeKey={vm.activeReportTab}
-        hidden={vm.activeReportTab !== "recommendations"}
-        aria-label="Migration recommendations"
-      >
-        <TabContentBody>
-          <MigrationRecommendations
-            selectedTool={vm.selectedRecommendationTool}
-            onSelectTool={vm.openRecommendationTool}
-            onBack={vm.closeRecommendationTool}
-            isAggregateView={vm.clusterView.isAggregateView}
-            areToolsDisabled={!vm.canUseRecommendationTools}
-            canOpenArchitecture={vm.canShowClusterRecommendations}
-            isPartner={vm.isPartner}
-            clusterName={vm.clusterView.selectionLabel}
-            clusterId={vm.selectedClusterId}
-            assessmentId={vm.assessmentId || ""}
-            onCalculated={(result, formValues) => {
-              vm.onSizingCalculated({
-                result,
-                formValues,
-                clusterName: vm.clusterView.selectionLabel,
-                clusterId: vm.selectedClusterId,
-              });
-            }}
-          />
-        </TabContentBody>
-      </TabContent>
-
-      <CreateAssessmentModal
-        isOpen={vm.isRvtoolsModalOpen}
-        onClose={vm.closeRvtoolsModal}
-        onSubmit={(_name, file, _mode) => {
-          if (file) {
-            void vm.createRVToolsJob(_name, file);
-          }
-        }}
-        mode="rvtools"
-        isLoading={vm.isCreatingJob}
-        error={vm.jobCreateError}
-        isJobProcessing={vm.isJobProcessing}
-        jobProgressValue={vm.jobProgressValue}
-        jobProgressLabel={vm.jobProgressLabel}
-        jobError={vm.jobError}
-        isNavigatingToReport={vm.isNavigatingToReport}
-      />
-    </AppPage>
+      </AppPage>
+    </>
   );
 };
 
