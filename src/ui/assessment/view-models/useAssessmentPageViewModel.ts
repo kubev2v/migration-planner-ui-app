@@ -18,9 +18,11 @@ import type { IAssessmentsStore } from "../../../data/stores/interfaces/IAssessm
 import type { IJobsStore } from "../../../data/stores/interfaces/IJobsStore";
 import {
   JOB_POLLING_INTERVAL,
+  type RvtoolsUploadState,
   TERMINAL_JOB_STATUSES,
 } from "../../../data/stores/JobsStore";
 import useLocalStorage from "../../../hooks/useLocalStorage";
+import { applyRvtoolsUploadOutcome } from "../helpers/rvtoolsUploadOutcome";
 import { routes } from "../../../routing/Routes";
 import type { ColumnKey, SortableColumn } from "../views/AssessmentsTable";
 import {
@@ -101,6 +103,10 @@ export interface AssessmentPageViewModel {
   jobProgressLabel: string;
   /** Error derived from a failed job (null when job hasn't failed). */
   jobError: Error | null;
+  /** Per-file outcomes from the active RVTools upload session (for review UI). */
+  rvtoolsUpload?: RvtoolsUploadState;
+  /** Set when a multi-file create failed after the assessment was created. */
+  rvtoolsPartialAssessmentId?: string;
 
   /** `true` while loading assessments and navigating after job completion. */
   isNavigatingToReport: boolean;
@@ -135,9 +141,16 @@ export interface AssessmentPageViewModel {
   // -- Actions ---------------------------------------------------------------
 
   /** Create a new RVTools assessment (starts an async job). */
-  createRVToolsJob: (name: string, file: File) => Promise<void>;
+  createRVToolsJob: (name: string, files: File[]) => Promise<void>;
   /** Clear the create-job error (e.g. when the user edits the form). */
   clearJobCreateError: () => void;
+  /** Drop a staged file from the active RVTools upload result list. */
+  removeRvtoolsUploadResult: (fileName: string, fileSize: number) => void;
+  /**
+   * Partial multi-file create succeeded on the server; clear job UI state and
+   * refresh assessments (assessment is kept).
+   */
+  completePartialRvtoolsUpload: () => Promise<void>;
   /**
    * Cancel the current job.
    * If the job had already completed, the created assessment is cleaned up.
@@ -241,6 +254,10 @@ export const useAssessmentPageViewModel = (): AssessmentPageViewModel => {
   const [navigationState, navigateToReport] = useAsyncFn(
     async (assessmentId: string) => {
       try {
+        const upload = jobsStore.getSnapshot().rvtoolsUpload;
+        if (upload?.results.length) {
+          applyRvtoolsUploadOutcome(assessmentId, upload.results, "created");
+        }
         await assessmentsStore.list();
         void navigate(routes.assessmentReport(assessmentId));
       } finally {
@@ -273,8 +290,12 @@ export const useAssessmentPageViewModel = (): AssessmentPageViewModel => {
   // ---- Actions ------------------------------------------------------------
 
   const createRVToolsJob = useCallback(
-    async (name: string, file: File): Promise<void> => {
-      const job = await jobsStore.createRVToolsJob(name, file);
+    async (name: string, files: File[]): Promise<void> => {
+      const partialAssessmentId =
+        jobsStore.getSnapshot().rvtoolsPartialAssessmentId;
+      const job = partialAssessmentId
+        ? await jobsStore.appendRvtoolsToAssessment(partialAssessmentId, files)
+        : await jobsStore.createRVToolsJob(name, files);
       if (job) {
         jobsStore.startPolling(JOB_POLLING_INTERVAL);
       }
@@ -285,6 +306,18 @@ export const useAssessmentPageViewModel = (): AssessmentPageViewModel => {
   const clearJobCreateError = useCallback((): void => {
     jobsStore.clearCreateError();
   }, [jobsStore]);
+
+  const removeRvtoolsUploadResult = useCallback(
+    (fileName: string, fileSize: number): void => {
+      jobsStore.removeRvtoolsUploadResult(fileName, fileSize);
+    },
+    [jobsStore],
+  );
+
+  const completePartialRvtoolsUpload = useCallback(async (): Promise<void> => {
+    jobsStore.reset();
+    await assessmentsStore.list();
+  }, [assessmentsStore, jobsStore]);
 
   const cancelRVToolsJob = useCallback(async (): Promise<void> => {
     jobsStore.stopPolling();
@@ -370,6 +403,8 @@ export const useAssessmentPageViewModel = (): AssessmentPageViewModel => {
     jobProgressValue,
     jobProgressLabel,
     jobError,
+    rvtoolsUpload: jobState.rvtoolsUpload,
+    rvtoolsPartialAssessmentId: jobState.rvtoolsPartialAssessmentId,
     isNavigatingToReport,
     isDeletingAssessment: deleteState.loading,
     deleteError: deleteState.error,
@@ -383,6 +418,8 @@ export const useAssessmentPageViewModel = (): AssessmentPageViewModel => {
     setSortBy: setInternalSortBy,
     createRVToolsJob,
     clearJobCreateError,
+    removeRvtoolsUploadResult,
+    completePartialRvtoolsUpload,
     cancelRVToolsJob,
     updateAssessment: doUpdateAssessment,
     deleteAssessment: doDeleteAssessment,
