@@ -75,7 +75,7 @@ export default defineConfig(({ mode }) => {
           rewrite: (path: string) =>
             target === DEFAULT_TARGET_HOST
               ? path.replace(
-                  new RegExp(`^${process.env.MIGRATION_PLANNER_API_BASE_URL}`),
+                  new RegExp(`^${env.MIGRATION_PLANNER_API_BASE_URL}`),
                   "",
                 )
               : path,
