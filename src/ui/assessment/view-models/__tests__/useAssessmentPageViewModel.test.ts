@@ -33,8 +33,10 @@ let mockAssessmentsStore: {
 
 let mockJobsStore: {
   createRVToolsJob: ReturnType<typeof vi.fn>;
+  appendRvtoolsToAssessment: ReturnType<typeof vi.fn>;
   cancelRVToolsJob: ReturnType<typeof vi.fn>;
   clearCreateError: ReturnType<typeof vi.fn>;
+  removeRvtoolsUploadResult: ReturnType<typeof vi.fn>;
   reset: ReturnType<typeof vi.fn>;
   startPolling: ReturnType<typeof vi.fn>;
   stopPolling: ReturnType<typeof vi.fn>;
@@ -111,8 +113,10 @@ describe("useAssessmentPageViewModel", () => {
 
     mockJobsStore = {
       createRVToolsJob: vi.fn().mockResolvedValue(makeJob()),
+      appendRvtoolsToAssessment: vi.fn().mockResolvedValue(makeJob()),
       cancelRVToolsJob: vi.fn().mockResolvedValue(null),
       clearCreateError: vi.fn(),
+      removeRvtoolsUploadResult: vi.fn(),
       reset: vi.fn(),
       startPolling: vi.fn(),
       stopPolling: vi.fn(),
@@ -160,17 +164,36 @@ describe("useAssessmentPageViewModel", () => {
 
   // -- createRVToolsJob -----------------------------------------------------
 
+  it("appends remaining files when a partial assessment exists", async () => {
+    setJobsState({
+      rvtoolsPartialAssessmentId: "assessment-partial",
+    });
+    const file = new File([], "f.xlsx");
+    const { result } = renderHook(() => useAssessmentPageViewModel());
+
+    await act(async () => {
+      await result.current.createRVToolsJob("My Assessment", [file]);
+    });
+
+    expect(mockJobsStore.appendRvtoolsToAssessment).toHaveBeenCalledWith(
+      "assessment-partial",
+      [file],
+    );
+    expect(mockJobsStore.createRVToolsJob).not.toHaveBeenCalled();
+    expect(mockJobsStore.startPolling).toHaveBeenCalled();
+  });
+
   it("delegates createRVToolsJob to the JobsStore and starts polling", async () => {
     const { result } = renderHook(() => useAssessmentPageViewModel());
     const file = new File([], "test.xlsx");
 
     await act(async () => {
-      await result.current.createRVToolsJob("My Assessment", file);
+      await result.current.createRVToolsJob("My Assessment", [file]);
     });
 
     expect(mockJobsStore.createRVToolsJob).toHaveBeenCalledWith(
       "My Assessment",
-      file,
+      [file],
     );
     expect(mockJobsStore.startPolling).toHaveBeenCalledWith(1000);
   });
@@ -180,7 +203,7 @@ describe("useAssessmentPageViewModel", () => {
     const { result } = renderHook(() => useAssessmentPageViewModel());
 
     await act(async () => {
-      await result.current.createRVToolsJob("test", new File([], "f.xlsx"));
+      await result.current.createRVToolsJob("test", [new File([], "f.xlsx")]);
     });
 
     expect(mockJobsStore.startPolling).not.toHaveBeenCalled();
