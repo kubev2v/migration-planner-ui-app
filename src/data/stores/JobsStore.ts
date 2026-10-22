@@ -1,5 +1,4 @@
-import type { JobApi } from "@openshift-migration-advisor/planner-sdk";
-import type { Job } from "@openshift-migration-advisor/planner-sdk";
+import type { Job, JobApi } from "@openshift-migration-advisor/planner-sdk";
 import { JobStatus } from "@openshift-migration-advisor/planner-sdk";
 
 import { parseApiError } from "../../lib/common/ErrorParser";
@@ -16,11 +15,33 @@ export const TERMINAL_JOB_STATUSES: JobStatus[] = [
   JobStatus.Cancelled,
 ];
 
+export type RvtoolsFileUploadResultStatus =
+  "pending" | "processing" | "valid" | "invalid";
+
+export type RvtoolsFileUploadResult = {
+  fileName: string;
+  fileSize: number;
+  status: RvtoolsFileUploadResultStatus;
+  errorMessage?: string;
+};
+
+export type RvtoolsUploadState = {
+  results: RvtoolsFileUploadResult[];
+};
+
 export type JobsStoreState = {
   currentJob: Job | null;
   isCreating: boolean;
   createError?: Error;
+  rvtoolsUpload?: RvtoolsUploadState;
+  /**
+   * When a multi-file create fails after the assessment exists, remaining files
+   * should be appended to this assessment instead of starting a new create.
+   */
+  rvtoolsPartialAssessmentId?: string;
 };
+
+type RvtoolsUploadFlow = "create" | "append";
 
 export class JobsStore
   extends PollableStoreBase<JobsStoreState>
@@ -34,6 +55,13 @@ export class JobsStore
   private abortController: AbortController | null = null;
   private cancelInProgress = false;
   private api: JobApi;
+  /** Remaining files after the in-flight job (one file per v2 API call). */
+  private pendingRvtoolsFiles: File[] = [];
+  /** Full ordered list for the active multi-file upload session. */
+  private rvtoolsAllFiles: File[] = [];
+  /** Assessment receiving uploads (create: from first job; append: known upfront). */
+  private rvtoolsAssessmentId: string | undefined;
+  private rvtoolsFlow: RvtoolsUploadFlow | undefined;
 
   constructor(api: JobApi) {
     super();
@@ -45,10 +73,129 @@ export class JobsStore
   }
 
   /**
-   * Create a new RVTools assessment job.
-   * The caller (view model) is responsible for starting polling after this.
+   * Create an RVTools assessment: POST the first file, then PUT each additional
+   * file to the same assessment when each job completes (v2 aggregation).
    */
-  async createRVToolsJob(name: string, file: File): Promise<Job | undefined> {
+  async createRVToolsJob(
+    name: string,
+    files: File[],
+  ): Promise<Job | undefined> {
+    if (files.length === 0) {
+      return undefined;
+    }
+
+    this.beginRvtoolsUploadQueue(files, {
+      flow: "create",
+      assessmentId: undefined,
+    });
+
+    return this.startRvtoolsJob((signal) =>
+      this.api.createRVToolsAssessmentV2({ name, file: files[0] }, { signal }),
+    );
+  }
+
+  /**
+   * Append RVTools files: one PUT per file, sequentially after each job completes.
+   */
+  async appendRvtoolsToAssessment(
+    assessmentId: string,
+    files: File[],
+  ): Promise<Job | undefined> {
+    if (files.length === 0) {
+      return undefined;
+    }
+
+    this.beginRvtoolsUploadQueue(files, {
+      flow: "append",
+      assessmentId,
+    });
+
+    return this.startRvtoolsJob((signal) =>
+      this.api.uploadRvtoolsToAssessment(
+        { id: assessmentId, file: files[0] },
+        { signal },
+      ),
+    );
+  }
+
+  private beginRvtoolsUploadQueue(
+    files: File[],
+    options: { flow: RvtoolsUploadFlow; assessmentId?: string },
+  ): void {
+    this.rvtoolsAllFiles = [...files];
+    this.pendingRvtoolsFiles = files.slice(1);
+    this.rvtoolsFlow = options.flow;
+    this.rvtoolsAssessmentId = options.assessmentId;
+    const results: RvtoolsFileUploadResult[] = files.map((file) => ({
+      fileName: file.name,
+      fileSize: file.size,
+      status: "pending",
+    }));
+    if (results.length > 0) {
+      results[0].status = "processing";
+    }
+    this.setState({ rvtoolsUpload: { results } });
+  }
+
+  private getActiveFileIndex(): number {
+    return this.rvtoolsAllFiles.length - this.pendingRvtoolsFiles.length - 1;
+  }
+
+  private updateRvtoolsFileResult(
+    index: number,
+    update: Partial<RvtoolsFileUploadResult>,
+  ): void {
+    const upload = this.state.rvtoolsUpload;
+    if (!upload || index < 0 || index >= upload.results.length) {
+      return;
+    }
+    const results = upload.results.map((entry, entryIndex) =>
+      entryIndex === index ? { ...entry, ...update } : entry,
+    );
+    this.setState({ rvtoolsUpload: { results } });
+  }
+
+  private markRvtoolsFileValid(index: number): void {
+    this.updateRvtoolsFileResult(index, {
+      status: "valid",
+      errorMessage: undefined,
+    });
+  }
+
+  private markRvtoolsFileInvalid(index: number, errorMessage: string): void {
+    this.updateRvtoolsFileResult(index, {
+      status: "invalid",
+      errorMessage,
+    });
+  }
+
+  private markRvtoolsFileProcessing(index: number): void {
+    this.updateRvtoolsFileResult(index, { status: "processing" });
+  }
+
+  private clearRvtoolsUploadQueue(): void {
+    this.pendingRvtoolsFiles = [];
+    this.rvtoolsAllFiles = [];
+    this.rvtoolsAssessmentId = undefined;
+    this.rvtoolsFlow = undefined;
+  }
+
+  private preservePartialAssessmentIfNeeded(): void {
+    if (this.rvtoolsFlow !== "create") {
+      return;
+    }
+    const assessmentId =
+      this.rvtoolsAssessmentId ??
+      this.state.currentJob?.assessmentId ??
+      undefined;
+    if (assessmentId) {
+      this.setState({ rvtoolsPartialAssessmentId: assessmentId });
+    }
+  }
+
+  private async startRvtoolsJob(
+    request: (signal: AbortSignal) => Promise<Job>,
+  ): Promise<Job | undefined> {
     this.cancelInProgress = false;
 
     if (this.abortController) {
@@ -56,22 +203,18 @@ export class JobsStore
     }
     this.abortController = new AbortController();
 
-    // Capture in a local variable so this invocation always checks its OWN
-    // controller, even if a subsequent call reassigns `this.abortController`.
     const controller = this.abortController;
 
     this.setState({ isCreating: true, createError: undefined });
 
     try {
-      const job = await this.api.createRVToolsAssessment(
-        { name, file },
-        { signal: controller.signal },
-      );
+      const job = await request(controller.signal);
 
       if (controller.signal.aborted) {
         if (job?.id && !TERMINAL_JOB_STATUSES.includes(job.status)) {
           this.api.cancelJob({ id: job.id }).catch(() => undefined);
         }
+        this.clearRvtoolsUploadQueue();
         return undefined;
       }
 
@@ -79,6 +222,7 @@ export class JobsStore
       return job;
     } catch (err) {
       if (controller.signal.aborted) {
+        this.clearRvtoolsUploadQueue();
         return undefined;
       }
 
@@ -87,24 +231,17 @@ export class JobsStore
         "Failed to create RVTools job",
       );
 
-      // A newer call may have started while parseApiError was resolving.
-      // If so, this invocation is stale — don't overwrite the newer state.
       if (this.abortController !== controller) {
         return undefined;
       }
 
+      this.markRvtoolsFileInvalid(0, errorToStore.message);
+      this.clearRvtoolsUploadQueue();
       this.setState({ createError: errorToStore, isCreating: false });
       return undefined;
     }
   }
 
-  /**
-   * Cancel the current job.
-   *
-   * - If the job is still running, cancels it on the server.
-   * - Returns the **latest** job state so the caller (view model) can decide
-   *   whether to perform cross-store cleanup (e.g. delete a completed assessment).
-   */
   async cancelRVToolsJob(): Promise<Job | null> {
     if (this.cancelInProgress) {
       return null;
@@ -116,11 +253,9 @@ export class JobsStore
       this.abortController = null;
     }
 
-    // Capture job reference before resetting so we can still cancel it server-side.
     const currentJob = this.state.currentJob;
 
-    // Reset store state immediately so the UI shows a clean, interactive form
-    // the moment the user cancels — without waiting for the server round-trips below.
+    this.clearRvtoolsUploadQueue();
     this.reset();
 
     let latestJob: Job | null = null;
@@ -145,12 +280,6 @@ export class JobsStore
     return latestJob;
   }
 
-  /**
-   * Clear error state so the user can retry with a fresh form.
-   * Clears `createError` and, if the current job reached a terminal state
-   * (Failed / Cancelled / Completed), also clears `currentJob`.
-   * Active (non-terminal) jobs are left untouched.
-   */
   clearCreateError(): void {
     const updates: Partial<JobsStoreState> = {};
 
@@ -170,15 +299,35 @@ export class JobsStore
     }
   }
 
-  /**
-   * Clear all job state.
-   * The caller (view model) is responsible for stopping polling beforehand.
-   */
+  removeRvtoolsUploadResult(fileName: string, fileSize: number): void {
+    const upload = this.state.rvtoolsUpload;
+    if (!upload) {
+      return;
+    }
+
+    const results = upload.results.filter(
+      (entry) => !(entry.fileName === fileName && entry.fileSize === fileSize),
+    );
+    if (results.length === upload.results.length) {
+      return;
+    }
+
+    if (results.length === 0) {
+      this.setState({ rvtoolsUpload: undefined });
+      return;
+    }
+
+    this.setState({ rvtoolsUpload: { results } });
+  }
+
   reset(): void {
+    this.clearRvtoolsUploadQueue();
     this.setState({
       currentJob: null,
       isCreating: false,
       createError: undefined,
+      rvtoolsUpload: undefined,
+      rvtoolsPartialAssessmentId: undefined,
     });
   }
 
@@ -193,18 +342,88 @@ export class JobsStore
     }
 
     try {
-      // Forward the poll signal so stopPolling() aborts the in-flight request.
-      // Without this, a stale getJob response can arrive after reset() and
-      // repopulate currentJob — causing the progress bar to reappear and
-      // eventually triggering navigation even after the user cancelled.
       const updated = await this.api.getJob({ id: currentJob.id }, { signal });
       if (this.cancelInProgress) {
         return;
       }
-      this.setState({ currentJob: updated });
 
-      // State is kept with the terminal job — the view model reacts to
-      // this change (e.g. stopping polling, navigating to the report).
+      if (updated.status === JobStatus.Failed) {
+        const failedIndex = this.getActiveFileIndex();
+        this.markRvtoolsFileInvalid(
+          failedIndex,
+          updated.error || "Processing failed",
+        );
+        this.preservePartialAssessmentIfNeeded();
+        this.clearRvtoolsUploadQueue();
+        this.setState({ currentJob: updated });
+        return;
+      }
+
+      if (
+        updated.status === JobStatus.Completed &&
+        this.pendingRvtoolsFiles.length > 0
+      ) {
+        const assessmentId =
+          this.rvtoolsAssessmentId ?? updated.assessmentId ?? undefined;
+
+        if (this.rvtoolsFlow === "create" && updated.assessmentId) {
+          this.rvtoolsAssessmentId = updated.assessmentId;
+        }
+
+        if (assessmentId) {
+          const completedIndex = this.getActiveFileIndex();
+          this.markRvtoolsFileValid(completedIndex);
+
+          const nextFile = this.pendingRvtoolsFiles.shift()!;
+          const nextIndex = this.getActiveFileIndex();
+          this.markRvtoolsFileProcessing(nextIndex);
+
+          try {
+            const nextJob = await this.api.uploadRvtoolsToAssessment(
+              { id: assessmentId, file: nextFile },
+              { signal },
+            );
+            this.setState({ currentJob: nextJob });
+            return;
+          } catch (err) {
+            if (!signal.aborted) {
+              console.error("Failed to upload next RVTools file:", err);
+              const errorToStore = await parseApiError(
+                err,
+                "Failed to upload RVTools file",
+              );
+              this.markRvtoolsFileInvalid(nextIndex, errorToStore.message);
+              this.preservePartialAssessmentIfNeeded();
+              this.clearRvtoolsUploadQueue();
+              this.setState({
+                currentJob: {
+                  ...updated,
+                  status: JobStatus.Failed,
+                  error: errorToStore.message,
+                },
+              });
+            }
+            return;
+          }
+        }
+      }
+
+      if (
+        TERMINAL_JOB_STATUSES.includes(updated.status) &&
+        this.pendingRvtoolsFiles.length === 0
+      ) {
+        const completedIndex = this.getActiveFileIndex();
+        if (updated.status === JobStatus.Completed && completedIndex >= 0) {
+          this.markRvtoolsFileValid(completedIndex);
+        }
+        this.clearRvtoolsUploadQueue();
+        this.setState({
+          rvtoolsUpload: undefined,
+          rvtoolsPartialAssessmentId: undefined,
+        });
+      }
+
+      this.setState({ currentJob: updated });
     } catch (err) {
       if (signal.aborted) {
         return;

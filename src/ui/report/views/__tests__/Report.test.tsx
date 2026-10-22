@@ -44,6 +44,13 @@ vi.mock("react-router-dom", () => ({
   useNavigate: () => vi.fn(),
 }));
 
+vi.mock(
+  "../../../assessment/views/create-rvtools/CreateRvtoolsAssessmentModal",
+  () => ({
+    default: (): null => null,
+  }),
+);
+
 // Mock child components
 vi.mock("../ExportReportButton", () => ({
   ExportReportButton: ({
@@ -221,11 +228,18 @@ function makeBaseVm(
     isPartner: false,
     missingMetrics: [],
     hasMissingMetrics: false,
+    rvtoolsModalMode: "create",
     isRvtoolsModalOpen: false,
     openRvtoolsModal: vi.fn(),
+    openAppendRvtoolsModal: vi.fn(),
     closeRvtoolsModal: vi.fn(),
     createRVToolsJob: vi.fn(),
+    appendRvtoolsFiles: vi.fn(),
     cancelRVToolsJob: vi.fn(),
+    rvtoolsAppendSuccessMessage: null,
+    dismissRvtoolsAppendSuccess: vi.fn(),
+    removeRvtoolsUploadResult: vi.fn(),
+    canAppendRvtoolsFiles: false,
     isCreatingJob: false,
     jobCreateError: undefined,
     isJobProcessing: false,
