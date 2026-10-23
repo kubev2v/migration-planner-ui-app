@@ -21,6 +21,7 @@ import {
   type AssessmentModel,
   createAssessmentModel,
 } from "../../models/AssessmentModel";
+import { mergeListedAssessmentPreservingSubsetInventories } from "../../models/mergeListedAssessmentSubsetInventories";
 import {
   type CalculateCostEstimationRequest,
   type CostEstimationResponse,
@@ -97,9 +98,22 @@ export class AssessmentsStore
     }
 
     // Filter out recently deleted assessments that the backend hasn't processed yet
-    this.assessments = rawAssessments.filter(
+    const filtered = rawAssessments.filter(
       (a) => !this.deletedAssessmentIds.has(a.id),
     );
+
+    this.assessments = filtered.map((incoming) => {
+      const existing = this.assessments.find(
+        (assessment) => assessment.id === incoming.id,
+      );
+      if (!existing) {
+        return incoming;
+      }
+      return mergeListedAssessmentPreservingSubsetInventories(
+        incoming,
+        existing,
+      );
+    });
 
     this.notify();
     return this.assessments;

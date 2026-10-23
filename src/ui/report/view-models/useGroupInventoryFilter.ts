@@ -11,6 +11,7 @@ import {
 } from "../helpers/groupInventoryFilter";
 import {
   buildGroupViewModel,
+  fromGroupOptionId,
   type GroupViewModel,
 } from "../helpers/groupViewModel";
 
@@ -78,7 +79,7 @@ export const useGroupInventoryFilter = ({
       if (value == null) {
         return;
       }
-      selectGroup(String(value));
+      selectGroup(fromGroupOptionId(String(value)));
     },
     [selectGroup],
   );
