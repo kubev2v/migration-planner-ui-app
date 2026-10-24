@@ -121,6 +121,54 @@ describe("AssessmentsStore", () => {
     expect(store.getSnapshot()).toHaveLength(1);
   });
 
+  it("list() preserves subsetInventories from a prior get() when list omits the field", async () => {
+    const snapshotCreatedAt = new Date("2026-01-02T12:00:00.000Z");
+    const inventory = {
+      vcenterId: "vc-1",
+      clusters: { "cluster-a": { infra: {}, vms: { total: 3 } } },
+    };
+    const subsetInventories = [
+      {
+        id: "all",
+        name: "Empty Group",
+        vcenterId: "vc-1",
+        vmsCount: 3,
+        createdAt: snapshotCreatedAt,
+        inventory,
+      },
+    ];
+
+    const detailed = makeAssessment({
+      id: "a-1",
+      snapshots: [
+        {
+          createdAt: snapshotCreatedAt,
+          inventory,
+          subsetInventories,
+        },
+      ] as unknown as Assessment["snapshots"],
+    });
+    vi.mocked(api.getAssessment).mockResolvedValue(detailed);
+    await store.get("a-1");
+
+    const listed = makeAssessment({
+      id: "a-1",
+      name: "Listed",
+      snapshots: [
+        {
+          createdAt: snapshotCreatedAt,
+          inventory,
+        },
+      ] as unknown as Assessment["snapshots"],
+    });
+    vi.mocked(api.listAssessments).mockResolvedValue([listed]);
+    await store.list();
+
+    expect(store.getById("a-1")?.snapshotsSorted[0].subsetInventories).toEqual(
+      subsetInventories,
+    );
+  });
+
   it("list() maps results to AssessmentModel (has ownerFullName, hasUsefulData etc.)", async () => {
     const raw = makeAssessment({
       id: "a-1",

@@ -52,4 +52,25 @@ describe("buildGroupViewModel", () => {
     expect(model.selectionId).toBe("all");
     expect(model.selectionLabel).toBe("All VMs");
   });
+
+  it("uses distinct select values when a subset id collides with All VMs", () => {
+    const model = buildGroupViewModel({
+      subsetInventories: [
+        createSubset({
+          id: "all",
+          name: "Empty Group",
+          vmsCount: 12,
+        }),
+        createSubset({ id: "group-2", name: "Group 2", vmsCount: 5 }),
+      ],
+    });
+
+    expect(model.groupOptions).toHaveLength(3);
+    expect(model.groupOptions.map((option) => option.id)).toEqual([
+      "all",
+      "subset:all",
+      "group-2",
+    ]);
+    expect(model.groupOptions[1].label).toBe("Empty Group (12 VMs)");
+  });
 });
