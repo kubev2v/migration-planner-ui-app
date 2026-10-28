@@ -33,6 +33,7 @@ import type { AssessmentModel } from "../../../models/AssessmentModel";
 import type { SourceModel } from "../../../models/SourceModel";
 import { routes } from "../../../routing/Routes";
 import type { SnapshotLike } from "../../../services/html-export/types";
+import { isUploadedFileSourceType } from "../../assessment/helpers/assessmentSource";
 import {
   ALL_CLUSTERS_ID,
   buildClusterViewModel,
@@ -474,10 +475,17 @@ export const useReportPageViewModel = (): ReportPageViewModel => {
     return snapshots.length > 0 ? snapshots[snapshots.length - 1] : {};
   }, [assessment]);
 
-  const subsetInventories = useMemo(
-    (): AssessmentSubsetInventory[] => latestSnapshot.subsetInventories ?? [],
-    [latestSnapshot.subsetInventories],
-  );
+  const subsetInventories = useMemo((): AssessmentSubsetInventory[] => {
+    const fromSnapshot = latestSnapshot.subsetInventories ?? [];
+    // VM group filter applies to discovery OVA assessments only (see isUploadedFileSourceType).
+    if (
+      !assessment?.sourceType ||
+      isUploadedFileSourceType(String(assessment.sourceType))
+    ) {
+      return [];
+    }
+    return fromSnapshot;
+  }, [assessment, latestSnapshot.subsetInventories]);
 
   const fullInventory = useMemo(
     () => latestSnapshot.inventory as ReportInventorySource | undefined,
