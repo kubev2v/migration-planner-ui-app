@@ -1006,6 +1006,37 @@ describe("useReportPageViewModel", () => {
       expect(result.current.clusterView.viewVms?.total).toBe(3);
       expect(result.current.reportSummaryVms?.total).toBe(10);
     });
+
+    it("hides group filter for RVTools assessments even when subset inventories exist", () => {
+      const assessment = createAssessment("assessment-1", {
+        "Cluster-A": { infra: createInfra(2, 2), vms: createVMs(10) },
+      });
+      assessment.sourceType = "rvtools";
+      assessment.snapshots = [
+        {
+          createdAt: new Date(),
+          inventory: assessment.snapshots?.[0]?.inventory ?? {
+            vcenterId: "vcenter-1",
+            clusters: {},
+          },
+          subsetInventories: [
+            {
+              id: "group-1",
+              name: "My RVTools assessment",
+              vcenterId: "vcenter-1",
+              vmsCount: 10,
+              createdAt: new Date(),
+              inventory: assessment.snapshots?.[0]?.inventory,
+            },
+          ],
+        },
+      ];
+      mockAssessmentsStore.getSnapshot.mockReturnValue([assessment]);
+
+      const { result } = renderHook(() => useReportPageViewModel());
+      expect(result.current.groupView.showGroupFilter).toBe(false);
+      expect(result.current.clusterView.viewVms?.total).toBe(10);
+    });
   });
 
   describe("computed data", () => {
