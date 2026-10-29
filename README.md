@@ -1,4 +1,4 @@
-# Migration Planner UI 
+# Migration Planner UI
 
 A React/TypeScript frontend application for the Migration Planner project, helping users assess and plan their migration from traditional virtualization platforms to OpenShift Virtualization.
 
