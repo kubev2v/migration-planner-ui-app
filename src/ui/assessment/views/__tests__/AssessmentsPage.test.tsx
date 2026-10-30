@@ -81,6 +81,8 @@ const makeViewModel = (
   setSortBy: vi.fn(),
   createRVToolsJob: vi.fn(),
   clearJobCreateError: vi.fn(),
+  removeRvtoolsUploadResult: vi.fn(),
+  completePartialRvtoolsUpload: vi.fn().mockResolvedValue(undefined),
   cancelRVToolsJob: vi.fn(),
   updateAssessment: vi.fn(),
   deleteAssessment: vi.fn(),
