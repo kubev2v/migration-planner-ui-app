@@ -29,4 +29,3 @@ This starts the application in standalone mode with local development settings, 
 - **Development**: https://console.dev.redhat.com/openshift/migration-advisor/
 - **Staging**: https://stage.foo.redhat.com:1337/openshift/migration-advisor
 
-Release branch pushes trigger a Konflux UI image build. Verify the image is available in the staging registry after updating the `stable` branch.
