@@ -5,7 +5,7 @@ import { Outlet } from "react-router-dom";
 import { AppPage } from "../../core/components/AppPage";
 import { PartnerTab } from "../components/PartnerTab";
 import { useHomeScreenViewModel } from "../view-models/useHomeScreenViewModel";
-import HowDoesItWork from "./HowDoesItWork";
+import HomeScreenSubtitle from "./HomeScreenSubtitle";
 
 export const HomeScreen: React.FC = () => {
   const vm = useHomeScreenViewModel();
@@ -13,8 +13,9 @@ export const HomeScreen: React.FC = () => {
   return (
     <AppPage
       breadcrumbs={vm.breadcrumbs}
-      title="Start Your VMware to OpenShift Migration"
-      caption={<HowDoesItWork />}
+      title="Assess your migration from vCenter to OpenShift"
+
+      subtitle={<HomeScreenSubtitle />}
     >
       <Tabs
         activeKey={vm.activeTabKey}

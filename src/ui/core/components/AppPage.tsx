@@ -1,3 +1,4 @@
+import { css } from "@emotion/css";
 import { PageHeader } from "@patternfly/react-component-groups";
 import {
   AlertGroup,
@@ -18,6 +19,10 @@ type AppPageProps = {
   children?: React.ReactNode;
 };
 
+const subtitleStyle = css`
+  padding-top: var(--pf-t--global--spacer--sm);
+`;
+
 export function AppPage({
   title,
   subtitle,
@@ -31,7 +36,7 @@ export function AppPage({
     <div>
       <PageHeader
         title={title}
-        subtitle={subtitle}
+        subtitle={<div className={subtitleStyle}>{subtitle}</div>}
         actionMenu={headerActions}
         breadcrumbs={
           breadcrumbs && (
