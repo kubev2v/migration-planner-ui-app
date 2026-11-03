@@ -84,7 +84,7 @@ const ReportContent: React.FC = () => {
     };
   }, [dismissRvtoolsAppendNotice, rvtoolsAppendNotice]);
 
-  if (vm.isLoadingData && !vm.assessment) {
+  if (vm.isInitialLoading) {
     return (
       <Bullseye>
         <Spinner size="lg" />

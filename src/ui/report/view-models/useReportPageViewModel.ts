@@ -226,7 +226,7 @@ export interface ReportPageViewModel {
   // Data (reactive from stores)
   assessment: AssessmentLike | undefined;
   source: SourceModel | undefined;
-  isLoadingData: boolean;
+  isInitialLoading: boolean;
 
   // Cluster view
   clusterView: ClusterViewModel;
@@ -412,7 +412,7 @@ export const useReportPageViewModel = (): ReportPageViewModel => {
 
   useEffect(() => {
     void doFetchData();
-  }, [doFetchData, id]);
+  }, [doFetchData]);
 
   // ---- Assessment lookup ---------------------------------------------------
   const assessment = useMemo(
@@ -440,15 +440,6 @@ export const useReportPageViewModel = (): ReportPageViewModel => {
   const [savedSizingDataMap, setSavedSizingDataMap] = useState<
     Record<string, SizingPdfData>
   >({});
-  const [boundReportAssessmentId, setBoundReportAssessmentId] = useState(id);
-
-  if (boundReportAssessmentId !== id) {
-    setBoundReportAssessmentId(id);
-    setUserSelectedClusterId(null);
-    setIsClusterSelectOpen(false);
-    setSelectedRecommendationTool(null);
-    setSavedSizingDataMap({});
-  }
 
   const onSizingCalculated = useCallback((data: SizingPdfData): void => {
     setSavedSizingDataMap((prev) => ({ ...prev, [data.clusterId]: data }));
@@ -805,7 +796,9 @@ export const useReportPageViewModel = (): ReportPageViewModel => {
 
     assessment,
     source,
-    isLoadingData: fetchState.loading || inventoryLoading,
+    isInitialLoading:
+      (fetchState.loading && !assessment) ||
+      (useV2ReportInventory && inventoryLoading && !v2ScopedInventory),
 
     clusterView,
     selectedClusterId,

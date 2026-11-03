@@ -200,7 +200,7 @@ function makeBaseVm(
     assessmentId: "assessment-1",
     assessment: undefined,
     source: mockSource,
-    isLoadingData: false,
+    isInitialLoading: false,
     clusterView,
     selectedClusterId: ALL_CLUSTERS_ID,
     selectCluster: vi.fn(),
@@ -285,8 +285,8 @@ describe("Report", () => {
     mockVm = makeBaseVm();
   });
 
-  it("renders loading spinner when data is loading and no assessment", () => {
-    mockVm = makeBaseVm({ isLoadingData: true, assessment: undefined });
+  it("renders loading spinner during initial loading", () => {
+    mockVm = makeBaseVm({ isInitialLoading: true, assessment: undefined });
     render(<Report />);
     expect(screen.getByRole("progressbar")).toBeInTheDocument();
   });
