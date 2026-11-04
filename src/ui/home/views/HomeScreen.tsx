@@ -14,7 +14,6 @@ export const HomeScreen: React.FC = () => {
     <AppPage
       breadcrumbs={vm.breadcrumbs}
       title="Assess your migration from vCenter to OpenShift"
-
       subtitle={<HomeScreenSubtitle />}
     >
       <Tabs
@@ -25,13 +24,13 @@ export const HomeScreen: React.FC = () => {
       >
         <Tab
           eventKey={0}
-          title={<TabTitleText>Assessments</TabTitleText>}
-          aria-label="Assessments tab"
+          title={<TabTitleText>RVTools assessments</TabTitleText>}
+          aria-label="RVTools assessments tab"
         />
         <Tab
           eventKey={1}
-          title={<TabTitleText>Environments</TabTitleText>}
-          aria-label="Environments tab"
+          title={<TabTitleText>Discovery appliances</TabTitleText>}
+          aria-label="Discovery appliances tab"
         />
         <Tab
           eventKey={2}

@@ -42,7 +42,8 @@ import {
 import { useEnvironmentPage } from "../view-models/EnvironmentPageContext";
 import { AgentStatusView } from "./AgentStatusView";
 import { Columns, SORTABLE_COLUMNS, type SortableColumnKey } from "./Columns";
-import { EnvironmentEmptyState } from "./EnvironmentEmptyState";
+import { DiscoveryAppliancesEmptyState } from "./DiscoveryAppliancesEmptyState";
+import { DiscoveryAppliancesErrorLoadingState } from "./DiscoveryAppliancesErrorLoadingState";
 import { UploadInventoryAction } from "./UploadInventoryAction";
 import { getAgentVersionDisplayLabel, VersionStatus } from "./VersionStatus";
 
@@ -369,10 +370,10 @@ export const SourcesTable: React.FC<SourceTableProps> = ({
   // Show empty state if no sources
   if (!hasSources && onAddEnvironment) {
     return (
-      <EnvironmentEmptyState
-        onAddEnvironment={onAddEnvironment}
-        isOvaDownloading={false}
-      />
+      <>
+        <DiscoveryAppliancesEmptyState onAddEnvironment={onAddEnvironment} />
+        <DiscoveryAppliancesErrorLoadingState />
+      </>
     );
   }
 
