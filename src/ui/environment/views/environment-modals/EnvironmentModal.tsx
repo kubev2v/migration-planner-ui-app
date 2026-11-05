@@ -145,15 +145,21 @@ export const EnvironmentModal: React.FC<EnvironmentModalProps> = (props) => {
       errorTitle: "Generate discovery appliance error",
     },
     edit: {
-      title: "Update Environment",
-      description: undefined,
+      title: "Update discovery appliance",
+      description: (
+        <>
+          Update this discovery appliance configuration, then download a new OVA
+          if needed and redeploy it in vCenter.{" "}
+          <MigrationAssessmentStepsHelpButton />
+        </>
+      ),
       submitText: "Update OVA configuration",
       formId: "edit-environment-form",
       ouiaId: "EditEnvironmentModal",
       ariaLabelledBy: "edit-environment-modal-title",
       ariaDescribedBy: "modal-box-body-edit-environment",
       errorFlag: vm.errorUpdatingSource,
-      errorTitle: "Update Environment error",
+      errorTitle: "Update discovery appliance error",
     },
   }[mode];
 

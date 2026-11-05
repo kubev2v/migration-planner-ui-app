@@ -215,7 +215,7 @@ describe("EnvironmentModal - Edit mode", () => {
     );
 
     expect(
-      screen.getByRole("heading", { name: "Update Environment" }),
+      screen.getByRole("heading", { name: "Update discovery appliance" }),
     ).toBeInTheDocument();
   });
 
