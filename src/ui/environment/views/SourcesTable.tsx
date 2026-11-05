@@ -13,7 +13,6 @@ import {
   Tooltip,
 } from "@patternfly/react-core";
 import {
-  RhUiAddCircleIcon,
   RhUiArrowLeftIcon,
   RhUiEllipsisVerticalIcon,
 } from "@patternfly/react-icons";
@@ -104,6 +103,7 @@ type SourceTableProps = {
   uploadOnly?: boolean;
   onEditEnvironment?: (sourceId: string) => void;
   onAddEnvironment?: () => void;
+  onCreateAssessment?: () => void;
   onDownloadOva?: (sourceId: string) => void;
 };
 
@@ -112,6 +112,7 @@ export const SourcesTable: React.FC<SourceTableProps> = ({
   uploadOnly = false,
   onEditEnvironment,
   onAddEnvironment,
+  onCreateAssessment,
   onDownloadOva,
 }) => {
   const vm = useEnvironmentPage();
@@ -378,17 +379,23 @@ export const SourcesTable: React.FC<SourceTableProps> = ({
             attributes={filterAttributes}
             defaultActiveAttributeId="name"
           />
-          <ToolbarItem>
-            {hasSources && onAddEnvironment ? (
-              <Button
-                variant="primary"
-                onClick={onAddEnvironment}
-                icon={<RhUiAddCircleIcon />}
-              >
-                Add environment
+          {hasSources && onAddEnvironment ? (
+            <ToolbarItem>
+              <Button variant="primary" onClick={onAddEnvironment}>
+                Generate discovery appliance
               </Button>
-            ) : null}
-          </ToolbarItem>
+            </ToolbarItem>
+          ) : null}
+
+          {hasSources && onCreateAssessment ? (
+            <ToolbarItem>
+              <Button variant="secondary" onClick={onCreateAssessment}>
+                Create assessment
+              </Button>
+            </ToolbarItem>
+          ) : null}
+
+          {/* todo add Pagination */}
         </ToolbarContent>
       </Toolbar>
 

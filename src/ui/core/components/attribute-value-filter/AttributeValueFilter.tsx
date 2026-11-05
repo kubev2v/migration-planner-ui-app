@@ -10,7 +10,6 @@ import {
   ToolbarFilter,
   ToolbarGroup,
   ToolbarItem,
-  ToolbarToggleGroup,
 } from "@patternfly/react-core";
 import { RhUiFilterIcon } from "@patternfly/react-icons";
 import React, { useState } from "react";
@@ -180,59 +179,57 @@ export const AttributeValueFilter: React.FC<AttributeValueFilterProps> = ({
     ) ?? attributes[0];
 
   return (
-    <ToolbarToggleGroup toggleIcon={<RhUiFilterIcon />} breakpoint="xl">
-      <ToolbarGroup variant="filter-group">
-        <ToolbarItem>
-          <Select
-            isOpen={isAttributeSelectOpen}
-            selected={resolvedActiveAttributeId}
-            onSelect={(_event, value: string | number | undefined) => {
-              const selectedValue = toSelectValue(value);
-              if (!selectedValue) {
-                return;
-              }
-              setActiveAttributeId(selectedValue);
-              setIsAttributeSelectOpen(false);
-            }}
-            onOpenChange={setIsAttributeSelectOpen}
-            toggle={(toggleRef: React.Ref<MenuToggleElement>) => (
-              <MenuToggle
-                ref={toggleRef}
-                onClick={() => setIsAttributeSelectOpen((open) => !open)}
-                isExpanded={isAttributeSelectOpen}
-                icon={<RhUiFilterIcon />}
-              >
-                {activeAttribute?.label ?? "Filter"}
-              </MenuToggle>
-            )}
-          >
-            <SelectList>
-              {attributes.map((attribute) => (
-                <SelectOption key={attribute.id} value={attribute.id}>
-                  {attribute.label}
-                </SelectOption>
-              ))}
-            </SelectList>
-          </Select>
-        </ToolbarItem>
-        {attributes.map((attribute) =>
-          attribute.type === "text" ? (
-            <TextValueFilter
-              key={attribute.id}
-              attribute={attribute}
-              isActive={resolvedActiveAttributeId === attribute.id}
-              className={searchInputClassName}
-            />
-          ) : (
-            <CheckboxValueFilter
-              key={attribute.id}
-              attribute={attribute}
-              isActive={resolvedActiveAttributeId === attribute.id}
-            />
-          ),
-        )}
-      </ToolbarGroup>
-    </ToolbarToggleGroup>
+    <ToolbarGroup variant="filter-group">
+      <ToolbarItem>
+        <Select
+          isOpen={isAttributeSelectOpen}
+          selected={resolvedActiveAttributeId}
+          onSelect={(_event, value: string | number | undefined) => {
+            const selectedValue = toSelectValue(value);
+            if (!selectedValue) {
+              return;
+            }
+            setActiveAttributeId(selectedValue);
+            setIsAttributeSelectOpen(false);
+          }}
+          onOpenChange={setIsAttributeSelectOpen}
+          toggle={(toggleRef: React.Ref<MenuToggleElement>) => (
+            <MenuToggle
+              ref={toggleRef}
+              onClick={() => setIsAttributeSelectOpen((open) => !open)}
+              isExpanded={isAttributeSelectOpen}
+              icon={<RhUiFilterIcon />}
+            >
+              {activeAttribute?.label ?? "Filter"}
+            </MenuToggle>
+          )}
+        >
+          <SelectList>
+            {attributes.map((attribute) => (
+              <SelectOption key={attribute.id} value={attribute.id}>
+                {attribute.label}
+              </SelectOption>
+            ))}
+          </SelectList>
+        </Select>
+      </ToolbarItem>
+      {attributes.map((attribute) =>
+        attribute.type === "text" ? (
+          <TextValueFilter
+            key={attribute.id}
+            attribute={attribute}
+            isActive={resolvedActiveAttributeId === attribute.id}
+            className={searchInputClassName}
+          />
+        ) : (
+          <CheckboxValueFilter
+            key={attribute.id}
+            attribute={attribute}
+            isActive={resolvedActiveAttributeId === attribute.id}
+          />
+        ),
+      )}
+    </ToolbarGroup>
   );
 };
 

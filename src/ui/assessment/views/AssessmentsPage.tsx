@@ -19,7 +19,6 @@ import {
   attributeValueFilterToolbarStyle,
 } from "../../core/components/attribute-value-filter";
 import { ConfirmationModal } from "../../core/components/ConfirmationModal";
-import CreateAssessmentDropdown from "../../core/components/CreateAssessmentDropdown";
 import {
   ASSESSMENT_SOURCE_FILTER_OPTIONS,
   type AssessmentSourceFilterKey,
@@ -331,16 +330,16 @@ export const AssessmentsPage: React.FC<AssessmentsPageProps> = ({
                 variant="control"
                 icon={<RhUiColumnsIcon />}
                 onClick={() => setIsColumnModalOpen(true)}
-              >
-                Manage Columns
-              </Button>
+              ></Button>
             </ToolbarItem>
             <ToolbarGroup align={{ default: "alignStart", lg: "alignEnd" }}>
               <ToolbarItem>
-                <CreateAssessmentDropdown
-                  popperProps={{ position: "end" }}
-                  onSelectRvtools={() => handleOpenModal("rvtools")}
-                />
+                <Button
+                  variant="primary"
+                  onClick={() => handleOpenModal("rvtools")}
+                >
+                  Create RVTools assessment
+                </Button>
               </ToolbarItem>
             </ToolbarGroup>
           </ToolbarContent>

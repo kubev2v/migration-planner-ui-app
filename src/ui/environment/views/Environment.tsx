@@ -7,7 +7,9 @@ import {
   StackItem,
 } from "@patternfly/react-core";
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
+import { routes } from "../../../routing/Routes";
 import { LoadingSpinner } from "../../core/components/LoadingSpinner";
 import { safeExternalUrl } from "../../core/utils/urlValidation";
 import { useEnvironmentPage } from "../view-models/EnvironmentPageContext";
@@ -23,6 +25,7 @@ type EnvironmentContentProps = {
 };
 
 const EnvironmentContent: React.FC<EnvironmentContentProps> = ({ vm }) => {
+  const navigate = useNavigate();
   const [shouldShowCreateModal, setShouldShowCreateModal] = useState(false);
   const [shouldShowEditModal, setShouldShowEditModal] = useState(false);
   const [shouldShowDownloadModal, setShouldShowDownloadModal] = useState(false);
@@ -151,6 +154,9 @@ const EnvironmentContent: React.FC<EnvironmentContentProps> = ({ vm }) => {
         onDownloadOva={(sourceId) => {
           setDownloadSourceId(sourceId);
           setShouldShowDownloadModal(true);
+        }}
+        onCreateAssessment={() => {
+          void navigate(routes.assessmentCreate);
         }}
       />
 
