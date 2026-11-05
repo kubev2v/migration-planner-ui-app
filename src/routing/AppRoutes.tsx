@@ -42,6 +42,13 @@ const DiscoveryOvaExampleReport = lazy(
     ),
 );
 
+const AssessmentEmptyPage = lazy(
+  () =>
+    import(
+      /* webpackChunkName: "AssessmentEmptyPage" */ "../ui/assessment/views/AssessmentEmptyPage"
+    ),
+);
+
 const CreateFromOva = lazy(
   () =>
     import(
@@ -106,6 +113,7 @@ export const AppRoutes: React.FC = () => (
         </Route>
       </Route>
       {/* Independent routes — they have their own page layout */}
+      <Route path="assessments/empty" element={<AssessmentEmptyPage />} />
       <Route
         path="assessments/:id/report/manual-details"
         element={<ManualEnvironmentWizardPage />}
