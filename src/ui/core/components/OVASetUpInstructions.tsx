@@ -3,7 +3,7 @@ import React from "react";
 
 import { InstructionsList } from "./InstructionsList";
 
-export const VCenterSetupInstructions: React.FC = () => {
+export const OVASetUpInstructions: React.FC = () => {
   return (
     <Stack hasGutter>
       <StackItem>
@@ -74,4 +74,4 @@ export const VCenterSetupInstructions: React.FC = () => {
   );
 };
 
-VCenterSetupInstructions.displayName = "VCenterSetupInstructions";
+OVASetUpInstructions.displayName = "OVASetUpInstructions";

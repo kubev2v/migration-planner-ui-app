@@ -2,7 +2,7 @@ import { Button, Popover } from "@patternfly/react-core";
 import React from "react";
 
 import { themePopoverFlyoutProps } from "../../../lib/patternfly/flyoutAppendTo";
-import { VCenterSetupInstructions } from "../../core/components/VCenterSetupInstructions";
+import { OVASetUpInstructions } from "../../core/components/OVASetUpInstructions";
 
 export const OvaSetupInstructionsPopover: React.FC = () => (
   <Popover
@@ -10,7 +10,7 @@ export const OvaSetupInstructionsPopover: React.FC = () => (
     aria-label="OVA installation instructions"
     headerContent="OVA set up instructions"
     headerComponent="h6"
-    bodyContent={<VCenterSetupInstructions />}
+    bodyContent={<OVASetUpInstructions />}
     minWidth="600px"
   >
     <Button variant="link" isInline>

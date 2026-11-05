@@ -15,7 +15,7 @@ import {
 } from "@patternfly/react-core";
 import React from "react";
 
-import { VCenterSetupInstructions } from "../../../core/components/VCenterSetupInstructions";
+import { OVASetUpInstructions } from "../../../core/components/OVASetUpInstructions";
 import { useSourceDownload } from "../../hooks/useSourceDownload";
 import { useApplianceVersionViewModel } from "../../view-models/useApplianceVersionViewModel";
 import { ApplianceVersionDefinitionList } from "./ApplianceVersionSection";
@@ -93,7 +93,7 @@ export const DownloadEnvironmentModal: React.FC<
           <Stack hasGutter>
             <StackItem>
               <Alert isInline variant="success" title="Instructions">
-                <VCenterSetupInstructions />
+                <OVASetUpInstructions />
               </Alert>
             </StackItem>
             <StackItem>

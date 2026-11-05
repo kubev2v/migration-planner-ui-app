@@ -31,6 +31,7 @@ import {
   attributeValueFilterToolbarStyle,
 } from "../../core/components/attribute-value-filter";
 import { ConfirmationModal } from "../../core/components/ConfirmationModal";
+import { OVASetUpInstructionsModal } from "../../core/components/OVASetUpInstructionsModal";
 import {
   DISCOVERY_VM_STATUS_FILTER_OPTIONS,
   type DiscoveryVmStatusFilterKey,
@@ -119,6 +120,8 @@ export const SourcesTable: React.FC<SourceTableProps> = ({
     {},
   );
   const [deleteTarget, setDeleteTarget] = useState<SourceModel | null>(null);
+  const [showOVASetUpInstructions, setShowOVASetUpInstructions] =
+    useState(false);
   const [search, setSearch] = useState("");
   const [selectedStatuses, setSelectedStatuses] = useState<
     DiscoveryVmStatusFilterKey[]
@@ -320,29 +323,6 @@ export const SourcesTable: React.FC<SourceTableProps> = ({
     [filteredSources, vm.sources],
   );
 
-  // Build map of sourceId -> assessmentId to enable report action
-  const sourceToAssessmentId = useMemo(() => {
-    const map: Record<string, string> = {};
-    try {
-      const list = (vm.assessments || []) as unknown[];
-      list.forEach((a: unknown) => {
-        const obj = (a || {}) as Record<string, unknown>;
-        const id = obj.id as string | number | undefined;
-        const sourceId = obj.sourceId as string | number | undefined;
-        if (id !== undefined && sourceId !== undefined) {
-          map[String(sourceId)] = String(id);
-        }
-      });
-    } catch {
-      // ignore
-    }
-    return map;
-  }, [vm.assessments]);
-
-  const handleUploadFile = (sourceId: string): void => {
-    vm.uploadInventoryFromFile(sourceId);
-  };
-
   const handleDelete = (source: SourceModel): void => {
     setDeleteTarget(null);
     void vm.deleteAndRefresh(source.id).then((sources) => {
@@ -350,13 +330,6 @@ export const SourcesTable: React.FC<SourceTableProps> = ({
         vm.selectSource(sources[0]);
       }
     });
-  };
-
-  const handleShowReport = (sourceId: string): void => {
-    const assessmentId = sourceToAssessmentId[sourceId];
-    if (assessmentId) {
-      void navigate(routes.assessmentReport(assessmentId));
-    }
   };
 
   const handleCreateAssessment = (sourceId: string): void => {
@@ -499,11 +472,7 @@ export const SourcesTable: React.FC<SourceTableProps> = ({
               </Tr>
             )}
             {filteredSources.map((source) => {
-              // Get the agent related to this source
               const agent = source.agent;
-              const isReportAvailable = Boolean(
-                sourceToAssessmentId[source.id],
-              );
               const isUploadAllowed = !source.agent || source.onPremises;
               return (
                 <Tr key={source.id}>
@@ -597,29 +566,14 @@ export const SourcesTable: React.FC<SourceTableProps> = ({
                             }
                             icon={<RhUiEllipsisVerticalIcon />}
                             style={{ padding: 0, width: "fit-content" }}
-                          ></MenuToggle>
+                          />
                         )}
                       >
                         <DropdownList>
                           <DropdownItem
-                            isDisabled={!isReportAvailable}
-                            onClick={() => handleShowReport(source.id)}
-                          >
-                            Show assessment report
-                          </DropdownItem>
-                          <DropdownItem
-                            description="Based on this environment"
                             onClick={() => handleCreateAssessment(source.id)}
                           >
-                            Create new assessment
-                          </DropdownItem>
-                          <DropdownItem
-                            isDisabled={
-                              !isUploadAllowed || source.name === "Example"
-                            }
-                            onClick={() => handleUploadFile(source.id)}
-                          >
-                            Upload file
+                            Create assessment
                           </DropdownItem>
                           <DropdownItem
                             isDisabled={!onDownloadOva}
@@ -634,6 +588,17 @@ export const SourcesTable: React.FC<SourceTableProps> = ({
                             Download OVA
                           </DropdownItem>
                           <DropdownItem
+                            onClick={() => {
+                              setOpenDropdowns((prev) => ({
+                                ...prev,
+                                [source.id]: false,
+                              }));
+                              setShowOVASetUpInstructions(true);
+                            }}
+                          >
+                            OVA set up instructions
+                          </DropdownItem>
+                          <DropdownItem
                             isDisabled={!onEditEnvironment}
                             onClick={() => {
                               setOpenDropdowns((prev) => ({
@@ -643,7 +608,7 @@ export const SourcesTable: React.FC<SourceTableProps> = ({
                               onEditEnvironment?.(source.id);
                             }}
                           >
-                            Edit environment
+                            Edit discovery appliance
                           </DropdownItem>
                           <DropdownItem
                             isDisabled={
@@ -651,7 +616,7 @@ export const SourcesTable: React.FC<SourceTableProps> = ({
                             }
                             onClick={() => setDeleteTarget(source)}
                           >
-                            Delete environment
+                            Delete discovery appliance
                           </DropdownItem>
                         </DropdownList>
                       </Dropdown>
@@ -663,6 +628,11 @@ export const SourcesTable: React.FC<SourceTableProps> = ({
           </Tbody>
         </Table>
       </div>
+      {showOVASetUpInstructions && (
+        <OVASetUpInstructionsModal
+          onClose={() => setShowOVASetUpInstructions(false)}
+        />
+      )}
       {deleteTarget && (
         <ConfirmationModal
           title="Delete Environment"

@@ -14,7 +14,7 @@ import { t_global_text_color_status_warning_default as globalTextWarningColor } 
 import React from "react";
 
 import { themePopoverFlyoutProps } from "../../../lib/patternfly/flyoutAppendTo";
-import { VCenterSetupInstructions } from "../../core/components/VCenterSetupInstructions";
+import { OVASetUpInstructions } from "../../core/components/OVASetUpInstructions";
 
 export const AGENT_VERSION_NOT_AVAILABLE = "N/A";
 
@@ -63,7 +63,7 @@ const OvaDownloading: React.FC = () => (
         aria-label="OVA installation instructions"
         headerContent="Install the OVA in your vCenter"
         headerComponent="h2"
-        bodyContent={<VCenterSetupInstructions />}
+        bodyContent={<OVASetUpInstructions />}
         minWidth="600px"
       >
         <Button
@@ -91,7 +91,7 @@ const OvaDownloaded: React.FC = () => (
         aria-label="OVA installation instructions"
         headerContent="Install the OVA in your vCenter"
         headerComponent="h2"
-        bodyContent={<VCenterSetupInstructions />}
+        bodyContent={<OVASetUpInstructions />}
         minWidth="600px"
       >
         <Button

@@ -22,7 +22,7 @@ import React, { useMemo } from "react";
 import { Link } from "react-router-dom";
 
 import { themePopoverFlyoutProps } from "../../../lib/patternfly/flyoutAppendTo";
-import { VCenterSetupInstructions } from "../../core/components/VCenterSetupInstructions";
+import { OVASetUpInstructions } from "../../core/components/OVASetUpInstructions";
 import { safeExternalUrl } from "../../core/utils/urlValidation";
 import { getDiscoveryVmStatusLabel } from "../helpers/discoveryVmStatus";
 
@@ -188,7 +188,7 @@ export function AgentStatusView({
             aria-label="Setup instructions"
             headerContent="Setup instructions"
             headerComponent="h2"
-            bodyContent={<VCenterSetupInstructions />}
+            bodyContent={<OVASetUpInstructions />}
             minWidth="600px"
           >
             <Button

@@ -42,9 +42,9 @@ vi.mock("react-router-dom", () => ({
   useNavigate: () => vi.fn(),
 }));
 
-vi.mock("../../../core/components/VCenterSetupInstructions", () => ({
-  VCenterSetupInstructions: (): React.ReactElement => (
-    <div data-testid="vcenter-setup-instructions" />
+vi.mock("../../../core/components/OVASetUpInstructions", () => ({
+  OVASetUpInstructions: (): React.ReactElement => (
+    <div data-testid="ova-setup-instructions" />
   ),
 }));
 
