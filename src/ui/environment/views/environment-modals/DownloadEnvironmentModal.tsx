@@ -92,14 +92,6 @@ export const DownloadEnvironmentModal: React.FC<
         ) : (
           <Stack hasGutter>
             <StackItem>
-              <Alert isInline variant="success" title="Instructions">
-                <OVASetUpInstructions />
-              </Alert>
-            </StackItem>
-            <StackItem>
-              <ApplianceVersionDefinitionList {...applianceVersion} />
-            </StackItem>
-            <StackItem>
               <Content key="Ova Download URL" component={ContentVariants.dt}>
                 Ova Download URL
               </Content>
@@ -117,9 +109,23 @@ export const DownloadEnvironmentModal: React.FC<
               </Content>
             </StackItem>
             <StackItem>
+              <ApplianceVersionDefinitionList {...applianceVersion} />
+            </StackItem>
+            <StackItem>
               <Alert
                 isInline
                 variant="info"
+                title="OVA set up instructions"
+                isExpandable
+                toggleAriaLabel="Toggle OVA set up instructions"
+              >
+                <OVASetUpInstructions />
+              </Alert>
+            </StackItem>
+            <StackItem>
+              <Alert
+                isInline
+                variant="warning"
                 title="Never share your downloaded OVA with anyone else. Forwarding it might put your credentials and personal data at risk."
               />
             </StackItem>

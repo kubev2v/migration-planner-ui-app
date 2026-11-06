@@ -12,14 +12,13 @@ type Step = {
 const migrationAssessmentSteps: Step[] = [
   {
     title: "Set up",
-    description: (
-      <>Name the appliance, add an SSH key, and generate a discovery OVA.</>
-    ),
+    description:
+      "Name the appliance, add an SSH key, select network configuration preferences and generate a discovery OVA.",
   },
   {
     title: "Deploy",
     description:
-      "Download the OVA and import it into vCenter to deploy the discovery appliance",
+      "Download the OVA or copy its URL, and import it into vCenter to deploy the discovery appliance.",
   },
   {
     title: "Discover",
