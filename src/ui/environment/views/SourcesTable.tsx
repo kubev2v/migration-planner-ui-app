@@ -16,7 +16,15 @@ import {
   RhUiArrowLeftIcon,
   RhUiEllipsisVerticalIcon,
 } from "@patternfly/react-icons";
-import { Table, Tbody, Td, Th, Thead, Tr } from "@patternfly/react-table";
+import {
+  ExpandableRowContent,
+  Table,
+  Tbody,
+  Td,
+  Th,
+  Thead,
+  Tr,
+} from "@patternfly/react-table";
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -44,6 +52,7 @@ import { AgentStatusView } from "./AgentStatusView";
 import { Columns, SORTABLE_COLUMNS, type SortableColumnKey } from "./Columns";
 import { DiscoveryAppliancesEmptyState } from "./DiscoveryAppliancesEmptyState";
 import { DiscoveryAppliancesErrorLoadingState } from "./DiscoveryAppliancesErrorLoadingState";
+import { SourceAssessmentsCard } from "./SourceAssessmentsCard";
 import { UploadInventoryAction } from "./UploadInventoryAction";
 import { getAgentVersionDisplayLabel, VersionStatus } from "./VersionStatus";
 
@@ -88,12 +97,6 @@ const tableHeaderNormal = css`
   white-space: normal;
 `;
 
-const tableHeaderWide = css`
-  white-space: normal;
-  min-width: 120px;
-  max-width: 200px;
-`;
-
 const tableCellTop = css`
   vertical-align: top;
 `;
@@ -117,6 +120,9 @@ export const SourcesTable: React.FC<SourceTableProps> = ({
 }) => {
   const vm = useEnvironmentPage();
   const navigate = useNavigate();
+  const [expandedSourceIds, setExpandedSourceIds] = useState<
+    Record<string, boolean>
+  >({});
   const [openDropdowns, setOpenDropdowns] = useState<Record<string, boolean>>(
     {},
   );
@@ -351,6 +357,16 @@ export const SourcesTable: React.FC<SourceTableProps> = ({
     );
   }
 
+  const isSourceExpanded = (sourceId: string): boolean =>
+    expandedSourceIds[sourceId] ?? false;
+
+  const toggleSourceExpanded = (sourceId: string): void => {
+    setExpandedSourceIds((prev) => ({
+      ...prev,
+      [sourceId]: !prev[sourceId],
+    }));
+  };
+
   const showNoResultFound = hasSources && filteredSources.length === 0;
 
   return (
@@ -409,6 +425,7 @@ export const SourcesTable: React.FC<SourceTableProps> = ({
         >
           <Thead>
             <Tr>
+              <Th modifier="fitContent" screenReaderText="Expand assessments" />
               <Th
                 className={tableHeaderNormal}
                 sort={getSortParams("Name")}
@@ -432,31 +449,10 @@ export const SourcesTable: React.FC<SourceTableProps> = ({
               </Th>
               <Th
                 className={tableHeaderNormal}
-                sort={getSortParams("Hosts")}
-                modifier="nowrap"
-              >
-                {Columns.Hosts}
-              </Th>
-              <Th
-                className={tableHeaderNormal}
                 sort={getSortParams("VMs")}
                 modifier="nowrap"
               >
                 {Columns.VMs}
-              </Th>
-              <Th
-                className={tableHeaderWide}
-                sort={getSortParams("Networks")}
-                modifier="nowrap"
-              >
-                {Columns.Networks}
-              </Th>
-              <Th
-                className={tableHeaderWide}
-                sort={getSortParams("Datastores")}
-                modifier="nowrap"
-              >
-                {Columns.Datastores}
               </Th>
               <Th
                 className={tableHeaderNormal}
@@ -470,19 +466,30 @@ export const SourcesTable: React.FC<SourceTableProps> = ({
               </Th>
             </Tr>
           </Thead>
-          <Tbody>
-            {showNoResultFound && (
+          {showNoResultFound && (
+            <Tbody>
               <Tr>
                 <Td colSpan={9}>
                   <EmptySearchResults title="No matching environment found" />
                 </Td>
               </Tr>
-            )}
-            {filteredSources.map((source) => {
-              const agent = source.agent;
-              const isUploadAllowed = !source.agent || source.onPremises;
-              return (
-                <Tr key={source.id}>
+            </Tbody>
+          )}
+          {filteredSources.map((source, rowIndex) => {
+            const agent = source.agent;
+            const isUploadAllowed = !source.agent || source.onPremises;
+            const isExpanded = isSourceExpanded(source.id);
+            return (
+              <Tbody key={source.id} isExpanded={isExpanded}>
+                <Tr isContentExpanded={isExpanded}>
+                  <Td
+                    expand={{
+                      rowIndex,
+                      isExpanded,
+                      onToggle: () => toggleSourceExpanded(source.id),
+                      expandId: `source-assessments-${source.id}`,
+                    }}
+                  />
                   <Td dataLabel={Columns.Name} className={tableCellTop}>
                     {source.name}
                   </Td>
@@ -512,20 +519,8 @@ export const SourcesTable: React.FC<SourceTableProps> = ({
                       agentVersionWarning={source.agentVersionWarning}
                     />
                   </Td>
-                  <Td dataLabel={Columns.Hosts} className={tableCellTop}>
-                    {source?.inventory?.vcenter?.infra.totalHosts ??
-                      VALUE_NOT_AVAILABLE}
-                  </Td>
                   <Td dataLabel={Columns.VMs} className={tableCellTop}>
                     {source?.inventory?.vcenter?.vms.total ??
-                      VALUE_NOT_AVAILABLE}
-                  </Td>
-                  <Td dataLabel={Columns.Networks} className={tableCellTop}>
-                    {source?.inventory?.vcenter?.infra.networks?.length ??
-                      VALUE_NOT_AVAILABLE}
-                  </Td>
-                  <Td dataLabel={Columns.Datastores} className={tableCellTop}>
-                    {source?.inventory?.vcenter?.infra.datastores?.length ??
                       VALUE_NOT_AVAILABLE}
                   </Td>
                   <Td dataLabel={Columns.LastSeen} className={tableCellTop}>
@@ -630,9 +625,21 @@ export const SourcesTable: React.FC<SourceTableProps> = ({
                     )}
                   </Td>
                 </Tr>
-              );
-            })}
-          </Tbody>
+                <Tr isExpanded={isExpanded}>
+                  <Td colSpan={7}>
+                    <ExpandableRowContent hasNoBackground>
+                      <SourceAssessmentsCard
+                        source={source}
+                        onCreateAssessment={(source) =>
+                          handleCreateAssessment(source.id)
+                        }
+                      />
+                    </ExpandableRowContent>
+                  </Td>
+                </Tr>
+              </Tbody>
+            );
+          })}
         </Table>
       </div>
       {showOVASetUpInstructions && (

@@ -24,19 +24,14 @@ import {
   Thead,
   Tr,
 } from "@patternfly/react-table";
-import React, { useMemo, useState } from "react";
+import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 import { formatRelativeTime } from "../../../lib/common/Time";
 import { themeTooltipFlyoutProps } from "../../../lib/patternfly/flyoutAppendTo";
 import type { AssessmentModel } from "../../../models/AssessmentModel";
 import { routes } from "../../../routing/Routes";
-import {
-  type AssessmentSourceFilterKey,
-  getAssessmentSourceLabel,
-  isUploadedFileSourceType,
-  sourceMatchesAssessmentSourceFilter,
-} from "../helpers/assessmentSource";
+import { isUploadedFileSourceType } from "../helpers/assessmentSource";
 
 const openAssistedInstaller = (): void => {
   const currentHost = window.location.hostname;
@@ -51,26 +46,6 @@ const openAssistedInstaller = (): void => {
       "_blank",
     );
   }
-};
-
-type AssessmentsTableProps = {
-  assessments: AssessmentModel[];
-  search?: string;
-  filterBy?: string;
-  filterValue?: string;
-  selectedSources?: AssessmentSourceFilterKey[];
-  selectedOwners?: string[];
-  sortBy?: { columnKey: SortableColumn; direction: "asc" | "desc" } | undefined;
-  onSort?: (
-    event: unknown,
-    columnKey: SortableColumn,
-    direction: "asc" | "desc",
-  ) => void;
-  onDelete?: (assessmentId: string) => void;
-  onUpdate?: (assessmentId: string) => void;
-  visibleColumns?: ColumnKey[];
-  onShareAssessment: (assessmentId: string) => void;
-  onUnshareAssessment: (assessmentId: string) => void;
 };
 
 export const Columns = {
@@ -162,17 +137,48 @@ export const SORTABLE_COLUMNS: SortableColumn[] = [
   "Datastores",
 ];
 
+export type AssessmentTableRow = {
+  key: string;
+  id: string;
+  name: string;
+  source: string;
+  sourceType: string;
+  lastUpdatedMs: number;
+  owner: string;
+  hosts: string | number;
+  vms: string | number;
+  networks: string | number;
+  datastores: string | number;
+  hasData: boolean;
+  permissions: NonNullable<AssessmentModel["permissions"]>;
+  isShared: boolean;
+  sharedBy: NonNullable<
+    NonNullable<AssessmentModel["sharing"]>["sharedBy"]
+  > | null;
+};
+
+type AssessmentsTableProps = {
+  assessments: AssessmentTableRow[];
+  showNoResultFound: boolean;
+  sortBy?: { columnKey: SortableColumn; direction: "asc" | "desc" };
+  onSort?: (
+    event: unknown,
+    columnKey: SortableColumn,
+    direction: "asc" | "desc",
+  ) => void;
+  onDelete?: (assessmentId: string) => void;
+  visibleColumns?: ColumnKey[];
+  onShareAssessment?: (assessmentId: string) => void;
+  onUnshareAssessment?: (assessmentId: string) => void;
+};
+
 export const AssessmentsTable: React.FC<AssessmentsTableProps> = ({
   assessments,
-  search: _search = "",
-  filterBy = "Filter",
-  filterValue = "",
-  selectedSources = [],
-  selectedOwners = [],
+  showNoResultFound,
   sortBy,
   onSort,
   onDelete,
-  visibleColumns = Object.keys(Columns) as ColumnKey[],
+  visibleColumns = DEFAULT_VISIBLE_COLUMNS,
   onShareAssessment,
   onUnshareAssessment,
 }) => {
@@ -182,249 +188,14 @@ export const AssessmentsTable: React.FC<AssessmentsTableProps> = ({
   );
 
   const toggleDropdown = (assessmentId: string): void => {
-    setOpenDropdowns((prev) => ({
-      ...prev,
-      [assessmentId]: !prev[assessmentId],
+    setOpenDropdowns((previous) => ({
+      ...previous,
+      [assessmentId]: !previous[assessmentId],
     }));
   };
 
-  const isColumnVisible = (columnKey: ColumnKey): boolean => {
-    return visibleColumns.includes(columnKey);
-  };
-
-  const handleDelete = (assessmentId: string): void => {
-    onDelete?.(assessmentId);
-  };
-
-  const rows = useMemo(() => {
-    const safeAssessments = Array.isArray(assessments) ? assessments : [];
-    const items = safeAssessments.map((assessment) => {
-      const name = assessment.name;
-      const id = String(assessment.id ?? "");
-      const sourceType = assessment.sourceType || "Unknown";
-      const source = getAssessmentSourceLabel(sourceType);
-      const snapshots = assessment.snapshots ?? [];
-      const permissions = Array.isArray(assessment.permissions)
-        ? assessment.permissions
-        : [];
-      const isShared = assessment.sharing?.isShared || false;
-      const sharedBy = assessment.sharing?.sharedBy || null;
-
-      // Use pre-computed model properties
-      const snapshotData = assessment.latestSnapshot;
-      const ownerFullName = assessment.ownerFullName;
-      const hasData = assessment.hasUsefulData;
-
-      // Compute latest snapshot timestamp (ms) for reliable sort/filter
-      const lastUpdatedMs: number =
-        Array.isArray(snapshots) && snapshots.length
-          ? Math.max(
-              ...snapshots.map((s) =>
-                s?.createdAt
-                  ? new Date(s.createdAt as unknown as string).getTime()
-                  : 0,
-              ),
-            )
-          : 0;
-
-      return {
-        key: id || name,
-        id,
-        name,
-        source,
-        sourceType,
-        lastUpdatedMs,
-        owner: ownerFullName,
-        hosts: snapshotData.hosts,
-        vms: snapshotData.vms,
-        networks: snapshotData.networks,
-        datastores: snapshotData.datastores,
-        snapshots,
-        hasData,
-        permissions,
-        isShared,
-        sharedBy,
-      };
-    });
-
-    let filtered = items;
-
-    // Apply name-only search
-    if (_search && _search.trim() !== "") {
-      const query = _search.toLowerCase();
-      filtered = filtered.filter((i) =>
-        (i.name || "").toLowerCase().includes(query),
-      );
-    }
-
-    // Apply dropdown filter (Source or Owner)
-    if (filterBy !== "Filter" && filterValue.trim() !== "") {
-      switch (filterBy) {
-        case "Source":
-          filtered = filtered.filter((i) =>
-            i.source.toLowerCase().includes(filterValue.toLowerCase()),
-          );
-          break;
-        case "Owner":
-          filtered = filtered.filter((i) =>
-            (i.owner || "").toLowerCase().includes(filterValue.toLowerCase()),
-          );
-          break;
-        case "Last updated": {
-          const query = filterValue.trim().toLowerCase();
-          // eslint-disable-next-line react-hooks/purity
-          const nowMs = Date.now();
-          const oneDayMs = 24 * 60 * 60 * 1000;
-          const matchByRule = (itemMs: number): boolean => {
-            if (!itemMs) {
-              return false;
-            }
-            const diffDays = Math.floor((nowMs - itemMs) / oneDayMs);
-
-            // Common quick filters
-            if (query === "today") return diffDays === 0;
-            if (query === "yesterday") return diffDays === 1;
-            if (
-              query === "last 7 days" ||
-              query === "past 7 days" ||
-              query === "week"
-            )
-              return diffDays >= 0 && diffDays < 7;
-            if (
-              query === "last 30 days" ||
-              query === "past 30 days" ||
-              query === "month" ||
-              query === "last month"
-            )
-              return diffDays >= 0 && diffDays < 30;
-
-            // Numeric relative: e.g., "3 days", "10d"
-            const rel = query.match(/(\d+)\s*(d|day|days)\b/);
-            if (rel) {
-              const days = Number(rel[1]);
-              if (!Number.isNaN(days)) {
-                return diffDays >= 0 && diffDays < days;
-              }
-            }
-
-            // Date input: try to parse and match same calendar date
-            const parsed = new Date(filterValue);
-            if (!Number.isNaN(parsed.getTime())) {
-              const targetY = parsed.getFullYear();
-              const targetM = parsed.getMonth();
-              const targetD = parsed.getDate();
-              const d = new Date(itemMs);
-              return (
-                d.getFullYear() === targetY &&
-                d.getMonth() === targetM &&
-                d.getDate() === targetD
-              );
-            }
-
-            // Fallback: substring on rendered label (e.g., "today", "1 day ago")
-            return formatRelativeTime(itemMs).toLowerCase().includes(query);
-          };
-
-          filtered = filtered.filter((i) => matchByRule(i.lastUpdatedMs));
-          break;
-        }
-      }
-    }
-
-    if (selectedSources.length > 0) {
-      filtered = filtered.filter((i) =>
-        selectedSources.some((key) =>
-          sourceMatchesAssessmentSourceFilter(i.sourceType, key),
-        ),
-      );
-    }
-
-    // Apply owners multi-select filter
-    if (selectedOwners && selectedOwners.length > 0) {
-      filtered = filtered.filter((i) =>
-        i.owner ? selectedOwners.includes(i.owner) : false,
-      );
-    }
-
-    if (!sortBy) return filtered;
-
-    const copy = [...filtered];
-    switch (sortBy.columnKey) {
-      case "Name":
-        copy.sort((a, b) =>
-          sortBy.direction === "asc"
-            ? a.name.localeCompare(b.name)
-            : b.name.localeCompare(a.name),
-        );
-        break;
-      case "Source":
-        copy.sort((a, b) =>
-          sortBy.direction === "asc"
-            ? a.source.localeCompare(b.source)
-            : b.source.localeCompare(a.source),
-        );
-        break;
-      case "LastUpdated":
-        copy.sort((a, b) => {
-          const aMs = typeof a.lastUpdatedMs === "number" ? a.lastUpdatedMs : 0;
-          const bMs = typeof b.lastUpdatedMs === "number" ? b.lastUpdatedMs : 0;
-          return sortBy.direction === "asc" ? aMs - bMs : bMs - aMs;
-        });
-        break;
-      case "Owner":
-        copy.sort((a, b) =>
-          sortBy.direction === "asc"
-            ? (a.owner || "").localeCompare(b.owner || "")
-            : (b.owner || "").localeCompare(a.owner || ""),
-        );
-        break;
-      case "Hosts":
-        copy.sort((a, b) => {
-          const aHosts = typeof a.hosts === "number" ? a.hosts : 0;
-          const bHosts = typeof b.hosts === "number" ? b.hosts : 0;
-          return sortBy.direction === "asc" ? aHosts - bHosts : bHosts - aHosts;
-        });
-        break;
-      case "VMs":
-        copy.sort((a, b) => {
-          const aVms = typeof a.vms === "number" ? a.vms : 0;
-          const bVms = typeof b.vms === "number" ? b.vms : 0;
-          return sortBy.direction === "asc" ? aVms - bVms : bVms - aVms;
-        });
-        break;
-      case "Networks":
-        copy.sort((a, b) => {
-          const aNetworks = typeof a.networks === "number" ? a.networks : 0;
-          const bNetworks = typeof b.networks === "number" ? b.networks : 0;
-          return sortBy.direction === "asc"
-            ? aNetworks - bNetworks
-            : bNetworks - aNetworks;
-        });
-        break;
-      case "Datastores":
-        copy.sort((a, b) => {
-          const aDatastores =
-            typeof a.datastores === "number" ? a.datastores : 0;
-          const bDatastores =
-            typeof b.datastores === "number" ? b.datastores : 0;
-          return sortBy.direction === "asc"
-            ? aDatastores - bDatastores
-            : bDatastores - aDatastores;
-        });
-        break;
-    }
-    return copy;
-  }, [
-    assessments,
-    _search,
-    filterBy,
-    filterValue,
-    selectedSources,
-    selectedOwners,
-    sortBy,
-  ]);
-
-  const showNoResultFound = assessments.length > 0 && rows.length === 0;
+  const isColumnVisible = (columnKey: ColumnKey): boolean =>
+    visibleColumns.includes(columnKey);
 
   const getSortParams = (columnKey: SortableColumn) => {
     if (!onSort || !sortBy) return undefined;
@@ -510,20 +281,22 @@ export const AssessmentsTable: React.FC<AssessmentsTableProps> = ({
             </Td>
           </Tr>
         )}
-        {rows.map((row) => (
-          <Tr key={row.key}>
+        {assessments.map((assessment) => (
+          <Tr key={assessment.key}>
             {isColumnVisible("Name") && (
               <Td dataLabel={Columns.Name}>
-                {row.hasData ? (
+                {assessment.hasData ? (
                   <TableText wrapModifier="breakWord">
-                    <Link to={routes.assessmentReport(row.id)}>{row.name}</Link>
+                    <Link to={routes.assessmentReport(assessment.id)}>
+                      {assessment.name}
+                    </Link>
                   </TableText>
                 ) : (
                   <span>
                     <Tooltip
                       {...themeTooltipFlyoutProps}
                       content={
-                        row.sourceType.toLowerCase().includes("rvtools")
+                        assessment.sourceType.toLowerCase().includes("rvtools")
                           ? "No inventory data found. The uploaded file may be corrupted. Please verify and re-upload."
                           : "No inventory data yet. Data collection may be in progress or the source connection failed."
                       }
@@ -532,8 +305,11 @@ export const AssessmentsTable: React.FC<AssessmentsTableProps> = ({
                         <RhUiWarningFillIcon />
                       </Icon>
                     </Tooltip>{" "}
-                    <Tooltip {...themeTooltipFlyoutProps} content={row.name}>
-                      <span>{row.name}</span>
+                    <Tooltip
+                      {...themeTooltipFlyoutProps}
+                      content={assessment.name}
+                    >
+                      <span>{assessment.name}</span>
                     </Tooltip>
                   </span>
                 )}
@@ -548,23 +324,25 @@ export const AssessmentsTable: React.FC<AssessmentsTableProps> = ({
                     gap: "8px",
                   }}
                 >
-                  {isUploadedFileSourceType(row.sourceType) ? (
+                  {isUploadedFileSourceType(assessment.sourceType) ? (
                     <RhUiDocumentIcon />
                   ) : (
                     <RhUiConnectedIcon />
                   )}
-                  <Truncate content={row.source} />
+                  <Truncate content={assessment.source} />
                 </div>
               </Td>
             )}
             {isColumnVisible("LastUpdated") && (
               <Td dataLabel={Columns.LastUpdated}>
-                {row.lastUpdatedMs ? (
+                {assessment.lastUpdatedMs ? (
                   <Tooltip
                     {...themeTooltipFlyoutProps}
-                    content={new Date(row.lastUpdatedMs).toLocaleString()}
+                    content={new Date(
+                      assessment.lastUpdatedMs,
+                    ).toLocaleString()}
                   >
-                    <span>{formatRelativeTime(row.lastUpdatedMs)}</span>
+                    <span>{formatRelativeTime(assessment.lastUpdatedMs)}</span>
                   </Tooltip>
                 ) : (
                   "-"
@@ -573,27 +351,27 @@ export const AssessmentsTable: React.FC<AssessmentsTableProps> = ({
             )}
             {isColumnVisible("Owner") && (
               <Td dataLabel={Columns.Owner}>
-                <Truncate content={row.owner} />
+                <Truncate content={assessment.owner} />
               </Td>
             )}
             {isColumnVisible("Hosts") && (
-              <Td dataLabel={Columns.Hosts}>{row.hosts}</Td>
+              <Td dataLabel={Columns.Hosts}>{assessment.hosts}</Td>
             )}
             {isColumnVisible("VMs") && (
-              <Td dataLabel={Columns.VMs}>{row.vms}</Td>
+              <Td dataLabel={Columns.VMs}>{assessment.vms}</Td>
             )}
             {isColumnVisible("Networks") && (
-              <Td dataLabel={Columns.Networks}>{row.networks}</Td>
+              <Td dataLabel={Columns.Networks}>{assessment.networks}</Td>
             )}
             {isColumnVisible("Datastores") && (
-              <Td dataLabel={Columns.Datastores}>{row.datastores}</Td>
+              <Td dataLabel={Columns.Datastores}>{assessment.datastores}</Td>
             )}
             {isColumnVisible("SharingStatus") && (
               <Td dataLabel={Columns.SharingStatus}>
-                {row.isShared
-                  ? row.sharedBy
-                    ? row.sharedBy.name
-                      ? `Shared by ${row.sharedBy.name}`
+                {assessment.isShared
+                  ? assessment.sharedBy
+                    ? assessment.sharedBy.name
+                      ? `Shared by ${assessment.sharedBy.name}`
                       : "Shared by customer"
                     : "Shared with partner"
                   : "Not shared"}
@@ -602,15 +380,15 @@ export const AssessmentsTable: React.FC<AssessmentsTableProps> = ({
             {isColumnVisible("Actions") && (
               <Td dataLabel={Columns.Actions} modifier="fitContent">
                 <Dropdown
-                  isOpen={openDropdowns[row.id] || false}
+                  isOpen={openDropdowns[assessment.id] || false}
                   popperProps={{
                     appendTo: () => document.body,
                     position: "end",
                   }}
                   onOpenChange={(isOpen) =>
-                    setOpenDropdowns((prev) => ({
-                      ...prev,
-                      [row.id]: isOpen,
+                    setOpenDropdowns((previous) => ({
+                      ...previous,
+                      [assessment.id]: isOpen,
                     }))
                   }
                   toggle={(toggleRef: React.Ref<MenuToggleElement>) => (
@@ -618,7 +396,7 @@ export const AssessmentsTable: React.FC<AssessmentsTableProps> = ({
                       ref={toggleRef}
                       aria-label="Actions"
                       variant="plain"
-                      onClick={() => toggleDropdown(row.id)}
+                      onClick={() => toggleDropdown(assessment.id)}
                       icon={<RhUiEllipsisVerticalIcon />}
                       style={{ padding: 0, width: "fit-content" }}
                     ></MenuToggle>
@@ -627,48 +405,55 @@ export const AssessmentsTable: React.FC<AssessmentsTableProps> = ({
                   <DropdownList>
                     <DropdownItem
                       onClick={() => {
-                        void navigate(routes.assessmentReport(row.id));
+                        void navigate(routes.assessmentReport(assessment.id));
                       }}
                       isDisabled={
-                        !row.hasData || !row.permissions.includes("read")
+                        !assessment.hasData ||
+                        !assessment.permissions.includes("read")
                       }
                     >
                       View assessment report
                     </DropdownItem>
-                    {row.isShared ? (
+                    {assessment.isShared ? (
                       <DropdownItem
                         onClick={() => {
-                          toggleDropdown(row.id);
-                          return onUnshareAssessment(row.id);
+                          toggleDropdown(assessment.id);
+                          onUnshareAssessment?.(assessment.id);
                         }}
-                        isDisabled={!row.permissions.includes("share")}
+                        isDisabled={
+                          !onUnshareAssessment ||
+                          !assessment.permissions.includes("share")
+                        }
                       >
                         Unshare assessment
                       </DropdownItem>
                     ) : (
                       <DropdownItem
                         onClick={() => {
-                          toggleDropdown(row.id);
-                          return onShareAssessment(row.id);
+                          toggleDropdown(assessment.id);
+                          onShareAssessment?.(assessment.id);
                         }}
-                        isDisabled={!row.permissions.includes("share")}
+                        isDisabled={
+                          !onShareAssessment ||
+                          !assessment.permissions.includes("share")
+                        }
                       >
                         Share assessment
                       </DropdownItem>
                     )}
                     <DropdownItem
                       onClick={openAssistedInstaller}
-                      isDisabled={!row.hasData}
+                      isDisabled={!assessment.hasData}
                     >
                       Create a target cluster
                     </DropdownItem>
                     <DropdownItem
                       onClick={() => {
-                        toggleDropdown(row.id);
-                        return handleDelete(row.id);
+                        toggleDropdown(assessment.id);
+                        onDelete?.(assessment.id);
                       }}
                       isDisabled={
-                        !onDelete || !row.permissions.includes("delete")
+                        !onDelete || !assessment.permissions.includes("delete")
                       }
                     >
                       Delete assessment
