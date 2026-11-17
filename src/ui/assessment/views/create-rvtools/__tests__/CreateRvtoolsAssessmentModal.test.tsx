@@ -43,7 +43,9 @@ const stageFiles = async (files: File[]): Promise<void> => {
   await user.upload(fileInput, files);
   await waitFor(() => {
     expect(
-      screen.getByText(`${files.length} of ${MAX_RVTOOLS_FILES} files selected`),
+      screen.getByText(
+        `${files.length} of ${MAX_RVTOOLS_FILES} files selected`,
+      ),
     ).toBeInTheDocument();
   });
 };
