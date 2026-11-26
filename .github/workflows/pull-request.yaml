@@ -41,7 +41,7 @@ jobs:
     permissions:
       contents: read
       pull-requests: read
-    uses: kubev2v/migration-planner-workflows/.github/workflows/validate-commit-messages.yml@b5de744cc45e4daaf9e28dcd6b179ab4a8ad7c7c # main
+    uses: kubev2v/migration-planner-workflows/.github/workflows/validate-commit-messages.yml@8faa41115a8ee0144097ab6015f7277675faf1a4 # main
     with:
       types: ${{ needs.config.outputs.allowed-types }}
       jira-pattern: ${{ needs.config.outputs.jira-pattern }}
@@ -54,7 +54,7 @@ jobs:
     permissions:
       contents: read
       pull-requests: read
-    uses: kubev2v/migration-planner-workflows/.github/workflows/validate-pr-title-description.yml@b5de744cc45e4daaf9e28dcd6b179ab4a8ad7c7c # main
+    uses: kubev2v/migration-planner-workflows/.github/workflows/validate-pr-title-description.yml@8faa41115a8ee0144097ab6015f7277675faf1a4 # main
     with:
       allowed-types: ${{ needs.config.outputs.allowed-types }}
       jira-pattern: ${{ needs.config.outputs.jira-pattern }}
