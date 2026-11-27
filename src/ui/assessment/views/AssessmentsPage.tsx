@@ -4,6 +4,9 @@ import ColumnManagementModal, {
 } from "@patternfly/react-component-groups/dist/dynamic/ColumnManagementModal";
 import {
   Button,
+  PageSection,
+  Stack,
+  StackItem,
   Toolbar,
   ToolbarContent,
   ToolbarItem,
@@ -31,6 +34,7 @@ import {
 } from "./AssessmentsTable";
 import CreateRvtoolsAssessmentModal from "./create-rvtools/CreateRvtoolsAssessmentModal";
 import UpdateAssessment from "./UpdateAssessment";
+import { CompareAssessmentMethodsTable } from "./assessment-empty/CompareAssessmentMethodsTable";
 
 type AssessmentMode = "discoveryAppliance" | "rvtools";
 
@@ -44,6 +48,10 @@ const tableContainerStyle = css`
   margin-top: 10px;
   max-width: 100%;
   overflow: auto;
+`;
+
+const compareMethodsSectionStyle = css`
+  --pf-v6-c-page--section--m-limit-width--MaxWidth: 56rem;
 `;
 
 export const AssessmentsPage: React.FC<AssessmentsPageProps> = ({
@@ -352,16 +360,30 @@ export const AssessmentsPage: React.FC<AssessmentsPageProps> = ({
       )}
 
       {isTableEmpty() ? (
-        <AssessmentEmptyState
-          CreateAssessmentButton={
-            <CreateAssessmentDropdown
-              onCreateRVToolAssessment={onCreateRVToolAssessment}
-              onCreateDiscoveryApplianceAssessment={
-                onCreateDiscoveryApplianceAssessment
+        <Stack hasGutter>
+          <StackItem>
+            <AssessmentEmptyState
+              CreateAssessmentButton={
+                <CreateAssessmentDropdown
+                  onCreateRVToolAssessment={onCreateRVToolAssessment}
+                  onCreateDiscoveryApplianceAssessment={
+                    onCreateDiscoveryApplianceAssessment
+                  }
+                />
               }
             />
-          }
-        />
+          </StackItem>
+          <StackItem>
+            <PageSection
+              aria-labelledby="discovery-method-comparison-heading"
+              isWidthLimited
+              isCenterAligned
+              className={compareMethodsSectionStyle}
+            >
+              <CompareAssessmentMethodsTable />
+            </PageSection>
+          </StackItem>
+        </Stack>
       ) : (
         <div className={tableContainerStyle}>
           <AssessmentsList
