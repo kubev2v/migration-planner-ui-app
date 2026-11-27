@@ -9,20 +9,22 @@ import {
   useState,
   useSyncExternalStore,
 } from "react";
-import { useNavigate } from "react-router-dom";
-import { useAsyncFn } from "react-use";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { useAsyncFn, useMount } from "react-use";
 
 import { Symbols } from "../../../config/Dependencies";
 import type { IAccountStore } from "../../../data/stores/interfaces/IAccountStore";
 import type { IAssessmentsStore } from "../../../data/stores/interfaces/IAssessmentsStore";
 import type { IJobsStore } from "../../../data/stores/interfaces/IJobsStore";
 import type { IRvtoolsReportPersistenceStore } from "../../../data/stores/interfaces/IRvtoolsReportPersistenceStore";
+import type { ISourcesStore } from "../../../data/stores/interfaces/ISourcesStore";
 import {
   JOB_POLLING_INTERVAL,
   type RvtoolsUploadState,
   TERMINAL_JOB_STATUSES,
 } from "../../../data/stores/JobsStore";
 import useLocalStorage from "../../../hooks/useLocalStorage";
+import type { SourceModel } from "../../../models/SourceModel";
 import { routes } from "../../../routing/Routes";
 import {
   getRvtoolsJobProgressLabel,
@@ -46,6 +48,8 @@ const VISIBLE_COLUMNS_KEY = "migration-advisor:visible-columns";
 // ---------------------------------------------------------------------------
 
 export interface AssessmentPageViewModel {
+  /** Available appliances used to label and populate the appliance filter. */
+  sources?: SourceModel[];
   /** Current user identity (null when not logged in). */
   identity: Identity | null;
   /** Current RVTools job (null when idle). */
@@ -133,6 +137,15 @@ export interface AssessmentPageViewModel {
   unshareAssessment: (id: string) => Promise<void>;
   isUnsharingAssessment: boolean;
   unshareError?: Error;
+
+  // -- Filters ---------------------------------------------------------------
+  selectedSources: string[];
+  setSelectedSources: (sources: string[]) => void;
+  selectedOwners: string[];
+  setSelectedOwners: (owners: string[]) => void;
+  nameFilter: string;
+  setNameFilter: (name: string) => void;
+  clearAllFilters: () => void;
 }
 
 // ---------------------------------------------------------------------------
@@ -141,11 +154,41 @@ export interface AssessmentPageViewModel {
 
 export const useAssessmentPageViewModel = (): AssessmentPageViewModel => {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [nameFilter, setNameFilter] = useState("");
+  const [selectedOwners, setSelectedOwners] = useState<string[]>([]);
+  const [selectedSources, setSelectedSources] = useState<string[]>(() =>
+    searchParams.getAll("sourceId"),
+  );
+
+  const clearAllFilters = useCallback(() => {
+    setNameFilter("");
+    setSelectedOwners([]);
+    setSelectedSources([]);
+    setSearchParams(new URLSearchParams(), { replace: true });
+  }, [setNameFilter, setSearchParams, setSelectedOwners, setSelectedSources]);
 
   const accountStore = useInjection<IAccountStore>(Symbols.AccountStore);
   const assessmentsStore = useInjection<IAssessmentsStore>(
     Symbols.AssessmentsStore,
   );
+  const sourcesStore = useInjection<ISourcesStore>(Symbols.SourcesStore);
+  const sources = useSyncExternalStore(
+    sourcesStore.subscribe.bind(sourcesStore),
+    sourcesStore.getSnapshot.bind(sourcesStore),
+  );
+  const [_, fetchSources] = useAsyncFn(
+    async () => {
+      return await sourcesStore.list();
+    },
+    [sourcesStore],
+    { loading: true },
+  );
+
+  useMount(() => {
+    void fetchSources();
+  });
+
   const jobsStore = useInjection<IJobsStore>(Symbols.JobsStore);
   const rvtoolsReportPersistenceStore =
     useInjection<IRvtoolsReportPersistenceStore>(
@@ -379,6 +422,7 @@ export const useAssessmentPageViewModel = (): AssessmentPageViewModel => {
     );
 
   return {
+    sources,
     identity,
     currentJob,
     isCreatingJob: jobState.isCreating,
@@ -414,5 +458,12 @@ export const useAssessmentPageViewModel = (): AssessmentPageViewModel => {
     unshareAssessment: doUnshareAssessment,
     isUnsharingAssessment: unshareState.loading,
     unshareError: unshareState.error,
+    selectedSources,
+    setSelectedSources,
+    selectedOwners,
+    setSelectedOwners,
+    nameFilter,
+    setNameFilter,
+    clearAllFilters,
   };
 };

@@ -486,9 +486,6 @@ describe("Report", () => {
       expect(screen.getByText("CPU")).toBeInTheDocument();
       expect(screen.getByText("Memory")).toBeInTheDocument();
       expect(screen.getByText("Hosts")).toBeInTheDocument();
-      expect(
-        screen.getByRole("button", { name: "Create a new assessment" }),
-      ).toBeInTheDocument();
     });
 
     it("does not render warning alert when hasMissingMetrics is false", async () => {

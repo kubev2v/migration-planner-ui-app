@@ -7,13 +7,11 @@ import {
   type MenuToggleElement,
 } from "@patternfly/react-core";
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
 
-import { routes } from "../../../routing/Routes";
-
-type Props = {
+type CreateAssessmentDropdownProps = {
   toggleLabel?: string;
-  onSelectRvtools: () => void;
+  onCreateRVToolAssessment: () => void;
+  onCreateDiscoveryApplianceAssessment: () => void;
 } & Omit<
   DropdownProps,
   | "isOpen"
@@ -23,12 +21,12 @@ type Props = {
   | "children"
 >;
 
-const CreateAssessmentDropdown: React.FC<Props> = ({
-  toggleLabel = "Create",
-  onSelectRvtools,
+const CreateAssessmentDropdown: React.FC<CreateAssessmentDropdownProps> = ({
+  toggleLabel = "Create assessment",
+  onCreateRVToolAssessment,
+  onCreateDiscoveryApplianceAssessment,
   ...props
 }) => {
-  const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
 
   return (
@@ -50,23 +48,24 @@ const CreateAssessmentDropdown: React.FC<Props> = ({
     >
       <DropdownList>
         <DropdownItem
-          key="agent"
-          component="button"
-          onClick={() => {
-            void navigate(routes.assessmentCreate);
-          }}
-        >
-          With discovery OVA
-        </DropdownItem>
-        <DropdownItem
           key="rvtools"
           component="button"
           onClick={() => {
             setIsOpen(false);
-            onSelectRvtools();
+            onCreateRVToolAssessment();
           }}
         >
-          From RVTools (XLS/XLSX)
+          From an RVTools file
+        </DropdownItem>
+        <DropdownItem
+          key="agent"
+          component="button"
+          onClick={() => {
+            setIsOpen(false);
+            onCreateDiscoveryApplianceAssessment();
+          }}
+        >
+          From a discovery appliance
         </DropdownItem>
       </DropdownList>
     </Dropdown>

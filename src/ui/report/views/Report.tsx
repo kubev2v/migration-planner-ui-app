@@ -32,7 +32,6 @@ import { themeTooltipFlyoutProps } from "../../../lib/patternfly/flyoutAppendTo"
 import { routes } from "../../../routing/Routes";
 import CreateRvtoolsAssessmentModal from "../../assessment/views/create-rvtools/CreateRvtoolsAssessmentModal";
 import { AppPage } from "../../core/components/AppPage";
-import CreateAssessmentDropdown from "../../core/components/CreateAssessmentDropdown";
 import { HOME_TAB_LABELS } from "../../home/constants";
 import { fromGroupOptionId } from "../helpers/groupViewModel";
 import { useReportPageViewModel } from "../view-models/useReportPageViewModel";
@@ -49,15 +48,9 @@ import { RvtoolsUploadWarning } from "./rvtools/RvtoolsUploadWarning";
 const ReportContent: React.FC = () => {
   const vm = useReportPageViewModel();
   const charts = useChartExport();
-  const {
-    rvtoolsAppendSuccessMessage,
-    dismissRvtoolsAppendSuccess,
-    rvtoolsAppendNotice,
-    dismissRvtoolsAppendNotice,
-  } = vm;
 
   const showRvtoolsAppendToast =
-    Boolean(rvtoolsAppendSuccessMessage) || Boolean(rvtoolsAppendNotice);
+    Boolean(vm.rvtoolsAppendSuccessMessage) || Boolean(vm.rvtoolsAppendNotice);
 
   if (vm.isInitialLoading) {
     return (
@@ -114,11 +107,6 @@ const ReportContent: React.FC = () => {
     ? "Export is unavailable because this assessment has no VMs with host inventory."
     : "Export is unavailable because this cluster has no VMs.";
 
-  const assessmentParentBreadcrumb = vm.assessmentBreadcrumbParent ?? {
-    to: routes.assessments,
-    label: HOME_TAB_LABELS.assessments,
-  };
-
   const hasTopPageAlerts =
     Boolean(vm.vcenterInventoryLoadError) ||
     Boolean(vm.clusterInventoryLoadError) ||
@@ -132,25 +120,29 @@ const ReportContent: React.FC = () => {
           isLiveRegion
           aria-label="RVTools file upload notifications"
         >
-          {rvtoolsAppendSuccessMessage ? (
+          {vm.rvtoolsAppendSuccessMessage ? (
             <Alert
               variant="success"
-              title={rvtoolsAppendSuccessMessage}
+              title={vm.rvtoolsAppendSuccessMessage}
               timeout={6000}
-              onTimeout={dismissRvtoolsAppendSuccess}
+              onTimeout={vm.dismissRvtoolsAppendSuccess}
               actionClose={
-                <AlertActionCloseButton onClose={dismissRvtoolsAppendSuccess} />
+                <AlertActionCloseButton
+                  onClose={vm.dismissRvtoolsAppendSuccess}
+                />
               }
             />
           ) : null}
-          {rvtoolsAppendNotice ? (
+          {vm.rvtoolsAppendNotice ? (
             <Alert
-              variant={rvtoolsAppendNotice.variant}
-              title={rvtoolsAppendNotice.message}
+              variant={vm.rvtoolsAppendNotice.variant}
+              title={vm.rvtoolsAppendNotice.message}
               timeout={8000}
-              onTimeout={dismissRvtoolsAppendNotice}
+              onTimeout={vm.dismissRvtoolsAppendNotice}
               actionClose={
-                <AlertActionCloseButton onClose={dismissRvtoolsAppendNotice} />
+                <AlertActionCloseButton
+                  onClose={vm.dismissRvtoolsAppendNotice}
+                />
               }
             />
           ) : null}
@@ -164,8 +156,8 @@ const ReportContent: React.FC = () => {
           },
           {
             key: 2,
-            to: assessmentParentBreadcrumb.to,
-            children: assessmentParentBreadcrumb.label,
+            to: routes.assessments,
+            children: HOME_TAB_LABELS.assessments,
           },
           {
             key: 3,
@@ -337,10 +329,9 @@ const ReportContent: React.FC = () => {
                       </List>
                     </StackItem>
                     <StackItem>
-                      <CreateAssessmentDropdown
-                        toggleLabel="Create a new assessment"
-                        onSelectRvtools={() => vm.openRvtoolsModal()}
-                      />
+                      <Link to={routes.assessments}>
+                        Create a new assessment
+                      </Link>
                     </StackItem>
                   </Stack>
                 </Alert>
@@ -486,35 +477,34 @@ const ReportContent: React.FC = () => {
             />
           </TabContentBody>
         </TabContent>
-
-        <CreateRvtoolsAssessmentModal
-          mode={vm.rvtoolsModalMode}
-          maxFiles={
-            vm.rvtoolsModalMode === "append"
-              ? vm.rvtoolsRemainingFileSlots
-              : undefined
-          }
-          isOpen={vm.isRvtoolsModalOpen}
-          onClose={vm.closeRvtoolsModal}
-          onSubmit={({ name, files }) => {
-            if (vm.rvtoolsModalMode === "append") {
-              void vm.appendRvtoolsFiles(files);
-            } else {
-              void vm.createRVToolsJob(name, files);
-            }
-          }}
-          isLoading={vm.isCreatingJob}
-          error={vm.jobCreateError}
-          isJobProcessing={vm.isJobProcessing}
-          jobProgressValue={vm.jobProgressValue}
-          jobError={vm.jobError}
-          rvtoolsUpload={vm.rvtoolsUpload}
-          isNavigatingToReport={vm.isNavigatingToReport}
-          onStagedFileRemoved={({ fileName, fileSize }) => {
-            vm.removeRvtoolsUploadResult(fileName, fileSize);
-          }}
-        />
       </AppPage>
+      <CreateRvtoolsAssessmentModal
+        mode={vm.rvtoolsModalMode}
+        maxFiles={
+          vm.rvtoolsModalMode === "append"
+            ? vm.rvtoolsRemainingFileSlots
+            : undefined
+        }
+        isOpen={vm.isRvtoolsModalOpen}
+        onClose={vm.closeRvtoolsModal}
+        onSubmit={({ name, files }) => {
+          if (vm.rvtoolsModalMode === "append") {
+            void vm.appendRvtoolsFiles(files);
+          } else {
+            void vm.createRVToolsJob(name, files);
+          }
+        }}
+        isLoading={vm.isCreatingJob}
+        error={vm.jobCreateError}
+        isJobProcessing={vm.isJobProcessing}
+        jobProgressValue={vm.jobProgressValue}
+        jobError={vm.jobError}
+        rvtoolsUpload={vm.rvtoolsUpload}
+        isNavigatingToReport={vm.isNavigatingToReport}
+        onStagedFileRemoved={({ fileName, fileSize }) => {
+          vm.removeRvtoolsUploadResult(fileName, fileSize);
+        }}
+      />
     </>
   );
 };

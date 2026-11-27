@@ -119,7 +119,7 @@ describe("useAssessmentsScreenViewModel", () => {
       await Promise.resolve();
     });
 
-    expect(result.current.assessments).toEqual([rvtools]);
+    expect(result.current.assessments).toEqual([rvtools, discovery]);
   });
 
   it("calls list() on mount", async () => {

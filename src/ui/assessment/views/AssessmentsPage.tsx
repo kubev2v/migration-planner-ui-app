@@ -18,6 +18,8 @@ import {
   attributeValueFilterToolbarStyle,
 } from "../../core/components/attribute-value-filter";
 import { ConfirmationModal } from "../../core/components/ConfirmationModal";
+import CreateAssessmentDropdown from "../../core/components/CreateAssessmentDropdown";
+import { CreateDiscoveryAssessmentModal } from "../../environment/views/environment-modals";
 import { useAssessmentPageViewModel } from "../view-models/useAssessmentPageViewModel";
 import AssessmentEmptyState from "./AssessmentEmptyState";
 import { AssessmentsList } from "./AssessmentsList";
@@ -28,10 +30,9 @@ import {
   type SortableColumn,
 } from "./AssessmentsTable";
 import CreateRvtoolsAssessmentModal from "./create-rvtools/CreateRvtoolsAssessmentModal";
-import CreateAssessmentModal, {
-  type AssessmentMode,
-} from "./CreateAssessmentModal";
 import UpdateAssessment from "./UpdateAssessment";
+
+type AssessmentMode = "discoveryAppliance" | "rvtools";
 
 type AssessmentsPageProps = {
   assessments: AssessmentModel[];
@@ -50,11 +51,11 @@ export const AssessmentsPage: React.FC<AssessmentsPageProps> = ({
   rvtoolsOpenToken,
 }) => {
   const {
+    sources = [],
     isCreatingJob,
     jobCreateError,
     isJobProcessing,
     jobProgressValue,
-    jobProgressLabel,
     jobError,
     rvtoolsUpload,
     rvtoolsPartialAssessmentId,
@@ -78,6 +79,13 @@ export const AssessmentsPage: React.FC<AssessmentsPageProps> = ({
     shareAssessment,
     unshareAssessment,
     deleteAssessment,
+    selectedSources,
+    setSelectedSources,
+    selectedOwners,
+    setSelectedOwners,
+    nameFilter,
+    setNameFilter,
+    clearAllFilters,
   } = useAssessmentPageViewModel();
 
   const columnManagementData = React.useMemo(
@@ -105,22 +113,14 @@ export const AssessmentsPage: React.FC<AssessmentsPageProps> = ({
     [setVisibleColumns, setIsColumnModalOpen],
   );
 
-  const [search, setSearch] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [modalMode, setModalMode] = useState<AssessmentMode>("inventory");
+  const [modalMode, setModalMode] = useState<AssessmentMode>("rvtools");
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
   const [isSharingModalOpen, setIsSharingModalOpen] = useState(false);
   const [isUnsharingModalOpen, setIsUnsharingModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedAssessment, setSelectedAssessment] =
     useState<AssessmentModel | null>(null);
-
-  const [selectedOwners, setSelectedOwners] = useState<string[]>([]);
-
-  const clearAllFilters = (): void => {
-    setSearch("");
-    setSelectedOwners([]);
-  };
 
   const formatName = (name?: string): string | undefined =>
     name
@@ -182,8 +182,8 @@ export const AssessmentsPage: React.FC<AssessmentsPageProps> = ({
         id: "name",
         label: "Name",
         type: "text",
-        value: search,
-        onChange: setSearch,
+        value: nameFilter,
+        onChange: setNameFilter,
         placeholder: "Filter by name",
         ariaLabel: "Filter by name",
       },
@@ -195,8 +195,28 @@ export const AssessmentsPage: React.FC<AssessmentsPageProps> = ({
         selections: selectedOwners,
         onSelectionsChange: setSelectedOwners,
       },
+      {
+        id: "discovery-appliance",
+        label: "Discovery appliance",
+        type: "checkbox",
+        options: sources.map((source) => ({
+          value: source.id,
+          label: source.name,
+        })),
+        selections: selectedSources,
+        onSelectionsChange: setSelectedSources,
+      },
     ],
-    [owners, search, selectedOwners],
+    [
+      owners,
+      nameFilter,
+      selectedOwners,
+      selectedSources,
+      sources,
+      setNameFilter,
+      setSelectedOwners,
+      setSelectedSources,
+    ],
   );
 
   const handleUpdateAssessment = (assessmentId: string): void => {
@@ -291,6 +311,14 @@ export const AssessmentsPage: React.FC<AssessmentsPageProps> = ({
     });
   }, [completePartialRvtoolsUpload]);
 
+  const onCreateRVToolAssessment = () => {
+    handleOpenModal("rvtools");
+  };
+
+  const onCreateDiscoveryApplianceAssessment = () => {
+    handleOpenModal("discoveryAppliance");
+  };
+
   return (
     <>
       {!isTableEmpty() && (
@@ -312,30 +340,40 @@ export const AssessmentsPage: React.FC<AssessmentsPageProps> = ({
               />
             </ToolbarItem>
             <ToolbarItem>
-              <Button
-                variant="primary"
-                onClick={() => handleOpenModal("rvtools")}
-              >
-                Create RVTools assessment
-              </Button>
+              <CreateAssessmentDropdown
+                onCreateRVToolAssessment={onCreateRVToolAssessment}
+                onCreateDiscoveryApplianceAssessment={
+                  onCreateDiscoveryApplianceAssessment
+                }
+              />
             </ToolbarItem>
           </ToolbarContent>
         </Toolbar>
       )}
 
       {isTableEmpty() ? (
-        <AssessmentEmptyState onOpenModal={handleOpenModal} />
+        <AssessmentEmptyState
+          CreateAssessmentButton={
+            <CreateAssessmentDropdown
+              onCreateRVToolAssessment={onCreateRVToolAssessment}
+              onCreateDiscoveryApplianceAssessment={
+                onCreateDiscoveryApplianceAssessment
+              }
+            />
+          }
+        />
       ) : (
         <div className={tableContainerStyle}>
           <AssessmentsList
             assessments={assessments}
-            search={search}
+            nameFilter={nameFilter}
             sortBy={sortBy}
             onSort={onSort}
             onDelete={handleDeleteAssessment}
             onUpdate={handleUpdateAssessment}
             onShareAssessment={handleShareAssessment}
             onUnshareAssessment={handleUnshareAssessment}
+            selectedSources={selectedSources}
             selectedOwners={selectedOwners}
             visibleColumns={visibleColumns}
           />
@@ -364,19 +402,10 @@ export const AssessmentsPage: React.FC<AssessmentsPageProps> = ({
           isNavigatingToReport={isNavigatingToReport}
         />
       ) : (
-        <CreateAssessmentModal
+        <CreateDiscoveryAssessmentModal
           isOpen={isModalOpen}
           onClose={handleCloseModal}
-          onClearError={clearJobCreateError}
-          mode={modalMode}
-          isLoading={isCreatingJob}
-          error={jobCreateError}
-          selectedEnvironment={null}
-          isJobProcessing={isJobProcessing}
-          jobProgressValue={jobProgressValue}
-          jobProgressLabel={jobProgressLabel}
-          jobError={jobError}
-          isNavigatingToReport={isNavigatingToReport}
+          sources={sources}
         />
       )}
 

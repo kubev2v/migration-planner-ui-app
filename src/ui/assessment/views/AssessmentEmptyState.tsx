@@ -7,57 +7,41 @@ import {
 } from "@patternfly/react-core";
 import { ExternalLinkAltIcon, PlusCircleIcon } from "@patternfly/react-icons";
 import React from "react";
-import { useNavigate } from "react-router-dom";
 
-import { routes } from "../../../routing/Routes";
-import type { AssessmentMode } from "./CreateAssessmentModal";
+const LEARN_MORE_URL =
+  "https://kubev2v.github.io/openshift-migration-advisor-docs/docs/tutorial/";
 
-type Props = {
-  onOpenModal: (mode: AssessmentMode) => void;
-};
+interface AssessmentEmptyStateProps {
+  CreateAssessmentButton: React.ReactNode;
+}
 
-const RVTOOLS_LEARN_MORE_URL =
-  "https://kubev2v.github.io/openshift-migration-advisor-docs/docs/tutorial/#prerequisites-rvtools-file-requirements";
-
-const AssessmentEmptyState: React.FC<Props> = ({ onOpenModal }) => {
-  const navigate = useNavigate();
-
+const AssessmentEmptyState: React.FC<AssessmentEmptyStateProps> = ({
+  CreateAssessmentButton,
+}) => {
   return (
     <EmptyState
       headingLevel="h2"
       icon={PlusCircleIcon}
-      titleText="No RVTools assessments yet"
+      titleText="No assessments yet"
     >
       <EmptyStateBody>
-        Generate an assessment from an environment you&apos;ve already set up,
-        or upload an RVTools inventory file.
+        Create an assessment from an RVTools file, or from a discovery appliance
+        you&apos;ve already set up.
       </EmptyStateBody>
 
       <EmptyStateFooter>
-        <EmptyStateActions>
-          <Button variant="primary" onClick={() => onOpenModal("rvtools")}>
-            Upload RVTools file
-          </Button>
-        </EmptyStateActions>
+        <EmptyStateActions>{CreateAssessmentButton}</EmptyStateActions>
         <EmptyStateActions>
           <Button
             variant="link"
             component="a"
-            href={RVTOOLS_LEARN_MORE_URL}
+            href={LEARN_MORE_URL}
             target="_blank"
             rel="noopener noreferrer"
             icon={<ExternalLinkAltIcon />}
             iconPosition="end"
           >
-            Learn more about RVTools requirements
-          </Button>
-          <Button
-            variant="link"
-            onClick={() => {
-              void navigate(routes.exampleReport);
-            }}
-          >
-            View example report
+            Learn more
           </Button>
         </EmptyStateActions>
       </EmptyStateFooter>
