@@ -5,7 +5,7 @@ import { useAssessmentsScreenViewModel } from "../view-models/useAssessmentsScre
 import { AssessmentsPage } from "./AssessmentsPage";
 
 export const AssessmentsScreen: React.FC = () => {
-  const { assessments, isLoading, hasInitialLoad, rvtoolsOpenToken } =
+  const { assessments, isLoading, hasInitialLoad } =
     useAssessmentsScreenViewModel();
 
   // Show spinner if loading or if no initial load
@@ -14,12 +14,7 @@ export const AssessmentsScreen: React.FC = () => {
   }
 
   // Always show assessment component
-  return (
-    <AssessmentsPage
-      assessments={assessments}
-      rvtoolsOpenToken={rvtoolsOpenToken}
-    />
-  );
+  return <AssessmentsPage assessments={assessments} />;
 };
 
 AssessmentsScreen.displayName = "AssessmentsScreen";

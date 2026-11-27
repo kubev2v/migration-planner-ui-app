@@ -40,8 +40,6 @@ type AssessmentMode = "discoveryAppliance" | "rvtools";
 
 type AssessmentsPageProps = {
   assessments: AssessmentModel[];
-  // When this token changes, the component should open the RVTools modal.
-  rvtoolsOpenToken?: string;
 };
 
 const tableContainerStyle = css`
@@ -51,7 +49,6 @@ const tableContainerStyle = css`
 
 export const AssessmentsPage: React.FC<AssessmentsPageProps> = ({
   assessments,
-  rvtoolsOpenToken,
 }) => {
   const {
     sources = [],
@@ -169,15 +166,6 @@ export const AssessmentsPage: React.FC<AssessmentsPageProps> = ({
     void cancelRVToolsJob();
     setIsModalOpen(false);
   }, [cancelRVToolsJob]);
-
-  // Open RVTools modal when the trigger token changes
-  const prevRvtoolsTokenRef = React.useRef<string>();
-  React.useEffect(() => {
-    if (rvtoolsOpenToken && rvtoolsOpenToken !== prevRvtoolsTokenRef.current) {
-      prevRvtoolsTokenRef.current = rvtoolsOpenToken;
-      handleOpenModal("rvtools");
-    }
-  }, [rvtoolsOpenToken]);
 
   const filterAttributes = useMemo(
     (): AttributeValueFilterAttribute[] => [

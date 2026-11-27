@@ -14,10 +14,6 @@ import { useAssessmentsScreenViewModel } from "../useAssessmentsScreenViewModel"
 // Mocks
 // ---------------------------------------------------------------------------
 
-vi.mock("react-router-dom", () => ({
-  useOutletContext: () => ({ rvtoolsOpenToken: "some-token" }),
-}));
-
 vi.mock("react-use", async () => {
   const actual = await vi.importActual<typeof import("react-use")>("react-use");
   return {
@@ -147,14 +143,6 @@ describe("useAssessmentsScreenViewModel", () => {
     unmount();
 
     expect(mockAssessmentsStore.stopPolling).toHaveBeenCalled();
-  });
-
-  it("returns rvtoolsOpenToken from outlet context", async () => {
-    const { result } = renderHook(() => useAssessmentsScreenViewModel());
-    await act(async () => {
-      await Promise.resolve();
-    });
-    expect(result.current.rvtoolsOpenToken).toBe("some-token");
   });
 
   it("isLoading is true while list() is pending", async () => {
