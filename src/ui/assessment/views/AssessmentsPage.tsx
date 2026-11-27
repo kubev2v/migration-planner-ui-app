@@ -4,6 +4,9 @@ import ColumnManagementModal, {
 } from "@patternfly/react-component-groups/dist/dynamic/ColumnManagementModal";
 import {
   Button,
+  PageSection,
+  Stack,
+  StackItem,
   Toolbar,
   ToolbarContent,
   ToolbarItem,
@@ -21,6 +24,7 @@ import { ConfirmationModal } from "../../core/components/ConfirmationModal";
 import CreateAssessmentDropdown from "../../core/components/CreateAssessmentDropdown";
 import { CreateDiscoveryAssessmentModal } from "../../environment/views/environment-modals";
 import { useAssessmentPageViewModel } from "../view-models/useAssessmentPageViewModel";
+import { CompareAssessmentMethodsTable } from "./assessment-empty/CompareAssessmentMethodsTable";
 import AssessmentEmptyState from "./AssessmentEmptyState";
 import { AssessmentsList } from "./AssessmentsList";
 import {
@@ -41,7 +45,6 @@ type AssessmentsPageProps = {
 };
 
 const tableContainerStyle = css`
-  margin-top: 10px;
   max-width: 100%;
   overflow: auto;
 `;
@@ -321,63 +324,81 @@ export const AssessmentsPage: React.FC<AssessmentsPageProps> = ({
 
   return (
     <>
-      {!isTableEmpty() && (
-        <Toolbar
-          clearAllFilters={clearAllFilters}
-          className={attributeValueFilterToolbarStyle}
-        >
-          <ToolbarContent>
-            <AttributeValueFilter
-              attributes={filterAttributes}
-              defaultActiveAttributeId="name"
-            />
-            <ToolbarItem>
-              <Button
-                variant="control"
-                icon={<RhUiColumnsIcon />}
-                onClick={() => setIsColumnModalOpen(true)}
-                aria-label="Manage columns"
-              />
-            </ToolbarItem>
-            <ToolbarItem>
-              <CreateAssessmentDropdown
-                onCreateRVToolAssessment={onCreateRVToolAssessment}
-                onCreateDiscoveryApplianceAssessment={
-                  onCreateDiscoveryApplianceAssessment
+      {isTableEmpty() ? (
+        <StackItem>
+          <Stack hasGutter>
+            <StackItem>
+              <AssessmentEmptyState
+                CreateAssessmentButton={
+                  <CreateAssessmentDropdown
+                    onCreateRVToolAssessment={onCreateRVToolAssessment}
+                    onCreateDiscoveryApplianceAssessment={
+                      onCreateDiscoveryApplianceAssessment
+                    }
+                  />
                 }
               />
-            </ToolbarItem>
-          </ToolbarContent>
-        </Toolbar>
-      )}
-
-      {isTableEmpty() ? (
-        <AssessmentEmptyState
-          CreateAssessmentButton={
-            <CreateAssessmentDropdown
-              onCreateRVToolAssessment={onCreateRVToolAssessment}
-              onCreateDiscoveryApplianceAssessment={
-                onCreateDiscoveryApplianceAssessment
-              }
-            />
-          }
-        />
+            </StackItem>
+            <StackItem>
+              <PageSection
+                aria-labelledby="discovery-method-comparison-heading"
+                isWidthLimited
+                isCenterAligned
+              >
+                <CompareAssessmentMethodsTable />
+              </PageSection>
+            </StackItem>
+          </Stack>
+        </StackItem>
       ) : (
-        <div className={tableContainerStyle}>
-          <AssessmentsList
-            assessments={assessments}
-            nameFilter={nameFilter}
-            sortBy={sortBy}
-            onSort={onSort}
-            onDelete={handleDeleteAssessment}
-            onUpdate={handleUpdateAssessment}
-            onShareAssessment={handleShareAssessment}
-            onUnshareAssessment={handleUnshareAssessment}
-            selectedSources={selectedSources}
-            selectedOwners={selectedOwners}
-            visibleColumns={visibleColumns}
-          />
-        </div>
+        <Stack>
+          <StackItem>
+            <Toolbar
+              clearAllFilters={clearAllFilters}
+              className={attributeValueFilterToolbarStyle}
+            >
+              <ToolbarContent>
+                <AttributeValueFilter
+                  attributes={filterAttributes}
+                  defaultActiveAttributeId="name"
+                />
+                <ToolbarItem>
+                  <Button
+                    variant="control"
+                    icon={<RhUiColumnsIcon />}
+                    onClick={() => setIsColumnModalOpen(true)}
+                    aria-label="Manage columns"
+                  />
+                </ToolbarItem>
+                <ToolbarItem>
+                  <CreateAssessmentDropdown
+                    onCreateRVToolAssessment={onCreateRVToolAssessment}
+                    onCreateDiscoveryApplianceAssessment={
+                      onCreateDiscoveryApplianceAssessment
+                    }
+                  />
+                </ToolbarItem>
+              </ToolbarContent>
+            </Toolbar>
+          </StackItem>
+          <StackItem>
+            <div className={tableContainerStyle}>
+              <AssessmentsList
+                assessments={assessments}
+                nameFilter={nameFilter}
+                sortBy={sortBy}
+                onSort={onSort}
+                onDelete={handleDeleteAssessment}
+                onUpdate={handleUpdateAssessment}
+                onShareAssessment={handleShareAssessment}
+                onUnshareAssessment={handleUnshareAssessment}
+                selectedSources={selectedSources}
+                selectedOwners={selectedOwners}
+                visibleColumns={visibleColumns}
+              />
+            </div>
+          </StackItem>
+        </Stack>
       )}
 
       {modalMode === "rvtools" ? (
