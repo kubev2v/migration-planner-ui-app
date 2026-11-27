@@ -11,10 +11,18 @@ import { useAssessmentPageViewModel } from "../useAssessmentPageViewModel";
 // ---------------------------------------------------------------------------
 
 const mockNavigate = vi.fn();
+const mockSetSearchParams = vi.fn();
 
 vi.mock("react-router-dom", () => ({
   useNavigate: () => mockNavigate,
+  useSearchParams: () => [new URLSearchParams(), mockSetSearchParams],
 }));
+
+const mockSourcesSnapshot: unknown[] = [];
+const mockSourcesStore = {
+  subscribe: vi.fn(() => () => {}),
+  getSnapshot: vi.fn(() => mockSourcesSnapshot),
+};
 
 // Mock stores that will be injected
 let mockAccountStore: {
@@ -59,6 +67,7 @@ vi.mock("@openshift-migration-advisor/ioc", () => ({
     const key = symbol.description;
     if (key === "AccountStore") return mockAccountStore;
     if (key === "AssessmentsStore") return mockAssessmentsStore;
+    if (key === "SourcesStore") return mockSourcesStore;
     if (key === "JobsStore") return mockJobsStore;
     if (key === "RvtoolsReportPersistenceStore") {
       return mockRvtoolsReportPersistenceStore;

@@ -23,7 +23,7 @@ import React, { useState } from "react";
 
 import { isNameError } from "../../../lib/common/ErrorParser";
 
-export type AssessmentMode = "inventory" | "rvtools" | "agent";
+type AssessmentMode = "inventory" | "rvtools" | "agent";
 
 interface CreateAssessmentModalProps {
   isOpen: boolean;

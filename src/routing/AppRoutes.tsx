@@ -1,6 +1,6 @@
 import { InvalidObject } from "@redhat-cloud-services/frontend-components/InvalidObject";
 import { lazy } from "react";
-import { Route, Routes } from "react-router-dom";
+import { Navigate, Route, Routes } from "react-router-dom";
 
 import { AssessmentsScreen } from "../ui/assessment/views/AssessmentsScreen";
 import { EnvironmentsScreen } from "../ui/environment/views/EnvironmentsScreen";
@@ -15,6 +15,7 @@ import ClusterSizingToolScreen from "../ui/tools/ClusterSizingTool/views/Cluster
 import StandaloneCostEstimationScreen from "../ui/tools/StandaloneCostEstimation/views/StandaloneCostEstimationScreen";
 import { ToolsScreen } from "../ui/tools/views/ToolsScreen";
 import { IdentityWrapper } from "./IdentityWrapper";
+import { routes } from "./Routes";
 
 const ReportPage = lazy(
   () =>
@@ -46,13 +47,6 @@ const AssessmentEmptyPage = lazy(
   () =>
     import(
       /* webpackChunkName: "AssessmentEmptyPage" */ "../ui/assessment/views/AssessmentEmptyPage"
-    ),
-);
-
-const CreateFromOva = lazy(
-  () =>
-    import(
-      /* webpackChunkName: "CreateFromOva" */ "../ui/assessment/views/CreateFromOva"
     ),
 );
 
@@ -115,6 +109,10 @@ export const AppRoutes: React.FC = () => (
       {/* Independent routes — they have their own page layout */}
       <Route path="assessments/empty" element={<AssessmentEmptyPage />} />
       <Route
+        path="assessments/create"
+        element={<Navigate to={routes.assessmentEmpty} replace />}
+      />
+      <Route
         path="assessments/:id/report/manual-details"
         element={<ManualEnvironmentWizardPage />}
       />
@@ -124,7 +122,6 @@ export const AppRoutes: React.FC = () => (
         path="assessments/discovery-ova-example-report"
         element={<DiscoveryOvaExampleReport />}
       />
-      <Route path="assessments/create" element={<CreateFromOva />} />
     </Route>
     <Route path="*" element={<InvalidObject />} />
   </Routes>

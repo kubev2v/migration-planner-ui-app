@@ -19,9 +19,39 @@ type AssessmentPageViewModel = ReturnType<typeof useAssessmentPageViewModel>;
 
 let mockViewModel: AssessmentPageViewModel;
 
-vi.mock("../../view-models/useAssessmentPageViewModel", () => ({
-  useAssessmentPageViewModel: () => mockViewModel,
-}));
+vi.mock("../../view-models/useAssessmentPageViewModel", async () => {
+  const React = await import("react");
+
+  return {
+    useAssessmentPageViewModel: () => {
+      const [nameFilter, setNameFilter] = React.useState(
+        mockViewModel.nameFilter,
+      );
+      const [selectedOwners, setSelectedOwners] = React.useState(
+        mockViewModel.selectedOwners,
+      );
+      const [selectedSources, setSelectedSources] = React.useState(
+        mockViewModel.selectedSources,
+      );
+
+      return {
+        ...mockViewModel,
+        nameFilter,
+        setNameFilter,
+        selectedOwners,
+        setSelectedOwners,
+        selectedSources,
+        setSelectedSources,
+        clearAllFilters: () => {
+          setNameFilter("");
+          setSelectedOwners([]);
+          setSelectedSources([]);
+          mockViewModel.clearAllFilters();
+        },
+      };
+    },
+  };
+});
 
 vi.mock("react-router-dom", () => ({
   Link: ({
@@ -60,6 +90,7 @@ const makeAssessment = (overrides: Partial<Assessment> = {}) =>
 const makeViewModel = (
   overrides: Partial<AssessmentPageViewModel> = {},
 ): AssessmentPageViewModel => ({
+  sources: [],
   identity: null,
   currentJob: null,
   isCreatingJob: false,
@@ -93,6 +124,13 @@ const makeViewModel = (
   unshareAssessment: vi.fn(),
   isUnsharingAssessment: false,
   unshareError: undefined,
+  selectedSources: [],
+  setSelectedSources: vi.fn(),
+  selectedOwners: [],
+  setSelectedOwners: vi.fn(),
+  nameFilter: "",
+  setNameFilter: vi.fn(),
+  clearAllFilters: vi.fn(),
   ...overrides,
 });
 
